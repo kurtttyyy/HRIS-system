@@ -3027,19 +3027,19 @@ class AdministratorPageController extends Controller
         $this->syncFinishedInterviewApplicantStatuses();
 
         $applicant = Applicant::with(
-            'position:id,title,department,employment,collage_name,work_mode,job_description,responsibilities,requirements,experience_level,location,skills,benifits,job_type,one,two,passionate'
+            'position:id,title,department,employment,work_mode,job_description,responsibilities,requirements,experience_level,location,skills,benifits,job_type,one,two'
         )->latest('created_at')->get();
         $count_applicant = Applicant::count();
-        $count_under_review = $applicant->where('application_status','Under Review')->count();
+        $count_pending = $applicant->where('application_status','pending')->count();
         $count_final_interview = $applicant
-            ->whereIn('application_status', ['Initial Interview', 'Final Interview'])
+            ->whereIn('application_status', ['Initial Interview', 'Final Interview', 'Demo Teaching'])
             ->count();
         $hired = Applicant::where('application_status', 'Hired')->whereMonth('created_at', now()->month)
                                         ->whereYear('created_at', now()->year)
                                         ->count();
 
         return view('Admin.adminApplicant', compact('applicant', 'hired',
-                                            'count_applicant','count_under_review'
+                                            'count_applicant','count_pending'
                                             ,'count_final_interview'));
     }
 
@@ -3049,9 +3049,53 @@ class AdministratorPageController extends Controller
         $app = Applicant::with(
             'documents:id,filename,applicant_id,filepath,type,created_at',
             'degrees:id,applicant_id,degree_level,degree_name,school_name,year_finished,sort_order',
-            'position:id,title,department,employment,collage_name,work_mode,job_description,responsibilities,requirements,experience_level,location,skills,benifits,job_type,one,two,passionate'
+            'position:id,title,department,employment,work_mode,job_description,responsibilities,requirements,experience_level,location,skills,benifits,job_type,one,two'
             )->findOrFail($id);
         $comparison = $this->buildApplicantComparisonMeta($app);
+        $interviews = Interviewer::query()
+            ->where('applicant_id', $app->id)
+            ->get();
+        $latestInterview = $interviews
+            ->sortBy(function ($interview) {
+                return Carbon::parse(optional($interview->date)->toDateString().' '.$interview->time)->timestamp;
+            })
+            ->last();
+        $completedInterviewTypes = $interviews
+            ->filter(function ($interview) {
+                if (!$interview->date || !$interview->time) {
+                    return false;
+                }
+
+                $start = Carbon::parse($interview->date->toDateString().' '.$interview->time);
+                $end = (clone $start)->addMinutes($this->durationToMinutes($interview->duration));
+
+                return now()->gte($end);
+            })
+            ->map(fn ($interview) => strtolower(trim((string) $interview->interview_type)))
+            ->unique()
+            ->values();
+        $completedInitialInterview = $completedInterviewTypes->contains('initial interview');
+        $completedFinalInterview = $completedInterviewTypes->contains('final interview');
+        $completedDemoTeaching = $completedInterviewTypes->contains('demo teaching');
+        $normalizedJobType = strtolower(trim((string) ($app->position->job_type ?? '')));
+        $isTeachingApplicant = str_contains($normalizedJobType, 'teaching')
+            && !str_contains($normalizedJobType, 'non');
+        $interviewProceedTarget = null;
+        $normalizedApplicantStatus = strtolower(trim((string) ($app->application_status ?? '')));
+
+        if ($isTeachingApplicant) {
+            if ($normalizedApplicantStatus === 'initial interview' && $completedInitialInterview && !$completedDemoTeaching) {
+                $interviewProceedTarget = 'Demo Teaching';
+            } elseif ($normalizedApplicantStatus === 'demo teaching' && $completedInitialInterview && $completedDemoTeaching) {
+                $interviewProceedTarget = 'Passing Document';
+            }
+        } else {
+            if ($normalizedApplicantStatus === 'initial interview' && $completedInitialInterview && !$completedFinalInterview) {
+                $interviewProceedTarget = 'Final Interview';
+            } elseif ($normalizedApplicantStatus === 'final interview' && $completedInitialInterview && $completedFinalInterview) {
+                $interviewProceedTarget = 'Passing Document';
+            }
+        }
 
         return response()->json([
             'id' => $app->id,
@@ -3062,7 +3106,6 @@ class AdministratorPageController extends Controller
             'status' => $app->application_status,
             'location' => $app->address,
             'one' => $app->created_at->format('F d, Y'),
-            'passionate' => $app->position->passionate,
             'work_position' => $app->work_position,
             'work_employer' => $app->work_employer,
             'work_location' => $app->work_location,
@@ -3071,6 +3114,42 @@ class AdministratorPageController extends Controller
             'number' => $app->phone,
             'star' => $app->starRatings,
             'comparison' => $comparison,
+            'latest_interview' => $latestInterview ? [
+                'interview_type' => $latestInterview->interview_type,
+                'date' => optional($latestInterview->date)->toDateString(),
+                'time' => $latestInterview->time,
+                'duration' => $latestInterview->duration,
+                'interviewers' => $latestInterview->interviewers,
+                'starts_at' => Carbon::parse(optional($latestInterview->date)->toDateString().' '.$latestInterview->time)->toIso8601String(),
+            ] : null,
+            'interviews' => $interviews
+                ->sortBy(function ($interview) {
+                    return Carbon::parse(optional($interview->date)->toDateString().' '.$interview->time)->timestamp;
+                })
+                ->values()
+                ->map(function ($interview) {
+                    $start = Carbon::parse(optional($interview->date)->toDateString().' '.$interview->time);
+                    $end = (clone $start)->addMinutes($this->durationToMinutes($interview->duration));
+
+                    return [
+                        'interview_type' => $interview->interview_type,
+                        'date' => optional($interview->date)->toDateString(),
+                        'time' => $interview->time,
+                        'duration' => $interview->duration,
+                        'interviewers' => $interview->interviewers,
+                        'starts_at' => $start->toIso8601String(),
+                        'ends_at' => $end->toIso8601String(),
+                        'is_finished' => now()->gte($end),
+                    ];
+                }),
+            'interview_progress' => [
+                'completed_initial' => $completedInitialInterview,
+                'completed_final' => $completedFinalInterview,
+                'completed_demo_teaching' => $completedDemoTeaching,
+                'can_proceed_passing_document' => $interviewProceedTarget !== null,
+                'is_teaching' => $isTeachingApplicant,
+                'proceed_target' => $interviewProceedTarget,
+            ],
             'documents' => $app->documents->map(function ($doc) use ($comparison) {
                 return [
                     'id' => $doc->id,
@@ -3192,16 +3271,7 @@ class AdministratorPageController extends Controller
             return;
         }
 
-        $completedLatestInterviews->each(function ($interview, $applicantId) {
-            $nextStatus = strcasecmp(trim((string) ($interview->interview_type ?? '')), 'Final Interview') === 0
-                ? 'Passing Document'
-                : 'Final Interview';
-
-            Applicant::query()
-                ->where('id', $applicantId)
-                ->whereIn('application_status', ['Initial Interview', 'Final Interview'])
-                ->update(['application_status' => $nextStatus]);
-        });
+        // HR decides the next step from the finished-interview decision buttons.
     }
 
     private function durationToMinutes(?string $duration): int
@@ -3220,7 +3290,7 @@ class AdministratorPageController extends Controller
     public function display_interview_ID($id){
         $app = Interviewer::with([
             'applicant:id,first_name,last_name,open_position_id',
-            'applicant.position:id,title,department,employment,collage_name,work_mode,job_description,responsibilities,requirements,experience_level,location,skills,benifits,job_type,one,two,passionate'
+            'applicant.position:id,title,department,employment,work_mode,job_description,responsibilities,requirements,experience_level,location,skills,benifits,job_type,one,two'
         ])->where('applicant_id', $id)->firstOrFail();
 
 

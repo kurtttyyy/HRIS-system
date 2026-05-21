@@ -220,8 +220,8 @@
 <style>
   [x-cloak]{display:none !important;}
   .admin-sidebar {
-    background: linear-gradient(180deg, #0f172a 0%, #0b1533 52%, #08112b 100%);
-    box-shadow: 8px 0 24px rgba(2, 6, 23, 0.35);
+    background: linear-gradient(180deg, #020617 0%, #111827 54%, #064e3b 100%);
+    box-shadow: 8px 0 24px rgba(2, 6, 23, 0.4);
   }
   .admin-sidebar nav a,
   .admin-sidebar nav summary {

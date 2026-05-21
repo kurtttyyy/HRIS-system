@@ -279,7 +279,6 @@ class User extends Authenticatable
             'title' => 'Unassigned Employee',
             'department' => 'General',
             'employment' => 'Full-Time',
-            'collage_name' => 'HR',
             'work_mode' => 'Onsite',
             'job_description' => 'Auto-generated fallback position for employee sync.',
             'responsibilities' => '-',
@@ -289,7 +288,6 @@ class User extends Authenticatable
             'skills' => '-',
             'benifits' => '-',
             'job_type' => 'NT',
-            'passionate' => '-',
         ]);
 
         return (int) $fallback->id;

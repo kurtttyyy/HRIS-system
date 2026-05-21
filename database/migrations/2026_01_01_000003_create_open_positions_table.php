@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->string('department');
-            $table->string('collage_name');
             $table->string('employment');
             $table->string('work_mode');
             $table->text('job_description');
@@ -28,7 +27,6 @@ return new class extends Migration
             $table->string('skills');
             $table->string('benifits');
             $table->string('job_type');
-            $table->text('passionate');
             $table->timestamp('one')->nullable();
             $table->timestamp('two')->nullable();
             $table->softDeletes();

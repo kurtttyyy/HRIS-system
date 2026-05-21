@@ -68,6 +68,21 @@
 
 @if(session('show_rating_modal') || session('success') === 'Submitted successfully')
 <style>
+    .application-next-panel {
+        border: 1px solid #bbf7d0;
+        border-radius: 0.5rem;
+        background: #f0fdf4;
+        padding: 1rem;
+    }
+    .application-next-panel h6 {
+        color: #166534;
+        font-weight: 800;
+        margin-bottom: 0.35rem;
+    }
+    .application-next-panel p {
+        color: #374151;
+        margin-bottom: 0;
+    }
     .rating-grid {
         display: grid;
         grid-template-columns: 1fr;
@@ -103,6 +118,29 @@
         font-weight: 600;
     }
 </style>
+<div class="modal fade" id="applicationNextModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Application Submitted</h5>
+            </div>
+            <div class="modal-body">
+                <div class="application-next-panel">
+                    <h6>Do you want to view your application?</h6>
+                    <p>Your submitted details and uploaded documents can be reviewed in Application Status.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <form method="POST" action="{{ route('guest.application.submit') }}" class="me-auto">
+                    @csrf
+                    <input type="hidden" name="email" value="{{ session('application_review_email', session('applicant_email')) }}">
+                    <button type="submit" class="btn btn-success">View Application</button>
+                </form>
+                <button type="button" class="btn btn-outline-secondary" id="continueToRatingBtn">Rate Now</button>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="modal fade" id="applicationRatingModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -2543,10 +2581,18 @@
 @if(session('show_rating_modal') || session('success') === 'Submitted successfully')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const nextModalEl = document.getElementById('applicationNextModal');
         const ratingModalEl = document.getElementById('applicationRatingModal');
-        if (!ratingModalEl) return;
+        if (!nextModalEl || !ratingModalEl) return;
+
+        const nextPopup = new bootstrap.Modal(nextModalEl);
         const ratingPopup = new bootstrap.Modal(ratingModalEl);
-        ratingPopup.show();
+        nextPopup.show();
+
+        document.getElementById('continueToRatingBtn')?.addEventListener('click', function () {
+            nextPopup.hide();
+            ratingPopup.show();
+        });
     });
 </script>
 @endif

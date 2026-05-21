@@ -59,7 +59,6 @@ class OpenPosition extends Model
         'title',
         'department',
         'employment',
-        'collage_name',
         'work_mode',
         'job_description',
         'responsibilities',
@@ -73,7 +72,6 @@ class OpenPosition extends Model
         'job_type',
         'one',
         'two',
-        'passionate',
     ];
 
     public function applicants()

@@ -115,11 +115,6 @@
 
                                 <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
                                     <div>
-                                        <label class="mb-2 block text-sm font-semibold text-slate-700">College Name</label>
-                                        <input type="text" name="collage_name" value="{{ old('collage_name', $open->collage_name) }}" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-800 outline-none transition focus:border-sky-300 focus:bg-white focus:ring-2 focus:ring-sky-100">
-                                    </div>
-
-                                    <div>
                                         <label class="mb-2 block text-sm font-semibold text-slate-700">Department</label>
                                         <input type="text" name="department" value="{{ old('department', $open->department) }}" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-800 outline-none transition focus:border-sky-300 focus:bg-white focus:ring-2 focus:ring-sky-100">
                                     </div>
@@ -176,11 +171,6 @@
                                 <div>
                                     <label class="mb-2 block text-sm font-semibold text-slate-700">Job Description</label>
                                     <textarea rows="6" name="job_description" class="w-full rounded-[1.5rem] border border-slate-200 bg-slate-50 px-4 py-4 text-slate-800 outline-none transition focus:border-sky-300 focus:bg-white focus:ring-2 focus:ring-sky-100">{{ old('job_description', $open->job_description) }}</textarea>
-                                </div>
-
-                                <div>
-                                    <label class="mb-2 block text-sm font-semibold text-slate-700">Summary</label>
-                                    <textarea rows="5" name="passionate" class="w-full rounded-[1.5rem] border border-slate-200 bg-slate-50 px-4 py-4 text-slate-800 outline-none transition focus:border-sky-300 focus:bg-white focus:ring-2 focus:ring-sky-100">{{ old('passionate', $open->passionate) }}</textarea>
                                 </div>
                             </div>
                         </section>

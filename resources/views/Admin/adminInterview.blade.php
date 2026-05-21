@@ -83,25 +83,23 @@
   @include('components.adminSideBar')
 
   <main class="flex-1 ml-16 transition-all duration-300">
-    @include('components.adminHeader.interviewHeader')
-
-    <div id="admin-interview-page" class="space-y-6 p-4 pt-20 md:p-8">
-      <section class="interview-reveal relative overflow-hidden rounded-[2rem] border border-emerald-950/60 bg-[linear-gradient(135deg,rgba(3,19,29,0.96),rgba(5,47,42,0.94),rgba(17,97,73,0.92))] px-6 py-7 text-white shadow-[0_25px_70px_rgba(3,19,29,0.2)] md:px-8" style="--interview-delay: 0ms;">
+    <div id="admin-interview-page" class="space-y-4 px-4 pb-4 pt-3 md:px-8 md:pb-8 md:pt-4">
+      <section class="interview-reveal relative overflow-hidden rounded-[2rem] border border-emerald-950/60 bg-[linear-gradient(135deg,rgba(2,6,23,0.98)_0%,rgba(2,6,23,0.98)_42%,rgba(17,24,39,0.96)_68%,rgba(6,78,59,0.94)_100%)] px-6 py-6 text-white shadow-[0_25px_70px_rgba(3,19,29,0.2)] md:px-8" style="--interview-delay: 0ms;">
         <div class="absolute -right-14 -top-16 h-44 w-44 rounded-full bg-white/10 blur-2xl"></div>
         <div class="absolute bottom-0 right-24 h-28 w-28 rounded-full bg-emerald-300/20 blur-2xl"></div>
 
-        <div class="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+        <div class="relative flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div class="max-w-3xl">
             <div class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-100">
               Interview Command Center
             </div>
-            <h1 class="mt-4 text-3xl font-black tracking-tight md:text-4xl">Keep every candidate conversation organized, visible, and on time.</h1>
-            <p class="mt-3 max-w-2xl text-sm text-emerald-50/85 md:text-base">
+            <h1 class="mt-3 text-3xl font-black tracking-tight md:text-4xl">Keep every candidate conversation organized, visible, and on time.</h1>
+            <p class="mt-2 max-w-2xl text-sm text-emerald-50/85 md:text-base">
               Review today's activity, follow the next interview in line, and reschedule sessions from one focused dashboard.
             </p>
           </div>
 
-          <div class="flex flex-col gap-3 sm:flex-row xl:items-center">
+          <div class="flex flex-col items-start gap-3 xl:items-stretch">
             <div class="interview-card-motion interview-reveal rounded-[1.5rem] border border-white/15 bg-white/10 px-5 py-4 backdrop-blur" style="--interview-delay: 70ms;">
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-100">Today</p>
               <p class="mt-2 text-lg font-bold">{{ now()->format('F j, Y') }}</p>
@@ -120,7 +118,7 @@
         </div>
       </section>
 
-      <section class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <section class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <article class="interview-card-motion interview-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--interview-delay: 110ms;">
           <div class="flex items-start justify-between gap-4">
             <div>
@@ -186,7 +184,7 @@
         </article>
       </section>
 
-      <section class="interview-wrapper interview-reveal rounded-[2rem] border border-white/80 bg-white/92 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur md:p-8" style="--interview-delay: 240ms;">
+      <section class="interview-wrapper interview-reveal rounded-[2rem] border border-white/80 bg-white/92 p-5 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur md:p-6" style="--interview-delay: 240ms;">
         <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div>
             <div class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-indigo-700">
@@ -208,7 +206,7 @@
           </div>
         </div>
 
-        <div class="mt-8 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <div class="mt-5 grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
           <section class="interview-reveal rounded-[1.75rem] border border-indigo-100 bg-[linear-gradient(180deg,rgba(238,242,255,0.9),rgba(255,255,255,0.96))] p-5 md:p-6" style="--interview-delay: 280ms;">
             <div class="mb-5 flex items-center justify-between gap-3">
               <div>

@@ -82,7 +82,7 @@
                     </div>
 
                     <h1 class="mt-4 text-3xl font-black tracking-tight text-slate-900 md:text-4xl">{{ $open->title }}</h1>
-                    <p class="mt-2 text-sm text-slate-600 md:text-base">{{ $open->department }} | {{ $open->employment }} | {{ $open->collage_name ?? 'Hiring Department' }}</p>
+                    <p class="mt-2 text-sm text-slate-600 md:text-base">{{ $open->department }} | {{ $open->employment }}</p>
 
                     <div class="mt-4 flex flex-wrap gap-2">
                       @if (!empty($open->location))

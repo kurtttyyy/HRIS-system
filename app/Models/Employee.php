@@ -158,7 +158,6 @@ class Employee extends Model
             'title' => 'Unassigned Employee',
             'department' => 'General',
             'employment' => 'Full-Time',
-            'collage_name' => 'HR',
             'work_mode' => 'Onsite',
             'job_description' => 'Auto-generated fallback position for employee sync.',
             'responsibilities' => '-',
@@ -168,7 +167,6 @@ class Employee extends Model
             'skills' => '-',
             'benifits' => '-',
             'job_type' => 'NT',
-            'passionate' => '-',
         ]);
 
         return (int) $fallback->id;

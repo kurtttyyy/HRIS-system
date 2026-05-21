@@ -111,7 +111,7 @@
                     $activePositionCount = collect($openPosition ?? [])->whereNull('deleted_at')->count();
                     $closedPositionCount = collect($openPosition ?? [])->filter(fn ($position) => !is_null($position->deleted_at))->count();
                 @endphp
-                <div class="position-card-motion position-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--position-delay: 30ms;">
+                <div role="button" tabindex="0" data-position-dashboard-filter="active" class="position-stat-card position-card-motion position-reveal cursor-pointer rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-[0_24px_55px_rgba(15,23,42,0.1)] focus:outline-none focus:ring-2 focus:ring-sky-300" style="--position-delay: 30ms;">
                     <div class="flex items-start justify-between gap-4">
                         <div>
                             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Open Positions</p>
@@ -127,7 +127,7 @@
                     </div>
                 </div>
 
-                <div class="position-card-motion position-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--position-delay: 60ms;">
+                <div class="position-stat-card position-card-motion position-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--position-delay: 60ms;">
                     <div class="flex items-start justify-between gap-4">
                         <div>
                             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Total Views</p>
@@ -143,7 +143,7 @@
                     </div>
                 </div>
 
-                <div class="position-card-motion position-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--position-delay: 90ms;">
+                <div role="button" tabindex="0" data-position-dashboard-filter="applications" class="position-stat-card position-card-motion position-reveal cursor-pointer rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-[0_24px_55px_rgba(15,23,42,0.1)] focus:outline-none focus:ring-2 focus:ring-emerald-300" style="--position-delay: 90ms;">
                     <div class="flex items-start justify-between gap-4">
                         <div>
                             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">New Applications</p>
@@ -159,7 +159,7 @@
                     </div>
                 </div>
 
-                <div class="position-card-motion position-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--position-delay: 120ms;">
+                <div role="button" tabindex="0" data-position-dashboard-filter="closed" class="position-stat-card position-card-motion position-reveal cursor-pointer rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur transition hover:-translate-y-0.5 hover:border-amber-200 hover:shadow-[0_24px_55px_rgba(15,23,42,0.1)] focus:outline-none focus:ring-2 focus:ring-amber-300" style="--position-delay: 120ms;">
                     <div class="flex items-start justify-between gap-4">
                         <div>
                             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Closed Positions</p>
@@ -250,6 +250,8 @@
                         data-department="{{ strtolower(trim((string) ($open->department ?? ''))) }}"
                         data-employment="{{ strtolower(trim((string) ($open->employment ?? ''))) }}"
                         data-job-type="{{ strtolower(trim((string) ($open->job_type ?? ''))) }}"
+                        data-status="{{ $open->deleted_at ? 'closed' : 'active' }}"
+                        data-applicants-count="{{ (int) ($open->applicants_count ?? 0) }}"
                     >
                         <div class="absolute inset-x-6 top-0 h-1 rounded-full {{ $open->deleted_at ? 'bg-[linear-gradient(90deg,#f59e0b,#ef4444)]' : 'bg-[linear-gradient(90deg,#0ea5e9,#10b981)]' }} opacity-80"></div>
 
@@ -414,9 +416,20 @@
     const resetButton = document.getElementById('resetPositionFilters');
     const cards = Array.from(document.querySelectorAll('.position-card'));
     const emptyState = document.getElementById('positionEmptyState');
+    let activeDashboardFilter = 'all';
 
     function normalize(value) {
       return (value || '').toString().trim().toLowerCase();
+    }
+
+    function updateDashboardCardState() {
+      document.querySelectorAll('[data-position-dashboard-filter]').forEach(card => {
+        const isActive = card.dataset.positionDashboardFilter === activeDashboardFilter;
+        card.classList.toggle('border-sky-300', isActive);
+        card.classList.toggle('ring-2', isActive);
+        card.classList.toggle('ring-sky-200', isActive);
+        card.classList.toggle('bg-sky-50/70', isActive);
+      });
     }
 
     function applyFilters() {
@@ -432,8 +445,23 @@
         const matchesDepartment = !department || normalize(card.dataset.department) === department;
         const matchesEmployment = !employment || normalize(card.dataset.employment) === employment;
         const matchesJobType = !jobType || normalize(card.dataset.jobType) === jobType;
+        const matchesDashboardFilter = (() => {
+          if (activeDashboardFilter === 'active') {
+            return normalize(card.dataset.status) === 'active';
+          }
 
-        const isVisible = matchesSearch && matchesDepartment && matchesEmployment && matchesJobType;
+          if (activeDashboardFilter === 'closed') {
+            return normalize(card.dataset.status) === 'closed';
+          }
+
+          if (activeDashboardFilter === 'applications') {
+            return Number(card.dataset.applicantsCount || 0) > 0;
+          }
+
+          return true;
+        })();
+
+        const isVisible = matchesSearch && matchesDepartment && matchesEmployment && matchesJobType && matchesDashboardFilter;
         card.classList.toggle('hidden', !isVisible);
 
         if (isVisible) {
@@ -442,6 +470,17 @@
       });
 
       emptyState.classList.toggle('hidden', visibleCount !== 0);
+      updateDashboardCardState();
+    }
+
+    function applyDashboardFilter(filter) {
+      activeDashboardFilter = filter || 'all';
+      if (searchInput) searchInput.value = '';
+      if (departmentFilter) departmentFilter.value = '';
+      if (employmentFilter) employmentFilter.value = '';
+      if (jobTypeFilter) jobTypeFilter.value = '';
+      applyFilters();
+      document.getElementById('positionCardsGrid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     searchInput?.addEventListener('input', applyFilters);
@@ -449,11 +488,22 @@
     employmentFilter?.addEventListener('change', applyFilters);
     jobTypeFilter?.addEventListener('change', applyFilters);
     resetButton?.addEventListener('click', () => {
+      activeDashboardFilter = 'all';
       searchInput.value = '';
       departmentFilter.value = '';
       employmentFilter.value = '';
       jobTypeFilter.value = '';
       applyFilters();
+    });
+
+    document.querySelectorAll('[data-position-dashboard-filter]').forEach(card => {
+      const handleClick = () => applyDashboardFilter(card.dataset.positionDashboardFilter || 'all');
+      card.addEventListener('click', handleClick);
+      card.addEventListener('keydown', event => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        handleClick();
+      });
     });
 
     applyFilters();

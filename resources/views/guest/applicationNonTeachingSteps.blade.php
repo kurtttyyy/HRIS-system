@@ -139,6 +139,198 @@
         font-weight: 700;
     }
 
+    .application-section-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin: 1.25rem 0 0.9rem;
+    }
+
+    .application-section-heading h4 {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #111827;
+    }
+
+    .application-section-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        border: 1px solid rgba(22, 163, 74, 0.22);
+        border-radius: 999px;
+        background: #f0fdf4;
+        color: #047857;
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        padding: 0.35rem 0.65rem;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .education-card,
+    .degree-card,
+    .work-experience-card {
+        border: 1px solid rgba(15, 23, 42, 0.1);
+        border-radius: 1rem;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        box-shadow: 0 14px 32px rgba(15, 23, 42, 0.06);
+    }
+
+    .education-card,
+    .degree-card {
+        padding: 1rem;
+    }
+
+    .education-card-title,
+    .degree-card-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-bottom: 0.9rem;
+        border-radius: 999px;
+        background: #ecfdf5;
+        color: #047857;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        padding: 0.35rem 0.65rem;
+        text-transform: uppercase;
+    }
+
+    .degree-card {
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 0.9rem;
+    }
+
+    .degree-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 4px;
+        background: linear-gradient(180deg, #16a34a, #0f766e);
+    }
+
+    .work-experience-card {
+        padding: 1.05rem;
+    }
+
+    .work-field-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.9rem;
+    }
+
+    .work-field-grid .floating-input {
+        margin-bottom: 0 !important;
+    }
+
+    .fresh-graduate-card {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        border: 1px solid rgba(22, 163, 74, 0.18);
+        border-radius: 0.85rem;
+        background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
+        padding: 0.8rem 0.9rem;
+    }
+
+    .fresh-graduate-card .form-check-input {
+        margin-top: 0;
+    }
+
+    .add-entry-btn {
+        border-color: rgba(22, 163, 74, 0.38) !important;
+        border-radius: 999px !important;
+        background: #f0fdf4 !important;
+        color: #047857 !important;
+        font-weight: 800 !important;
+        box-shadow: 0 10px 20px rgba(22, 163, 74, 0.1);
+    }
+
+    .add-entry-btn:hover {
+        background: #16a34a !important;
+        color: #fff !important;
+        transform: translateY(-1px);
+    }
+
+    .remove-degree-btn {
+        border-radius: 999px !important;
+        font-weight: 700 !important;
+    }
+
+    .skills-field-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+    }
+
+    .skill-entry {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0.75rem;
+        align-items: stretch;
+    }
+
+    .skill-entry .floating-input {
+        margin-bottom: 0 !important;
+    }
+
+    .remove-skill-btn,
+    .add-skill-btn {
+        min-height: 3.5rem;
+        border-radius: 0.65rem;
+        font-weight: 700;
+    }
+
+    .remove-skill-btn {
+        width: 3.5rem;
+        border: 1px solid rgba(220, 38, 38, 0.28);
+        color: #b91c1c;
+        background: #fff7f7;
+    }
+
+    .remove-skill-btn:hover {
+        color: #fff;
+        background: #dc2626;
+    }
+
+    .add-skill-btn {
+        border: 1px solid rgba(22, 163, 74, 0.28);
+        background: linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%);
+        color: #047857;
+        box-shadow: 0 10px 22px rgba(22, 163, 74, 0.12);
+    }
+
+    .add-skill-btn:hover {
+        color: #fff;
+        background: linear-gradient(135deg, #16a34a 0%, #047857 100%);
+        transform: translateY(-1px);
+    }
+
+    @media (max-width: 575.98px) {
+        .application-section-heading {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .work-field-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .skill-entry {
+            grid-template-columns: 1fr;
+        }
+
+        .remove-skill-btn {
+            width: 100%;
+            min-height: 2.75rem;
+        }
+    }
+
     .upload-area {
         position: relative;
         border-radius: 0.9rem;
@@ -185,6 +377,108 @@
         display: inline-flex;
     }
 
+    .application-intake-grid {
+        margin-top: 1rem;
+    }
+
+    .application-intake-card {
+        border: 1px solid rgba(22, 101, 52, 0.13);
+        border-radius: 1.1rem;
+        background: #ffffff;
+        box-shadow: 0 16px 34px rgba(15, 23, 42, 0.07);
+    }
+
+    .application-scan-card {
+        padding: 1.15rem;
+        background:
+            radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 32%),
+            linear-gradient(180deg, #ffffff 0%, #fbfefc 100%);
+    }
+
+    .intake-upload-zone {
+        position: relative;
+        display: grid;
+        place-items: center;
+        min-height: 13rem;
+        border: 2px dashed rgba(22, 163, 74, 0.32);
+        border-radius: 1rem;
+        background: rgba(240, 253, 244, 0.52);
+        text-align: center;
+        cursor: pointer;
+        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .intake-upload-zone:hover,
+    .intake-upload-zone.is-ready {
+        transform: translateY(-2px);
+        border-color: rgba(22, 163, 74, 0.58);
+        background: #f0fdf4;
+        box-shadow: 0 16px 30px rgba(22, 101, 52, 0.12);
+    }
+
+    .intake-upload-zone input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .intake-upload-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 4rem;
+        height: 4rem;
+        margin-bottom: 0.8rem;
+        border-radius: 1.3rem;
+        background: #dcfce7;
+        color: #15803d;
+        font-size: 2rem;
+    }
+
+    .scan-progress-track {
+        height: 0.55rem;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #e5e7eb;
+    }
+
+    .scan-progress-bar {
+        width: 0%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #16a34a, #22c55e);
+        transition: width 0.35s ease;
+    }
+
+    .scan-status-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 0.9rem;
+        background: #ffffff;
+        padding: 0.85rem;
+    }
+
+    .scan-status-list {
+        display: grid;
+        gap: 0.55rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .scan-status-list li {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        color: #64748b;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .scan-status-list li.is-complete {
+        color: #166534;
+    }
+
     .step-actions {
         position: sticky;
         bottom: 0;
@@ -192,6 +486,15 @@
         padding-top: 0.75rem;
         margin-top: 1.25rem !important;
         background: linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,0.96) 36%, #ffffff 100%);
+    }
+
+    .step-actions.d-flex {
+        gap: 0.75rem;
+    }
+
+    .personal-info-actions {
+        width: 100%;
+        align-self: stretch;
     }
 
     .step-actions .btn {
@@ -297,7 +600,7 @@
                 </div>
                 <div class="apply-meta">
                     <p class="apply-meta-label">Application Flow</p>
-                    <p id="currentStepText" class="apply-meta-value">Step 1 of 5: Personal Info</p>
+                    <p id="currentStepText" class="apply-meta-value">Step 1 of 6: Application</p>
                 </div>
             </div>
 
@@ -305,34 +608,41 @@
 
                 <div class="step1 completed1">
                     <div class="circle1">1</div>
-                    <div class="label1">Personal Info</div>
+                    <div class="label1">Application</div>
                 </div>
 
                 <div class="line1 completed1"></div>
 
                 <div class="step1 completed1">
                     <div class="circle1">2</div>
+                    <div class="label1">Personal Info</div>
+                </div>
+
+                <div class="line1 completed1"></div>
+
+                <div class="step1 completed1">
+                    <div class="circle1">3</div>
                     <div class="label1">Experience</div>
                 </div>
 
                 <div class="line1 completed1"></div>
 
                 <div class="step1">
-                    <div class="circle1">3</div>
+                    <div class="circle1">4</div>
                     <div class="label1">Documents</div>
                 </div>
 
                 <div class="line1"></div>
 
                 <div class="step1">
-                    <div class="circle1">4</div>
+                    <div class="circle1">5</div>
                     <div class="label1">Review</div>
                 </div>
 
                 <div class="line1"></div>
 
                 <div class="step1">
-                    <div class="circle1">5</div>
+                    <div class="circle1">6</div>
                     <div class="label1">Submit</div>
                 </div>
 
@@ -341,22 +651,89 @@
 <form id="formPersonal" action="{{ route('applicant.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
     <input type="text" name="position" class="form-control" value="{{ $openPosition->id}}" hidden>
-<div id="personalForm" class="mt-4 form-step">
+    <input type="hidden" id="pds_record_id" name="pds_record_id">
+<div id="applicationFormStep" class="mt-4 form-step">
+    <h4 class="fw-bold mb-3">Application Details</h4>
+
+    <div class="application-intake-grid">
+        <div class="application-intake-card application-scan-card">
+            <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                <div>
+                    <h5 class="fw-bold mb-1">Upload Personal Data Sheet</h5>
+                    <p class="text-secondary mb-0">Attach your Personal Data Sheet, then scan the uploaded file before continuing.</p>
+                </div>
+                <span class="badge rounded-pill bg-success-subtle text-success px-3 py-2">PDS Only</span>
+            </div>
+
+            <label id="intakeUploadZone" class="intake-upload-zone">
+                <input type="file" id="intakeUploadInput" name="pds_file" accept=".xls,.xlsx,.csv">
+                <span class="intake-upload-icon"><i class="bi bi-cloud-arrow-up-fill"></i></span>
+                <strong id="intakeUploadTitle" class="d-block">Upload Personal Data Sheet</strong>
+                <span id="intakeUploadSubtitle" class="d-block text-secondary mt-1">Excel files only: XLS, XLSX, CSV</span>
+            </label>
+
+            <div class="mt-3 d-flex flex-wrap gap-2">
+                <button type="button" id="scanUploadedFileButton" class="btn btn-success">
+                    <i class="bi bi-search me-1"></i>
+                    Scan Personal Data Sheet
+                </button>
+                <button type="button" id="clearIntakeUploadButton" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>
+                    Clear
+                </button>
+            </div>
+
+            <div class="scan-status-card mt-3">
+                <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                    <span id="scanStateLabel" class="fw-bold text-secondary">Waiting for upload</span>
+                    <span id="autoSaveLabel" class="badge rounded-pill bg-light text-secondary">Not saved</span>
+                </div>
+                <div class="scan-progress-track">
+                    <div id="scanProgressBar" class="scan-progress-bar"></div>
+                </div>
+                <ul class="scan-status-list mt-3">
+                    <li id="scanCheckFile"><i class="bi bi-circle"></i> File selected</li>
+                    <li id="scanCheckScan"><i class="bi bi-circle"></i> Scan completed</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end mt-auto step-actions">
+        <div></div>
+        <button type="button" id="btnToPersonal" class="btn btn-primary">Continue</button>
+    </div>
+</div>
+
+<div id="personalForm" class="mt-4 d-none form-step">
     <h4 class="fw-bold mb-3">Personal Information</h4>
 
     <div class="row mb-3">
-        <div class="col-md-6">
+        <div class="col-md-3">
             <div class="floating-input">
                 <input type="text" id="first_name" name="first_name" class="form-control" placeholder=" " required>
                 <label for="first_name">First Name<span class="required-asterisk"> *</span></label>
             </div>
         </div>
 
+        <div class="col-md-3">
+            <div class="floating-input">
+                <input type="text" id="middle_name" name="middle_name" class="form-control" placeholder=" ">
+                <label for="middle_name">Middle Name</label>
+            </div>
+        </div>
 
-        <div class="col-md-6">
+        <div class="col-md-3">
             <div class="floating-input">
                 <input type="text" id="last_name" name="last_name" class="form-control" placeholder=" " required>
-                <label for="last_name">Last Name<span class="required-asterisk"> *</span></label>
+                <label for="last_name">Surname<span class="required-asterisk"> *</span></label>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="floating-input">
+                <input type="text" id="name_extension" name="name_extension" class="form-control" placeholder=" ">
+                <label for="name_extension">Name Extension</label>
             </div>
         </div>
     </div>
@@ -377,6 +754,39 @@
         </div>
     </div>
 
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <div class="floating-input">
+                <select id="sex" name="sex" class="form-select text-secondary" required>
+                    <option value="" selected>Select Sex</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+                <label for="sex">Sex<span class="required-asterisk"> *</span></label>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="floating-input">
+                <select id="civil_status" name="civil_status" class="form-select text-secondary" required>
+                    <option value="" selected>Select Civil Status</option>
+                    <option value="Single">Single</option>
+                    <option value="Married">Married</option>
+                    <option value="Widowed">Widowed</option>
+                    <option value="Separated">Separated</option>
+                </select>
+                <label for="civil_status">Civil Status<span class="required-asterisk"> *</span></label>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="floating-input">
+                <input type="date" id="date_of_birth" name="date_of_birth" class="form-control" placeholder=" " required>
+                <label for="date_of_birth">Date of Birth<span class="required-asterisk"> *</span></label>
+            </div>
+        </div>
+    </div>
+
     <div class="mb-3">
         <div class="floating-input">
             <input type="text" id="address" name="address" class="form-control" placeholder=" " required>
@@ -384,8 +794,8 @@
         </div>
     </div>
 
-    <div class="d-flex justify-content-end mt-auto step-actions">
-        <div></div>
+    <div class="d-flex justify-content-between mt-auto step-actions personal-info-actions">
+        <button type="button" id="btnBackToApplication" class="btn btn-secondary">Previous</button>
         <button type="button" id="btnToExperience" class="btn btn-primary">Proceed</button>
     </div>
 </div>
@@ -395,10 +805,54 @@
     <!-- Work Experience & Education Form -->
 <div id="experienceForm" class="mt-4 d-none form-step">
 
-    <h4 class="fw-bold mb-3">Educational Background</h4>
+    <div class="application-section-heading">
+        <div>
+            <span class="application-section-kicker"><i class="bi bi-mortarboard"></i> Education</span>
+            <h4 class="mt-2">Educational Background</h4>
+        </div>
+    </div>
+
+    @php
+        $basicEducationRows = [
+            'elementary' => 'Elementary',
+            'secondary' => 'Secondary',
+            'vocational_trade' => 'Vocational / Trade Course',
+        ];
+    @endphp
+
+    <div class="row g-3 mb-4">
+        @foreach ($basicEducationRows as $educationKey => $educationLabel)
+            <div class="col-12">
+                <div class="education-card">
+                    <h6 class="education-card-title"><i class="bi bi-building"></i>{{ $educationLabel }}</h6>
+                    <input type="hidden" name="education_levels[{{ $educationKey }}][level]" value="{{ $educationLabel }}">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="floating-input">
+                                <input type="text" id="{{ $educationKey }}_school_name" name="education_levels[{{ $educationKey }}][school_name]" class="form-control education-school-input" placeholder=" ">
+                                <label for="{{ $educationKey }}_school_name">School Name</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="floating-input">
+                                <select id="{{ $educationKey }}_year_graduated" name="education_levels[{{ $educationKey }}][year_graduated]" class="form-select text-secondary education-year-select">
+                                    <option value="" selected>Select Year Graduated</option>
+                                    @for ($year = 2026; $year >= 1900; $year--)
+                                        <option value="{{ $year }}">{{ $year }}</option>
+                                    @endfor
+                                </select>
+                                <label for="{{ $educationKey }}_year_graduated">Year Graduated</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    </div>
 
     <div id="bachelor-degrees-container">
-    <div class="bachelor-degree-entry border rounded p-3 mb-3" data-degree-index="0">
+    <div class="bachelor-degree-entry degree-card" data-degree-index="0">
+    <h6 class="degree-card-title"><i class="bi bi-award"></i>Bachelor Degree</h6>
     <div class="mb-3 floating-input">
         <input type="text" class="form-select text-secondary bachelor-degree-select" id="bachelor_degree_0" name="bachelor_degrees[0][degree]" list="bachelorDegreeOptions" placeholder=" " required>
         <label for="bachelor_degree_0">Bachelor Degree<span class="required-asterisk"> *</span></label>
@@ -420,13 +874,13 @@
     </div>
 
     <div class="text-end">
-        <button type="button" class="btn btn-outline-danger btn-sm remove-bachelor-degree d-none">Remove</button>
+        <button type="button" class="btn btn-outline-danger btn-sm remove-degree-btn remove-bachelor-degree d-none">Remove</button>
     </div>
     </div>
     </div>
 
     <div class="mb-3">
-        <button type="button" id="addBachelorDegreeBtn" class="btn btn-outline-primary btn-sm">+ Add Another Bachelor Degree</button>
+        <button type="button" id="addBachelorDegreeBtn" class="btn btn-outline-success btn-sm add-entry-btn"><i class="bi bi-plus-circle me-1"></i>Add Another Bachelor Degree</button>
     </div>
 
     <datalist id="bachelorDegreeOptions">
@@ -506,7 +960,8 @@
     </datalist>
 
     <div id="master-degrees-container">
-    <div class="master-degree-entry border rounded p-3 mb-3" data-degree-index="0">
+    <div class="master-degree-entry degree-card" data-degree-index="0">
+    <h6 class="degree-card-title"><i class="bi bi-award"></i>Master Degree</h6>
     <div class="mb-3 floating-input">
         <input type="text" class="form-select text-secondary master-degree-select" id="master_degree_0" name="master_degrees[0][degree]" list="masterDegreeOptions" placeholder=" ">
         <label for="master_degree_0">Master Degree</label>
@@ -528,13 +983,13 @@
     </div>
 
     <div class="text-end">
-        <button type="button" class="btn btn-outline-danger btn-sm remove-master-degree d-none">Remove</button>
+        <button type="button" class="btn btn-outline-danger btn-sm remove-degree-btn remove-master-degree d-none">Remove</button>
     </div>
     </div>
     </div>
 
     <div class="mb-3">
-        <button type="button" id="addMasterDegreeBtn" class="btn btn-outline-primary btn-sm">+ Add Another Master Degree</button>
+        <button type="button" id="addMasterDegreeBtn" class="btn btn-outline-success btn-sm add-entry-btn"><i class="bi bi-plus-circle me-1"></i>Add Another Master Degree</button>
     </div>
 
     <datalist id="masterDegreeOptions">
@@ -591,7 +1046,8 @@
     </datalist>
 
     <div id="doctoral-degrees-container">
-    <div class="doctoral-degree-entry border rounded p-3 mb-3" data-degree-index="0">
+    <div class="doctoral-degree-entry degree-card" data-degree-index="0">
+    <h6 class="degree-card-title"><i class="bi bi-award"></i>Doctoral Degree</h6>
     <div class="mb-3 floating-input">
         <input type="text" class="form-select text-secondary doctoral-degree-select" id="doctoral_degree_0" name="doctoral_degrees[0][degree]" list="doctoralDegreeOptions" placeholder=" ">
         <label for="doctoral_degree_0">Doctoral Degree</label>
@@ -613,43 +1069,52 @@
     </div>
 
     <div class="text-end">
-        <button type="button" class="btn btn-outline-danger btn-sm remove-doctoral-degree d-none">Remove</button>
+        <button type="button" class="btn btn-outline-danger btn-sm remove-degree-btn remove-doctoral-degree d-none">Remove</button>
     </div>
     </div>
     </div>
 
     <div class="mb-3">
-        <button type="button" id="addDoctoralDegreeBtn" class="btn btn-outline-primary btn-sm">+ Add Another Doctoral Degree</button>
+        <button type="button" id="addDoctoralDegreeBtn" class="btn btn-outline-success btn-sm add-entry-btn"><i class="bi bi-plus-circle me-1"></i>Add Another Doctoral Degree</button>
     </div>
 
-    <h4 class="fw-bold mb-3 mt-4">Work Experience</h4>
+    <div class="application-section-heading">
+        <div>
+            <span class="application-section-kicker"><i class="bi bi-briefcase"></i> Experience</span>
+            <h4 class="mt-2">Work Experience</h4>
+        </div>
+    </div>
 
-    <div class="mb-3 form-check">
+    <div class="work-experience-card mb-4">
+
+    <div class="fresh-graduate-card mb-3">
         <input type="hidden" name="fresh_graduate" value="0">
         <input class="form-check-input" type="checkbox" id="fresh_graduate" name="fresh_graduate" value="1">
-        <label class="form-check-label" for="fresh_graduate">
+        <label class="form-check-label fw-semibold text-success mb-0" for="fresh_graduate">
             I am a Fresh Graduate (No work experience yet)
         </label>
     </div>
 
-    <div class="mb-3 floating-input">
+    <div class="work-field-grid mb-3">
+    <div class="floating-input">
         <input type="text" class="form-select" id="work_position" name="work_position" placeholder=" " required>
         <label for="work_position">Position<span class="required-asterisk"> *</span></label>
     </div>
 
-    <div class="mb-3 floating-input">
+    <div class="floating-input">
         <input type="text" class="form-select" id="work_employer" name="work_employer" placeholder=" " required>
         <label for="work_employer">Employer<span class="required-asterisk"> *</span></label>
     </div>
 
-    <div class="mb-3 floating-input">
+    <div class="floating-input">
         <input type="text" class="form-select" id="work_location" name="work_location" placeholder=" " required>
         <label for="work_location">Location<span class="required-asterisk"> *</span></label>
     </div>
 
-    <div class="mb-3 floating-input">
+    <div class="floating-input">
         <input type="text" class="form-control" id="work_duration" name="work_duration" placeholder=" " required>
         <label for="work_duration">Duration<span class="required-asterisk"> *</span></label>
+    </div>
     </div>
 
     <div class="mb-3 floating-input">
@@ -663,11 +1128,8 @@
         <label for="experience_years">Years of Relevant Experience<span class="required-asterisk"> *</span></label>
     </div>
 
-    <div class="mb-4 floating-input">
-        <input list="skillsList" class="form-control" id="key_skills"
-               name="key_skills" placeholder=" " required>
-        <label for="key_skills">Key Skill & Expertise<span class="required-asterisk"> *</span></label>
-
+    <div>
+        <input type="hidden" id="key_skills" name="key_skills" value="{{ old('key_skills') }}">
         <datalist id="skillsList">
             <option value="Team Leadership">
             <option value="Project Management">
@@ -677,6 +1139,24 @@
             <option value="Data Analysis">
             <option value="Customer Service">
         </datalist>
+
+        <div id="skillsFieldList" class="skills-field-list">
+            <div class="skill-entry">
+                <div class="floating-input">
+                    <input list="skillsList" class="form-control skill-input" id="key_skill_0" placeholder=" " required>
+                    <label for="key_skill_0">Key Skill & Expertise<span class="required-asterisk"> *</span></label>
+                </div>
+                <button type="button" class="remove-skill-btn d-none" aria-label="Remove skill">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+
+        <button type="button" id="addSkillFieldBtn" class="btn add-skill-btn mt-3 w-100">
+            <i class="bi bi-plus-circle me-1"></i>
+            Add More Skill
+        </button>
+    </div>
     </div>
 
     <div class="d-flex justify-content-between mt-auto step-actions">
@@ -715,18 +1195,6 @@
         </label>
     </div>
 
-    <!-- Personal Data Sheet -->
-    <div class="mb-4">
-        <label class="form-label fw-semibold">Personal Data Sheet <span class="required-asterisk"> *</span></label>
-        <label class="upload-area">
-            <i class="bi bi-file-earmark-arrow-up upload-icon"></i>
-            <div class="upload-main-text">Click to upload your Personal Data Sheet</div>
-            <div class="upload-sub-text">PDF, DOC, DOCX (up to 5MB)</div>
-            <input type="file" id="personal_data_sheet" name="documents[2][file]" accept=".pdf,.doc,.docx" required>
-            <input type="hidden" name="documents[2][type]" value="Personal Data Sheet">
-        </label>
-    </div>
-
     <!-- Transcript Of Records -->
     <div class="mb-4">
         <label class="form-label fw-semibold">Transcript Of Records <span class="required-asterisk"> *</span></label>
@@ -745,8 +1213,8 @@
         <label class="upload-area">
             <i class="bi bi-file-earmark-arrow-up upload-icon"></i>
             <div class="upload-main-text">Click to upload your Diploma, Master's, Doctorate </div>
-            <div class="upload-sub-text">PDF, DOC, DOCX (up to 5MB)</div>
-            <input type="file" id="diploma" name="documents[4][file]" accept=".pdf,.doc,.docx">
+            <div class="upload-sub-text">PDF, DOC, DOCX (up to 5MB each)</div>
+            <input type="file" id="diploma" name="documents[4][file][]" accept=".pdf,.doc,.docx" multiple>
             <input type="hidden" name="documents[4][type]" value="Diploma">
         </label>
     </div>
@@ -757,8 +1225,8 @@
         <label  class="upload-area">
             <i class="bi bi-file-earmark-arrow-up upload-icon"></i>
             <div class="upload-main-text">Click to upload your PRC License/Board Rating</div>
-            <div class="upload-sub-text">PDF, DOC, DOCX (up to 5MB)</div>
-            <input type="file" id="board_rating" name="documents[5][file]" accept=".pdf,.doc,.docx">
+            <div class="upload-sub-text">PDF, DOC, DOCX (up to 5MB each)</div>
+            <input type="file" id="board_rating" name="documents[5][file][]" accept=".pdf,.doc,.docx" multiple>
             <input type="hidden" name="documents[5][type]" value="PRC License/Board Rating">
         </label>
     </div>
@@ -769,8 +1237,8 @@
         <label  class="upload-area">
             <i class="bi bi-file-earmark-arrow-up upload-icon"></i>
             <div class="upload-main-text">Click to upload your Certificate Of Eligibility / Certificate of Passing</div>
-            <div class="upload-sub-text">PDF, DOC, DOCX (up to 5MB)</div>
-            <input type="file" id="certification_eligibility" name="documents[6][file]" accept=".pdf,.doc,.docx">
+            <div class="upload-sub-text">PDF, DOC, DOCX (up to 5MB each)</div>
+            <input type="file" id="certification_eligibility" name="documents[6][file][]" accept=".pdf,.doc,.docx" multiple>
             <input type="hidden" name="documents[6][type]" value="Certificate Of Eligibility / Certificate of Passing">
         </label>
     </div>
@@ -781,8 +1249,8 @@
         <label class="upload-area">
             <i class="bi bi-file-earmark-arrow-up upload-icon"></i>
             <div class="upload-main-text">Click to upload your documents</div>
-            <div class="upload-sub-text">PDF, DOC, DOCX (up to 5MB)</div>
-            <input type="file" id="certifications" name="documents[7][file]" accept=".pdf,.doc,.docx" required>
+            <div class="upload-sub-text">PDF, DOC, DOCX (up to 5MB each)</div>
+            <input type="file" id="certifications" name="documents[7][file][]" accept=".pdf,.doc,.docx" multiple required>
             <input type="hidden" name="documents[7][type]" value="Certifications & Supporting Document">
         </label>
     </div>
@@ -793,8 +1261,8 @@
         <label class="upload-area">
             <i class="bi bi-file-earmark-arrow-up upload-icon"></i>
             <div class="upload-main-text">Click to upload your documents</div>
-            <div class="upload-sub-text">PDF, DOC, DOCX (up to 5MB)</div>
-            <input type="file" id="membership_affiliation" name="documents[8][file]" accept=".pdf,.doc,.docx">
+            <div class="upload-sub-text">PDF, DOC, DOCX (up to 5MB each)</div>
+            <input type="file" id="membership_affiliation" name="documents[8][file][]" accept=".pdf,.doc,.docx" multiple>
             <input type="hidden" name="documents[8][type]" value="Membership/Affiliation">
         </label>
     </div>
@@ -833,8 +1301,18 @@
             </p>
 
             <p class="text-uppercase fw-semibold">
-                Last Name:
+                Middle Name:
+                <span id="review-middle-name" class="d-block text-uppercase text-secondary fw-semibold"></span>
+            </p>
+
+            <p class="text-uppercase fw-semibold">
+                Surname:
                 <span id="review-last-name" class="d-block text-uppercase text-secondary fw-semibold"></span>
+            </p>
+
+            <p class="text-uppercase fw-semibold">
+                Name Extension:
+                <span id="review-name-extension" class="d-block text-uppercase text-secondary fw-semibold"></span>
             </p>
 
             <p class="text-uppercase fw-semibold">
@@ -848,6 +1326,21 @@
             </p>
 
             <p class="text-uppercase fw-semibold">
+                Sex:
+                <span id="review-sex" class="d-block text-uppercase text-secondary fw-semibold"></span>
+            </p>
+
+            <p class="text-uppercase fw-semibold">
+                Civil Status:
+                <span id="review-civil-status" class="d-block text-uppercase text-secondary fw-semibold"></span>
+            </p>
+
+            <p class="text-uppercase fw-semibold">
+                Date of Birth:
+                <span id="review-date-of-birth" class="d-block text-uppercase text-secondary fw-semibold"></span>
+            </p>
+
+            <p class="text-uppercase fw-semibold">
                 Address:
                 <span id="review-address" class="d-block text-uppercase text-secondary fw-semibold"></span>
             </p>
@@ -857,6 +1350,11 @@
         <!-- Education & Experience Summary -->
         <div class="mb-4 p-3 border rounded shadow-sm bg-light">
             <h5 class="text-uppercase text-success">Education & Experience</h5>
+
+            <p class="text-uppercase fw-semibold">
+                Basic Education:
+                <span id="review-basic-education" class="d-block text-uppercase text-secondary fw-semibold"></span>
+            </p>
 
             <p class="text-uppercase fw-semibold">
                 Bachelor Degree(s):
@@ -920,11 +1418,6 @@
             </p>
 
             <p class="text-uppercase fw-semibold">
-                Personal Data Sheet:
-                <span id="personal" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
-
-            <p class="text-uppercase fw-semibold">
                 Transcript Of Records:
                 <span id="tor" class="d-block text-uppercase text-secondary fw-semibold"></span>
             </p>
@@ -953,6 +1446,7 @@
                 Membership / Affiliation:
                 <span id="membership" class="d-block text-uppercase text-secondary fw-semibold"></span>
             </p>
+
         </div>
 
 
@@ -993,6 +1487,93 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const fileInputs = document.querySelectorAll('#documentsForm input[type="file"]');
+    const applicationForm = document.getElementById('formPersonal');
+    const documentDraftUploadUrl = @json(route('applicant.document.draft'));
+    const documentDraftPosition = applicationForm?.querySelector('input[name="position"]')?.value ?? 'unknown';
+    const documentDraftStorageKey = `non_teaching_document_drafts:${window.location.pathname}:${documentDraftPosition}`;
+    const documentDraftKeyStorageKey = `${documentDraftStorageKey}:key`;
+    let documentDraftKey = localStorage.getItem(documentDraftKeyStorageKey);
+    if (!documentDraftKey) {
+        documentDraftKey = (window.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`).replace(/[^A-Za-z0-9_-]/g, '');
+        localStorage.setItem(documentDraftKeyStorageKey, documentDraftKey);
+    }
+    let documentDrafts = {};
+
+    try {
+        documentDrafts = JSON.parse(localStorage.getItem(documentDraftStorageKey) || '{}') || {};
+    } catch (_) {
+        documentDrafts = {};
+    }
+
+    let draftHiddenContainer = document.getElementById('documentDraftHiddenInputs');
+    if (!draftHiddenContainer && applicationForm) {
+        draftHiddenContainer = document.createElement('div');
+        draftHiddenContainer.id = 'documentDraftHiddenInputs';
+        draftHiddenContainer.className = 'd-none';
+        applicationForm.appendChild(draftHiddenContainer);
+    }
+
+    const getCsrfToken = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+        || document.querySelector('input[name="_token"]')?.value
+        || '';
+
+    const documentIndexFromInput = (input) => {
+        const match = String(input.name || '').match(/documents\[(\d+)]/);
+        return match ? match[1] : null;
+    };
+
+    const documentTypeFromInput = (input) => {
+        const wrapper = input.closest('.upload-area');
+        return wrapper?.querySelector('input[type="hidden"][name$="[type]"]')?.value || '';
+    };
+
+    function saveDocumentDrafts() {
+        try {
+            localStorage.setItem(documentDraftStorageKey, JSON.stringify(documentDrafts));
+        } catch (_) {
+            // Ignore storage errors.
+        }
+    }
+
+    function clearDocumentDraftStorageForNextApplication() {
+        try {
+            localStorage.removeItem(documentDraftStorageKey);
+            localStorage.removeItem(documentDraftKeyStorageKey);
+        } catch (_) {
+            // Ignore storage errors.
+        }
+    }
+
+    window.clearDocumentDraftStorageForNextApplication = clearDocumentDraftStorageForNextApplication;
+
+    function syncDocumentDraftInputs() {
+        if (!draftHiddenContainer) return;
+
+        draftHiddenContainer.textContent = '';
+        Object.entries(documentDrafts).forEach(([index, files]) => {
+            (files || []).forEach((file) => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = `draft_documents[${index}][]`;
+                input.value = JSON.stringify(file);
+                draftHiddenContainer.appendChild(input);
+            });
+        });
+    }
+
+    function draftFilesLabel(files) {
+        const names = (files || []).map((file) => file.filename).filter(Boolean);
+        if (names.length > 1) return `${names.length} files uploaded`;
+        if (!names.length) return '';
+
+        let fileName = names[0];
+        if (fileName.length > 30) {
+            const ext = fileName.split('.').pop();
+            fileName = fileName.substring(0, 25) + '...' + '.' + ext;
+        }
+
+        return fileName;
+    }
 
     fileInputs.forEach(input => {
         const uploadArea = input.closest('.upload-area');
@@ -1000,6 +1581,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const uploadSubText = uploadArea.querySelector('.upload-sub-text');
         const defaultMainText = uploadText.textContent;
         const defaultSubText = uploadSubText.textContent;
+        const defaultRequired = input.required;
+        const documentIndex = documentIndexFromInput(input);
         const clearButton = document.createElement('button');
 
         clearButton.type = 'button';
@@ -1010,27 +1593,87 @@ document.addEventListener('DOMContentLoaded', function () {
 
         function resetUploadState() {
             input.value = '';
+            if (documentIndex !== null) {
+                delete documentDrafts[documentIndex];
+                saveDocumentDrafts();
+                syncDocumentDraftInputs();
+            }
+            input.required = defaultRequired;
             uploadText.textContent = defaultMainText;
             uploadSubText.textContent = defaultSubText;
             uploadArea.classList.remove('is-selected');
         }
 
-        function setSelectedState(file) {
-            let fileName = file.name;
+        function selectedFileSummary(files) {
+            const selectedFiles = Array.from(files || []);
+            if (selectedFiles.length > 1) {
+                return `${selectedFiles.length} files selected`;
+            }
 
+            let fileName = selectedFiles[0]?.name || '';
             if (fileName.length > 30) {
                 const ext = fileName.split('.').pop();
                 fileName = fileName.substring(0, 25) + '...' + '.' + ext;
             }
 
-            uploadText.textContent = fileName;
-            uploadSubText.textContent = 'File selected successfully';
+            return fileName;
+        }
+
+        function setSelectedState(files) {
+            uploadText.textContent = selectedFileSummary(files);
+            uploadSubText.textContent = files.length > 1 ? 'Files selected successfully' : 'File selected successfully';
             uploadArea.classList.add('is-selected');
+        }
+
+        function restoreDraftState() {
+            const draftFiles = documentIndex !== null ? (documentDrafts[documentIndex] || []) : [];
+            if (!draftFiles.length) return;
+
+            input.required = false;
+            uploadText.textContent = draftFilesLabel(draftFiles);
+            uploadSubText.textContent = draftFiles.length > 1 ? 'Files saved from draft' : 'File saved from draft';
+            uploadArea.classList.add('is-selected');
+        }
+
+        async function uploadDocumentDraft(files) {
+            if (documentIndex === null || !files.length) return;
+
+            const formData = new FormData();
+            formData.append('draft_key', documentDraftKey);
+            formData.append('document_index', documentIndex);
+            formData.append('document_type', documentTypeFromInput(input));
+            Array.from(files).forEach((file) => formData.append('draft_files[]', file));
+
+            uploadSubText.textContent = 'Saving file draft...';
+            const response = await fetch(documentDraftUploadUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': getCsrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: formData,
+            });
+
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(payload?.message || 'Unable to save file draft.');
+            }
+
+            documentDrafts[documentIndex] = payload.files || [];
+            saveDocumentDrafts();
+            syncDocumentDraftInputs();
+            input.required = false;
+            uploadSubText.textContent = (payload.files || []).length > 1 ? 'Files saved from draft' : 'File saved from draft';
         }
 
         input.addEventListener('change', function () {
             if (this.files && this.files.length > 0) {
-                setSelectedState(this.files[0]);
+                setSelectedState(this.files);
+                uploadDocumentDraft(this.files).catch(() => {
+                    uploadSubText.textContent = 'Selected, but draft was not saved';
+                });
                 return;
             }
 
@@ -1042,7 +1685,217 @@ document.addEventListener('DOMContentLoaded', function () {
             event.stopPropagation();
             resetUploadState();
         });
+
+        restoreDraftState();
     });
+
+    syncDocumentDraftInputs();
+
+    const intakeUploadZone = document.getElementById('intakeUploadZone');
+    const intakeUploadInput = document.getElementById('intakeUploadInput');
+    const intakeUploadTitle = document.getElementById('intakeUploadTitle');
+    const intakeUploadSubtitle = document.getElementById('intakeUploadSubtitle');
+    const scanUploadedFileButton = document.getElementById('scanUploadedFileButton');
+    const clearIntakeUploadButton = document.getElementById('clearIntakeUploadButton');
+    const scanProgressBar = document.getElementById('scanProgressBar');
+    const scanStateLabel = document.getElementById('scanStateLabel');
+    const autoSaveLabel = document.getElementById('autoSaveLabel');
+    const scanCheckFile = document.getElementById('scanCheckFile');
+    const scanCheckScan = document.getElementById('scanCheckScan');
+    const pdsRecordInput = document.getElementById('pds_record_id');
+    const pdsScanUrl = @json(route('applicant.pds.scan'));
+    let isScanningPds = false;
+
+    function setScanItemComplete(item) {
+        item?.classList.add('is-complete');
+        const icon = item?.querySelector('i');
+        if (icon) icon.className = 'bi bi-check-circle-fill';
+    }
+
+    function setScanItemPending(item) {
+        item?.classList.remove('is-complete');
+        const icon = item?.querySelector('i');
+        if (icon) icon.className = 'bi bi-circle';
+    }
+
+    function resetIntakeScanDesign() {
+        if (intakeUploadInput) intakeUploadInput.value = '';
+        if (pdsRecordInput) pdsRecordInput.value = '';
+        intakeUploadZone?.classList.remove('is-ready');
+        if (intakeUploadTitle) intakeUploadTitle.textContent = 'Upload Personal Data Sheet';
+        if (intakeUploadSubtitle) intakeUploadSubtitle.textContent = 'Excel files only: XLS, XLSX, CSV';
+        if (scanStateLabel) scanStateLabel.textContent = 'Waiting for upload';
+        if (autoSaveLabel) {
+            autoSaveLabel.textContent = 'Not saved';
+            autoSaveLabel.className = 'badge rounded-pill bg-light text-secondary';
+        }
+        if (scanProgressBar) scanProgressBar.style.width = '0%';
+        [scanCheckFile, scanCheckScan].forEach(setScanItemPending);
+    }
+
+    intakeUploadInput?.addEventListener('change', function () {
+        const file = this.files?.[0];
+        if (!file) {
+            resetIntakeScanDesign();
+            return;
+        }
+
+        intakeUploadZone?.classList.add('is-ready');
+        intakeUploadTitle.textContent = file.name;
+        intakeUploadSubtitle.textContent = 'Personal Data Sheet ready to scan';
+        scanStateLabel.textContent = 'Personal Data Sheet uploaded';
+        autoSaveLabel.textContent = 'Pending scan';
+        autoSaveLabel.className = 'badge rounded-pill bg-warning-subtle text-warning';
+        scanProgressBar.style.width = '25%';
+        if (pdsRecordInput) pdsRecordInput.value = '';
+        setScanItemComplete(scanCheckFile);
+        setScanItemPending(scanCheckScan);
+    });
+
+    function fillFieldFromPds(fieldId, value) {
+        const field = document.getElementById(fieldId);
+        if (!field || !value) return;
+
+        field.value = value;
+        field.dispatchEvent(new Event('input', { bubbles: true }));
+        field.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    function fillSelectFromPds(fieldId, value) {
+        const field = document.getElementById(fieldId);
+        if (!field || !value) return;
+
+        const normalizedValue = String(value).trim().toLowerCase();
+        const option = Array.from(field.options).find((item) =>
+            item.value.toLowerCase() === normalizedValue || item.textContent.trim().toLowerCase() === normalizedValue
+        );
+        if (!option) return;
+
+        field.value = option.value;
+        field.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    function fillEducationFromPds(fields = {}) {
+        [
+            ['elementary', 'elementary'],
+            ['secondary', 'secondary'],
+            ['vocational_trade', 'vocational_trade'],
+        ].forEach(([fieldPrefix, inputPrefix]) => {
+            fillFieldFromPds(`${inputPrefix}_school_name`, fields[`${fieldPrefix}_school_name`]);
+            fillSelectFromPds(`${inputPrefix}_year_graduated`, fields[`${fieldPrefix}_year_graduated`]);
+        });
+
+        fillFieldFromPds('bachelor_degree_0', fields.college_degree);
+        fillFieldFromPds('bachelor_school_name_0', fields.college_school_name);
+        fillSelectFromPds('bachelor_year_finished_0', fields.college_year_graduated);
+
+        fillFieldFromPds('master_degree_0', fields.graduate_studies_degree);
+        fillFieldFromPds('master_school_name_0', fields.graduate_studies_school_name);
+        fillSelectFromPds('master_year_finished_0', fields.graduate_studies_year_graduated);
+    }
+
+    function fillVisibleFormFromPds(fields = {}) {
+        fillFieldFromPds('first_name', fields.first_name);
+        fillFieldFromPds('middle_name', fields.middle_name);
+        fillFieldFromPds('last_name', fields.surname);
+        fillFieldFromPds('name_extension', fields.name_extension);
+        fillFieldFromPds('email', fields.email_address);
+        fillFieldFromPds('phone', fields.mobile_no || fields.telephone_no);
+        fillFieldFromPds('date_of_birth', fields.date_of_birth);
+        fillFieldFromPds('address', fields.permanent_address || fields.permanent_address_zip_code);
+
+        const sexField = document.getElementById('sex');
+        if (sexField && fields.sex) {
+            const normalizedSex = String(fields.sex).toLowerCase();
+            const sexOption = Array.from(sexField.options).find((option) =>
+                option.value.toLowerCase() === normalizedSex || option.textContent.toLowerCase().includes(normalizedSex)
+            );
+            if (sexOption) {
+                sexField.value = sexOption.value;
+                sexField.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
+
+        const civilStatusField = document.getElementById('civil_status');
+        if (civilStatusField) {
+            civilStatusField.value = '';
+            civilStatusField.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        if (civilStatusField && fields.civil_status) {
+            const normalizedStatus = String(fields.civil_status).toLowerCase();
+            const statusOption = Array.from(civilStatusField.options).find((option) =>
+                option.value.toLowerCase() === normalizedStatus || option.textContent.toLowerCase().includes(normalizedStatus)
+            );
+            if (statusOption) {
+                civilStatusField.value = statusOption.value;
+                civilStatusField.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
+
+        fillEducationFromPds(fields);
+    }
+
+    scanUploadedFileButton?.addEventListener('click', async function () {
+        if (!intakeUploadInput?.files?.length) {
+            scanStateLabel.textContent = 'Upload your Personal Data Sheet before scanning';
+            return;
+        }
+
+        if (isScanningPds) return;
+
+        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+            || document.querySelector('input[name="_token"]')?.value
+            || '';
+        const formData = new FormData();
+        formData.append('pds_file', intakeUploadInput.files[0]);
+
+        isScanningPds = true;
+        scanUploadedFileButton.disabled = true;
+        scanStateLabel.textContent = 'Scanning Personal Data Sheet...';
+        autoSaveLabel.textContent = 'Scanning';
+        autoSaveLabel.className = 'badge rounded-pill bg-info-subtle text-info';
+        scanProgressBar.style.width = '65%';
+
+        try {
+            const response = await fetch(pdsScanUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': token,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: formData,
+            });
+
+            const payload = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(payload?.message || 'Unable to scan the Personal Data Sheet.');
+            }
+
+            if (pdsRecordInput) pdsRecordInput.value = payload.id || '';
+            fillVisibleFormFromPds(payload.fields || {});
+            scanStateLabel.textContent = payload.message || 'Personal Data Sheet scan complete';
+            scanProgressBar.style.width = '100%';
+            autoSaveLabel.textContent = 'Saved to PDS table';
+            autoSaveLabel.className = 'badge rounded-pill bg-success-subtle text-success';
+            setScanItemComplete(scanCheckScan);
+        } catch (error) {
+            if (pdsRecordInput) pdsRecordInput.value = '';
+            scanStateLabel.textContent = error.message || 'Unable to scan the Personal Data Sheet.';
+            scanProgressBar.style.width = '25%';
+            autoSaveLabel.textContent = 'Scan failed';
+            autoSaveLabel.className = 'badge rounded-pill bg-danger-subtle text-danger';
+            setScanItemPending(scanCheckScan);
+        } finally {
+            isScanningPds = false;
+            scanUploadedFileButton.disabled = false;
+        }
+    });
+
+    clearIntakeUploadButton?.addEventListener('click', resetIntakeScanDesign);
+
 });
 </script>
 
@@ -1054,6 +1907,7 @@ document.addEventListener('DOMContentLoaded', () => {
     /* =======================
        FORM SECTIONS
     ======================= */
+    const applicationFormStep = document.getElementById('applicationFormStep');
     const personalForm   = document.getElementById('personalForm');
     const experienceForm = document.getElementById('experienceForm');
     const documentsForm  = document.getElementById('documentsForm');
@@ -1062,12 +1916,19 @@ document.addEventListener('DOMContentLoaded', () => {
     /* =======================
        BUTTONS
     ======================= */
+    const btnToPersonal                = document.getElementById('btnToPersonal');
+    const btnBackToApplication         = document.getElementById('btnBackToApplication');
     const btnToExperience              = document.getElementById('btnToExperience');
     const btnBackToPersonal            = document.getElementById('btnBackToPersonal');
     const btnToDocuments               = document.getElementById('btnToDocuments');
     const btnBackToExperience          = document.getElementById('btnBackToExperience');
     const btnToReview                  = document.getElementById('btnToReview');
     const btnBackToDocumentsFromReview = document.getElementById('btnBackToDocumentsFromReview');
+    const intakeUploadZoneForNav       = document.getElementById('intakeUploadZone');
+    const intakeUploadInputForNav      = document.getElementById('intakeUploadInput');
+    const scanStateLabelForNav         = document.getElementById('scanStateLabel');
+    const autoSaveLabelForNav          = document.getElementById('autoSaveLabel');
+    const pdsRecordInputForNav         = document.getElementById('pds_record_id');
 
     /* =======================
        STEPPER ELEMENTS
@@ -1078,11 +1939,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentStepText = document.getElementById('currentStepText');
 
     const stepMeta = {
-        1: 'Step 1 of 5: Personal Info',
-        2: 'Step 2 of 5: Experience',
-        3: 'Step 3 of 5: Documents',
-        4: 'Step 4 of 5: Review',
-        5: 'Step 5 of 5: Submit',
+        1: 'Step 1 of 6: Application',
+        2: 'Step 2 of 6: Personal Info',
+        3: 'Step 3 of 6: Experience',
+        4: 'Step 4 of 6: Documents',
+        5: 'Step 5 of 6: Review',
+        6: 'Step 6 of 6: Submit',
     };
 
     function setStep(stepNumber) {
@@ -1170,6 +2032,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function clearFormDraft() {
         try {
             localStorage.removeItem(formDraftStorageKey);
+            window.clearDocumentDraftStorageForNextApplication?.();
         } catch (_) {
             // Ignore storage errors.
         }
@@ -1235,6 +2098,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isInDocuments = !!field.closest('#documentsForm');
         const isInReview = !!field.closest('#reviewForm');
 
+        applicationFormStep.classList.add('d-none');
         personalForm.classList.add('d-none');
         experienceForm.classList.add('d-none');
         documentsForm.classList.add('d-none');
@@ -1242,27 +2106,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isInPersonal) {
             personalForm.classList.remove('d-none');
-            setStep(1);
+            setStep(2);
             return;
         }
         if (isInExperience) {
             experienceForm.classList.remove('d-none');
-            setStep(2);
+            setStep(3);
             return;
         }
         if (isInDocuments) {
             documentsForm.classList.remove('d-none');
-            setStep(3);
+            setStep(4);
             return;
         }
         if (isInReview) {
             reviewForm.classList.remove('d-none');
-            setStep(4);
+            setStep(5);
             return;
         }
 
         reviewForm.classList.remove('d-none');
-        setStep(4);
+        setStep(5);
     }
 
     if (applicationForm) {
@@ -1378,37 +2242,82 @@ document.addEventListener('DOMContentLoaded', () => {
     ======================= */
 
     // Step 1 → Step 2
+    btnToPersonal.addEventListener('click', () => {
+        if (!pdsRecordInputForNav?.value) {
+            scanStateLabelForNav.textContent = intakeUploadInputForNav?.files?.length
+                ? 'Please scan the uploaded Personal Data Sheet before continuing'
+                : 'Please upload and scan your Personal Data Sheet before continuing';
+            autoSaveLabelForNav.textContent = 'Scan required';
+            autoSaveLabelForNav.className = 'badge rounded-pill bg-danger-subtle text-danger';
+            intakeUploadZoneForNav?.classList.add('field-error-highlight');
+            setTimeout(() => intakeUploadZoneForNav?.classList.remove('field-error-highlight'), 1400);
+            return;
+        }
+
+        transitionForms(applicationFormStep, personalForm, 'forward');
+        setStep(2);
+    });
+
+    btnBackToApplication.addEventListener('click', () => {
+        transitionForms(personalForm, applicationFormStep, 'back');
+        setStep(1);
+    });
+
     btnToExperience.addEventListener('click', () => {
         transitionForms(personalForm, experienceForm, 'forward');
-        setStep(2);
+        setStep(3);
     });
 
     // Step 2 → Step 1
     btnBackToPersonal.addEventListener('click', () => {
         transitionForms(experienceForm, personalForm, 'back');
-        setStep(1);
+        setStep(2);
     });
 
     // Step 2 → Step 3
     btnToDocuments.addEventListener('click', () => {
         transitionForms(experienceForm, documentsForm, 'forward');
-        setStep(3);
+        setStep(4);
     });
 
     // Step 3 → Step 2
     btnBackToExperience.addEventListener('click', () => {
         transitionForms(documentsForm, experienceForm, 'back');
-        setStep(2);
+        setStep(3);
     });
 
     // Step 3 → Step 4 (Review)
     btnToReview.addEventListener('click', () => {
         // Populate review fields
         document.getElementById('review-first-name').textContent = document.getElementById('first_name').value;
+        document.getElementById('review-middle-name').textContent = document.getElementById('middle_name').value || 'N/A';
         document.getElementById('review-last-name').textContent = document.getElementById('last_name').value;
+        document.getElementById('review-name-extension').textContent = document.getElementById('name_extension').value || 'N/A';
         document.getElementById('review-email').textContent = document.getElementById('email').value;
         document.getElementById('review-phone').textContent = document.getElementById('phone').value;
+        document.getElementById('review-sex').textContent = document.getElementById('sex').value;
+        document.getElementById('review-civil-status').textContent = document.getElementById('civil_status').value;
+        document.getElementById('review-date-of-birth').textContent = document.getElementById('date_of_birth').value;
         document.getElementById('review-address').textContent = document.getElementById('address').value;
+
+        const basicEducationLabels = {
+            elementary: 'Elementary',
+            secondary: 'Secondary',
+            vocational_trade: 'Vocational / Trade Course',
+        };
+        const basicEducationLines = Object.entries(basicEducationLabels).map(([key, label]) => {
+            const school = document.getElementById(`${key}_school_name`)?.value || 'N/A';
+            const year = document.getElementById(`${key}_year_graduated`)?.value || 'N/A';
+            return `${label}: ${school} (${year})`;
+        });
+        const basicEducationReview = document.getElementById('review-basic-education');
+        basicEducationReview.textContent = '';
+        basicEducationLines.forEach((line) => {
+            const lineItem = document.createElement('span');
+            lineItem.className = 'd-block';
+            lineItem.textContent = line;
+            basicEducationReview.appendChild(lineItem);
+        });
 
         const bachelorEntries = Array.from(document.querySelectorAll('.bachelor-degree-entry'));
         const masterEntries = Array.from(document.querySelectorAll('.master-degree-entry'));
@@ -1454,8 +2363,10 @@ document.addEventListener('DOMContentLoaded', () => {
             masterReviewLines.length ? masterReviewLines.join(' | ') : 'N/A';
         document.getElementById('review-doctoral-degree').textContent =
             doctoralReviewLines.length ? doctoralReviewLines.join(' | ') : 'N/A';
+
+        syncKeySkillsValue();
         document.getElementById('review-experience-years').textContent = document.getElementById('experience_years').value;
-        document.getElementById('review-key-skills').textContent = document.getElementById('key_skills').value;
+        document.getElementById('review-key-skills').textContent = document.getElementById('key_skills').value || 'N/A';
 
         document.getElementById('work_po').textContent = document.getElementById('work_position').value;
         document.getElementById('work_em').textContent = document.getElementById('work_employer').value;
@@ -1465,43 +2376,72 @@ document.addEventListener('DOMContentLoaded', () => {
         const resumeInput = document.getElementById('resume');
         const coverInput  = document.getElementById('cover_letter');
         const certsInput  = document.getElementById('certifications');
-        const personnalInput = document.getElementById('personal_data_sheet');
         const torInput  = document.getElementById('TOR');
         const diplomaInput  = document.getElementById('diploma');
         const boardRatingInput = document.getElementById('board_rating');
         const certificateEligibilityInput  = document.getElementById('certification_eligibility');
         const membershipInput  = document.getElementById('membership_affiliation');
 
-        document.getElementById('review-resume-file').textContent =
-            resumeInput.files.length ? resumeInput.files[0].name : 'None';
-        document.getElementById('review-cover-file').textContent =
-            coverInput.files.length ? coverInput.files[0].name : 'None';
-        document.getElementById('review-certs-file').textContent =
-            certsInput.files.length ? certsInput.files[0].name : 'None';
-        document.getElementById('personal').textContent =
-            personnalInput.files.length ? personnalInput.files[0].name : 'None';
-        document.getElementById('tor').textContent =
-            torInput.files.length ? torInput.files[0].name : 'None';
-        document.getElementById('dip').textContent =
-            diplomaInput.files.length ? diplomaInput.files[0].name : 'None';
-        document.getElementById('prc').textContent =
-            boardRatingInput.files.length ? boardRatingInput.files[0].name : 'None';
-        document.getElementById('passing').textContent =
-            certificateEligibilityInput.files.length ? certificateEligibilityInput.files[0].name : 'None';
-        document.getElementById('membership').textContent =
-            membershipInput.files.length ? membershipInput.files[0].name : 'None';
+        const documentIndexFromReviewInput = (input) => {
+            const match = String(input?.name || '').match(/documents\[(\d+)]/);
+            return match ? match[1] : null;
+        };
+        const draftFileNamesForInput = (input) => {
+            const index = documentIndexFromReviewInput(input);
+            if (index === null) return [];
+
+            try {
+                const storageKey = `non_teaching_document_drafts:${window.location.pathname}:${positionInput?.value ?? 'unknown'}`;
+                const drafts = JSON.parse(localStorage.getItem(storageKey) || '{}') || {};
+                return (drafts[index] || []).map((file) => file.filename).filter(Boolean);
+            } catch (_) {
+                return [];
+            }
+        };
+        const selectedFileNames = (input) => {
+            const files = Array.from(input?.files || []);
+            if (files.length) return files.map((file) => file.name);
+
+            return draftFileNamesForInput(input);
+        };
+        const renderFileNames = (targetId, input) => {
+            const target = document.getElementById(targetId);
+            const names = selectedFileNames(input);
+            target.textContent = '';
+
+            if (!names.length) {
+                target.textContent = 'None';
+                return;
+            }
+
+            names.forEach((name) => {
+                const line = document.createElement('span');
+                line.className = 'd-block';
+                line.textContent = name;
+                target.appendChild(line);
+            });
+        };
+
+        renderFileNames('review-resume-file', resumeInput);
+        renderFileNames('review-cover-file', coverInput);
+        renderFileNames('review-certs-file', certsInput);
+        renderFileNames('tor', torInput);
+        renderFileNames('dip', diplomaInput);
+        renderFileNames('prc', boardRatingInput);
+        renderFileNames('passing', certificateEligibilityInput);
+        renderFileNames('membership', membershipInput);
 
 
         transitionForms(documentsForm, reviewForm, 'forward');
         certifyCheckbox.checked = false;
         submitButton.disabled = true;
-        setStep(4);
+        setStep(5);
     });
 
     // Step 4 → Step 3
     btnBackToDocumentsFromReview.addEventListener('click', () => {
         transitionForms(reviewForm, documentsForm, 'back');
-        setStep(3);
+        setStep(4);
     });
 
     const bachelorDegreesContainer = document.getElementById('bachelor-degrees-container');
@@ -1517,6 +2457,115 @@ document.addEventListener('DOMContentLoaded', () => {
     const workLocationInput = document.getElementById('work_location');
     const workDurationInput = document.getElementById('work_duration');
     const experienceYearsInput = document.getElementById('experience_years');
+    const skillsFieldList = document.getElementById('skillsFieldList');
+    const addSkillFieldBtn = document.getElementById('addSkillFieldBtn');
+    const keySkillsValue = document.getElementById('key_skills');
+
+    function syncKeySkillsValue() {
+        if (!skillsFieldList || !keySkillsValue) return;
+
+        const skills = Array.from(skillsFieldList.querySelectorAll('.skill-input'))
+            .map((field) => field.value.trim())
+            .filter(Boolean);
+
+        keySkillsValue.value = skills.join(', ');
+        keySkillsValue.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    function updateSkillRemoveButtons() {
+        if (!skillsFieldList) return;
+
+        const entries = Array.from(skillsFieldList.querySelectorAll('.skill-entry'));
+        entries.forEach((entry, index) => {
+            const removeBtn = entry.querySelector('.remove-skill-btn');
+            if (removeBtn) {
+                removeBtn.classList.toggle('d-none', index === 0 && entries.length === 1);
+            }
+        });
+    }
+
+    function bindSkillEntry(entry) {
+        const input = entry.querySelector('.skill-input');
+        const removeBtn = entry.querySelector('.remove-skill-btn');
+
+        input?.addEventListener('input', () => {
+            clearErrorHighlight(input);
+            syncKeySkillsValue();
+        });
+
+        input?.addEventListener('change', syncKeySkillsValue);
+
+        removeBtn?.addEventListener('click', () => {
+            const entries = skillsFieldList?.querySelectorAll('.skill-entry') || [];
+            if (entries.length <= 1) {
+                if (input) input.value = '';
+                syncKeySkillsValue();
+                input?.focus();
+                return;
+            }
+
+            entry.remove();
+            updateSkillRemoveButtons();
+            syncKeySkillsValue();
+            skillsFieldList?.querySelector('.skill-input')?.focus();
+        });
+    }
+
+    function addSkillField(value = '') {
+        if (!skillsFieldList) return null;
+
+        const firstEntry = skillsFieldList.querySelector('.skill-entry');
+        if (!firstEntry) return null;
+
+        const index = skillsFieldList.querySelectorAll('.skill-entry').length;
+        const clone = firstEntry.cloneNode(true);
+        const input = clone.querySelector('.skill-input');
+        const label = clone.querySelector('label');
+
+        if (input) {
+            input.id = `key_skill_${index}`;
+            input.value = value;
+            input.required = false;
+            input.classList.remove('field-error-highlight');
+        }
+
+        if (label) {
+            label.setAttribute('for', `key_skill_${index}`);
+            label.innerHTML = 'Additional Skill';
+        }
+
+        clone.querySelector('.remove-skill-btn')?.classList.remove('d-none');
+        skillsFieldList.appendChild(clone);
+        bindSkillEntry(clone);
+        updateSkillRemoveButtons();
+        syncKeySkillsValue();
+
+        return input;
+    }
+
+    function hydrateSkillFieldsFromValue() {
+        if (!skillsFieldList || !keySkillsValue) return;
+
+        const existingSkills = keySkillsValue.value
+            .split(',')
+            .map((skill) => skill.trim())
+            .filter(Boolean);
+
+        const firstInput = skillsFieldList.querySelector('.skill-input');
+        if (firstInput) firstInput.value = existingSkills.shift() || '';
+
+        existingSkills.forEach((skill) => addSkillField(skill));
+        updateSkillRemoveButtons();
+        syncKeySkillsValue();
+    }
+
+    if (skillsFieldList && addSkillFieldBtn && keySkillsValue) {
+        skillsFieldList.querySelectorAll('.skill-entry').forEach(bindSkillEntry);
+        addSkillFieldBtn.addEventListener('click', () => {
+            const input = addSkillField();
+            input?.focus();
+        });
+    }
 
     const updateSingleSelectColor = (select) => {
         if (!select) return;
@@ -1867,6 +2916,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     freshGraduateCheckbox?.addEventListener('change', toggleFreshGraduateFields);
+    hydrateSkillFieldsFromValue();
     toggleFreshGraduateFields();
 
 });

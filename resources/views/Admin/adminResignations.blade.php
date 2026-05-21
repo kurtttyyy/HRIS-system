@@ -81,7 +81,7 @@
 
   <main class="flex-1 ml-16 transition-all duration-300">
     <div id="admin-resignation-page" class="space-y-6 p-4 pt-10 md:p-8">
-      <section class="resignation-reveal relative overflow-hidden rounded-[2rem] border border-emerald-950/70 bg-[linear-gradient(135deg,_#03131d_0%,_#052f2a_42%,_#116149_100%)] px-6 py-7 text-white shadow-[0_24px_60px_rgba(3,19,29,0.34)] md:px-8" style="--resignation-delay: 0ms;">
+      <section class="resignation-reveal relative overflow-hidden rounded-[2rem] border border-emerald-950/70 bg-[linear-gradient(135deg,_#020617_0%,_#020617_42%,_#111827_68%,_#064e3b_100%)] px-6 py-7 text-white shadow-[0_24px_60px_rgba(3,19,29,0.34)] md:px-8" style="--resignation-delay: 0ms;">
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.14),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(110,231,183,0.14),_transparent_32%)]"></div>
         <div class="absolute -right-12 -top-16 h-44 w-44 rounded-full bg-cyan-300/10 blur-2xl"></div>
         <div class="absolute bottom-0 right-24 h-28 w-28 rounded-full bg-emerald-300/20 blur-2xl"></div>

@@ -495,7 +495,9 @@
 {{-- Sidebar --}}
 <div id="jobSidebar">
     <div class="sidebar-header">
-        <span class="close-btn">&times;</span>
+        <button type="button" class="close-btn" aria-label="Close job details">
+            <i class="bi bi-x-lg"></i>
+        </button>
 
         <h3 id="sidebarTitle"></h3>
         <h6 class="text-secondary" id="sidebarCollege"></h6>

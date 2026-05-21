@@ -36,6 +36,8 @@ Route::controller(GuestPageController::class)->group(function () {
 
 Route::controller(ApplicantController::class)->group(function () {
     Route::post('applicant/store', 'applicant_stores')->name('applicant.store');
+    Route::post('applicant/pds/scan', 'scan_pds')->name('applicant.pds.scan');
+    Route::post('applicant/document-draft', 'upload_document_draft')->name('applicant.document.draft');
     Route::post('applicant/rating', 'store_rating')->name('applicant.rating.store');
     Route::post('/application', 'display_application')->name('guest.application.submit');
 });

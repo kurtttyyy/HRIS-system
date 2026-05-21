@@ -23,9 +23,14 @@ class Applicant extends Model
 
     protected $fillable = [
         'first_name',
+        'middle_name',
         'last_name',
+        'name_extension',
         'email',
         'phone',
+        'sex',
+        'civil_status',
+        'date_of_birth',
         'address',
         'bachelor_degree',
         'bachelor_school_name',
@@ -78,6 +83,7 @@ class Applicant extends Model
 
     protected $casts = [
         'date_hired' => 'date',
+        'date_of_birth' => 'date',
         'fresh_graduate' => 'boolean',
         'starRatings' => 'integer',
     ];

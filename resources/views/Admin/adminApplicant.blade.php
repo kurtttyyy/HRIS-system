@@ -43,6 +43,45 @@
       transform: translateX(4px);
       box-shadow: inset 3px 0 0 rgba(14, 165, 233, 0.55);
     }
+    .applicant-modal-shell {
+      max-height: min(88vh, 860px);
+    }
+    .applicant-modal-body {
+      max-height: calc(min(88vh, 860px) - 82px);
+    }
+    .applicant-doc-list {
+      max-height: 360px;
+      overflow-y: auto;
+      padding-right: 0.25rem;
+    }
+    .applicant-doc-list::-webkit-scrollbar {
+      width: 6px;
+    }
+    .applicant-doc-list::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 999px;
+    }
+    .applicant-doc-card {
+      transition: border-color 0.18s ease, background-color 0.18s ease, transform 0.18s ease;
+    }
+    .applicant-doc-card:hover {
+      transform: translateY(-1px);
+      border-color: #7dd3fc;
+      background: #f8fafc;
+    }
+    .applicant-doc-card.is-downloaded {
+      border-color: #86efac;
+      background: #f0fdf4;
+    }
+    .applicant-doc-check {
+      opacity: 0;
+      transform: scale(0.88);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    .applicant-doc-card.is-downloaded .applicant-doc-check {
+      opacity: 1;
+      transform: scale(1);
+    }
     @keyframes applicant-fade-up {
       to {
         opacity: 1;
@@ -103,7 +142,7 @@
 
     <div id="admin-applicant-page" class="p-4 md:p-8 space-y-6 pt-20">
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-        <div class="applicant-card-motion applicant-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--applicant-delay: 30ms;">
+        <div role="button" tabindex="0" data-applicant-dashboard-filter="all" class="applicant-stat-card applicant-card-motion applicant-reveal cursor-pointer rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-[0_24px_55px_rgba(15,23,42,0.1)] focus:outline-none focus:ring-2 focus:ring-sky-300" style="--applicant-delay: 30ms;">
           <div class="flex items-start justify-between gap-4">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Total Applicants</p>
@@ -119,12 +158,12 @@
           </div>
         </div>
 
-        <div class="applicant-card-motion applicant-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--applicant-delay: 60ms;">
+        <div role="button" tabindex="0" data-applicant-dashboard-filter="pending" class="applicant-stat-card applicant-card-motion applicant-reveal cursor-pointer rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-[0_24px_55px_rgba(15,23,42,0.1)] focus:outline-none focus:ring-2 focus:ring-sky-300" style="--applicant-delay: 60ms;">
           <div class="flex items-start justify-between gap-4">
             <div>
-              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Under Review</p>
-              <p class="mt-3 text-4xl font-black tracking-tight text-slate-900">{{ $count_under_review }}</p>
-              <p class="mt-1 text-sm text-slate-500">Applicants awaiting next step</p>
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Pending</p>
+              <p class="mt-3 text-4xl font-black tracking-tight text-slate-900">{{ $count_pending }}</p>
+              <p class="mt-1 text-sm text-slate-500">Applicants awaiting review</p>
             </div>
             <div class="text-right">
               <div class="applicant-icon-pop flex h-12 w-12 items-center justify-center rounded-2xl bg-yellow-100 text-yellow-600" style="--applicant-delay: 100ms;">
@@ -135,7 +174,7 @@
           </div>
         </div>
 
-        <div class="applicant-card-motion applicant-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--applicant-delay: 90ms;">
+        <div role="button" tabindex="0" data-applicant-dashboard-filter="interview" class="applicant-stat-card applicant-card-motion applicant-reveal cursor-pointer rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-[0_24px_55px_rgba(15,23,42,0.1)] focus:outline-none focus:ring-2 focus:ring-sky-300" style="--applicant-delay: 90ms;">
           <div class="flex items-start justify-between gap-4">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Interviews Scheduled</p>
@@ -151,7 +190,7 @@
           </div>
         </div>
 
-        <div class="applicant-card-motion applicant-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--applicant-delay: 120ms;">
+        <div role="button" tabindex="0" data-applicant-dashboard-filter="hired_month" class="applicant-stat-card applicant-card-motion applicant-reveal cursor-pointer rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-[0_24px_55px_rgba(15,23,42,0.1)] focus:outline-none focus:ring-2 focus:ring-sky-300" style="--applicant-delay: 120ms;">
           <div class="flex items-start justify-between gap-4">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Hired This Month</p>
@@ -231,12 +270,12 @@
 </div>
 
 <div id="applicantModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/45 px-4 py-6 backdrop-blur-sm">
-  <div class="relative w-full max-w-6xl overflow-hidden rounded-[2rem] border border-white/70 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.18)]">
-    <div class="border-b border-slate-200 bg-[linear-gradient(135deg,rgba(14,165,233,0.08),rgba(16,185,129,0.08))] px-6 py-5">
+  <div class="applicant-modal-shell relative w-full max-w-7xl overflow-hidden rounded-[1.5rem] border border-white/70 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.18)]">
+    <div class="border-b border-slate-200 bg-[linear-gradient(135deg,rgba(14,165,233,0.08),rgba(16,185,129,0.08))] px-6 py-4">
       <div class="flex items-center justify-between gap-4">
         <div>
           <p class="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Applicant Profile</p>
-          <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Candidate Review Desk</h2>
+          <h2 class="mt-1 text-2xl font-black tracking-tight text-slate-900">Candidate Review Desk</h2>
         </div>
         <button type="button" onclick="closeApplicantModal()" class="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:text-slate-900">
           <i class="fa-solid fa-xmark"></i>
@@ -244,11 +283,11 @@
       </div>
     </div>
 
-    <div class="max-h-[82vh] overflow-y-auto p-6">
-      <div class="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
+    <div class="applicant-modal-body overflow-y-auto bg-slate-50/50 p-5">
+      <div id="applicantReviewPanel" class="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.85fr)]">
         <div class="space-y-6">
-          <div class="rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-6">
-            <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div class="rounded-[1.35rem] border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
               <div class="flex items-start gap-4">
                 <div class="flex h-16 w-16 items-center justify-center rounded-[1.35rem] bg-[linear-gradient(135deg,#0ea5e9,#2563eb)] text-xl font-bold text-white" id="applicantInitials">
                   AP
@@ -267,7 +306,7 @@
                 </div>
               </div>
 
-              <div class="flex flex-col items-stretch gap-3 sm:flex-row lg:flex-col">
+              <div class="grid w-full gap-3 sm:grid-cols-2 lg:w-[210px] lg:grid-cols-1">
                 <button type="button" onclick="scheduleInterview()" class="inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
                   <i class="fa-regular fa-calendar"></i>
                   Schedule Interview
@@ -276,38 +315,19 @@
                 <form action="{{ route('admin.updateStatus') }}" id="updateStatus" method="POST">
                   @csrf
                   <input type="hidden" name="reviewId" id="statusId">
-                  <select
-                    name="status"
-                    class="w-full rounded-full border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-sky-300"
-                    onchange="confirmStatusChange(this)"
-                  >
-                    <option value="-- Choose Option --">-- Choose Option --</option>
-                    <option value="Under Review">Under Review</option>
-                    <option value="Initial Interview">Initial Interview</option>
-                    <option value="Final Interview">Final Interview</option>
-                    <option value="Demo Teaching" id="demoTeachingOption" class="hidden">Demo Teaching</option>
-                    <option value="Hired">Hired</option>
-                    <option value="Rejected">Rejected</option>
-                    <option value="Passing Document">Passing Document</option>
-                    <option value="Completed">Completed</option>
-                  </select>
+                  <input type="hidden" name="status" id="statusAutoValue" value="Under Review">
                 </form>
+
+                <button type="button" id="nextApplicantButton" onclick="showApplicantInterviewPanel()" disabled class="inline-flex items-center justify-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-5 py-3 text-sm font-semibold text-sky-700 transition hover:border-sky-300 hover:bg-sky-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-400">
+                  Proceed
+                </button>
+                <p id="documentReviewProgress" class="text-center text-xs font-semibold text-slate-400">Download all documents to continue</p>
               </div>
             </div>
           </div>
 
-          <div class="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm">
-            <h4 class="flex items-center gap-2 text-base font-bold text-slate-900">
-              <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-100 text-sky-600">
-                <i class="fa-regular fa-user"></i>
-              </span>
-              Professional Summary
-            </h4>
-            <p class="mt-4 text-sm leading-7 text-slate-600" id="passionate"></p>
-          </div>
-
-          <div class="grid gap-6 lg:grid-cols-2">
-            <div class="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm">
+          <div class="grid gap-5 lg:grid-cols-2">
+            <div class="rounded-[1.35rem] border border-slate-200 bg-white p-5 shadow-sm">
               <h4 class="flex items-center gap-2 text-base font-bold text-slate-900">
                 <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600">
                   <i class="fa-solid fa-briefcase"></i>
@@ -317,7 +337,7 @@
               <p class="mt-4 text-sm leading-7 text-slate-600" id="work_info"></p>
             </div>
 
-            <div class="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="rounded-[1.35rem] border border-slate-200 bg-white p-5 shadow-sm">
               <h4 class="flex items-center gap-2 text-base font-bold text-slate-900">
                 <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
                   <i class="fa-solid fa-graduation-cap"></i>
@@ -329,13 +349,13 @@
           </div>
         </div>
 
-        <div class="space-y-6">
-          <div class="rounded-[1.75rem] border border-emerald-200 bg-emerald-50/70 p-5">
+        <div class="space-y-5 xl:sticky xl:top-0 xl:self-start">
+          <div class="rounded-[1.35rem] border border-emerald-200 bg-emerald-50/70 p-5">
             <h4 class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">Skills</h4>
             <div class="mt-3 flex flex-wrap gap-2" id="skills"></div>
           </div>
 
-          <div class="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm">
+          <div class="rounded-[1.35rem] border border-slate-200 bg-white p-5 shadow-sm">
             <h4 class="text-base font-bold text-slate-900">Contact Information</h4>
             <div class="mt-4 space-y-3 text-sm text-slate-600">
               <div class="flex items-start gap-3">
@@ -349,10 +369,13 @@
             </div>
           </div>
 
-          <div class="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm">
-            <h4 class="text-base font-bold text-slate-900">Documents</h4>
+          <div class="rounded-[1.35rem] border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="flex items-center justify-between gap-3">
+              <h4 class="text-base font-bold text-slate-900">Documents</h4>
+              <span id="documentsCount" class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">0 files</span>
+            </div>
             <div id="rehireSummary" class="mt-3 hidden rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-medium text-amber-800"></div>
-            <div id="documents" class="mt-4 space-y-3"></div>
+            <div id="documents" class="applicant-doc-list mt-4 space-y-4"></div>
           </div>
 
           <form action="{{ route('admin.adminStarStore') }}" method="POST" id="starRatings">
@@ -361,7 +384,7 @@
             <input type="hidden" name="rating" id="ratingValue">
           </form>
 
-          <div class="rounded-[1.75rem] border border-amber-200 bg-amber-50/70 p-5">
+          <div class="rounded-[1.35rem] border border-amber-200 bg-amber-50/70 p-5">
             <div class="flex items-center justify-between gap-4">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">Applicant Rating</p>
@@ -378,101 +401,199 @@
           </div>
         </div>
       </div>
+
+      <div id="applicantInterviewPanel" class="hidden">
+        <div class="grid gap-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+          <div class="flex min-h-[520px] flex-col rounded-[1.35rem] border border-sky-200 bg-sky-50/80 p-5">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Interview Setup</p>
+              <h3 class="mt-3 text-2xl font-black text-slate-900">Set Initial Interview</h3>
+              <div class="mt-5 rounded-[1.1rem] border border-sky-100 bg-white/75 p-4">
+                <div class="flex items-center gap-4">
+                  <div class="flex h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center rounded-[1rem] bg-[linear-gradient(135deg,#0ea5e9,#2563eb)] text-base font-bold text-white" id="interviewPanelInitials">AP</div>
+                  <div class="min-w-0">
+                    <p class="truncate font-bold text-slate-900" id="interviewPanelName">Applicant</p>
+                    <p class="mt-1 text-sm text-slate-500" id="interviewPanelPosition">Position not specified</p>
+                  </div>
+                </div>
+                <p class="mt-3 text-xs font-semibold text-emerald-700">Documents verified and ready for scheduling.</p>
+              </div>
+
+              <div id="interviewScheduleList" class="mt-4 hidden space-y-3"></div>
+
+              <div id="interviewDecisionActions" class="mt-4 hidden rounded-2xl border border-emerald-200 bg-white/80 p-3">
+                <p class="text-xs font-bold uppercase tracking-[0.12em] text-emerald-700">Interview Decision</p>
+                <div class="mt-3 flex flex-wrap gap-2">
+                  <button type="button" onclick="rejectApplicantAfterInterview()" class="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-4 py-2 text-xs font-bold text-rose-600 transition hover:bg-rose-50">
+                    <i class="fa-solid fa-xmark"></i>
+                    Reject
+                  </button>
+                  <button type="button" id="interviewDecisionProceedButton" onclick="proceedApplicantAfterInterview()" disabled class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-xs font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500">
+                    <i class="fa-solid fa-arrow-right"></i>
+                    <span id="interviewDecisionProceedLabel">Proceed</span>
+                  </button>
+                </div>
+                <p id="interviewDecisionHint" class="mt-2 text-xs font-semibold text-slate-500">Finish the required stage before proceeding.</p>
+              </div>
+            </div>
+            <div class="mt-auto flex flex-wrap items-center justify-start gap-3 pt-6">
+              <button type="button" onclick="showApplicantReviewPanel()" class="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900">Back</button>
+            </div>
+          </div>
+
+          <form class="rounded-[1.35rem] border border-slate-200 bg-white p-5 shadow-sm" action="{{ route('admin.storeNewInterview') }}" method="POST" id="applicantInterviewPanelForm">
+            @csrf
+            <input type="hidden" id="panel_applicants_id" name="applicants_id">
+
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div class="sm:col-span-2">
+                <label class="mb-1 block text-sm font-medium text-slate-700">Interview Type</label>
+                <select name="interview_type" id="panel_interview_type" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none focus:border-sky-300">
+                  <option value="Initial Interview">Initial Interview</option>
+                  <option value="Final Interview">Final Interview</option>
+                  <option value="Demo Teaching">Demo Teaching</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="mb-1 block text-sm font-medium text-slate-700">Date</label>
+                <input type="date" name="date" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none focus:border-sky-300">
+              </div>
+
+              <div>
+                <label class="mb-1 block text-sm font-medium text-slate-700">Time</label>
+                <input type="time" name="time" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none focus:border-sky-300">
+              </div>
+
+              <div>
+                <label class="mb-1 block text-sm font-medium text-slate-700">Duration</label>
+                <select name="duration" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none focus:border-sky-300">
+                  <option value="5 minutes">5 minutes</option>
+                  <option value="30 minutes">30 minutes</option>
+                  <option value="45 minutes">45 minutes</option>
+                  <option value="60 minutes">60 minutes</option>
+                  <option value="90 minutes">90 minutes</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="mb-1 block text-sm font-medium text-slate-700">Interviewer(s)</label>
+                <input type="text" name="interviewers" placeholder="Enter interviewer name(s)" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none focus:border-sky-300">
+              </div>
+
+              <div class="sm:col-span-2">
+                <label class="mb-1 block text-sm font-medium text-slate-700">Email Address</label>
+                <input type="email" name="email_link" id="panel_email_link" placeholder="Enter email address" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none focus:border-sky-300">
+              </div>
+
+              <div class="sm:col-span-2">
+                <label class="mb-1 block text-sm font-medium text-slate-700">Meeting Link (Optional)</label>
+                <input type="url" name="url" placeholder="https://meet.google.com/..." class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none focus:border-sky-300">
+              </div>
+
+              <div class="sm:col-span-2">
+                <label class="mb-1 block text-sm font-medium text-slate-700">Notes (Optional)</label>
+                <textarea name="notes" placeholder="Add any additional notes or instructions..." class="h-24 w-full resize-none rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none focus:border-sky-300"></textarea>
+              </div>
+            </div>
+
+            <div class="mt-5 flex justify-end">
+              <button type="submit" class="rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">Save Interview</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div id="applicantPassingDocumentPanel" class="hidden">
+        <div class="grid gap-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+          <div class="flex min-h-[520px] flex-col rounded-[1.35rem] border border-emerald-200 bg-emerald-50/80 p-5">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">Passing Document</p>
+              <h3 class="mt-3 text-2xl font-black text-slate-900">Final Document Check</h3>
+              <div class="mt-5 rounded-[1.1rem] border border-emerald-100 bg-white/80 p-4">
+                <div class="flex items-center gap-4">
+                  <div class="flex h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center rounded-[1rem] bg-[linear-gradient(135deg,#10b981,#059669)] text-base font-bold text-white" id="passingPanelInitials">AP</div>
+                  <div class="min-w-0">
+                    <p class="truncate font-bold text-slate-900" id="passingPanelName">Applicant</p>
+                    <p class="mt-1 text-sm text-slate-500" id="passingPanelPosition">Position not specified</p>
+                  </div>
+                </div>
+                <p class="mt-3 text-xs font-semibold text-emerald-700">Applicant passed the interview stage. Review the submitted final documents before completion.</p>
+              </div>
+
+              <div class="mt-4 rounded-[1.1rem] border border-emerald-200 bg-white p-4 shadow-sm">
+                <div class="flex items-center justify-between gap-3">
+                  <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.14em] text-emerald-700">Review Progress</p>
+                    <p id="passingDocumentProgress" class="mt-2 text-xl font-black text-slate-900">0/0 reviewed</p>
+                  </div>
+                  <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                    <i class="fa-solid fa-file-circle-check"></i>
+                  </span>
+                </div>
+                <div class="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div id="passingDocumentProgressBar" class="h-full w-0 rounded-full bg-emerald-500 transition-all"></div>
+                </div>
+                <p id="passingDocumentHint" class="mt-3 text-xs font-semibold text-slate-500">Download/review every document to enable completion.</p>
+              </div>
+
+              <div id="hireApplicantPanel" class="mt-4 hidden rounded-[1.1rem] border border-sky-200 bg-white p-4 shadow-sm">
+                <div class="flex items-start gap-3">
+                  <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-sky-100 text-sky-700">
+                    <i class="fa-solid fa-user-check"></i>
+                  </span>
+                  <div>
+                    <p class="text-sm font-black text-slate-900">Ready for Hiring</p>
+                    <p class="mt-1 text-xs font-semibold text-slate-500">Documents are complete. Confirm hiring to move this applicant into Hired status.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-auto flex flex-wrap items-center justify-between gap-3 pt-6">
+              <button type="button" onclick="showApplicantReviewPanel()" class="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900">Back</button>
+              <div class="flex flex-wrap gap-2">
+                <button type="button" id="markPassingDocumentCompleteButton" onclick="markApplicantDocumentsComplete()" disabled class="rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500">Mark Complete</button>
+                <button type="button" id="hireApplicantButton" onclick="hireApplicantFromCompleted()" class="hidden rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700">Hire Applicant</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-[1.35rem] border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">Submitted Documents</p>
+                <h4 class="mt-2 text-xl font-black text-slate-900">Document Checklist</h4>
+              </div>
+              <span id="passingDocumentsCount" class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">0 files</span>
+            </div>
+            <div id="passingDocumentsList" class="applicant-doc-list mt-5 space-y-4"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<div id="scheduleInterviewModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/45 px-4 py-6 backdrop-blur-sm">
-  <div class="w-full max-w-2xl overflow-hidden rounded-[2rem] border border-white/70 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.18)]">
-    <div class="bg-[linear-gradient(135deg,#0f172a,#1d4ed8)] px-6 py-5">
-      <div class="flex items-center justify-between gap-4">
-        <div>
-          <p class="text-xs font-semibold uppercase tracking-[0.18em] text-sky-200">Interview Planner</p>
-          <h2 class="mt-2 text-2xl font-black tracking-tight text-white">Schedule Interview</h2>
-        </div>
-        <button type="button" onclick="closeScheduleModal()" class="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-    </div>
-
-    <div class="p-6">
-      <div class="mb-6 flex items-center gap-4 rounded-[1.5rem] border border-sky-100 bg-sky-50/80 p-4">
-        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-sky-500 font-bold text-white" id="scheduleInitials">AP</div>
-        <div>
-          <p class="font-semibold text-slate-900" id="names"></p>
-          <p class="text-sm text-slate-500" id="titles"></p>
-        </div>
-      </div>
-
-      <form class="space-y-4" action="{{ route('admin.storeNewInterview') }}" method="POST" id="form">
-        @csrf
-        <input type="hidden" id="applicants_id" name="applicants_id">
-
-        <div>
-          <label class="mb-1 block text-sm font-medium text-slate-700">Interview Type</label>
-          <select name="interview_type" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none focus:border-sky-300">
-            <option value="HR Interview">HR Interview</option>
-            <option value="Final Interview">Final Interview</option>
-          </select>
-        </div>
-
-        <div class="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label class="mb-1 block text-sm font-medium text-slate-700">Date</label>
-            <input type="date" name="date" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none focus:border-sky-300">
-          </div>
-          <div>
-            <label class="mb-1 block text-sm font-medium text-slate-700">Time</label>
-            <input type="time" name="time" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none focus:border-sky-300">
-          </div>
-        </div>
-
-        <div>
-          <label class="mb-1 block text-sm font-medium text-slate-700">Duration</label>
-          <select name="duration" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none focus:border-sky-300">
-            <option value="5 minutes">5 minutes</option>
-            <option value="30 minutes">30 minutes</option>
-            <option value="45 minutes">45 minutes</option>
-            <option value="60 minutes">60 minutes</option>
-            <option value="90 minutes">90 minutes</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="mb-1 block text-sm font-medium text-slate-700">Interviewer(s)</label>
-          <input type="text" name="interviewers" placeholder="Enter interviewer name(s)" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none focus:border-sky-300">
-        </div>
-
-        <div>
-          <label class="mb-1 block text-sm font-medium text-slate-700">Email Link</label>
-          <input type="email" name="email_link" placeholder="Enter Email Address" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none focus:border-sky-300">
-        </div>
-
-        <div>
-          <label class="mb-1 block text-sm font-medium text-slate-700">Meeting Link (Optional)</label>
-          <input type="url" name="url" placeholder="https://meet.google.com/..." class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none focus:border-sky-300">
-        </div>
-
-        <div>
-          <label class="mb-1 block text-sm font-medium text-slate-700">Notes (Optional)</label>
-          <textarea name="notes" placeholder="Add any additional notes or instructions..." class="h-28 w-full resize-none rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none focus:border-sky-300"></textarea>
-        </div>
-
-        <div class="flex justify-end gap-3 pt-2">
-          <button type="button" onclick="closeScheduleModal()" class="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900">Cancel</button>
-          <button type="submit" class="rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">Schedule Interview</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
+<form id="cancelApplicantInterviewForm" method="POST" class="hidden">
+  @csrf
+</form>
 
 <script>
   const applicants = @json($applicant);
+  const currentApplicantMonth = @json(now()->format('Y-m'));
+  const recentlyScheduledApplicantId = @json(session('scheduled_applicant_id'));
+  const recentlyUpdatedApplicantId = @json(session('updated_applicant_id'));
+  const recentlyUpdatedApplicantStatus = @json(session('updated_applicant_status'));
   const rowsPerPage = 5;
   let currentPage = 1;
   let currentApplicantId = null;
+  let activeDashboardFilter = 'all';
+  let currentApplicantDocumentKeys = new Set();
+  let downloadedApplicantDocuments = new Set();
+  let currentApplicantModalData = null;
+  let interviewCountdownTimer = null;
+  let autoUnderReviewSubmitted = false;
 
   const initApplicantPageAnimation = () => {
     const page = document.getElementById('admin-applicant-page');
@@ -561,6 +682,71 @@
     });
   }
 
+  function formatInterviewTime(timeValue) {
+    if (!timeValue) {
+      return 'N/A';
+    }
+
+    const [hours, minutes] = timeValue.toString().split(':');
+    const parsed = new Date();
+    parsed.setHours(Number(hours || 0), Number(minutes || 0), 0, 0);
+
+    return parsed.toLocaleTimeString(undefined, {
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  }
+
+  function getInterviewTimeParts(timeValue) {
+    if (!timeValue) {
+      return { time: '--:--', meridiem: '--' };
+    }
+
+    const formatted = formatInterviewTime(timeValue);
+    const match = formatted.match(/^(.+?)\s*([AP]M)$/i);
+    return {
+      time: match ? match[1] : formatted,
+      meridiem: match ? match[2].toUpperCase() : ''
+    };
+  }
+
+  function formatInterviewDateBadge(dateValue) {
+    if (!dateValue) {
+      return 'Not set';
+    }
+
+    const today = new Date();
+    const parsed = new Date(dateValue);
+    if (Number.isNaN(parsed.getTime())) {
+      return dateValue;
+    }
+
+    const todayKey = today.toISOString().slice(0, 10);
+    const dateKey = parsed.toISOString().slice(0, 10);
+    if (todayKey === dateKey) {
+      return 'Today';
+    }
+
+    return parsed.toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric'
+    });
+  }
+
+  function formatCountdownDistance(milliseconds) {
+    const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (days > 0) {
+      return `${days}d ${hours}h ${minutes}m`;
+    }
+
+    return `${hours}h ${minutes}m ${seconds}s`;
+  }
+
   function buildRatingStars(rating = 0) {
     return Array.from({ length: 5 }, (_, index) => {
       const filled = index < Number(rating || 0);
@@ -578,7 +764,6 @@
       const position = app.position?.title ?? '';
       const status = app.application_status ?? '';
       const email = app.email ?? '';
-      const school = app.collage_name ?? '';
       const dateText = formatDate(app.created_at);
 
       const matchesSearch = !searchTerm || [
@@ -586,15 +771,71 @@
         email,
         position,
         status,
-        school,
         dateText
       ].some(value => normalizeText(value).includes(searchTerm));
 
       const matchesPosition = !positionFilter || normalizeText(position) === positionFilter;
       const matchesStatus = !statusFilter || normalizeText(status) === statusFilter;
+      const normalizedStatus = normalizeText(status);
+      const applicationMonth = (app.created_at ?? '').toString().slice(0, 7);
+      const matchesDashboardFilter = (() => {
+        if (activeDashboardFilter === 'pending') {
+          return normalizedStatus === 'pending';
+        }
 
-      return matchesSearch && matchesPosition && matchesStatus;
+        if (activeDashboardFilter === 'interview') {
+          return ['initial interview', 'final interview', 'demo teaching'].includes(normalizedStatus);
+        }
+
+        if (activeDashboardFilter === 'hired_month') {
+          return normalizedStatus === 'hired' && applicationMonth === currentApplicantMonth;
+        }
+
+        return true;
+      })();
+
+      return matchesSearch && matchesPosition && matchesStatus && matchesDashboardFilter;
     });
+  }
+
+  function updateDashboardCardState() {
+    document.querySelectorAll('[data-applicant-dashboard-filter]').forEach(card => {
+      const isActive = card.dataset.applicantDashboardFilter === activeDashboardFilter;
+      card.classList.toggle('border-sky-300', isActive);
+      card.classList.toggle('ring-2', isActive);
+      card.classList.toggle('ring-sky-200', isActive);
+      card.classList.toggle('bg-sky-50/70', isActive);
+    });
+  }
+
+  function setSelectValueIfPresent(selectId, value) {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+
+    const normalizedValue = normalizeText(value);
+    const option = Array.from(select.options).find(item => normalizeText(item.value) === normalizedValue);
+    select.value = option ? option.value : '';
+  }
+
+  function applyDashboardFilter(filter) {
+    activeDashboardFilter = filter || 'all';
+
+    const search = document.getElementById('headerApplicantSearch');
+    const position = document.getElementById('applicantPositionFilter');
+    if (search) search.value = '';
+    if (position) position.value = '';
+
+    if (activeDashboardFilter === 'pending') {
+      setSelectValueIfPresent('applicantStatusFilter', 'pending');
+    } else if (activeDashboardFilter === 'hired_month') {
+      setSelectValueIfPresent('applicantStatusFilter', 'hired');
+    } else {
+      setSelectValueIfPresent('applicantStatusFilter', '');
+    }
+
+    updateDashboardCardState();
+    renderTable(1);
+    document.getElementById('applicantsTableBody')?.closest('div')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function renderTable(page = 1) {
@@ -628,7 +869,6 @@
           </td>
           <td class="px-3 py-4">
             <p class="font-semibold text-slate-800">${position}</p>
-            <p class="text-xs text-slate-400">${app.collage_name ?? 'Not specified'}</p>
           </td>
           <td class="px-3 py-4 text-slate-600">${appliedDate}</td>
           <td class="px-3 py-4">
@@ -642,7 +882,7 @@
               <button type="button" onclick="openApplicantModal(${app.id})" class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white transition hover:border-sky-200 hover:text-sky-600" title="View applicant">
                 <i class="fa-regular fa-eye"></i>
               </button>
-              <button type="button" onclick="openScheduleModal(${app.id})" class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white transition hover:border-indigo-200 hover:text-indigo-600" title="Schedule interview">
+              <button type="button" onclick="openApplicantInterviewFromTable(${app.id})" class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white transition hover:border-indigo-200 hover:text-indigo-600" title="Schedule interview">
                 <i class="fa-regular fa-calendar"></i>
               </button>
               <button type="button" class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white transition hover:border-rose-200 hover:text-rose-500" title="Remove action">
@@ -693,39 +933,14 @@
     modal.classList.remove('flex');
   }
 
-  function fillInterviewCard(name, title) {
-    document.getElementById('names').innerText = name || 'Applicant';
-    document.getElementById('titles').innerText = title || 'Position not specified';
-    document.getElementById('scheduleInitials').innerText = getInitials(name, '');
-  }
-
-  function openScheduleModal(appId) {
-    if (!appId) {
-      return;
-    }
-
-    currentApplicantId = appId;
-    document.getElementById('applicants_id').value = appId;
-
-    fetch(`/system/applicants/ID/${appId}`)
-      .then(res => res.json())
-      .then(data => {
-        fillInterviewCard(data.name, data.title);
-        showFlexModal('scheduleInterviewModal');
-      });
-  }
-
   function scheduleInterview() {
-    const appId = currentApplicantId || document.getElementById('statusId').value;
-    if (!appId) {
-      return;
-    }
-
-    openScheduleModal(appId);
+    showApplicantInterviewPanel(true);
   }
 
-  function closeScheduleModal() {
-    hideFlexModal('scheduleInterviewModal');
+  function openApplicantInterviewFromTable(appId) {
+    if (!appId) return;
+
+    openApplicantModal(appId, true);
   }
 
   function renderSkills(skillsValue) {
@@ -747,14 +962,577 @@
     ).join('');
   }
 
-  function openApplicantModal(applicantId) {
+  function applicantDocumentStorageKey() {
+    return `admin_applicant_downloaded_documents:${currentApplicantId || 'none'}`;
+  }
+
+  function saveDownloadedApplicantDocuments() {
+    try {
+      sessionStorage.setItem(applicantDocumentStorageKey(), JSON.stringify(Array.from(downloadedApplicantDocuments)));
+    } catch (_) {
+      // Ignore session storage errors.
+    }
+  }
+
+  function loadDownloadedApplicantDocuments() {
+    try {
+      downloadedApplicantDocuments = new Set(JSON.parse(sessionStorage.getItem(applicantDocumentStorageKey()) || '[]'));
+    } catch (_) {
+      downloadedApplicantDocuments = new Set();
+    }
+  }
+
+  function getApplicantDocumentKey(doc) {
+    return btoa(unescape(encodeURIComponent(`${doc?.url ?? ''}|${doc?.name ?? ''}`)));
+  }
+
+  function updateDocumentReviewProgress() {
+    const nextButton = document.getElementById('nextApplicantButton');
+    const progress = document.getElementById('documentReviewProgress');
+    if (!nextButton || !currentApplicantId) return;
+
+    const total = currentApplicantDocumentKeys.size;
+    const downloaded = Array.from(currentApplicantDocumentKeys)
+      .filter(key => downloadedApplicantDocuments.has(key))
+      .length;
+    const isComplete = total > 0 && downloaded >= total;
+
+    nextButton.disabled = !isComplete;
+    nextButton.title = isComplete ? 'Set initial interview' : 'Download all documents first';
+    if (progress) {
+      progress.textContent = total
+        ? `${downloaded}/${total} documents downloaded`
+        : 'No documents available to review';
+      progress.className = `text-center text-xs font-semibold ${isComplete ? 'text-emerald-600' : 'text-slate-400'}`;
+    }
+
+    document.querySelectorAll('[data-document-key]').forEach(row => {
+      row.classList.toggle('is-downloaded', downloadedApplicantDocuments.has(row.dataset.documentKey));
+    });
+    updatePassingDocumentProgress();
+    autoMovePendingApplicantToUnderReview(isComplete);
+  }
+
+  function markApplicantDocumentDownloaded(key) {
+    if (!key) return;
+
+    downloadedApplicantDocuments.add(key);
+    saveDownloadedApplicantDocuments();
+    updateDocumentReviewProgress();
+  }
+
+  function autoMovePendingApplicantToUnderReview(isComplete) {
+    if (
+      !isComplete
+      || autoUnderReviewSubmitted
+      || !currentApplicantId
+      || normalizeText(currentApplicantModalData?.status) !== 'pending'
+    ) {
+      return;
+    }
+
+    autoUnderReviewSubmitted = true;
+    document.getElementById('statusId').value = currentApplicantId;
+    document.getElementById('statusAutoValue').value = 'Under Review';
+    document.getElementById('updateStatus').submit();
+  }
+
+  function showApplicantReviewPanel() {
+    document.getElementById('applicantInterviewPanel')?.classList.add('hidden');
+    document.getElementById('applicantPassingDocumentPanel')?.classList.add('hidden');
+    document.getElementById('applicantReviewPanel')?.classList.remove('hidden');
+  }
+
+  function showApplicantInterviewPanel(skipDocumentGate = false) {
+    updateDocumentReviewProgress();
+    const nextButton = document.getElementById('nextApplicantButton');
+    if (!skipDocumentGate && nextButton?.disabled) return;
+
+    document.getElementById('panel_applicants_id').value = currentApplicantId || '';
+    document.getElementById('panel_email_link').value = currentApplicantModalData?.email || '';
+    document.getElementById('interviewPanelInitials').innerText = getInitials(currentApplicantModalData?.name, '');
+    document.getElementById('interviewPanelName').innerText = currentApplicantModalData?.name || 'Applicant';
+    document.getElementById('interviewPanelPosition').innerText = currentApplicantModalData?.title || 'Position not specified';
+    configureInterviewTypeOptions();
+    renderInterviewScheduleSummary(currentApplicantModalData?.latest_interview);
+    updateInterviewProceedButton();
+
+    document.getElementById('applicantReviewPanel')?.classList.add('hidden');
+    document.getElementById('applicantPassingDocumentPanel')?.classList.add('hidden');
+    document.getElementById('applicantInterviewPanel')?.classList.remove('hidden');
+  }
+
+  function showApplicantPassingDocumentPanel() {
+    document.getElementById('passingPanelInitials').innerText = getInitials(currentApplicantModalData?.name, '');
+    document.getElementById('passingPanelName').innerText = currentApplicantModalData?.name || 'Applicant';
+    document.getElementById('passingPanelPosition').innerText = currentApplicantModalData?.title || 'Position not specified';
+    renderPassingDocumentChecklist();
+    updatePassingDocumentProgress();
+
+    document.getElementById('applicantReviewPanel')?.classList.add('hidden');
+    document.getElementById('applicantInterviewPanel')?.classList.add('hidden');
+    document.getElementById('applicantPassingDocumentPanel')?.classList.remove('hidden');
+  }
+
+  function focusInterviewForm() {
+    const form = document.getElementById('applicantInterviewPanelForm');
+    form?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    form?.querySelector('input[name="date"]')?.focus({ preventScroll: true });
+  }
+
+  function configureInterviewTypeOptions() {
+    const select = document.getElementById('panel_interview_type');
+    if (!select) {
+      return;
+    }
+
+    const progress = currentApplicantModalData?.interview_progress || {};
+    const isTeaching = Boolean(progress.is_teaching);
+    const finalOption = Array.from(select.options).find(option => option.value === 'Final Interview');
+    const demoOption = Array.from(select.options).find(option => option.value === 'Demo Teaching');
+    if (finalOption) finalOption.hidden = isTeaching;
+    if (demoOption) demoOption.hidden = !isTeaching;
+
+    if (isTeaching && progress.completed_initial && !progress.completed_demo_teaching) {
+      select.value = 'Demo Teaching';
+      return;
+    }
+
+    if (!isTeaching && progress.completed_initial && !progress.completed_final) {
+      select.value = 'Final Interview';
+      return;
+    }
+
+    select.value = 'Initial Interview';
+  }
+
+  function renderPassingDocumentChecklist() {
+    const list = document.getElementById('passingDocumentsList');
+    const count = document.getElementById('passingDocumentsCount');
+    const documents = Array.isArray(currentApplicantModalData?.documents) ? currentApplicantModalData.documents : [];
+    if (count) {
+      count.textContent = `${documents.length} ${documents.length === 1 ? 'file' : 'files'}`;
+    }
+
+    if (!list) return;
+
+    if (!documents.length) {
+      list.innerHTML = '<p class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 text-sm font-semibold text-slate-400">No documents submitted yet.</p>';
+      return;
+    }
+
+    const groupedDocs = documents.reduce((groups, doc) => {
+      const type = doc.type || 'Other Documents';
+      groups[type] = groups[type] || [];
+      groups[type].push(doc);
+      return groups;
+    }, {});
+
+    list.innerHTML = Object.entries(groupedDocs).map(([type, docs]) => `
+      <section class="space-y-2">
+        <div class="flex items-center justify-between gap-3">
+          <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">${type}</p>
+          <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-500">${docs.length}</span>
+        </div>
+        <div class="space-y-2">
+          ${docs.map(doc => `
+            <div class="applicant-doc-card flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5" data-document-key="${getApplicantDocumentKey(doc)}">
+              <div class="flex min-w-0 items-center gap-3">
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                  <i class="fa-regular fa-file-lines"></i>
+                </div>
+                <div class="min-w-0">
+                  <p class="max-w-[280px] truncate text-sm font-semibold text-slate-800" title="${doc.name}">${doc.name}</p>
+                  <p class="text-xs font-medium text-slate-400">Click download to mark reviewed</p>
+                </div>
+              </div>
+              <div class="flex shrink-0 items-center gap-1.5">
+                <span class="applicant-doc-check flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-600" title="Reviewed">
+                  <i class="fa-solid fa-check text-xs"></i>
+                </span>
+                <a href="${doc.url}" target="_blank" onclick="markApplicantDocumentDownloaded('${getApplicantDocumentKey(doc)}')" class="flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition hover:bg-emerald-100 hover:text-emerald-600" title="Download ${doc.name}">
+                  <i class="fa-solid fa-download"></i>
+                </a>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </section>
+    `).join('');
+  }
+
+  function updatePassingDocumentProgress() {
+    const progress = document.getElementById('passingDocumentProgress');
+    const progressBar = document.getElementById('passingDocumentProgressBar');
+    const hint = document.getElementById('passingDocumentHint');
+    const completeButton = document.getElementById('markPassingDocumentCompleteButton');
+    const hirePanel = document.getElementById('hireApplicantPanel');
+    const hireButton = document.getElementById('hireApplicantButton');
+    const isCompletedStatus = normalizeText(currentApplicantModalData?.status) === 'completed';
+    const isHiredStatus = normalizeText(currentApplicantModalData?.status) === 'hired';
+    const total = currentApplicantDocumentKeys.size;
+    const reviewed = Array.from(currentApplicantDocumentKeys)
+      .filter(key => downloadedApplicantDocuments.has(key))
+      .length;
+    const isComplete = total > 0 && reviewed >= total;
+    const percent = total ? Math.round((reviewed / total) * 100) : 0;
+
+    if (progress) progress.textContent = `${reviewed}/${total} reviewed`;
+    if (progressBar) progressBar.style.width = `${percent}%`;
+    if (hint) {
+      hint.textContent = isComplete
+        ? 'All documents reviewed. You can mark this step complete.'
+        : 'Download/review every document to enable completion.';
+      hint.className = `mt-3 text-xs font-semibold ${isComplete ? 'text-emerald-700' : 'text-slate-500'}`;
+    }
+    if (completeButton) {
+      completeButton.classList.toggle('hidden', isCompletedStatus || isHiredStatus);
+      completeButton.disabled = !isComplete;
+      completeButton.title = isComplete ? 'Mark applicant document step as completed' : 'Review all documents first';
+    }
+    hirePanel?.classList.toggle('hidden', !isCompletedStatus);
+    hireButton?.classList.toggle('hidden', !isCompletedStatus);
+    document.querySelectorAll('#passingDocumentsList [data-document-key]').forEach(row => {
+      row.classList.toggle('is-downloaded', downloadedApplicantDocuments.has(row.dataset.documentKey));
+    });
+  }
+
+  function markApplicantDocumentsComplete() {
+    const total = currentApplicantDocumentKeys.size;
+    const reviewed = Array.from(currentApplicantDocumentKeys)
+      .filter(key => downloadedApplicantDocuments.has(key))
+      .length;
+    if (!currentApplicantId || total === 0 || reviewed < total) return;
+
+    updateApplicantStatusFromModal('Completed', {
+      title: 'Mark documents complete?',
+      text: 'This applicant has completed the passing document step.',
+      icon: 'question',
+      confirmButtonText: 'Mark Complete'
+    });
+  }
+
+  function hireApplicantFromCompleted() {
+    if (!currentApplicantId || normalizeText(currentApplicantModalData?.status) !== 'completed') return;
+
+    updateApplicantStatusFromModal('Hired', {
+      title: 'Hire applicant?',
+      text: 'This will mark the applicant as hired.',
+      icon: 'question',
+      confirmButtonText: 'Hire Applicant',
+      confirmButtonColor: '#059669'
+    });
+  }
+
+  function updateInterviewProceedButton() {
+    const decisionButton = document.getElementById('interviewDecisionProceedButton');
+    const decisionLabel = document.getElementById('interviewDecisionProceedLabel');
+    const decisionHint = document.getElementById('interviewDecisionHint');
+
+    const progress = currentApplicantModalData?.interview_progress || {};
+    const canProceed = Boolean(progress.can_proceed_passing_document);
+    const proceedTarget = progress.proceed_target || 'Next Step';
+    const proceedLabel = `Proceed to ${proceedTarget}`;
+
+    if (decisionButton) {
+      decisionButton.disabled = !canProceed;
+      decisionButton.title = canProceed
+        ? proceedLabel
+        : progress.is_teaching
+          ? 'Finish Initial Interview first, then Demo Teaching'
+          : 'Finish Initial Interview first, then Final Interview';
+    }
+
+    if (decisionLabel) {
+      decisionLabel.textContent = proceedLabel;
+    }
+
+    if (decisionHint) {
+      decisionHint.textContent = canProceed
+        ? `Applicant passed this stage. Next step: ${proceedTarget}.`
+        : progress.is_teaching
+          ? 'Finish Initial Interview first, then Demo Teaching.'
+          : 'Finish Initial Interview first, then Final Interview.';
+    }
+  }
+
+  function updateInterviewDecisionActions(isFinished) {
+    const decisionActions = document.getElementById('interviewDecisionActions');
+    const canProceed = Boolean(currentApplicantModalData?.interview_progress?.proceed_target);
+    decisionActions?.classList.toggle('hidden', !isFinished || !canProceed);
+    updateInterviewProceedButton();
+  }
+
+  function updateApplicantStatusFromModal(status, options = {}) {
+    if (!currentApplicantId) {
+      return;
+    }
+
+    const title = options.title || `Move applicant to ${status}?`;
+    const text = options.text || `This will update the applicant status to ${status}.`;
+    const confirmButtonText = options.confirmButtonText || 'Confirm';
+    const confirmButtonColor = options.confirmButtonColor || '#0f172a';
+
+    Swal.fire({
+      title,
+      text,
+      icon: options.icon || 'question',
+      showCancelButton: true,
+      confirmButtonColor,
+      cancelButtonColor: '#64748b',
+      confirmButtonText,
+      cancelButtonText: 'Cancel'
+    }).then(result => {
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      document.getElementById('statusId').value = currentApplicantId;
+      document.getElementById('statusAutoValue').value = status;
+      document.getElementById('updateStatus').submit();
+    });
+  }
+
+  function rejectApplicantAfterInterview() {
+    updateApplicantStatusFromModal('Rejected', {
+      title: 'Reject applicant?',
+      text: 'This applicant did not pass the interview stage.',
+      icon: 'warning',
+      confirmButtonColor: '#e11d48',
+      confirmButtonText: 'Reject'
+    });
+  }
+
+  function proceedApplicantAfterInterview() {
+    const progress = currentApplicantModalData?.interview_progress || {};
+    const canProceed = Boolean(progress.can_proceed_passing_document);
+    const proceedTarget = progress.proceed_target || 'Next Step';
+    if (!canProceed) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Interview not complete yet',
+        text: progress.is_teaching
+          ? 'Teaching applicants need Initial Interview and Demo Teaching.'
+          : 'Non-teaching applicants need Initial Interview and Final Interview.'
+      });
+      return;
+    }
+
+    updateApplicantStatusFromModal(proceedTarget, {
+      title: `Proceed to ${proceedTarget}?`,
+      text: proceedTarget === 'Demo Teaching'
+        ? 'This teaching applicant passed the initial interview and will move to Demo Teaching.'
+        : proceedTarget === 'Final Interview'
+          ? 'This non-teaching applicant passed the initial interview and will move to Final Interview.'
+          : 'This applicant passed the required interview stages and will move to Passing Document.',
+      confirmButtonText: 'Proceed'
+    });
+  }
+
+  function markCurrentInterviewFinished(interview) {
+    if (!currentApplicantModalData || !interview?.interview_type) {
+      return;
+    }
+
+    currentApplicantModalData.interview_progress = currentApplicantModalData.interview_progress || {};
+    const type = interview.interview_type.toString().trim().toLowerCase();
+
+    if (type === 'initial interview') {
+      currentApplicantModalData.interview_progress.completed_initial = true;
+    }
+
+    if (type === 'final interview') {
+      currentApplicantModalData.interview_progress.completed_final = true;
+    }
+
+    if (type === 'demo teaching') {
+      currentApplicantModalData.interview_progress.completed_demo_teaching = true;
+    }
+
+    const progress = currentApplicantModalData.interview_progress;
+    const status = normalizeText(currentApplicantModalData.status);
+    if (progress.is_teaching) {
+      if (status === 'initial interview' && progress.completed_initial && !progress.completed_demo_teaching) {
+        progress.proceed_target = 'Demo Teaching';
+      } else if (status === 'demo teaching' && progress.completed_initial && progress.completed_demo_teaching) {
+        progress.proceed_target = 'Passing Document';
+      } else {
+        progress.proceed_target = null;
+      }
+    } else if (status === 'initial interview' && progress.completed_initial && !progress.completed_final) {
+      progress.proceed_target = 'Final Interview';
+    } else if (status === 'final interview' && progress.completed_initial && progress.completed_final) {
+      progress.proceed_target = 'Passing Document';
+    } else {
+      progress.proceed_target = null;
+    }
+
+    progress.can_proceed_passing_document = progress.proceed_target !== null;
+
+    updateInterviewProceedButton();
+    configureInterviewTypeOptions();
+  }
+
+  function cancelApplicantInterview() {
+    if (!currentApplicantId) {
+      return;
+    }
+
+    Swal.fire({
+      title: 'Cancel interview?',
+      text: 'This will remove the scheduled interview for this applicant.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#e11d48',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Yes, cancel it',
+      cancelButtonText: 'Keep schedule'
+    }).then(result => {
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      const form = document.getElementById('cancelApplicantInterviewForm');
+      form.action = `/system/delete/interview/${currentApplicantId}`;
+      form.submit();
+    });
+  }
+
+  function renderInterviewScheduleSummary(interview) {
+    const list = document.getElementById('interviewScheduleList');
+    if (interviewCountdownTimer) {
+      clearInterval(interviewCountdownTimer);
+      interviewCountdownTimer = null;
+    }
+
+    const interviews = Array.isArray(currentApplicantModalData?.interviews) && currentApplicantModalData.interviews.length
+      ? currentApplicantModalData.interviews
+      : (interview ? [interview] : []);
+
+    if (!list || interviews.length === 0) {
+      list?.classList.add('hidden');
+      updateInterviewDecisionActions(false);
+      return;
+    }
+
+    list.innerHTML = interviews.map((item, index) => {
+      const timeParts = getInterviewTimeParts(item.time);
+      const isFinished = Boolean(item.is_finished);
+
+      return `
+        <div class="interview-schedule-card overflow-hidden rounded-[1.25rem] border ${isFinished ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200 bg-white'} shadow-sm transition" data-index="${index}" data-starts-at="${item.starts_at || `${item.date}T${item.time || '00:00'}`}" data-ends-at="${item.ends_at || item.starts_at || `${item.date}T${item.time || '00:00'}`}" data-type="${item.interview_type || ''}">
+          <div class="flex">
+            <div class="interview-time-strip flex w-20 shrink-0 flex-col items-center justify-center ${isFinished ? 'bg-emerald-100' : 'bg-indigo-50'} px-2 py-5 text-center">
+              <p class="text-[1.35rem] font-black leading-none text-indigo-600">${timeParts.time}</p>
+              <p class="mt-1 text-xs font-bold uppercase text-indigo-500">${timeParts.meridiem}</p>
+            </div>
+            <div class="min-w-0 flex-1 p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="truncate text-base font-black text-slate-900">${item.interview_type || 'Interview'}</p>
+                  <p class="mt-0.5 text-sm text-slate-500">${currentApplicantModalData?.title || 'Position not specified'}</p>
+                </div>
+                <span class="interview-state-badge ${isFinished ? '' : 'hidden'} shrink-0 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-emerald-700">Finished</span>
+              </div>
+              <div class="mt-4 flex flex-wrap gap-2">
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                  <i class="fa-regular fa-hourglass-half text-slate-400"></i>
+                  ${item.duration || 'N/A'}
+                </span>
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                  <i class="fa-solid fa-user-group text-slate-400"></i>
+                  ${item.interviewers || 'Not set'}
+                </span>
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                  <i class="fa-regular fa-calendar text-amber-600"></i>
+                  ${formatInterviewDateBadge(item.date)}
+                </span>
+              </div>
+              <p class="interview-countdown mt-3 text-xs font-semibold ${isFinished ? 'text-emerald-700' : 'text-indigo-600'}">Waiting for schedule</p>
+              <div class="interview-schedule-actions mt-4 ${isFinished ? 'hidden' : 'flex'} flex-wrap gap-2">
+                <button type="button" onclick="focusInterviewForm()" class="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-indigo-700">
+                  <i class="fa-regular fa-pen-to-square"></i>
+                  Reschedule
+                </button>
+                <button type="button" onclick="cancelApplicantInterview()" class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600 transition hover:border-rose-200 hover:text-rose-600">
+                  <i class="fa-solid fa-ban"></i>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    list.classList.remove('hidden');
+
+    const updateCountdown = () => {
+      const now = Date.now();
+      let latestIsFinished = false;
+
+      list.querySelectorAll('.interview-schedule-card').forEach((card, index) => {
+        const startTime = new Date(card.dataset.startsAt);
+        const endTime = new Date(card.dataset.endsAt);
+        const countdown = card.querySelector('.interview-countdown');
+        const stateBadge = card.querySelector('.interview-state-badge');
+        const actions = card.querySelector('.interview-schedule-actions');
+        const timeStrip = card.querySelector('.interview-time-strip');
+        if (!countdown || Number.isNaN(startTime.getTime()) || Number.isNaN(endTime.getTime())) return;
+
+        const hasStarted = now >= startTime.getTime();
+        const isFinished = now >= endTime.getTime();
+        const remainingToStart = startTime.getTime() - now;
+        const remainingToEnd = endTime.getTime() - now;
+
+        countdown.textContent = isFinished
+          ? 'Interview finished. Ready for the next review step.'
+          : hasStarted
+            ? `In progress, ends in ${formatCountdownDistance(remainingToEnd)}`
+            : `Starts in ${formatCountdownDistance(remainingToStart)}`;
+        countdown.classList.toggle('text-emerald-700', isFinished);
+        countdown.classList.toggle('text-indigo-600', !isFinished);
+
+        card.classList.toggle('border-emerald-200', isFinished);
+        card.classList.toggle('bg-emerald-50', isFinished);
+        card.classList.toggle('border-slate-200', !isFinished);
+        card.classList.toggle('bg-white', !isFinished);
+        timeStrip?.classList.toggle('bg-emerald-100', isFinished);
+        timeStrip?.classList.toggle('bg-indigo-50', !isFinished);
+        stateBadge?.classList.toggle('hidden', !isFinished);
+        actions?.classList.toggle('hidden', isFinished);
+        actions?.classList.toggle('flex', !isFinished);
+
+        if (isFinished) {
+          markCurrentInterviewFinished(interviews[index]);
+        }
+
+        if (index === interviews.length - 1) {
+          latestIsFinished = isFinished;
+        }
+      });
+
+      updateInterviewDecisionActions(latestIsFinished);
+    };
+
+    updateCountdown();
+    interviewCountdownTimer = setInterval(updateCountdown, 1000);
+  }
+
+  function openApplicantModal(applicantId, openInterviewPanel = false, openPassingDocumentPanel = false) {
     currentApplicantId = applicantId;
+    currentApplicantModalData = null;
+    autoUnderReviewSubmitted = false;
     document.getElementById('statusId').value = applicantId;
     document.getElementById('ratingStarId').value = applicantId;
+    loadDownloadedApplicantDocuments();
+    currentApplicantDocumentKeys = new Set();
 
     fetch(`/system/applicants/ID/${applicantId}`)
       .then(res => res.json())
       .then(data => {
+        currentApplicantModalData = data;
+        showApplicantReviewPanel();
         document.getElementById('name').innerText = data.name;
         document.getElementById('email').innerText = data.email;
         document.getElementById('contact_email').innerText = data.email;
@@ -762,19 +1540,8 @@
         document.getElementById('status').innerText = data.status;
         document.getElementById('location').innerText = data.location;
         document.getElementById('one').innerText = data.one;
-        document.getElementById('passionate').innerText = data.passionate;
         document.getElementById('number').innerText = data.number;
         document.getElementById('applicantInitials').innerText = getInitials(data.name, '');
-
-        const demoTeachingOption = document.getElementById('demoTeachingOption');
-        const normalizedJobType = normalizeText(data.job_type);
-        const isTeaching = normalizedJobType.includes('teaching') && !normalizedJobType.includes('non');
-        demoTeachingOption.classList.toggle('hidden', !isTeaching);
-
-        const statusSelect = document.querySelector('form#updateStatus select[name="status"]');
-        if (!isTeaching && statusSelect.value === 'Demo Teaching') {
-          statusSelect.value = '-- Choose Option --';
-        }
 
         const workInfo = [
           data.work_position,
@@ -791,8 +1558,13 @@
         renderSkills(data.skills);
 
         const docsContainer = document.getElementById('documents');
+        const docsCount = document.getElementById('documentsCount');
         const rehireSummary = document.getElementById('rehireSummary');
         docsContainer.innerHTML = '';
+        if (docsCount) {
+          const count = Array.isArray(data.documents) ? data.documents.length : 0;
+          docsCount.innerText = `${count} ${count === 1 ? 'file' : 'files'}`;
+        }
         if (rehireSummary) {
           const changedFields = Array.isArray(data?.comparison?.changed_fields) ? data.comparison.changed_fields : [];
           const changedDegrees = Array.isArray(data?.comparison?.changed_degree_levels) ? data.comparison.changed_degree_levels : [];
@@ -809,35 +1581,71 @@
         }
 
         if (data.documents && data.documents.length > 0) {
-          docsContainer.innerHTML = data.documents.map(doc => `
-            <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-              <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-100 text-sky-600">
-                  <i class="fa-regular fa-file"></i>
-                </div>
-                <div>
-                  <div class="flex flex-wrap items-center gap-2">
-                    <p class="text-sm font-semibold text-slate-800">${doc.name}</p>
-                    ${doc.is_new ? '<span class="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-700">New</span>' : ''}
-                  </div>
-                  <p class="text-xs text-slate-400">${doc.type ?? ''}</p>
-                </div>
+          currentApplicantDocumentKeys = new Set(data.documents.map(doc => getApplicantDocumentKey(doc)));
+          const groupedDocs = data.documents.reduce((groups, doc) => {
+            const type = doc.type || 'Other Documents';
+            groups[type] = groups[type] || [];
+            groups[type].push(doc);
+            return groups;
+          }, {});
+
+          docsContainer.innerHTML = Object.entries(groupedDocs).map(([type, docs]) => `
+            <section class="space-y-2">
+              <div class="flex items-center justify-between gap-3">
+                <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">${type}</p>
+                <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-500">${docs.length}</span>
               </div>
-              <a href="${doc.url}" target="_blank" class="text-slate-400 transition hover:text-sky-600">
-                <i class="fa-solid fa-download"></i>
-              </a>
-            </div>
+              <div class="space-y-2">
+                ${docs.map(doc => `
+                  <div class="applicant-doc-card flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5" data-document-key="${getApplicantDocumentKey(doc)}">
+                    <div class="flex min-w-0 items-center gap-3">
+                      <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
+                        <i class="fa-regular fa-file-lines"></i>
+                      </div>
+                      <div class="min-w-0">
+                        <div class="flex flex-wrap items-center gap-2">
+                          <p class="max-w-[210px] truncate text-sm font-semibold text-slate-800" title="${doc.name}">${doc.name}</p>
+                          ${doc.is_new ? '<span class="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-700">New</span>' : ''}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="flex shrink-0 items-center gap-1.5">
+                      <span class="applicant-doc-check flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-600" title="Downloaded">
+                        <i class="fa-solid fa-check text-xs"></i>
+                      </span>
+                      <a href="${doc.url}" target="_blank" onclick="markApplicantDocumentDownloaded('${getApplicantDocumentKey(doc)}')" class="flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition hover:bg-sky-100 hover:text-sky-600" title="Download ${doc.name}">
+                        <i class="fa-solid fa-download"></i>
+                      </a>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </section>
           `).join('');
         } else {
+          currentApplicantDocumentKeys = new Set();
           docsContainer.innerHTML = '<p class="text-sm text-slate-400">No documents uploaded.</p>';
         }
 
         setRating(data.star || 0);
+        updateDocumentReviewProgress();
+        if (
+          openPassingDocumentPanel
+          || ['passing document', 'completed'].includes(normalizeText(data.status))
+        ) {
+          showApplicantPassingDocumentPanel();
+        } else if (openInterviewPanel) {
+          showApplicantInterviewPanel(true);
+        }
         showFlexModal('applicantModal');
       });
   }
 
   function closeApplicantModal() {
+    if (interviewCountdownTimer) {
+      clearInterval(interviewCountdownTimer);
+      interviewCountdownTimer = null;
+    }
     hideFlexModal('applicantModal');
   }
 
@@ -915,17 +1723,41 @@
     });
   }
 
-  document.getElementById('headerApplicantSearch')?.addEventListener('input', () => renderTable(1));
-  document.getElementById('applicantPositionFilter')?.addEventListener('change', () => renderTable(1));
-  document.getElementById('applicantStatusFilter')?.addEventListener('change', () => renderTable(1));
+  document.getElementById('headerApplicantSearch')?.addEventListener('input', () => {
+    activeDashboardFilter = 'all';
+    updateDashboardCardState();
+    renderTable(1);
+  });
+  document.getElementById('applicantPositionFilter')?.addEventListener('change', () => {
+    activeDashboardFilter = 'all';
+    updateDashboardCardState();
+    renderTable(1);
+  });
+  document.getElementById('applicantStatusFilter')?.addEventListener('change', () => {
+    activeDashboardFilter = 'all';
+    updateDashboardCardState();
+    renderTable(1);
+  });
   document.getElementById('clearApplicantFilters')?.addEventListener('click', () => {
+    activeDashboardFilter = 'all';
     document.getElementById('headerApplicantSearch').value = '';
     document.getElementById('applicantPositionFilter').value = '';
     document.getElementById('applicantStatusFilter').value = '';
+    updateDashboardCardState();
     renderTable(1);
   });
 
-  document.querySelectorAll('#applicantModal, #scheduleInterviewModal').forEach(modal => {
+  document.querySelectorAll('[data-applicant-dashboard-filter]').forEach(card => {
+    const handleClick = () => applyDashboardFilter(card.dataset.applicantDashboardFilter || 'all');
+    card.addEventListener('click', handleClick);
+    card.addEventListener('keydown', event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      handleClick();
+    });
+  });
+
+  document.querySelectorAll('#applicantModal').forEach(modal => {
     modal.addEventListener('click', event => {
       if (event.target === modal) {
         hideFlexModal(modal.id);
@@ -939,7 +1771,18 @@
     initApplicantPageAnimation();
   }
 
+  updateDashboardCardState();
   renderTable(1);
+
+  if (recentlyScheduledApplicantId) {
+    openApplicantModal(recentlyScheduledApplicantId, true);
+  } else if (recentlyUpdatedApplicantId) {
+    openApplicantModal(
+      recentlyUpdatedApplicantId,
+      false,
+      ['passing document', 'completed'].includes(normalizeText(recentlyUpdatedApplicantStatus))
+    );
+  }
 </script>
 
 <script>

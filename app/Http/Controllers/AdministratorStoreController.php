@@ -191,7 +191,6 @@ class AdministratorStoreController extends Controller
             'title' => 'required',
             'department' => 'required',
             'employment' => 'required',
-            'collage_name' => 'required',
             'mode' => 'required',
             'description' => 'required',
             'responsibilities' => 'required',
@@ -205,7 +204,6 @@ class AdministratorStoreController extends Controller
             'job_type' => 'required',
             'start_date' => 'required|date',
             'end_date' => 'required|date',
-            'passionate' => 'required',
         ]);
 
         $store = OpenPosition::create([
@@ -213,7 +211,6 @@ class AdministratorStoreController extends Controller
             'department' => $attrs['department'],
             'employment' => $attrs['employment'],
             'work_mode' => $attrs['mode'],
-            'collage_name' => $attrs['collage_name'],
             'job_description' => $attrs['description'],
             'responsibilities' => $attrs['responsibilities'],
             'requirements' => $attrs['requirements'],
@@ -226,7 +223,6 @@ class AdministratorStoreController extends Controller
             'job_type' => $attrs['job_type'],
             'one' => $attrs['start_date'],
             'two' => $attrs['end_date'],
-            'passionate' => $attrs['passionate'],
         ]);
 
         return redirect()
@@ -283,7 +279,10 @@ class AdministratorStoreController extends Controller
             $successMessage .= ' Email notification was not queued. Please check the queue configuration.';
         }
 
-        return redirect()->back()->with('success', $successMessage);
+        return redirect()
+            ->back()
+            ->with('success', $successMessage)
+            ->with('scheduled_applicant_id', $attrs['applicants_id']);
     }
 
     public function store_star_ratings(Request $request){
@@ -2136,7 +2135,6 @@ class AdministratorStoreController extends Controller
             'title' => 'required',
             'department' => 'required',
             'employment' => 'required',
-            'collage_name' => 'required',
             //'mode' => 'required',
             'job_description' => 'required',
             'responsibilities' => 'required',
@@ -2150,7 +2148,6 @@ class AdministratorStoreController extends Controller
             'job_type' => 'required',
             'one' => 'required|date',
             'two' => 'required|date',
-            'passionate' => 'required',
         ]);
 
         $open = OpenPosition::findOrFail($id);
@@ -2161,7 +2158,6 @@ class AdministratorStoreController extends Controller
             'department' => $attrs['department'],
             'employment' => $attrs['employment'],
             //'work_mode' => $attrs['mode'],
-            'collage_name' => $attrs['collage_name'],
             'job_description' => $attrs['job_description'],
             'responsibilities' => $attrs['responsibilities'],
             'requirements' => $attrs['requirements'],
@@ -2174,7 +2170,6 @@ class AdministratorStoreController extends Controller
             'job_type' => $normalizedJobType,
             'one' => $attrs['one'],
             'two' => $attrs['two'],
-            'passionate' => $attrs['passionate'],
         ]);
 
         // Keep employee records aligned with the updated open-position job type.
@@ -2231,7 +2226,11 @@ class AdministratorStoreController extends Controller
             $successMessage .= ' Email notification was not queued. Please check the queue configuration.';
         }
 
-        return redirect()->back()->with('success', $successMessage);
+        return redirect()
+            ->back()
+            ->with('success', $successMessage)
+            ->with('updated_applicant_id', $review->id)
+            ->with('updated_applicant_status', $attrs['status']);
     }
 
     public function updated_interview(Request $request){
@@ -2277,9 +2276,17 @@ class AdministratorStoreController extends Controller
 
     private function resolveApplicantStatusFromInterviewType(string $interviewType): string
     {
-        return strcasecmp(trim($interviewType), 'Final Interview') === 0
-            ? 'Final Interview'
-            : 'Initial Interview';
+        $normalizedInterviewType = trim($interviewType);
+
+        if (strcasecmp($normalizedInterviewType, 'Final Interview') === 0) {
+            return 'Final Interview';
+        }
+
+        if (strcasecmp($normalizedInterviewType, 'Demo Teaching') === 0) {
+            return 'Demo Teaching';
+        }
+
+        return 'Initial Interview';
     }
 
     public function update_employee($id){
@@ -2748,7 +2755,6 @@ class AdministratorStoreController extends Controller
             'title' => 'Unassigned Employee',
             'department' => 'General',
             'employment' => 'Full-Time',
-            'collage_name' => 'HR',
             'work_mode' => 'Onsite',
             'job_description' => 'Auto-generated fallback position for employee sync.',
             'responsibilities' => '-',
@@ -2758,7 +2764,6 @@ class AdministratorStoreController extends Controller
             'skills' => '-',
             'benifits' => '-',
             'job_type' => 'NT',
-            'passionate' => '-',
         ]);
 
         return (int) $fallback->id;
@@ -3962,10 +3967,21 @@ class AdministratorStoreController extends Controller
     }
 
     public function destroy_interview($id){
-        $delete = Interviewer::where('applicant_id', $id)->first();
-        $delete->delete();
-        return redirect()->route('admin.adminPosition')->with('success','Successfully deleted Position');
+        $delete = Interviewer::where('applicant_id', $id)
+            ->latest()
+            ->first();
 
+        if (!$delete) {
+            return redirect()->back()->with('error', 'No scheduled interview found for this applicant.');
+        }
+
+        $delete->delete();
+
+        Applicant::where('id', $id)
+            ->whereIn('application_status', ['Initial Interview', 'Final Interview', 'Demo Teaching'])
+            ->update(['application_status' => 'Under Review']);
+
+        return redirect()->back()->with('success','Interview schedule cancelled successfully.');
     }
 
     public function destroy_employee($id){

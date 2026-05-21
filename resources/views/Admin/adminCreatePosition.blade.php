@@ -47,7 +47,7 @@
       overflow: hidden;
       border: 1px solid rgba(15, 118, 110, 0.18);
       border-radius: 1.9rem;
-      background: linear-gradient(135deg, #052f2a 0%, #0b4c43 42%, #1d7a61 100%);
+      background: linear-gradient(135deg, #020617 0%, #020617 42%, #111827 68%, #064e3b 100%);
       box-shadow: 0 28px 70px rgba(15, 23, 42, 0.14);
     }
 
@@ -199,6 +199,49 @@
           </div>
         @endif
 
+        <div
+          id="position-validation-modal"
+          class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="position-validation-title"
+        >
+          <div class="w-full max-w-lg overflow-hidden rounded-3xl border border-amber-100 bg-white shadow-2xl">
+            <div class="bg-gradient-to-r from-amber-50 via-white to-emerald-50 px-6 py-5">
+              <div class="flex items-start gap-4">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                  <i class="fa-solid fa-circle-exclamation text-xl"></i>
+                </div>
+                <div>
+                  <p class="text-[11px] font-black uppercase tracking-[0.22em] text-amber-700">Incomplete Form</p>
+                  <h2 id="position-validation-title" class="mt-1 text-2xl font-black tracking-tight text-slate-900">Complete the missing details</h2>
+                  <p class="mt-2 text-sm leading-6 text-slate-500">
+                    The position was not saved. Fill in the required fields below, then create the position again.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="px-6 py-5">
+              <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Missing fields</p>
+                <ul id="position-validation-list" class="mt-3 grid gap-2 text-sm font-semibold text-slate-700 sm:grid-cols-2"></ul>
+              </div>
+
+              <div class="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  id="position-validation-close"
+                  class="inline-flex items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,#0f766e,#0f172a)] px-5 py-3 text-sm font-bold text-white shadow-[0_14px_28px_rgba(15,118,110,0.22)] transition hover:-translate-y-0.5"
+                >
+                  <i class="fa-solid fa-pen-to-square text-xs"></i>
+                  Continue Editing
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <section class="position-hero px-6 py-7 text-white md:px-8 md:py-8">
           <div class="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div class="max-w-3xl">
@@ -225,8 +268,14 @@
           </div>
         </section>
 
-        <form action="{{ route('admin.createPositionStore') }}" method="POST">
+        <form action="{{ route('admin.createPositionStore') }}" method="POST" id="create-position-form" novalidate>
           @csrf
+
+          @if ($errors->any())
+            <div class="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-semibold text-amber-800">
+              Please complete all required fields before creating the position.
+            </div>
+          @endif
 
           <div class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.8fr)_minmax(20rem,0.9fr)]">
             <div class="space-y-6">
@@ -238,31 +287,27 @@
                 <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
                     <label class="field-label">Job Title</label>
-                    <input class="input" placeholder="Dean of Student Affairs" name="title">
-                  </div>
-                  <div>
-                    <label class="field-label">College Name</label>
-                    <input class="input" placeholder="College of Nursing" name="collage_name">
+                    <input class="input" placeholder="Dean of Student Affairs" name="title" value="{{ old('title') }}" data-required-label="Job Title">
                   </div>
                   <div>
                     <label class="field-label">Department</label>
-                    <input class="input" placeholder="Library Department" name="department">
+                    <input class="input" placeholder="Library Department" name="department" value="{{ old('department') }}" data-required-label="Department">
                   </div>
                   <div>
                     <label class="field-label">Employment Type</label>
-                    <select class="input" name="employment">
-                      <option>Employment Type</option>
-                      <option value="Full-Time">Full-Time</option>
-                      <option value="Part-Time">Part-Time</option>
+                    <select class="input" name="employment" data-required-label="Employment Type">
+                      <option value="">Employment Type</option>
+                      <option value="Full-Time" @selected(old('employment') === 'Full-Time')>Full-Time</option>
+                      <option value="Part-Time" @selected(old('employment') === 'Part-Time')>Part-Time</option>
                     </select>
                   </div>
-                  <div class="md:col-span-2">
+                  <div>
                     <label class="field-label">Work Mode</label>
-                    <select class="input" name="mode">
-                      <option>Work Mode</option>
-                      <option value="Remote">Remote</option>
-                      <option value="Onsite">Onsite</option>
-                      <option value="Hybrid">Hybrid</option>
+                    <select class="input" name="mode" data-required-label="Work Mode">
+                      <option value="">Work Mode</option>
+                      <option value="Remote" @selected(old('mode') === 'Remote')>Remote</option>
+                      <option value="Onsite" @selected(old('mode') === 'Onsite')>Onsite</option>
+                      <option value="Hybrid" @selected(old('mode') === 'Hybrid')>Hybrid</option>
                     </select>
                   </div>
                 </div>
@@ -277,19 +322,8 @@
                   name="description"
                   class="input resize-none bullet-textarea"
                   placeholder="- Describe the position"
-                ></textarea>
-              </div>
-
-              <div class="position-panel p-6 md:p-7">
-                <div class="section-kicker section-kicker--teal">Culture Signal</div>
-                <h2 class="section-title">Passionate</h2>
-                <p class="section-copy">Capture the mindset, motivation, or mission-fit you want applicants to connect with.</p>
-                <textarea
-                  rows="6"
-                  name="passionate"
-                  class="input resize-none bullet-textarea"
-                  placeholder="- Describe the passionate qualities you are looking for"
-                ></textarea>
+                  data-required-label="Job Description"
+                >{{ old('description') }}</textarea>
               </div>
 
               <div class="position-panel p-6 md:p-7">
@@ -301,7 +335,8 @@
                   name="responsibilities"
                   class="input resize-none bullet-textarea"
                   placeholder="- Lead departmental planning and coordination"
-                ></textarea>
+                  data-required-label="Responsibilities"
+                >{{ old('responsibilities') }}</textarea>
               </div>
 
               <div class="position-panel p-6 md:p-7">
@@ -313,49 +348,46 @@
                   name="requirements"
                   class="input resize-none bullet-textarea"
                   placeholder="- 5+ years of related experience"
-                ></textarea>
+                  data-required-label="Requirements"
+                >{{ old('requirements') }}</textarea>
               </div>
             </div>
 
             <div class="space-y-6">
               <div class="position-panel p-6 md:p-7">
-                <div class="section-kicker section-kicker--gold">Posting Settings</div>
-                <h2 class="section-title">Job Details</h2>
-                <p class="section-copy">Set the practical details that define how and when this opening will be published.</p>
-
-                <div class="mt-6 space-y-4">
+                <div class="space-y-4">
                   <div>
                     <label class="field-label">Experience Level</label>
-                    <select class="input" name="level">
-                      <option>Experience Level</option>
-                      <option value="Junior">Junior</option>
-                      <option value="Mid">Mid</option>
-                      <option value="Senior">Senior</option>
+                    <select class="input" name="level" data-required-label="Experience Level">
+                      <option value="">Experience Level</option>
+                      <option value="Junior" @selected(old('level') === 'Junior')>Junior</option>
+                      <option value="Mid" @selected(old('level') === 'Mid')>Mid</option>
+                      <option value="Senior" @selected(old('level') === 'Senior')>Senior</option>
                     </select>
                   </div>
 
                   <div>
                     <label class="field-label">Job Type</label>
-                    <select class="input" name="job_type">
-                      <option>Job Type</option>
-                      <option value="Teaching">Teaching</option>
-                      <option value="Non-Teaching">Non-Teaching</option>
+                    <select class="input" name="job_type" data-required-label="Job Type">
+                      <option value="">Job Type</option>
+                      <option value="Teaching" @selected(old('job_type') === 'Teaching')>Teaching</option>
+                      <option value="Non-Teaching" @selected(old('job_type') === 'Non-Teaching')>Non-Teaching</option>
                     </select>
                   </div>
 
                   <div>
                     <label class="field-label">Location</label>
-                    <input class="input" placeholder="Santiago City Campus" name="location">
+                    <input class="input" placeholder="Santiago City Campus" name="location" value="{{ old('location') }}" data-required-label="Location">
                   </div>
 
                   <div>
                     <label class="field-label">Start Date</label>
-                    <input type="date" class="input" name="start_date">
+                    <input type="date" class="input" name="start_date" value="{{ old('start_date') }}" data-required-label="Start Date">
                   </div>
 
                   <div>
                     <label class="field-label">Close Date</label>
-                    <input type="date" class="input" name="end_date">
+                    <input type="date" class="input" name="end_date" value="{{ old('end_date') }}" data-required-label="Close Date">
                   </div>
 
                   <p class="helper-text">
@@ -370,7 +402,15 @@
                 <p class="section-copy">Highlight the strongest practical strengths the role needs from day one.</p>
                 <div class="mt-5">
                   <label class="field-label">Skills</label>
-                  <input class="input" placeholder="Type skill and press Enter" name="skills">
+                  <input type="hidden" name="skills" id="skills-value" value="{{ old('skills') }}" data-required-label="Skills" data-focus-target="skill-input">
+                  <div class="flex gap-2">
+                    <input id="skill-input" class="input" placeholder="Type skill" autocomplete="off">
+                    <button type="button" id="add-skill-button" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#0f766e,#0f172a)] px-4 py-3 text-sm font-bold text-white shadow-[0_14px_26px_rgba(15,118,110,0.18)] transition hover:-translate-y-0.5">
+                      <i class="fa-solid fa-plus text-xs"></i>
+                      Add
+                    </button>
+                  </div>
+                  <div id="skills-list" class="mt-3 flex flex-wrap gap-2"></div>
                 </div>
               </div>
 
@@ -383,7 +423,8 @@
                   name="benefits"
                   class="input resize-none bullet-textarea"
                   placeholder="- Health insurance"
-                ></textarea>
+                  data-required-label="Benefits & Perks"
+                >{{ old('benefits') }}</textarea>
               </div>
 
               <div class="cta-row">
@@ -410,6 +451,123 @@
 
 <script>
   const bullet = '- ';
+  const createPositionForm = document.getElementById('create-position-form');
+  const validationModal = document.getElementById('position-validation-modal');
+  const validationList = document.getElementById('position-validation-list');
+  const validationCloseButton = document.getElementById('position-validation-close');
+  const skillInput = document.getElementById('skill-input');
+  const addSkillButton = document.getElementById('add-skill-button');
+  const skillsValue = document.getElementById('skills-value');
+  const skillsList = document.getElementById('skills-list');
+
+  function isBlankRequiredValue(field) {
+    const value = field.value.trim();
+    return value === '' || value === bullet.trim();
+  }
+
+  if (createPositionForm) {
+    function getMissingRequiredFields() {
+      return Array.from(createPositionForm.querySelectorAll('[data-required-label]'))
+        .filter(isBlankRequiredValue);
+    }
+
+    function openValidationModal(missingFields) {
+      validationList.innerHTML = '';
+
+      missingFields.forEach((field) => {
+        const item = document.createElement('li');
+        item.className = 'flex items-center gap-2 rounded-xl bg-white px-3 py-2 shadow-sm';
+        item.innerHTML = '<i class="fa-solid fa-circle-dot text-[10px] text-amber-500"></i><span></span>';
+        item.querySelector('span').textContent = field.dataset.requiredLabel;
+        validationList.appendChild(item);
+      });
+
+      validationModal.classList.remove('hidden');
+      validationModal.classList.add('flex');
+      validationCloseButton.focus();
+    }
+
+    function closeValidationModal() {
+      validationModal.classList.add('hidden');
+      validationModal.classList.remove('flex');
+      const firstMissing = getMissingRequiredFields()[0];
+      const focusTargetId = firstMissing?.dataset.focusTarget;
+      (focusTargetId ? document.getElementById(focusTargetId) : firstMissing)?.focus();
+    }
+
+    validationCloseButton?.addEventListener('click', closeValidationModal);
+    validationModal?.addEventListener('click', (event) => {
+      if (event.target === validationModal) {
+        closeValidationModal();
+      }
+    });
+
+    createPositionForm.addEventListener('submit', (event) => {
+      const missingFields = getMissingRequiredFields();
+
+      if (missingFields.length === 0) {
+        return;
+      }
+
+      event.preventDefault();
+      openValidationModal(missingFields);
+    });
+
+    @if ($errors->any())
+      openValidationModal(getMissingRequiredFields());
+    @endif
+  }
+
+  if (skillInput && addSkillButton && skillsValue && skillsList) {
+    let skills = skillsValue.value
+      .split(',')
+      .map((skill) => skill.trim())
+      .filter(Boolean);
+
+    function renderSkills() {
+      skillsValue.value = skills.join(', ');
+      skillsList.innerHTML = '';
+
+      skills.forEach((skill, index) => {
+        const chip = document.createElement('span');
+        chip.className = 'inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1.5 text-sm font-semibold text-teal-800';
+        chip.innerHTML = '<span></span><button type="button" class="text-teal-700 transition hover:text-red-600" aria-label="Remove skill"><i class="fa-solid fa-xmark text-xs"></i></button>';
+        chip.querySelector('span').textContent = skill;
+        chip.querySelector('button').addEventListener('click', () => {
+          skills.splice(index, 1);
+          renderSkills();
+          skillInput.focus();
+        });
+        skillsList.appendChild(chip);
+      });
+    }
+
+    function addSkill() {
+      const skill = skillInput.value.trim();
+      if (!skill) {
+        skillInput.focus();
+        return;
+      }
+
+      if (!skills.some((existingSkill) => existingSkill.toLowerCase() === skill.toLowerCase())) {
+        skills.push(skill);
+        renderSkills();
+      }
+
+      skillInput.value = '';
+      skillInput.focus();
+    }
+
+    addSkillButton.addEventListener('click', addSkill);
+    skillInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        addSkill();
+      }
+    });
+
+    renderSkills();
+  }
 
   document.querySelectorAll('.bullet-textarea').forEach((textarea) => {
     textarea.addEventListener('focus', () => {
