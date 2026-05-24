@@ -17,10 +17,13 @@ class ApplicantDocument extends Model
         'size',
         'mime_type',
         'type',
+        'reviewed_at',
+        'reviewed_by',
     ];
 
     protected $casts = [
         'created_at' => 'date',
+        'reviewed_at' => 'datetime',
     ];
 
     protected $appends = [

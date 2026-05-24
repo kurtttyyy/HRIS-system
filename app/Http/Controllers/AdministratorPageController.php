@@ -3047,7 +3047,7 @@ class AdministratorPageController extends Controller
         $this->syncFinishedInterviewApplicantStatuses();
 
         $app = Applicant::with(
-            'documents:id,filename,applicant_id,filepath,type,created_at',
+            'documents:id,filename,applicant_id,filepath,type,reviewed_at,reviewed_by,created_at',
             'degrees:id,applicant_id,degree_level,degree_name,school_name,year_finished,sort_order',
             'position:id,title,department,employment,work_mode,job_description,responsibilities,requirements,experience_level,location,skills,benifits,job_type,one,two'
             )->findOrFail($id);
@@ -3110,6 +3110,34 @@ class AdministratorPageController extends Controller
             'work_employer' => $app->work_employer,
             'work_location' => $app->work_location,
             'work_duration' => $app->work_duration,
+            'education_background' => $app->degrees
+                ->sortBy(function ($degree) {
+                    $levelOrder = [
+                        'elementary' => 10,
+                        'secondary' => 20,
+                        'vocational_trade' => 30,
+                        'bachelor' => 40,
+                        'master' => 50,
+                        'doctorate' => 60,
+                    ];
+                    $level = strtolower(trim((string) ($degree->degree_level ?? '')));
+
+                    return sprintf(
+                        '%03d-%03d-%08d',
+                        $levelOrder[$level] ?? 999,
+                        (int) ($degree->sort_order ?? 0),
+                        (int) ($degree->id ?? 0)
+                    );
+                })
+                ->values()
+                ->map(function ($degree) {
+                    return [
+                        'level' => $degree->degree_level,
+                        'degree_name' => $degree->degree_name,
+                        'school_name' => $degree->school_name,
+                        'year_finished' => $degree->year_finished,
+                    ];
+                }),
             'skills' => $app->skills_n_expertise,
             'number' => $app->phone,
             'star' => $app->starRatings,
@@ -3156,6 +3184,7 @@ class AdministratorPageController extends Controller
                     'name' => $doc->filename,
                     'type' => $doc->type,
                     'url' => asset('storage/'.ltrim((string) ($doc->filepath ?? ''), '/')),
+                    'is_reviewed' => (bool) $doc->reviewed_at,
                     'is_new' => (bool) ($comparison['is_rehire'] ?? false),
                 ];
             }),

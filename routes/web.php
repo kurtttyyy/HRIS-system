@@ -136,6 +136,7 @@ Route::controller(AdministratorStoreController::class)->group(function () {
     Route::post('system/store/interview', 'store_interview')->name('admin.storeNewInterview');
     Route::post('system/communication/send', 'send_communication_message')->name('admin.communication.send');
     Route::post('system/employee/document', 'store_document')->name('admin.addDocument');
+    Route::post('system/applicant/document/{document}/reviewed', 'mark_applicant_document_reviewed')->name('admin.applicantDocument.reviewed');
     Route::post('system/attendance/upload', 'store_attendance_excel')->name('admin.uploadAttendanceExcel');
     Route::post('system/payslip/upload', 'store_payslip_file')->name('admin.uploadPayslipFile');
     Route::post('system/loads/upload', 'store_loads_file')->name('admin.uploadLoadsFile');

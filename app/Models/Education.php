@@ -13,7 +13,14 @@ class Education extends Model
     protected $table = 'education';
 
     protected $fillable = [
+        'applicant_id',
         'user_id',
+        'elementary_school_name',
+        'elementary_year_finished',
+        'secondary_school_name',
+        'secondary_year_finished',
+        'vocational_trade_school_name',
+        'vocational_trade_year_finished',
         'bachelor',
         'master',
         'doctorate',

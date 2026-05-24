@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\ResolvesTabSession;
 use App\Models\ActivityLog;
 use App\Models\Applicant;
+use App\Models\Education;
 use App\Models\Resignation;
 use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
@@ -120,6 +121,9 @@ class RegisterLoginController extends Controller
                     ->update([
                         'user_id' => $user->id,
                     ]);
+
+        $matchingApplicant->user_id = $user->id;
+        $this->syncEducationRecordFromApplicant($user, $matchingApplicant->loadMissing('degrees'));
 
         return redirect()->route('login_display');
     }
@@ -354,6 +358,68 @@ class RegisterLoginController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login_display', $tabSession !== '' ? ['tab_session' => $tabSession] : []);
+    }
+
+    private function syncEducationRecordFromApplicant(User $user, Applicant $applicant): void
+    {
+        if (!Schema::hasTable('education')) {
+            return;
+        }
+
+        $degrees = collect($applicant->degrees ?? []);
+        $firstDegree = fn (string $level) => $degrees
+            ->first(fn ($row) => strtolower(trim((string) ($row->degree_level ?? ''))) === $level);
+
+        $elementary = $firstDegree('elementary');
+        $secondary = $firstDegree('secondary');
+        $vocationalTrade = $firstDegree('vocational_trade');
+        $bachelor = $firstDegree('bachelor');
+        $master = $firstDegree('master');
+        $doctorate = $firstDegree('doctorate');
+
+        $payload = [
+            'bachelor' => trim((string) ($applicant->bachelor_degree ?: ($bachelor->degree_name ?? ''))),
+            'master' => trim((string) ($applicant->master_degree ?: ($master->degree_name ?? ''))),
+            'doctorate' => trim((string) ($applicant->doctoral_degree ?: ($doctorate->degree_name ?? ''))),
+        ];
+
+        $optionalColumns = [
+            'elementary_school_name' => $elementary->school_name ?? null,
+            'elementary_year_finished' => $elementary->year_finished ?? null,
+            'secondary_school_name' => $secondary->school_name ?? null,
+            'secondary_year_finished' => $secondary->year_finished ?? null,
+            'vocational_trade_school_name' => $vocationalTrade->school_name ?? null,
+            'vocational_trade_year_finished' => $vocationalTrade->year_finished ?? null,
+        ];
+
+        foreach ($optionalColumns as $column => $value) {
+            if (Schema::hasColumn('education', $column)) {
+                $payload[$column] = filled($value) ? trim((string) $value) : null;
+            }
+        }
+
+        $lookup = Education::query();
+        if (Schema::hasColumn('education', 'applicant_id')) {
+            $lookup->where('applicant_id', (int) $applicant->id);
+        } else {
+            $lookup->where('user_id', (int) $user->id);
+        }
+
+        $education = $lookup->first()
+            ?: Education::query()->where('user_id', (int) $user->id)->first()
+            ?: new Education();
+
+        if (Schema::hasColumn('education', 'applicant_id')) {
+            $education->applicant_id = (int) $applicant->id;
+        }
+
+        $education->fill([
+            ...$payload,
+            'user_id' => (int) $user->id,
+            'bachelor' => $payload['bachelor'] ?? '',
+            'master' => $payload['master'] ?? '',
+            'doctorate' => $payload['doctorate'] ?? '',
+        ])->save();
     }
 
     private function resolveRehireUser(?Applicant $matchingApplicant, ?User $existingUser): ?User

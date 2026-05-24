@@ -46,6 +46,7 @@ class Applicant extends Model
         'benefit',
         'open_position_id',
         'application_status',
+        'date_hired',
         'user_id',
         'work_position',
         'work_employer',

@@ -28,8 +28,10 @@ class ApplicationUpdatedMail extends Mailable implements ShouldQueue
      */
     public function envelope(): Envelope
     {
+        $status = trim((string) ($this->review->application_status ?? 'Updated'));
+
         return new Envelope(
-            subject: 'Application Status Update',
+            subject: 'Application Status Update: '.$status,
         );
     }
 

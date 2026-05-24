@@ -40,6 +40,22 @@ use Illuminate\Support\Facades\Mail;
 
 class AdministratorStoreController extends Controller
 {
+    public function mark_applicant_document_reviewed(Request $request, ApplicantDocument $document)
+    {
+        if (!$document->reviewed_at) {
+            $document->forceFill([
+                'reviewed_at' => now(),
+                'reviewed_by' => Auth::id(),
+            ])->save();
+        }
+
+        return response()->json([
+            'ok' => true,
+            'document_id' => $document->id,
+            'reviewed_at' => optional($document->reviewed_at)->toIso8601String(),
+        ]);
+    }
+
     public function send_communication_message(Request $request)
     {
         if (!Schema::hasTable('conversations') || !Schema::hasTable('conversation_messages')) {
@@ -244,6 +260,13 @@ class AdministratorStoreController extends Controller
             'url' => 'nullable',
             'notes' => 'nullable',
         ]);
+
+        if ($this->hasCompletedInterviewStage((int) $attrs['applicants_id'], (string) $attrs['interview_type'])) {
+            return redirect()
+                ->back()
+                ->with('error', $attrs['interview_type'].' is already finished for this applicant and cannot be scheduled again.')
+                ->with('scheduled_applicant_id', $attrs['applicants_id']);
+        }
 
         $store = Interviewer::create([
             'applicant_id' => $attrs['applicants_id'],
@@ -2195,6 +2218,7 @@ class AdministratorStoreController extends Controller
         $attrs = $request->validate([
             'reviewId' => 'required',
             'status' => 'required|string',
+            'date_hired' => 'nullable|required_if:status,Hired|date',
         ]);
 
         $review = Applicant::findOrFail($attrs['reviewId']);
@@ -2203,9 +2227,15 @@ class AdministratorStoreController extends Controller
             $this->reactivateResignedEmployeeAccountForApplicant($review);
         }
 
-        $review->update([
+        $updatePayload = [
             'application_status' => $attrs['status'],
-        ]);
+        ];
+
+        if (strcasecmp(trim((string) $attrs['status']), 'Hired') === 0) {
+            $updatePayload['date_hired'] = $attrs['date_hired'];
+        }
+
+        $review->update($updatePayload);
 
         $this->syncDepartmentHeadFromApplicant($review->fresh(['position']));
 
@@ -2249,6 +2279,30 @@ class AdministratorStoreController extends Controller
         ]);
 
         $interview = Interviewer::findOrFail($attrs['interviewId']);
+        $newApplicantId = (int) $attrs['applicantId'];
+        $newInterviewType = (string) $attrs['interview_type'];
+
+        if ($this->interviewIsFinished($interview)) {
+            return redirect()
+                ->back()
+                ->with('error', $interview->interview_type.' is already finished and cannot be rescheduled.')
+                ->with('updated_applicant_id', $newApplicantId)
+                ->with('updated_applicant_status', $this->resolveApplicantStatusFromInterviewType((string) $interview->interview_type));
+        }
+
+        if (
+            (
+                (int) $interview->applicant_id !== $newApplicantId
+                || strcasecmp(trim((string) $interview->interview_type), trim($newInterviewType)) !== 0
+            )
+            && $this->hasCompletedInterviewStage($newApplicantId, $newInterviewType)
+        ) {
+            return redirect()
+                ->back()
+                ->with('error', $newInterviewType.' is already finished for this applicant and cannot be scheduled again.')
+                ->with('updated_applicant_id', $newApplicantId)
+                ->with('updated_applicant_status', $this->resolveApplicantStatusFromInterviewType($newInterviewType));
+        }
 
         $interview->update([
             'applicant_id' => $attrs['applicantId'],
@@ -2287,6 +2341,45 @@ class AdministratorStoreController extends Controller
         }
 
         return 'Initial Interview';
+    }
+
+    private function hasCompletedInterviewStage(int $applicantId, string $interviewType): bool
+    {
+        $normalizedType = strtolower(trim($interviewType));
+        if ($applicantId <= 0 || $normalizedType === '') {
+            return false;
+        }
+
+        return Interviewer::query()
+            ->where('applicant_id', $applicantId)
+            ->whereRaw('LOWER(TRIM(interview_type)) = ?', [$normalizedType])
+            ->get()
+            ->contains(fn (Interviewer $interview) => $this->interviewIsFinished($interview));
+    }
+
+    private function interviewIsFinished(Interviewer $interview): bool
+    {
+        if (!$interview->date || !$interview->time) {
+            return false;
+        }
+
+        $start = Carbon::parse($interview->date->toDateString().' '.$interview->time);
+        $end = (clone $start)->addMinutes($this->durationToMinutes($interview->duration));
+
+        return now()->gte($end);
+    }
+
+    private function durationToMinutes(?string $duration): int
+    {
+        if (!$duration) {
+            return 0;
+        }
+
+        if (preg_match('/(\d+)/', $duration, $matches)) {
+            return (int) $matches[1];
+        }
+
+        return 0;
     }
 
     public function update_employee($id){
@@ -3335,6 +3428,12 @@ class AdministratorStoreController extends Controller
             'valid_until' => 'nullable|date',
 
             //Education Model
+            'elementary_school_name' => 'nullable|string|max:255',
+            'elementary_year_finished' => 'nullable|string|max:50',
+            'secondary_school_name' => 'nullable|string|max:255',
+            'secondary_year_finished' => 'nullable|string|max:50',
+            'vocational_trade_school_name' => 'nullable|string|max:255',
+            'vocational_trade_year_finished' => 'nullable|string|max:50',
             'bachelor' => 'nullable|string|max:255',
             'master' => 'nullable|string|max:255',
             'doctorate' => 'nullable|string|max:255',
@@ -3462,14 +3561,26 @@ class AdministratorStoreController extends Controller
         }
 
         $educationPayload = [
+            'elementary_school_name' => $attrs['elementary_school_name'] ?? ($existingEducation?->elementary_school_name ?? null),
+            'elementary_year_finished' => $attrs['elementary_year_finished'] ?? ($existingEducation?->elementary_year_finished ?? null),
+            'secondary_school_name' => $attrs['secondary_school_name'] ?? ($existingEducation?->secondary_school_name ?? null),
+            'secondary_year_finished' => $attrs['secondary_year_finished'] ?? ($existingEducation?->secondary_year_finished ?? null),
+            'vocational_trade_school_name' => $attrs['vocational_trade_school_name'] ?? ($existingEducation?->vocational_trade_school_name ?? null),
+            'vocational_trade_year_finished' => $attrs['vocational_trade_year_finished'] ?? ($existingEducation?->vocational_trade_year_finished ?? null),
             'bachelor' => $attrs['bachelor'] ?? ($existingEducation?->bachelor ?? null),
             'master' => $attrs['master'] ?? ($existingEducation?->master ?? null),
             'doctorate' => $attrs['doctorate'] ?? ($existingEducation?->doctorate ?? null),
         ];
-        if ($existingEducation || $hasAllRequired($educationPayload, ['bachelor', 'master', 'doctorate'])) {
+        $hasAnyEducationData = collect($educationPayload)->contains(fn ($value) => filled($value));
+        if ($existingEducation || $hasAnyEducationData) {
             Education::updateOrCreate(
                 ['user_id' => $attrs['user_id']],
-                $educationPayload
+                [
+                    ...$educationPayload,
+                    'bachelor' => $educationPayload['bachelor'] ?? '',
+                    'master' => $educationPayload['master'] ?? '',
+                    'doctorate' => $educationPayload['doctorate'] ?? '',
+                ]
             );
         }
 
@@ -3535,6 +3646,21 @@ class AdministratorStoreController extends Controller
             };
 
             $allDegreeRows = collect()
+                ->concat($normalizeRows('elementary', [
+                    'degree_name' => 'Elementary',
+                    'school_name' => $attrs['elementary_school_name'] ?? null,
+                    'year_finished' => $attrs['elementary_year_finished'] ?? null,
+                ]))
+                ->concat($normalizeRows('secondary', [
+                    'degree_name' => 'Secondary',
+                    'school_name' => $attrs['secondary_school_name'] ?? null,
+                    'year_finished' => $attrs['secondary_year_finished'] ?? null,
+                ]))
+                ->concat($normalizeRows('vocational_trade', [
+                    'degree_name' => 'Vocational / Trade Course',
+                    'school_name' => $attrs['vocational_trade_school_name'] ?? null,
+                    'year_finished' => $attrs['vocational_trade_year_finished'] ?? null,
+                ]))
                 ->concat($normalizeRows('bachelor', [
                     'degree_name' => $attrs['bachelor'] ?? null,
                     'school_name' => $attrs['bachelor_school_name'] ?? null,

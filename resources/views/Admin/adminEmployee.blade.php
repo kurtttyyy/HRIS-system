@@ -1019,6 +1019,9 @@
           const bachelorDegreeRow = findDegreeRow('bachelor');
           const masterDegreeRow = findDegreeRow('master');
           const doctorateDegreeRow = findDegreeRow('doctorate');
+          const elementaryDegreeRow = findDegreeRow('elementary');
+          const secondaryDegreeRow = findDegreeRow('secondary');
+          const vocationalTradeDegreeRow = findDegreeRow('vocational_trade');
 
           if (!employeeData.position && applicantPosition.title) {
             employeeData.position = applicantPosition.title;
@@ -1061,6 +1064,24 @@
           }
           if (!educationData.doctorate && doctorateDegreeRow?.degree_name) {
             educationData.doctorate = doctorateDegreeRow.degree_name;
+          }
+          if (!educationData.elementary_school_name && elementaryDegreeRow?.school_name) {
+            educationData.elementary_school_name = elementaryDegreeRow.school_name;
+          }
+          if (!educationData.elementary_year_finished && elementaryDegreeRow?.year_finished) {
+            educationData.elementary_year_finished = elementaryDegreeRow.year_finished;
+          }
+          if (!educationData.secondary_school_name && secondaryDegreeRow?.school_name) {
+            educationData.secondary_school_name = secondaryDegreeRow.school_name;
+          }
+          if (!educationData.secondary_year_finished && secondaryDegreeRow?.year_finished) {
+            educationData.secondary_year_finished = secondaryDegreeRow.year_finished;
+          }
+          if (!educationData.vocational_trade_school_name && vocationalTradeDegreeRow?.school_name) {
+            educationData.vocational_trade_school_name = vocationalTradeDegreeRow.school_name;
+          }
+          if (!educationData.vocational_trade_year_finished && vocationalTradeDegreeRow?.year_finished) {
+            educationData.vocational_trade_year_finished = vocationalTradeDegreeRow.year_finished;
           }
 
           if (!applicantData.bachelor_school_name && bachelorDegreeRow?.school_name) {

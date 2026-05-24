@@ -637,6 +637,31 @@ window.displayEmployeeId = function displayEmployeeId(employee, emptyValue = '-'
       <section class="edit-section">
         <h3 class="edit-section-title">Education</h3>
         <div class="space-y-4">
+          <div class="space-y-3">
+            <h4 class="text-sm font-semibold text-slate-700">Basic Education</h4>
+            <div class="space-y-2 rounded-lg border border-slate-200 p-3">
+              <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700">Elementary</p>
+              <div class="edit-grid-2">
+                <div class="edit-field"><label class="edit-label">School Name</label><input class="edit-input" name="elementary_school_name" x-model="selectedEmployee.education.elementary_school_name"></div>
+                <div class="edit-field"><label class="edit-label">Year Graduated</label><input class="edit-input" name="elementary_year_finished" x-model="selectedEmployee.education.elementary_year_finished"></div>
+              </div>
+            </div>
+            <div class="space-y-2 rounded-lg border border-slate-200 p-3">
+              <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700">Secondary</p>
+              <div class="edit-grid-2">
+                <div class="edit-field"><label class="edit-label">School Name</label><input class="edit-input" name="secondary_school_name" x-model="selectedEmployee.education.secondary_school_name"></div>
+                <div class="edit-field"><label class="edit-label">Year Graduated</label><input class="edit-input" name="secondary_year_finished" x-model="selectedEmployee.education.secondary_year_finished"></div>
+              </div>
+            </div>
+            <div class="space-y-2 rounded-lg border border-slate-200 p-3">
+              <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700">Vocational / Trade Course</p>
+              <div class="edit-grid-2">
+                <div class="edit-field"><label class="edit-label">School Name</label><input class="edit-input" name="vocational_trade_school_name" x-model="selectedEmployee.education.vocational_trade_school_name"></div>
+                <div class="edit-field"><label class="edit-label">Year Graduated</label><input class="edit-input" name="vocational_trade_year_finished" x-model="selectedEmployee.education.vocational_trade_year_finished"></div>
+              </div>
+            </div>
+          </div>
+
           <input type="hidden" name="bachelor" :value="degreeEditRows?.bachelor?.[0]?.degree_name ?? ''">
           <input type="hidden" name="bachelor_school_name" :value="degreeEditRows?.bachelor?.[0]?.school_name ?? ''">
           <input type="hidden" name="bachelor_year_finished" :value="degreeEditRows?.bachelor?.[0]?.year_finished ?? ''">

@@ -347,7 +347,7 @@
 
 <div data-admin-sidebar-overlay class="admin-sidebar-overlay"></div>
 
-<aside id="admin-sidebar" class="admin-sidebar group fixed left-0 top-0 h-screen text-slate-200 flex flex-col w-16 hover:w-72 transition-all duration-300 overflow-x-hidden overflow-y-auto z-50" x-data="{ profileMenuOpen: false }">
+<aside id="admin-sidebar" class="admin-sidebar group fixed left-0 top-0 h-screen text-slate-200 flex flex-col w-16 hover:w-72 transition-all duration-300 overflow-x-hidden overflow-y-auto z-50">
   <div class="px-3 py-4 flex items-center gap-3 border-b border-slate-800/90">
     <div class="flex items-center justify-center">
       <!-- Small square icon visible when collapsed -->
@@ -644,11 +644,11 @@
         <p class="font-medium truncate">{{ $adminDisplayName }}</p>
         <button
           type="button"
+          data-admin-profile-menu-toggle
           class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-700 text-slate-200 transition hover:border-emerald-400 hover:bg-slate-800 hover:text-white"
           title="Settings"
           aria-label="Open settings menu"
-          @click.stop="profileMenuOpen = !profileMenuOpen"
-          :aria-expanded="profileMenuOpen.toString()"
+          aria-expanded="false"
         >
           <i class="fa-solid fa-gear"></i>
         </button>
@@ -657,11 +657,8 @@
     </div>
 
     <div
-      x-cloak
-      x-show="profileMenuOpen"
-      x-transition
-      @click.outside="profileMenuOpen = false"
-      class="absolute bottom-20 left-4 right-4 hidden overflow-hidden rounded-2xl border border-slate-700 bg-slate-950/95 p-2 text-sm shadow-2xl shadow-slate-950/40 group-hover:block"
+      data-admin-profile-menu
+      class="absolute bottom-20 left-4 right-4 hidden overflow-hidden rounded-2xl border border-slate-700 bg-slate-950/95 p-2 text-sm shadow-2xl shadow-slate-950/40"
     >
       <button type="button" class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-slate-200 transition hover:bg-slate-800 hover:text-white">
         <i class="fa-solid fa-gear w-4 text-center text-emerald-300"></i>
@@ -738,11 +735,13 @@
     const sidebar = document.querySelector('.admin-sidebar');
     const sidebarToggle = document.querySelector('[data-admin-sidebar-toggle]');
     const sidebarOverlay = document.querySelector('[data-admin-sidebar-overlay]');
+    const profileMenuToggle = document.querySelector('[data-admin-profile-menu-toggle]');
+    const profileMenu = document.querySelector('[data-admin-profile-menu]');
     const currentUrl = new URL(window.location.href);
     const tabSession = currentUrl.searchParams.get('tab_session') || '';
     const adminNotificationUnreadKey = 'admin_notifications_unread_v1';
     localStorage.setItem(adminNotificationUnreadKey, '0');
-    if (!links.length && !tabSession && !sidebarToggle) {
+    if (!links.length && !tabSession && !sidebarToggle && !profileMenuToggle) {
       return;
     }
 
@@ -870,15 +869,56 @@
 
     const isCompactViewport = () => window.matchMedia('(max-width: 1024px)').matches;
 
+    const closeProfileMenu = () => {
+      if (!profileMenu || !profileMenuToggle) {
+        return;
+      }
+
+      profileMenu.classList.add('hidden');
+      profileMenuToggle.setAttribute('aria-expanded', 'false');
+    };
+
+    const toggleProfileMenu = () => {
+      if (!profileMenu || !profileMenuToggle) {
+        return;
+      }
+
+      const isOpen = !profileMenu.classList.contains('hidden');
+      profileMenu.classList.toggle('hidden', isOpen);
+      profileMenuToggle.setAttribute('aria-expanded', String(!isOpen));
+    };
+
     const closeSidebar = () => {
       if (!sidebar || !sidebarOverlay || !sidebarToggle) {
         return;
       }
 
+      closeProfileMenu();
       sidebar.classList.remove('is-open');
       sidebarOverlay.classList.remove('is-visible');
       sidebarToggle.setAttribute('aria-expanded', 'false');
     };
+
+    if (profileMenuToggle && profileMenu) {
+      profileMenuToggle.addEventListener('click', (event) => {
+        event.stopPropagation();
+        toggleProfileMenu();
+      });
+
+      profileMenu.addEventListener('click', (event) => {
+        event.stopPropagation();
+      });
+
+      document.addEventListener('click', closeProfileMenu);
+
+      if (sidebar) {
+        sidebar.addEventListener('mouseleave', () => {
+          if (!isCompactViewport()) {
+            closeProfileMenu();
+          }
+        });
+      }
+    }
 
     const openSidebar = () => {
       if (!sidebar || !sidebarOverlay || !sidebarToggle) {

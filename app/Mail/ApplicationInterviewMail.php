@@ -28,8 +28,14 @@ class ApplicationInterviewMail extends Mailable implements ShouldQueue
      */
     public function envelope(): Envelope
     {
+        $date = trim((string) ($this->interview->date ?? ''));
+        $subject = 'Application Interview Schedule';
+        if ($date !== '') {
+            $subject .= ': '.$date;
+        }
+
         return new Envelope(
-            subject: 'Application Interview Schedule',
+            subject: $subject,
         );
     }
 

@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="{{ csrf_token() }}" />
   <title>PeopleHub - HR Dashboard</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -316,6 +317,7 @@
                   @csrf
                   <input type="hidden" name="reviewId" id="statusId">
                   <input type="hidden" name="status" id="statusAutoValue" value="Under Review">
+                  <input type="hidden" name="date_hired" id="statusDateHired">
                 </form>
 
                 <button type="button" id="nextApplicantButton" onclick="showApplicantInterviewPanel()" disabled class="inline-flex items-center justify-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-5 py-3 text-sm font-semibold text-sky-700 transition hover:border-sky-300 hover:bg-sky-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-400">
@@ -334,7 +336,7 @@
                 </span>
                 Work Experience
               </h4>
-              <p class="mt-4 text-sm leading-7 text-slate-600" id="work_info"></p>
+              <div class="mt-4 space-y-2 text-sm leading-6 text-slate-600" id="work_info"></div>
             </div>
 
             <div class="rounded-[1.35rem] border border-slate-200 bg-white p-5 shadow-sm">
@@ -344,7 +346,7 @@
                 </span>
                 Education
               </h4>
-              <p class="mt-4 text-sm leading-7 text-slate-600" id="university_info"></p>
+              <div class="mt-4 space-y-2 text-sm leading-6 text-slate-600" id="university_info"></div>
             </div>
           </div>
         </div>
@@ -407,7 +409,7 @@
           <div class="flex min-h-[520px] flex-col rounded-[1.35rem] border border-sky-200 bg-sky-50/80 p-5">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Interview Setup</p>
-              <h3 class="mt-3 text-2xl font-black text-slate-900">Set Initial Interview</h3>
+              <h3 id="interviewSetupTitle" class="mt-3 text-2xl font-black text-slate-900">Set Initial Interview</h3>
               <div class="mt-5 rounded-[1.1rem] border border-sky-100 bg-white/75 p-4">
                 <div class="flex items-center gap-4">
                   <div class="flex h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center rounded-[1rem] bg-[linear-gradient(135deg,#0ea5e9,#2563eb)] text-base font-bold text-white" id="interviewPanelInitials">AP</div>
@@ -498,7 +500,7 @@
             </div>
 
             <div class="mt-5 flex justify-end">
-              <button type="submit" class="rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">Save Interview</button>
+              <button type="submit" id="saveInterviewButton" class="rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500">Save Interview</button>
             </div>
           </form>
         </div>
@@ -968,15 +970,21 @@
 
   function saveDownloadedApplicantDocuments() {
     try {
-      sessionStorage.setItem(applicantDocumentStorageKey(), JSON.stringify(Array.from(downloadedApplicantDocuments)));
+      localStorage.setItem(applicantDocumentStorageKey(), JSON.stringify(Array.from(downloadedApplicantDocuments)));
     } catch (_) {
-      // Ignore session storage errors.
+      // Ignore storage errors.
     }
   }
 
   function loadDownloadedApplicantDocuments() {
     try {
-      downloadedApplicantDocuments = new Set(JSON.parse(sessionStorage.getItem(applicantDocumentStorageKey()) || '[]'));
+      const key = applicantDocumentStorageKey();
+      const savedDocuments = localStorage.getItem(key) || sessionStorage.getItem(key) || '[]';
+      downloadedApplicantDocuments = new Set(JSON.parse(savedDocuments));
+
+      if (!localStorage.getItem(key) && downloadedApplicantDocuments.size > 0) {
+        saveDownloadedApplicantDocuments();
+      }
     } catch (_) {
       downloadedApplicantDocuments = new Set();
     }
@@ -984,6 +992,12 @@
 
   function getApplicantDocumentKey(doc) {
     return btoa(unescape(encodeURIComponent(`${doc?.url ?? ''}|${doc?.name ?? ''}`)));
+  }
+
+  function applicantCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.content
+      || document.querySelector('input[name="_token"]')?.value
+      || '';
   }
 
   function updateDocumentReviewProgress() {
@@ -1013,12 +1027,26 @@
     autoMovePendingApplicantToUnderReview(isComplete);
   }
 
-  function markApplicantDocumentDownloaded(key) {
+  function markApplicantDocumentDownloaded(key, documentId = null) {
     if (!key) return;
 
     downloadedApplicantDocuments.add(key);
     saveDownloadedApplicantDocuments();
     updateDocumentReviewProgress();
+
+    if (!documentId) return;
+
+    fetch(`/system/applicant/document/${encodeURIComponent(documentId)}/reviewed`, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-TOKEN': applicantCsrfToken(),
+      },
+    }).catch(() => {
+      // Local progress is kept so the admin can continue reviewing even if the request is interrupted.
+    });
   }
 
   function autoMovePendingApplicantToUnderReview(isComplete) {
@@ -1088,22 +1116,60 @@
 
     const progress = currentApplicantModalData?.interview_progress || {};
     const isTeaching = Boolean(progress.is_teaching);
+    const status = normalizeText(currentApplicantModalData?.status);
+    const proceedTarget = progress.proceed_target || '';
+    const pendingNextInterviewType = currentApplicantModalData?.pending_next_interview_type || '';
+    const title = document.getElementById('interviewSetupTitle');
+    const saveButton = document.getElementById('saveInterviewButton');
+    const options = Array.from(select.options);
+    const initialOption = options.find(option => option.value === 'Initial Interview');
     const finalOption = Array.from(select.options).find(option => option.value === 'Final Interview');
     const demoOption = Array.from(select.options).find(option => option.value === 'Demo Teaching');
-    if (finalOption) finalOption.hidden = isTeaching;
-    if (demoOption) demoOption.hidden = !isTeaching;
+    const completedStages = {
+      'Initial Interview': Boolean(progress.completed_initial),
+      'Final Interview': Boolean(progress.completed_final),
+      'Demo Teaching': Boolean(progress.completed_demo_teaching),
+    };
+    let allowedType = 'Initial Interview';
 
-    if (isTeaching && progress.completed_initial && !progress.completed_demo_teaching) {
-      select.value = 'Demo Teaching';
-      return;
+    if (isTeaching && status === 'demo teaching') {
+      allowedType = 'Demo Teaching';
+    } else if (!isTeaching && status === 'final interview') {
+      allowedType = 'Final Interview';
+    } else if (isTeaching && (pendingNextInterviewType === 'Demo Teaching' || proceedTarget === 'Demo Teaching')) {
+      allowedType = 'Demo Teaching';
+    } else if (!isTeaching && (pendingNextInterviewType === 'Final Interview' || proceedTarget === 'Final Interview')) {
+      allowedType = 'Final Interview';
     }
 
-    if (!isTeaching && progress.completed_initial && !progress.completed_final) {
-      select.value = 'Final Interview';
-      return;
+    if (completedStages[allowedType]) {
+      allowedType = '';
     }
 
-    select.value = 'Initial Interview';
+    if (initialOption) {
+      initialOption.hidden = allowedType !== 'Initial Interview' || completedStages['Initial Interview'];
+      initialOption.disabled = allowedType !== 'Initial Interview' || completedStages['Initial Interview'];
+    }
+    if (finalOption) {
+      finalOption.hidden = isTeaching || allowedType !== 'Final Interview' || completedStages['Final Interview'];
+      finalOption.disabled = isTeaching || allowedType !== 'Final Interview' || completedStages['Final Interview'];
+    }
+    if (demoOption) {
+      demoOption.hidden = !isTeaching || allowedType !== 'Demo Teaching' || completedStages['Demo Teaching'];
+      demoOption.disabled = !isTeaching || allowedType !== 'Demo Teaching' || completedStages['Demo Teaching'];
+    }
+
+    select.disabled = allowedType === '';
+    if (allowedType !== '') {
+      select.value = allowedType;
+    }
+    if (saveButton) {
+      saveButton.disabled = allowedType === '';
+      saveButton.title = allowedType === '' ? 'This interview stage is already finished.' : `Save ${allowedType}`;
+    }
+    if (title) {
+      title.textContent = allowedType === '' ? 'Interview Stage Finished' : `Set ${allowedType}`;
+    }
   }
 
   function renderPassingDocumentChecklist() {
@@ -1150,7 +1216,7 @@
                 <span class="applicant-doc-check flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-600" title="Reviewed">
                   <i class="fa-solid fa-check text-xs"></i>
                 </span>
-                <a href="${doc.url}" target="_blank" onclick="markApplicantDocumentDownloaded('${getApplicantDocumentKey(doc)}')" class="flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition hover:bg-emerald-100 hover:text-emerald-600" title="Download ${doc.name}">
+                <a href="${doc.url}" target="_blank" onclick="markApplicantDocumentDownloaded('${getApplicantDocumentKey(doc)}', ${Number(doc.id) || 'null'})" class="flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition hover:bg-emerald-100 hover:text-emerald-600" title="Download ${doc.name}">
                   <i class="fa-solid fa-download"></i>
                 </a>
               </div>
@@ -1215,12 +1281,38 @@
   function hireApplicantFromCompleted() {
     if (!currentApplicantId || normalizeText(currentApplicantModalData?.status) !== 'completed') return;
 
-    updateApplicantStatusFromModal('Hired', {
+    Swal.fire({
       title: 'Hire applicant?',
-      text: 'This will mark the applicant as hired.',
+      html: '<p class="text-sm text-slate-600">Set the date the employee should report/start work.</p>',
+      input: 'date',
+      inputLabel: 'Date of report',
+      inputValue: new Date().toISOString().slice(0, 10),
+      inputAttributes: {
+        required: 'required'
+      },
       icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#059669',
+      cancelButtonColor: '#64748b',
       confirmButtonText: 'Hire Applicant',
-      confirmButtonColor: '#059669'
+      cancelButtonText: 'Cancel',
+      preConfirm: (dateValue) => {
+        if (!dateValue) {
+          Swal.showValidationMessage('Please select the date of report.');
+          return false;
+        }
+
+        return dateValue;
+      }
+    }).then(result => {
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      document.getElementById('statusId').value = currentApplicantId;
+      document.getElementById('statusAutoValue').value = 'Hired';
+      document.getElementById('statusDateHired').value = result.value;
+      document.getElementById('updateStatus').submit();
     });
   }
 
@@ -1289,6 +1381,7 @@
 
       document.getElementById('statusId').value = currentApplicantId;
       document.getElementById('statusAutoValue').value = status;
+      document.getElementById('statusDateHired').value = options.date_hired || '';
       document.getElementById('updateStatus').submit();
     });
   }
@@ -1318,13 +1411,33 @@
       return;
     }
 
+    if (['Demo Teaching', 'Final Interview'].includes(proceedTarget)) {
+      Swal.fire({
+        title: `Prepare ${proceedTarget} schedule?`,
+        text: proceedTarget === 'Demo Teaching'
+          ? 'This will enable the Demo Teaching schedule form. The applicant status will update only after you save the schedule.'
+          : 'This will enable the Final Interview schedule form. The applicant status will update only after you save the schedule.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#0f172a',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Proceed',
+        cancelButtonText: 'Cancel'
+      }).then(result => {
+        if (!result.isConfirmed) {
+          return;
+        }
+
+        currentApplicantModalData.pending_next_interview_type = proceedTarget;
+        configureInterviewTypeOptions();
+        focusInterviewForm();
+      });
+      return;
+    }
+
     updateApplicantStatusFromModal(proceedTarget, {
       title: `Proceed to ${proceedTarget}?`,
-      text: proceedTarget === 'Demo Teaching'
-        ? 'This teaching applicant passed the initial interview and will move to Demo Teaching.'
-        : proceedTarget === 'Final Interview'
-          ? 'This non-teaching applicant passed the initial interview and will move to Final Interview.'
-          : 'This applicant passed the required interview stages and will move to Passing Document.',
+      text: 'This applicant passed the required interview stages and will move to Passing Document.',
       confirmButtonText: 'Proceed'
     });
   }
@@ -1519,6 +1632,91 @@
     interviewCountdownTimer = setInterval(updateCountdown, 1000);
   }
 
+  function escapeApplicantHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function applicantValueIsBlank(value) {
+    const normalized = String(value ?? '').trim().toLowerCase();
+    return !normalized || ['n/a', 'na', 'none', '-', 'null', 'undefined'].includes(normalized);
+  }
+
+  function renderWorkExperience(data) {
+    const container = document.getElementById('work_info');
+    if (!container) return;
+
+    const rows = [
+      ['Position', data?.work_position],
+      ['Employer', data?.work_employer],
+      ['Location', data?.work_location],
+      ['Duration', data?.work_duration],
+    ].filter(([, value]) => !applicantValueIsBlank(value));
+
+    if (!rows.length) {
+      container.innerHTML = '<p>No work experience information provided.</p>';
+      return;
+    }
+
+    container.innerHTML = rows.map(([label, value]) => `
+      <div class="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2">
+        <span class="block text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">${label}</span>
+        <span class="mt-1 block font-semibold text-slate-700">${escapeApplicantHtml(value)}</span>
+      </div>
+    `).join('');
+  }
+
+  function renderEducationBackground(educationRows) {
+    const container = document.getElementById('university_info');
+    if (!container) return;
+
+    const levelLabels = {
+      elementary: 'Elementary',
+      secondary: 'Secondary',
+      vocational_trade: 'Vocational / Trade Course',
+      bachelor: 'Bachelor Degree',
+      master: 'Master Degree',
+      doctorate: 'Doctorate Degree',
+    };
+
+    const rows = Array.isArray(educationRows)
+      ? educationRows.filter(row => (
+          !applicantValueIsBlank(row?.degree_name)
+          || !applicantValueIsBlank(row?.school_name)
+          || !applicantValueIsBlank(row?.year_finished)
+        ))
+      : [];
+
+    if (!rows.length) {
+      container.innerHTML = '<p>No education information provided.</p>';
+      return;
+    }
+
+    container.innerHTML = rows.map(row => {
+      const level = String(row?.level ?? '').trim();
+      const title = levelLabels[level] || level || 'Education';
+      const degreeName = applicantValueIsBlank(row?.degree_name) ? '' : String(row.degree_name).trim();
+      const schoolName = applicantValueIsBlank(row?.school_name) ? '' : String(row.school_name).trim();
+      const yearFinished = applicantValueIsBlank(row?.year_finished) ? '' : String(row.year_finished).trim();
+      const details = [
+        schoolName,
+        yearFinished,
+      ].filter(Boolean).join(' - ');
+
+      return `
+        <div class="rounded-2xl border border-emerald-100 bg-emerald-50/60 px-3 py-2">
+          <span class="block text-[11px] font-bold uppercase tracking-[0.14em] text-emerald-700">${escapeApplicantHtml(title)}</span>
+          ${degreeName ? `<span class="mt-1 block font-semibold text-slate-800">${escapeApplicantHtml(degreeName)}</span>` : ''}
+          ${details ? `<span class="mt-1 block text-slate-600">${escapeApplicantHtml(details)}</span>` : ''}
+        </div>
+      `;
+    }).join('');
+  }
+
   function openApplicantModal(applicantId, openInterviewPanel = false, openPassingDocumentPanel = false) {
     currentApplicantId = applicantId;
     currentApplicantModalData = null;
@@ -1543,17 +1741,8 @@
         document.getElementById('number').innerText = data.number;
         document.getElementById('applicantInitials').innerText = getInitials(data.name, '');
 
-        const workInfo = [
-          data.work_position,
-          data.work_employer,
-          data.work_location,
-          data.work_duration
-        ].filter(Boolean).join(' | ');
-
-        const universityInfo = '';
-
-        document.getElementById('work_info').innerText = workInfo || 'No work experience information provided.';
-        document.getElementById('university_info').innerText = universityInfo || 'No education information provided.';
+        renderWorkExperience(data);
+        renderEducationBackground(data.education_background);
 
         renderSkills(data.skills);
 
@@ -1582,6 +1771,10 @@
 
         if (data.documents && data.documents.length > 0) {
           currentApplicantDocumentKeys = new Set(data.documents.map(doc => getApplicantDocumentKey(doc)));
+          data.documents
+            .filter(doc => doc.is_reviewed)
+            .forEach(doc => downloadedApplicantDocuments.add(getApplicantDocumentKey(doc)));
+          saveDownloadedApplicantDocuments();
           const groupedDocs = data.documents.reduce((groups, doc) => {
             const type = doc.type || 'Other Documents';
             groups[type] = groups[type] || [];
@@ -1613,7 +1806,7 @@
                       <span class="applicant-doc-check flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-600" title="Downloaded">
                         <i class="fa-solid fa-check text-xs"></i>
                       </span>
-                      <a href="${doc.url}" target="_blank" onclick="markApplicantDocumentDownloaded('${getApplicantDocumentKey(doc)}')" class="flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition hover:bg-sky-100 hover:text-sky-600" title="Download ${doc.name}">
+                      <a href="${doc.url}" target="_blank" onclick="markApplicantDocumentDownloaded('${getApplicantDocumentKey(doc)}', ${Number(doc.id) || 'null'})" class="flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition hover:bg-sky-100 hover:text-sky-600" title="Download ${doc.name}">
                         <i class="fa-solid fa-download"></i>
                       </a>
                     </div>

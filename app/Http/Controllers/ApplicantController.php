@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Applicant;
 use App\Models\ApplicantDegree;
 use App\Models\ApplicantDocument;
+use App\Models\Education;
 use App\Models\Resignation;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class ApplicantController extends Controller
@@ -479,6 +481,33 @@ class ApplicantController extends Controller
                     'year_finished' => $degree['year_finished'],
                     'sort_order' => $index,
                 ]);
+            }
+
+            $educationLevel = fn (string $key) => $normalizedEducationLevels->firstWhere('key', $key);
+            $elementary = $educationLevel('elementary');
+            $secondary = $educationLevel('secondary');
+            $vocationalTrade = $educationLevel('vocational_trade');
+
+            $educationPayload = [
+                'elementary_school_name' => $elementary['school_name'] ?? null,
+                'elementary_year_finished' => $elementary['year_finished'] ?? null,
+                'secondary_school_name' => $secondary['school_name'] ?? null,
+                'secondary_year_finished' => $secondary['year_finished'] ?? null,
+                'vocational_trade_school_name' => $vocationalTrade['school_name'] ?? null,
+                'vocational_trade_year_finished' => $vocationalTrade['year_finished'] ?? null,
+                'bachelor' => $primaryBachelor['degree'],
+                'master' => $primaryMaster['degree'] ?? '',
+                'doctorate' => $primaryDoctoral['degree'] ?? '',
+            ];
+
+            if (Schema::hasColumn('education', 'applicant_id')) {
+                Education::updateOrCreate(
+                    ['applicant_id' => (int) $applicant_store->id],
+                    [
+                        ...$educationPayload,
+                        'user_id' => $applicant_store->user_id,
+                    ]
+                );
             }
 
             if (!empty($attrs['pds_record_id'])) {
