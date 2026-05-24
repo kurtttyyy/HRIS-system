@@ -46,6 +46,12 @@
                             <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-100/80">Overall Rating</p>
                             <p class="mt-2 text-sm font-semibold text-white">4.3 / 5.0</p>
                         </div>
+                        @if (!empty($isDepartmentHead))
+                            <div class="min-w-[150px] rounded-2xl bg-white/12 px-4 py-3 ring-1 ring-white/12 backdrop-blur sm:col-span-2">
+                                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-100/80">Employees Under You</p>
+                                <p class="mt-2 text-sm font-semibold text-white">{{ $evaluationEmployees->count() }} {{ Str::plural('employee', $evaluationEmployees->count()) }}</p>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </section>
@@ -70,18 +76,56 @@
                             </div>
                             <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                                 <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Department</p>
-                                <p class="mt-2 text-sm font-semibold text-slate-900">{{ $user->department ?? $user->employee?->department ?? 'Human Resources' }}</p>
+                                <p class="mt-2 text-sm font-semibold text-slate-900">{{ $departmentName ?? $user->department ?? $user->employee?->department ?? 'Human Resources' }}</p>
                             </div>
                             <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                                 <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Position</p>
                                 <p class="mt-2 text-sm font-semibold text-slate-900">{{ $user->position ?? $user->employee?->position ?? 'HR Assistant' }}</p>
                             </div>
                             <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Immediate Supervisor</p>
-                                <p class="mt-2 text-sm font-semibold text-slate-900">Maria Santos</p>
+                                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">{{ !empty($isDepartmentHead) ? 'Review Scope' : 'Immediate Supervisor' }}</p>
+                                <p class="mt-2 text-sm font-semibold text-slate-900">{{ !empty($isDepartmentHead) ? (($departmentName ?? 'Department').' Team') : 'Maria Santos' }}</p>
                             </div>
                         </div>
                     </section>
+
+                    @if (!empty($isDepartmentHead))
+                        <section class="rounded-[1.6rem] border border-slate-200 bg-white p-5 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                <div>
+                                    <h2 class="text-lg font-bold text-slate-900">Employees Under You</h2>
+                                    <p class="mt-1 text-sm text-slate-500">Department employees available for hierarchy and evaluation review.</p>
+                                </div>
+                                <a href="{{ route('employee.employeeHierarchy') }}" class="inline-flex items-center rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700">
+                                    View Hierarchy
+                                </a>
+                            </div>
+
+                            @if ($evaluationEmployees->isNotEmpty())
+                                <div class="mt-5 grid gap-3 md:grid-cols-2">
+                                    @foreach ($evaluationEmployees as $employee)
+                                        <article class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+                                            <div class="flex items-start justify-between gap-3">
+                                                <div>
+                                                    <h3 class="text-sm font-bold text-slate-900">{{ $employee['name'] }}</h3>
+                                                    <p class="mt-1 text-xs font-semibold text-emerald-700">{{ $employee['position'] }}</p>
+                                                </div>
+                                                <span class="rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-slate-600 ring-1 ring-slate-200">{{ $employee['employee_id'] }}</span>
+                                            </div>
+                                            <div class="mt-3 grid gap-2 text-xs text-slate-500">
+                                                <p>{{ $employee['email'] }}</p>
+                                                <p>{{ $employee['status'] }}</p>
+                                            </div>
+                                        </article>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="mt-5 rounded-2xl border border-dashed border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-800">
+                                    No employees are assigned under this department yet.
+                                </div>
+                            @endif
+                        </section>
+                    @endif
 
                     <section class="rounded-[1.6rem] border border-slate-200 bg-white p-5 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

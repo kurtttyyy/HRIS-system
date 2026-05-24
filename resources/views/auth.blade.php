@@ -130,6 +130,12 @@
             'email' => 'juan.delacruz@example.com',
             'password' => 'Juan12345',
         ],
+        [
+            'label' => 'Carlos Rivera',
+            'role' => 'Employee',
+            'email' => 'carlos.rivera@example.com',
+            'password' => 'Carlos12345',
+        ],
     ];
 @endphp
 

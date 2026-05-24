@@ -61,7 +61,7 @@ class DatabaseSeeder extends Seeder
                 'job_role' => $account['job_role'],
                 'position' => $account['position'],
                 'department' => $account['department'],
-                'department_head' => null,
+                'department_head' => $account['department_head'] ?? null,
                 'status' => 'Approved',
                 'account_status' => 'Active',
                 'password' => Hash::make($account['password']),
@@ -87,7 +87,84 @@ class DatabaseSeeder extends Seeder
                     'created_at' => now(),
                 ]);
             }
+
+            $this->ensureHiredApplicant($employee->id, $account);
         }
+    }
+
+    private function ensureHiredApplicant(int $userId, array $account): void
+    {
+        if (!Schema::hasTable('applicants') || !Schema::hasTable('open_positions')) {
+            return;
+        }
+
+        $now = now();
+        $openPositionId = $this->resolveDefaultOpenPositionId($account);
+        $payload = [
+            'user_id' => $userId,
+            'open_position_id' => $openPositionId,
+            'first_name' => $account['first_name'],
+            'last_name' => $account['last_name'],
+            'email' => $account['email'],
+            'field_study' => '-',
+            'work_position' => $account['position'],
+            'work_employer' => '-',
+            'work_location' => '-',
+            'work_duration' => '-',
+            'date_hired' => $now->toDateString(),
+            'experience_years' => '0',
+            'skills_n_expertise' => '-',
+            'application_status' => 'Hired',
+            'deleted_at' => null,
+            'updated_at' => $now,
+            'created_at' => $now,
+        ];
+
+        foreach ([
+            'middle_name' => $account['middle_name'],
+            'education_attainment' => '-',
+            'university_name' => '-',
+            'university_address' => '-',
+            'year_complete' => '-',
+            'fresh_graduate' => false,
+        ] as $column => $value) {
+            if (Schema::hasColumn('applicants', $column)) {
+                $payload[$column] = $value;
+            }
+        }
+
+        DB::table('applicants')->updateOrInsert([
+            'email' => $account['email'],
+        ], $payload);
+    }
+
+    private function resolveDefaultOpenPositionId(array $account): int
+    {
+        $openPositionId = DB::table('open_positions')
+            ->where('title', $account['position'])
+            ->where('department', $account['department'])
+            ->value('id');
+
+        if ($openPositionId) {
+            return (int) $openPositionId;
+        }
+
+        return (int) DB::table('open_positions')->insertGetId([
+            'title' => $account['position'],
+            'department' => $account['department'],
+            'employment' => 'Full-Time',
+            'work_mode' => 'Onsite',
+            'job_description' => 'Default position for seeded employee accounts.',
+            'responsibilities' => '-',
+            'requirements' => '-',
+            'experience_level' => 'Entry Level',
+            'location' => 'N/A',
+            'skills' => '-',
+            'benifits' => '-',
+            'job_type' => 'NT',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     private function defaultEmployeeAccounts(): array
@@ -103,6 +180,7 @@ class DatabaseSeeder extends Seeder
                 'position' => env('DEFAULT_EMPLOYEE_POSITION', 'Employee'),
                 'department' => env('DEFAULT_EMPLOYEE_DEPARTMENT', 'General'),
                 'employee_id' => env('DEFAULT_EMPLOYEE_ID', 'EMP-DEFAULT'),
+                'department_head' => null,
             ],
             [
                 'email' => 'maria.santos@example.com',
@@ -114,6 +192,7 @@ class DatabaseSeeder extends Seeder
                 'position' => 'HR Staff',
                 'department' => 'Human Resources',
                 'employee_id' => 'EMP-MARIA',
+                'department_head' => null,
             ],
             [
                 'email' => 'juan.delacruz@example.com',
@@ -125,6 +204,43 @@ class DatabaseSeeder extends Seeder
                 'position' => 'Office Staff',
                 'department' => 'General',
                 'employee_id' => 'EMP-JUAN',
+                'department_head' => null,
+            ],
+            [
+                'email' => 'ana.reyes@example.com',
+                'password' => 'Ana12345',
+                'first_name' => 'Ana',
+                'middle_name' => 'Lopez',
+                'last_name' => 'Reyes',
+                'job_role' => 'IT Support Specialist',
+                'position' => 'IT Support Specialist',
+                'department' => 'Information Technology',
+                'employee_id' => 'EMP-ANA',
+                'department_head' => null,
+            ],
+            [
+                'email' => 'miguel.torres@example.com',
+                'password' => 'Miguel12345',
+                'first_name' => 'Miguel',
+                'middle_name' => 'Santos',
+                'last_name' => 'Torres',
+                'job_role' => 'Systems Technician',
+                'position' => 'Systems Technician',
+                'department' => 'Information Technology',
+                'employee_id' => 'EMP-MIGUEL',
+                'department_head' => null,
+            ],
+            [
+                'email' => 'carlos.rivera@example.com',
+                'password' => 'Carlos12345',
+                'first_name' => 'Carlos',
+                'middle_name' => 'Garcia',
+                'last_name' => 'Rivera',
+                'job_role' => 'Head of IT Staff',
+                'position' => 'Head of IT Staff',
+                'department' => 'Information Technology',
+                'employee_id' => 'EMP-CARLOS',
+                'department_head' => 'Approved',
             ],
         ];
     }
