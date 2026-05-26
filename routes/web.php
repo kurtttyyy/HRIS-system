@@ -31,6 +31,7 @@ Route::controller(GuestPageController::class)->group(function () {
     Route::get('/cookie-policy', 'display_cookie')->name('guest.cookie');
     Route::post('/chatbot/reply', 'chat_reply')->name('guest.chat.reply');
     Route::get('/job/available', 'job_open_landing')->name('guest.jobOpenLanding');
+    Route::get('/job/available/check', 'job_vacancies_check')->name('guest.jobVacancies.check');
     Route::get('/job/available/{id}', 'display_job')->name('guest.jobOpen');
 });
 

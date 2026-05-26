@@ -29,9 +29,19 @@ class ApplicantController extends Controller
                 'message' => 'Please upload an Excel PDS file only: XLS, XLSX, XLSM, or CSV.',
             ], 422);
         }
+        $scanRows = $this->extractPdsRows($file->getRealPath(), $extension);
+        $scanText = $scanRows
+            ? collect($scanRows)->map(fn ($row) => implode("\t", $row))->implode("\n")
+            : $this->extractPdsText($file->getRealPath(), $extension);
+
+        if (!$this->isOfficialPdsTemplate($scanRows, $scanText)) {
+            return response()->json([
+                'message' => 'Scan failed. The uploaded file does not match the official Personal Data Sheet (CS Form No. 212) format. Please upload the correct PDS template.',
+            ], 422);
+        }
+
         $debugUploadPath = $this->savePdsDebugUpload($file->getRealPath(), $extension);
 
-        $scanRows = $this->extractPdsRows($file->getRealPath(), $extension);
         $coordinateData = in_array($extension, ['xlsx', 'xlsm', 'xls'], true)
             ? $this->extractOfficialPdsCoordinateData($file->getRealPath())
             : [];
@@ -50,10 +60,6 @@ class ApplicantController extends Controller
                 }
             }
         }
-        $scanText = $scanRows
-            ? collect($scanRows)->map(fn ($row) => implode("\t", $row))->implode("\n")
-            : $this->extractPdsText($file->getRealPath(), $extension);
-
         $textData = $this->parsePdsText($scanText);
         $rowData = $this->parsePdsRows($scanRows);
         $pdsData = collect($textData)
@@ -73,13 +79,16 @@ class ApplicantController extends Controller
                 return filled($rowData[$key] ?? null) ? $rowData[$key] : $value;
             })
             ->all();
+        $pdsData = $this->removePdsTemplateNoise($pdsData);
         $pdsData['sex'] = $this->normalizePdsChoice($pdsData['sex'] ?? null, ['Male', 'Female']);
         $pdsData['civil_status'] = $this->normalizePdsChoice($pdsData['civil_status'] ?? null, ['Single', 'Married', 'Widowed', 'Separated']);
         if (blank($pdsData['civil_status'] ?? null)) {
             $pdsData['civil_status'] = $this->inferOfficialPdsCivilStatus($scanRows, $scanText, $pdsData);
         }
         $pdsData = $this->separatePdsPermanentAddressZipCode($pdsData);
+        $pdsData['permanent_address'] = $this->completePdsPermanentAddress($pdsData);
         $responseFields = $this->appendPdsEducationResponseFields($pdsData, $scanRows);
+        $responseFields['permanent_address'] = $pdsData['permanent_address'];
 
         $filledFields = collect($pdsData)
             ->reject(fn ($value) => blank($value))
@@ -125,6 +134,134 @@ class ApplicantController extends Controller
         }
 
         return $debugPath;
+    }
+
+    private function isOfficialPdsTemplate(array $rows, string $text): bool
+    {
+        $rowText = collect($rows)
+            ->take(90)
+            ->map(fn ($row) => implode(' ', array_map('strval', $row)))
+            ->implode(' ');
+        $normalized = $this->normalizePdsLabel($rowText.' '.$text);
+
+        $hasOfficialHeader = str_contains($normalized, 'personal data sheet')
+            || str_contains($normalized, 'cs form no 212');
+
+        $requiredLabels = [
+            'personal information',
+            'surname',
+            'first name',
+            'middle name',
+            'date of birth',
+            'place of birth',
+            'sex',
+            'civil status',
+            'citizenship',
+            'height',
+            'weight',
+            'blood type',
+            'gsis id no',
+            'pag ibig id no',
+            'philhealth no',
+            'sss no',
+            'tin no',
+            'residential address',
+            'permanent address',
+            'telephone no',
+            'mobile no',
+            'e mail address',
+            'family background',
+        ];
+
+        $matchedLabels = collect($requiredLabels)
+            ->filter(fn ($label) => str_contains($normalized, $this->normalizePdsLabel($label)))
+            ->count();
+
+        return ($hasOfficialHeader && $matchedLabels >= 6) || $matchedLabels >= 10;
+    }
+
+    private function removePdsTemplateNoise(array $pdsData): array
+    {
+        return collect($pdsData)
+            ->map(function ($value, $field) {
+                if (!is_string($value)) {
+                    return $value;
+                }
+
+                $value = $this->cleanPdsValue($value);
+                if (!$value || $this->looksLikePdsTemplateNoise($value, (string) $field)) {
+                    return null;
+                }
+
+                if (in_array($field, ['telephone_no', 'mobile_no'], true) && !preg_match('/\d{3,}/', $value)) {
+                    return null;
+                }
+
+                if ($field === 'email_address' && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                    return null;
+                }
+
+                return $value;
+            })
+            ->all();
+    }
+
+    private function looksLikePdsTemplateNoise(string $value, string $field = ''): bool
+    {
+        $normalized = $this->normalizePdsLabel($value);
+        if ($normalized === '' || in_array($normalized, ['na', 'n a', 'none', 'null'], true)) {
+            return true;
+        }
+
+        if (!preg_match('/[a-z0-9]/i', $value)) {
+            return true;
+        }
+
+        $templateFragments = [
+            'name extension',
+            'jr sr',
+            'surname',
+            'first name',
+            'middle name',
+            'date of birth',
+            'place of birth',
+            'sex at birth',
+            'civil status',
+            'citizenship',
+            'residential address',
+            'permanent address',
+            'house block lot no',
+            'subdivision village',
+            'city municipality',
+            'zip code',
+            'telephone no',
+            'mobile no',
+            'e mail address',
+            'if any',
+            'height m',
+            'weight kg',
+            'blood type',
+            'gsis id no',
+            'pag ibig id no',
+            'philhealth no',
+            'sss no',
+            'tin no',
+            'agency employee no',
+            'family background',
+        ];
+
+        foreach ($templateFragments as $fragment) {
+            if (str_contains($normalized, $fragment)) {
+                return true;
+            }
+        }
+
+        if (in_array($field, ['surname', 'first_name', 'middle_name', 'name_extension'], true)
+            && preg_match('/\b(single|married|widow(?:ed|er)?|separated|dual citizenship|filipino|afghanistan|albania|algeria|andorra|angola|argentina|armenia|australia|austria|bahamas|bahrain|bangladesh|belgium|brazil|canada|china|denmark|france|germany|india|indonesia|italy|japan|malaysia|philippines|singapore|spain|thailand|united states)\b/iu', $value)) {
+            return true;
+        }
+
+        return false;
     }
 
     private function debugPdsChoiceRows(array $rows, array $needles): array
@@ -659,6 +796,14 @@ class ApplicantController extends Controller
         }
 
         return $pdsData;
+    }
+
+    private function completePdsPermanentAddress(array $pdsData): ?string
+    {
+        return $this->cleanPdsPermanentAddress(collect([
+            $pdsData['permanent_address'] ?? null,
+            $pdsData['zip_code'] ?? null,
+        ])->filter()->implode(' '));
     }
 
     private function appendPdsEducationResponseFields(array $pdsData, array $rows): array
@@ -1680,8 +1825,8 @@ try {
         philhealth_no = Get-RangeJoin 'C31:E31'
         sss_no = Get-RangeJoin 'C32:E32'
         tin_no = Get-RangeJoin 'C33:E33'
-        permanent_address = ((Get-RangeJoin 'I25:N25'), (Get-RangeJoin 'I26:N26'), (Get-RangeJoin 'I27:N27'), (Get-RangeJoin 'I28:N28'), (Get-RangeJoin 'I29:N29') | Where-Object { $_ }) -join ' '
-        zip_code = Get-RangeJoin 'I30:N30'
+        permanent_address = ((Get-RangeJoin 'I25:N25'), (Get-RangeJoin 'I27:N27'), (Get-RangeJoin 'I29:N29') | Where-Object { $_ }) -join ' '
+        zip_code = $(if ((Get-RangeJoin 'I31:N31')) { Get-RangeJoin 'I31:N31' } else { Get-RangeJoin 'I30:N30' })
         telephone_no = Get-RangeJoin 'I32:N32'
         mobile_no = Get-RangeJoin 'I33:N33'
         email_address = Get-RangeJoin 'I34:N34'
@@ -1785,12 +1930,10 @@ POWERSHELL;
             'tin_no' => $valueFromRange('C', 'E', 33),
             'permanent_address' => $this->cleanPdsPermanentAddress(collect([
                 $valueFromRange('I', 'N', 25),
-                $valueFromRange('I', 'N', 26),
                 $valueFromRange('I', 'N', 27),
-                $valueFromRange('I', 'N', 28),
                 $valueFromRange('I', 'N', 29),
             ])->filter()->implode(' ')),
-            'zip_code' => $valueFromRange('I', 'N', 30),
+            'zip_code' => $valueFromRange('I', 'N', 31) ?: $valueFromRange('I', 'N', 30),
             'telephone_no' => $valueFromRange('I', 'N', 32),
             'mobile_no' => $valueFromRange('I', 'N', 33),
             'email_address' => $valueFromRange('I', 'N', 34),

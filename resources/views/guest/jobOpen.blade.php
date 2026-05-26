@@ -222,6 +222,139 @@
         animation-delay: var(--guest-job-delay, 120ms);
     }
 
+    #guest-job-applicant-page {
+        max-width: 1180px;
+    }
+
+    #guest-job-applicant-page > h2 {
+        margin-bottom: 1.25rem !important;
+        color: #0f172a;
+        font-size: clamp(2.1rem, 4vw, 3.5rem);
+        font-weight: 900;
+        letter-spacing: -0.045em;
+    }
+
+    #jobOpenSearchForm {
+        margin-bottom: 1.5rem !important;
+    }
+
+    #jobOpenSearchForm .input-group {
+        max-width: 760px !important;
+        border: 1px solid rgba(148, 163, 184, 0.28);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.88);
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.07);
+        padding: 0.35rem;
+        overflow: hidden;
+    }
+
+    #jobOpenSearchForm .form-control {
+        border: 0;
+        border-radius: 14px !important;
+        background: #f8fafc;
+        min-height: 3rem;
+        padding-left: 1rem;
+        box-shadow: none;
+    }
+
+    #jobOpenSearchForm .form-control:focus {
+        background: #ffffff;
+        box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.11);
+    }
+
+    #jobOpenSearchForm .btn {
+        border: 0;
+        border-radius: 14px !important;
+        background: linear-gradient(135deg, #0f766e, #16a34a);
+        min-width: 7.5rem;
+        font-weight: 800;
+    }
+
+    #guest-job-applicant-page .job-open-item {
+        border: 1px solid rgba(148, 163, 184, 0.18) !important;
+        border-radius: 22px;
+        background:
+            linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.94));
+        box-shadow: 0 22px 60px rgba(15, 23, 42, 0.08) !important;
+        overflow: hidden;
+    }
+
+    #guest-job-applicant-page .job-open-item.hover-card:hover {
+        border-color: rgba(34, 197, 94, 0.5) !important;
+        box-shadow:
+            0 28px 70px rgba(15, 23, 42, 0.12),
+            0 0 0 4px rgba(34, 197, 94, 0.12) !important;
+    }
+
+    #guest-job-applicant-page .job-open-item .card-body {
+        padding: 1.35rem 1.45rem;
+    }
+
+    #guest-job-applicant-page .job-open-item h4 {
+        color: #0f172a;
+        font-size: 1.35rem;
+        font-weight: 900;
+        letter-spacing: -0.025em;
+    }
+
+    #guest-job-applicant-page .job-open-item h5 {
+        color: #0f766e !important;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    #guest-job-applicant-page .job-open-item .rounded-pill {
+        background: #dcfce7 !important;
+        color: #047857 !important;
+        font-weight: 900;
+        min-width: 5.5rem;
+    }
+
+    #guest-job-applicant-page .job-open-item ul {
+        margin-top: 1rem;
+        color: #5b677a;
+        line-height: 1.7;
+    }
+
+    #guest-job-applicant-page .job-open-item ul li {
+        display: flex;
+        gap: 0.65rem;
+    }
+
+    #guest-job-applicant-page .job-open-item ul li::before {
+        content: "";
+        width: 0.42rem;
+        height: 0.42rem;
+        border-radius: 999px;
+        background: #10b981;
+        flex: 0 0 0.42rem;
+        margin-top: 0.62rem;
+    }
+
+    #guest-job-applicant-page .job-open-item .text-muted {
+        color: #475569 !important;
+        font-weight: 600;
+    }
+
+    #guest-job-applicant-page .job-open-item .badge.bg-light {
+        border-radius: 999px;
+        background: #f1f5f9 !important;
+        color: #334155 !important;
+        padding: 0.45rem 0.65rem;
+        font-weight: 800;
+    }
+
+    #guest-job-applicant-page .view-details {
+        border-radius: 999px;
+        color: #047857 !important;
+        font-weight: 900 !important;
+        padding: 0.45rem 0.2rem;
+    }
+
+    #guest-job-applicant-page .view-details:hover {
+        color: #0f172a !important;
+    }
+
     @keyframes guest-job-fade-up {
         0% {
             opacity: 0;
@@ -817,6 +950,5 @@ function formatDate(dateString) {
 </script>
 
 @endsection
-
 
 

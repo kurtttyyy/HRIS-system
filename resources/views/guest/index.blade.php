@@ -1806,7 +1806,7 @@
                         <h2>Refine Your Search</h2>
                         <p>Filter openings by department, employment type, and location to quickly find the role that fits you best.</p>
                     </div>
-                    <span class="filter-chip">{{ $open_position->count() }} opportunities available</span>
+                    <span id="jobOpportunitiesCount" class="filter-chip">{{ $open_position->count() }} opportunities available</span>
                 </div>
                 <div class="row g-3">
                     <div class="col-md-4">
@@ -1856,64 +1856,13 @@
     </div>
 
     <div id="jobList" class="row g-4">
-        @foreach ($open_position as $position)
-            <div class="col-12 col-md-6 job-item"
-                data-title="{{ Str::lower($position->title) }}"
-                data-department="{{ Str::lower($position->department) }}"
-                data-employment="{{ Str::lower($position->employment) }}"
-                data-location="{{ Str::lower($position->location) }}"
-                data-description="{{ Str::lower($position->job_description) }}"
-            >
-                <div class="job-card card animated-card delay-5 hover-card border-1">
-                    <div class="job-card-top">
-                        <div>
-                            <h5 class="job-card-title">{{ $position->title }}</h5>
-                            <div class="job-card-dept">{{ $position->department }}</div>
-                        </div>
-                        @php
-                            $postedDays = $position->created_at
-                                ? now()->diffInDays($position->created_at, true)
-                                : null;
-                            $postedDaysWhole = is_null($postedDays) ? null : (int) floor($postedDays);
-                        @endphp
-                        @if (!is_null($postedDaysWhole) && $postedDaysWhole <= 3)
-                            <span class="badge bg-success">New</span>
-                        @elseif (!is_null($postedDaysWhole))
-                            <span class="badge bg-secondary">{{ $postedDaysWhole }} {{ $postedDaysWhole === 1 ? 'day' : 'days' }} ago</span>
-                        @endif
-                    </div>
+        @include('guest.partials.job-vacancies-list', ['open_position' => $featuredOpenPositions ?? $open_position->take(6)])
+    </div>
 
-                    @php
-                        $lines = preg_split("/\r\n|\n|\r/", $position->job_description);
-                    @endphp
-
-                    <div class="job-meta-row">
-                        <span class="job-meta-pill">{{ $position->location }}</span>
-                        <span class="job-meta-pill">{{ $position->employment }}</span>
-                        <span class="job-meta-pill">{{ $position->work_mode }}</span>
-                    </div>
-
-                    <ul class="job-card-copy">
-                        @foreach (array_slice($lines, 0, 3) as $line)
-                            @php
-                                $cleanLine = preg_replace('/^[^\pL\pN]+/u', '', (string) $line);
-                                $cleanLine = trim((string) preg_replace('/\s+/', ' ', $cleanLine));
-                            @endphp
-                            @if ($cleanLine !== '')
-                                <li>{{ Str::limit($cleanLine, 150, '...') }}</li>
-                            @endif
-                        @endforeach
-                    </ul>
-
-                    <button
-                        onclick="window.location.href='{{ route('guest.jobOpen', $position->id) }}';"
-                        class="btn btn-primary w-100 green-btn"
-                    >
-                        View Details & Apply
-                    </button>
-                </div>
-            </div>
-        @endforeach
+    <div id="jobSeeMoreWrap" class="mt-5 text-center {{ ($hasMoreOpenPositions ?? $open_position->count() > 6) ? '' : 'd-none' }}">
+        <a id="jobSeeMoreLink" href="{{ route('guest.jobOpenLanding') }}" class="text-decoration-none fw-bold text-success">
+            Do you want to see more?
+        </a>
     </div>
 
     <div id="noResultsMessage" class="alert empty-state mt-4 d-none" role="alert">
@@ -2039,7 +1988,6 @@
             ['.hero-metric', 140],
             ['.filter-panel', 120],
             ['.section-heading', 160],
-            ['#jobList > .job-item', 200],
             ['.site-footer', 180],
         ];
 
@@ -2060,6 +2008,9 @@
         });
 
         const animatedItems = Array.from(page.querySelectorAll('.guest-index-reveal'));
+        page.querySelectorAll('#jobList > .job-item').forEach((item) => {
+            item.classList.add('guest-index-reveal', 'is-scroll-animated');
+        });
 
         if (!('IntersectionObserver' in window)) {
             animatedItems.forEach((item) => item.classList.add('is-scroll-animated'));
@@ -2095,7 +2046,10 @@
         const departmentFilter = document.getElementById('departmentFilter');
         const employmentFilter = document.getElementById('employmentFilter');
         const locationFilter = document.getElementById('locationFilter');
-        const jobItems = Array.from(document.querySelectorAll('.job-item'));
+        const jobList = document.getElementById('jobList');
+        const jobOpportunitiesCount = document.getElementById('jobOpportunitiesCount');
+        const jobSeeMoreWrap = document.getElementById('jobSeeMoreWrap');
+        const jobSeeMoreLink = document.getElementById('jobSeeMoreLink');
         const noResultsMessage = document.getElementById('noResultsMessage');
         const searchUnavailableBubble = document.getElementById('searchUnavailableBubble');
         const searchUnavailableText = document.getElementById('searchUnavailableText');
@@ -2155,6 +2109,7 @@
             const selectedDepartment = normalize(departmentFilter?.value);
             const selectedEmployment = normalize(employmentFilter?.value);
             const selectedLocation = normalize(locationFilter?.value);
+            const jobItems = Array.from(document.querySelectorAll('.job-item'));
 
             let visibleCount = 0;
             let firstMatch = null;
@@ -2209,6 +2164,64 @@
             return { visibleCount, firstMatch };
         }
 
+        function updateSelectOptions(select, values, defaultLabel) {
+            if (!select) {
+                return;
+            }
+
+            const previousValue = select.value;
+            select.innerHTML = '';
+            select.appendChild(new Option(defaultLabel, ''));
+
+            (values || []).forEach((value) => {
+                select.appendChild(new Option(value, value));
+            });
+
+            select.value = Array.from(select.options).some((option) => option.value === previousValue)
+                ? previousValue
+                : '';
+        }
+
+        function hydrateUpdatedVacancies(payload) {
+            if (!payload || !jobList || typeof payload.html !== 'string') {
+                return;
+            }
+
+            const normalizeHtml = (html) => html.replace(/\s+/g, ' ').trim();
+            if (normalizeHtml(jobList.innerHTML) === normalizeHtml(payload.html)) {
+                return;
+            }
+
+            jobList.innerHTML = payload.html;
+            if (jobOpportunitiesCount) {
+                const count = Number(payload.count || 0);
+                jobOpportunitiesCount.textContent = `${count} ${count === 1 ? 'opportunity' : 'opportunities'} available`;
+            }
+            if (jobSeeMoreWrap) {
+                jobSeeMoreWrap.classList.toggle('d-none', !payload.hasMore);
+            }
+            if (jobSeeMoreLink && payload.seeMoreUrl) {
+                jobSeeMoreLink.href = payload.seeMoreUrl;
+            }
+
+            updateSelectOptions(departmentFilter, payload.departments, 'All Departments');
+            updateSelectOptions(employmentFilter, payload.employments, 'All Types');
+            updateSelectOptions(locationFilter, payload.locations, 'All Location');
+
+            page.querySelectorAll('#jobList > .job-item').forEach((item) => {
+                item.classList.add('guest-index-reveal', 'is-scroll-animated');
+            });
+            page.querySelectorAll('#jobList .job-card').forEach((item) => {
+                item.classList.add('guest-index-card-motion');
+            });
+            page.querySelectorAll('#jobList .badge').forEach((item, index) => {
+                item.classList.add('guest-index-pop');
+                item.style.setProperty('--guest-index-delay', `${120 + ((index % 4) * 40)}ms`);
+            });
+
+            applyFilters({ suppressNoResults: true, hideSearchBubble: true });
+        }
+
         jobSearchForm?.addEventListener('submit', function (event) {
             event.preventDefault();
             applyFilters({ focusFirstMatch: true, showSearchBubble: true });
@@ -2229,6 +2242,82 @@
         departmentsMetric?.addEventListener('click', function () {
             departmentFilter?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             window.setTimeout(expandDepartmentOptions, 450);
+        });
+
+        const vacancyCheckUrl = @json(route('guest.jobVacancies.check'));
+        let currentVacancySignature = @json($vacancySignature ?? '');
+        const vacancySignatureStorageKey = 'guest_job_vacancy_signature_v1';
+        const storedVacancySignature = window.sessionStorage?.getItem(vacancySignatureStorageKey) || '';
+        if (storedVacancySignature && storedVacancySignature === currentVacancySignature) {
+            currentVacancySignature = storedVacancySignature;
+        } else if (currentVacancySignature) {
+            window.sessionStorage?.setItem(vacancySignatureStorageKey, currentVacancySignature);
+        }
+        let isCheckingVacancies = false;
+
+        async function refreshWhenVacanciesChange() {
+            if (!vacancyCheckUrl || document.hidden || isCheckingVacancies) {
+                return;
+            }
+
+            isCheckingVacancies = true;
+
+            try {
+                const url = new URL(vacancyCheckUrl, window.location.origin);
+                if (currentVacancySignature) {
+                    url.searchParams.set('signature', currentVacancySignature);
+                }
+
+                const response = await fetch(url.toString(), {
+                    headers: {
+                        Accept: 'application/json',
+                    },
+                    cache: 'no-store',
+                });
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const payload = await response.json();
+                const nextSignature = (payload.signature || '').toString();
+                const lastAppliedSignature = window.sessionStorage?.getItem(vacancySignatureStorageKey) || currentVacancySignature;
+                const hasAdminPositionUpdate = Boolean(
+                    payload.changed === true &&
+                    typeof payload.html === 'string' &&
+                    nextSignature &&
+                    nextSignature !== currentVacancySignature &&
+                    nextSignature !== lastAppliedSignature
+                );
+
+                if (!hasAdminPositionUpdate) {
+                    currentVacancySignature = nextSignature || currentVacancySignature;
+                    if (currentVacancySignature) {
+                        window.sessionStorage?.setItem(vacancySignatureStorageKey, currentVacancySignature);
+                    }
+                    return;
+                }
+
+                if (hasAdminPositionUpdate) {
+                    hydrateUpdatedVacancies(payload);
+                }
+
+                currentVacancySignature = nextSignature || currentVacancySignature;
+                if (currentVacancySignature) {
+                    window.sessionStorage?.setItem(vacancySignatureStorageKey, currentVacancySignature);
+                }
+            } catch (error) {
+                // Keep the page quiet if the background check cannot reach the server.
+            } finally {
+                isCheckingVacancies = false;
+            }
+        }
+
+        window.addEventListener('focus', refreshWhenVacanciesChange);
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden) {
+                refreshWhenVacanciesChange();
+            }
         });
     });
 </script>

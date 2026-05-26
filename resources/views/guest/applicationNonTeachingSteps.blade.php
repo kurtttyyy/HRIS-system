@@ -701,7 +701,7 @@
 
     <div class="d-flex justify-content-end mt-auto step-actions">
         <div></div>
-        <button type="button" id="btnToPersonal" class="btn btn-primary">Continue</button>
+        <button type="button" id="btnToPersonal" class="btn btn-primary" disabled>Continue</button>
     </div>
 </div>
 
@@ -1703,6 +1703,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const scanCheckFile = document.getElementById('scanCheckFile');
     const scanCheckScan = document.getElementById('scanCheckScan');
     const pdsRecordInput = document.getElementById('pds_record_id');
+    const btnToPersonalForScan = document.getElementById('btnToPersonal');
     const pdsScanUrl = @json(route('applicant.pds.scan'));
     let isScanningPds = false;
 
@@ -1718,6 +1719,18 @@ document.addEventListener('DOMContentLoaded', function () {
         if (icon) icon.className = 'bi bi-circle';
     }
 
+    function syncContinueButtonWithScan() {
+        const hasCompletedScan = Boolean(pdsRecordInput?.value)
+            && scanCheckScan?.classList.contains('is-complete');
+        if (!btnToPersonalForScan) return;
+
+        btnToPersonalForScan.disabled = !hasCompletedScan;
+        btnToPersonalForScan.classList.toggle('disabled', !hasCompletedScan);
+        btnToPersonalForScan.title = hasCompletedScan
+            ? ''
+            : 'Scan your Personal Data Sheet before continuing';
+    }
+
     function resetIntakeScanDesign() {
         if (intakeUploadInput) intakeUploadInput.value = '';
         if (pdsRecordInput) pdsRecordInput.value = '';
@@ -1731,6 +1744,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         if (scanProgressBar) scanProgressBar.style.width = '0%';
         [scanCheckFile, scanCheckScan].forEach(setScanItemPending);
+        syncContinueButtonWithScan();
     }
 
     intakeUploadInput?.addEventListener('change', function () {
@@ -1750,20 +1764,27 @@ document.addEventListener('DOMContentLoaded', function () {
         if (pdsRecordInput) pdsRecordInput.value = '';
         setScanItemComplete(scanCheckFile);
         setScanItemPending(scanCheckScan);
+        syncContinueButtonWithScan();
     });
 
     function fillFieldFromPds(fieldId, value) {
         const field = document.getElementById(fieldId);
-        if (!field || !value) return;
+        if (!field) return;
 
-        field.value = value;
+        field.value = value || '';
         field.dispatchEvent(new Event('input', { bubbles: true }));
         field.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     function fillSelectFromPds(fieldId, value) {
         const field = document.getElementById(fieldId);
-        if (!field || !value) return;
+        if (!field) return;
+
+        if (!value) {
+            field.value = '';
+            field.dispatchEvent(new Event('change', { bubbles: true }));
+            return;
+        }
 
         const normalizedValue = String(value).trim().toLowerCase();
         const option = Array.from(field.options).find((item) =>
@@ -1881,6 +1902,7 @@ document.addEventListener('DOMContentLoaded', function () {
             autoSaveLabel.textContent = 'Saved to PDS table';
             autoSaveLabel.className = 'badge rounded-pill bg-success-subtle text-success';
             setScanItemComplete(scanCheckScan);
+            syncContinueButtonWithScan();
         } catch (error) {
             if (pdsRecordInput) pdsRecordInput.value = '';
             scanStateLabel.textContent = error.message || 'Unable to scan the Personal Data Sheet.';
@@ -1888,6 +1910,7 @@ document.addEventListener('DOMContentLoaded', function () {
             autoSaveLabel.textContent = 'Scan failed';
             autoSaveLabel.className = 'badge rounded-pill bg-danger-subtle text-danger';
             setScanItemPending(scanCheckScan);
+            syncContinueButtonWithScan();
         } finally {
             isScanningPds = false;
             scanUploadedFileButton.disabled = false;
@@ -1895,6 +1918,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     clearIntakeUploadButton?.addEventListener('click', resetIntakeScanDesign);
+    syncContinueButtonWithScan();
 
 });
 </script>
@@ -1986,7 +2010,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ? Array.from(applicationForm.querySelectorAll('input[id][name], select[id][name], textarea[id][name]'))
             .filter((field) => {
                 const type = (field.type || '').toLowerCase();
-                return type !== 'file' && type !== 'password';
+                return field.id !== 'pds_record_id' && type !== 'file' && type !== 'password';
             })
         : [];
 
@@ -2209,6 +2233,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     restoreFormDraft();
+    const scanCheckScanForNav = document.getElementById('scanCheckScan');
+    const hasCompletedCurrentPdsScan = () => Boolean(pdsRecordInputForNav?.value)
+        && scanCheckScanForNav?.classList.contains('is-complete');
+    if (btnToPersonal) {
+        btnToPersonal.disabled = !hasCompletedCurrentPdsScan();
+        btnToPersonal.classList.toggle('disabled', !hasCompletedCurrentPdsScan());
+    }
     submitButton.disabled = !certifyCheckbox.checked;
     persistableFields.forEach((field) => {
         field.addEventListener('input', saveFormDraft);
@@ -2243,7 +2274,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Step 1 → Step 2
     btnToPersonal.addEventListener('click', () => {
-        if (!pdsRecordInputForNav?.value) {
+        if (!hasCompletedCurrentPdsScan()) {
             scanStateLabelForNav.textContent = intakeUploadInputForNav?.files?.length
                 ? 'Please scan the uploaded Personal Data Sheet before continuing'
                 : 'Please upload and scan your Personal Data Sheet before continuing';
