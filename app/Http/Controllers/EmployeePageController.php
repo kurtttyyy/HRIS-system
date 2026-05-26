@@ -315,9 +315,42 @@ class EmployeePageController extends Controller
             return redirect()->route('login_display');
         }
 
+        $departmentName = $this->resolveEmployeeDepartmentName($user);
+        $isDepartmentHead = strtolower(trim((string) ($user->department_head ?? ''))) === 'approved';
+        $evaluationEmployees = collect();
+
+        if ($isDepartmentHead) {
+            $evaluationEmployees = User::with(['employee', 'applicant.position'])
+                ->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee'])
+                ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['approved'])
+                ->where('id', '!=', (int) $user->id)
+                ->get()
+                ->filter(function (User $employeeUser) use ($departmentName) {
+                    return strcasecmp(
+                        $this->resolveEmployeeDepartmentName($employeeUser),
+                        $departmentName
+                    ) === 0;
+                })
+                ->map(function (User $employeeUser) {
+                    return [
+                        'id' => (int) $employeeUser->id,
+                        'name' => $this->buildHierarchyDisplayName($employeeUser),
+                        'position' => $this->resolveEmployeePositionName($employeeUser, 'Staff Member'),
+                        'department' => $this->resolveEmployeeDepartmentName($employeeUser),
+                        'employee_id' => $this->resolveHierarchyEmployeeId($employeeUser),
+                        'email' => $this->resolveHierarchyEmployeeEmail($employeeUser),
+                        'status' => $this->resolveHierarchyEmploymentStatus($employeeUser),
+                    ];
+                })
+                ->values();
+        }
+
         return view('employee.employeeEvaluation', [
             'user' => $user,
             'notifications' => 0,
+            'departmentName' => $departmentName,
+            'isDepartmentHead' => $isDepartmentHead,
+            'evaluationEmployees' => $evaluationEmployees,
         ]);
     }
 

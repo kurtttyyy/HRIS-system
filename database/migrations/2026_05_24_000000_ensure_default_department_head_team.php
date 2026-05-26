@@ -11,16 +11,16 @@ return new class extends Migration
     {
         $now = now();
 
-        foreach ($this->defaultAccounts() as $account) {
+        foreach ($this->accounts() as $account) {
             $values = [
                 'first_name' => $account['first_name'],
                 'middle_name' => $account['middle_name'],
                 'last_name' => $account['last_name'],
-                'role' => $account['role'],
+                'role' => 'Employee',
                 'job_role' => $account['job_role'],
                 'position' => $account['position'],
-                'department' => $account['department'],
-                'department_head' => $account['department_head'] ?? null,
+                'department' => 'Information Technology',
+                'department_head' => $account['department_head'],
                 'status' => 'Approved',
                 'account_status' => 'Active',
                 'password' => Hash::make($account['password']),
@@ -38,20 +38,18 @@ return new class extends Migration
                 ]);
             }
 
-            if ($account['role'] === 'Employee') {
-                $this->ensureEmployeeProfile($account['email'], $account, $now);
-                $this->ensureHiredApplicant($account['email'], $account, $now);
-            }
+            $this->ensureEmployeeProfile($account, $now);
+            $this->ensureHiredApplicant($account, $now);
         }
     }
 
-    private function ensureEmployeeProfile(string $email, array $account, $now): void
+    private function ensureEmployeeProfile(array $account, $now): void
     {
         if (!Schema::hasTable('employees')) {
             return;
         }
 
-        $userId = DB::table('users')->where('email', $email)->value('id');
+        $userId = DB::table('users')->where('email', $account['email'])->value('id');
 
         if (!$userId) {
             return;
@@ -68,7 +66,7 @@ return new class extends Migration
             'civil_status' => 'Single',
             'contact_number' => 'N/A',
             'address' => 'N/A',
-            'department' => $account['department'],
+            'department' => 'Information Technology',
             'position' => $account['position'],
             'classification' => 'Probationary',
             'deleted_at' => null,
@@ -77,25 +75,24 @@ return new class extends Migration
         ]);
     }
 
-    private function ensureHiredApplicant(string $email, array $account, $now): void
+    private function ensureHiredApplicant(array $account, $now): void
     {
         if (!Schema::hasTable('applicants') || !Schema::hasTable('open_positions')) {
             return;
         }
 
-        $userId = DB::table('users')->where('email', $email)->value('id');
+        $userId = DB::table('users')->where('email', $account['email'])->value('id');
 
         if (!$userId) {
             return;
         }
 
-        $openPositionId = $this->resolveDefaultOpenPositionId($account, $now);
         $payload = [
             'user_id' => $userId,
-            'open_position_id' => $openPositionId,
+            'open_position_id' => $this->resolveOpenPositionId($account, $now),
             'first_name' => $account['first_name'],
             'last_name' => $account['last_name'],
-            'email' => $email,
+            'email' => $account['email'],
             'field_study' => '-',
             'work_position' => $account['position'],
             'work_employer' => '-',
@@ -124,15 +121,15 @@ return new class extends Migration
         }
 
         DB::table('applicants')->updateOrInsert([
-            'email' => $email,
+            'email' => $account['email'],
         ], $payload);
     }
 
-    private function resolveDefaultOpenPositionId(array $account, $now): int
+    private function resolveOpenPositionId(array $account, $now): int
     {
         $openPositionId = DB::table('open_positions')
             ->where('title', $account['position'])
-            ->where('department', $account['department'])
+            ->where('department', 'Information Technology')
             ->value('id');
 
         if ($openPositionId) {
@@ -141,10 +138,10 @@ return new class extends Migration
 
         return (int) DB::table('open_positions')->insertGetId([
             'title' => $account['position'],
-            'department' => $account['department'],
+            'department' => 'Information Technology',
             'employment' => 'Full-Time',
             'work_mode' => 'Onsite',
-            'job_description' => 'Default position for seeded employee accounts.',
+            'job_description' => 'Default position for the seeded department head team.',
             'responsibilities' => '-',
             'requirements' => '-',
             'experience_level' => 'Entry Level',
@@ -159,87 +156,20 @@ return new class extends Migration
 
     public function down(): void
     {
-        // Do not delete real admin accounts on rollback.
+        // Keep seeded default accounts on rollback.
     }
 
-    private function defaultAccounts(): array
+    private function accounts(): array
     {
         return [
-            [
-                'email' => 'demo.admin@example.com',
-                'password' => 'Demo12345',
-                'first_name' => 'Demo',
-                'middle_name' => 'Account',
-                'last_name' => 'Admin',
-                'role' => 'Admin',
-                'job_role' => 'Administrator',
-                'position' => 'Administrator',
-                'department' => 'Human Resources',
-                'employee_id' => null,
-                'department_head' => null,
-            ],
-            [
-                'email' => 'kurtrobin@gmail.com',
-                'password' => 'Kurt12345',
-                'first_name' => 'Kurt',
-                'middle_name' => 'Admin',
-                'last_name' => 'Robin',
-                'role' => 'Admin',
-                'job_role' => 'Administrator',
-                'position' => 'Administrator',
-                'department' => 'Human Resources',
-                'employee_id' => null,
-                'department_head' => null,
-            ],
-            [
-                'email' => 'employee@example.com',
-                'password' => 'Employee12345',
-                'first_name' => 'Default',
-                'middle_name' => 'Account',
-                'last_name' => 'Employee',
-                'role' => 'Employee',
-                'job_role' => 'Employee',
-                'position' => 'Employee',
-                'department' => 'General',
-                'employee_id' => 'EMP-DEFAULT',
-                'department_head' => null,
-            ],
-            [
-                'email' => 'maria.santos@example.com',
-                'password' => 'Maria12345',
-                'first_name' => 'Maria',
-                'middle_name' => 'Reyes',
-                'last_name' => 'Santos',
-                'role' => 'Employee',
-                'job_role' => 'HR Staff',
-                'position' => 'HR Staff',
-                'department' => 'Human Resources',
-                'employee_id' => 'EMP-MARIA',
-                'department_head' => null,
-            ],
-            [
-                'email' => 'juan.delacruz@example.com',
-                'password' => 'Juan12345',
-                'first_name' => 'Juan',
-                'middle_name' => 'Dela',
-                'last_name' => 'Cruz',
-                'role' => 'Employee',
-                'job_role' => 'Office Staff',
-                'position' => 'Office Staff',
-                'department' => 'General',
-                'employee_id' => 'EMP-JUAN',
-                'department_head' => null,
-            ],
             [
                 'email' => 'ana.reyes@example.com',
                 'password' => 'Ana12345',
                 'first_name' => 'Ana',
                 'middle_name' => 'Lopez',
                 'last_name' => 'Reyes',
-                'role' => 'Employee',
                 'job_role' => 'IT Support Specialist',
                 'position' => 'IT Support Specialist',
-                'department' => 'Information Technology',
                 'employee_id' => 'EMP-ANA',
                 'department_head' => null,
             ],
@@ -249,10 +179,8 @@ return new class extends Migration
                 'first_name' => 'Miguel',
                 'middle_name' => 'Santos',
                 'last_name' => 'Torres',
-                'role' => 'Employee',
                 'job_role' => 'Systems Technician',
                 'position' => 'Systems Technician',
-                'department' => 'Information Technology',
                 'employee_id' => 'EMP-MIGUEL',
                 'department_head' => null,
             ],
@@ -262,10 +190,8 @@ return new class extends Migration
                 'first_name' => 'Carlos',
                 'middle_name' => 'Garcia',
                 'last_name' => 'Rivera',
-                'role' => 'Employee',
                 'job_role' => 'Head of IT Staff',
                 'position' => 'Head of IT Staff',
-                'department' => 'Information Technology',
                 'employee_id' => 'EMP-CARLOS',
                 'department_head' => 'Approved',
             ],
