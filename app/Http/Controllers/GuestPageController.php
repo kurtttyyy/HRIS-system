@@ -13,10 +13,55 @@ use Illuminate\Support\Str;
 
 class GuestPageController extends Controller
 {
-    public function display_application(){
+    public function display_application(Request $request){
+        $lookup = trim((string) $request->query('application_lookup', ''));
+
+        if ($lookup !== '') {
+            $applicants = Applicant::with([
+                'position',
+                'degrees' => function ($query) {
+                    $query->orderBy('degree_level')->orderBy('sort_order');
+                },
+                'documents' => function ($query) {
+                    $query->orderByDesc('created_at');
+                },
+            ])
+                ->whereRaw('UPPER(TRIM(tracking_number)) = ?', [Str::upper($lookup)])
+                ->orderByDesc('created_at')
+                ->orderByDesc('id')
+                ->get()
+                ->map(function (Applicant $applicant) {
+                    $applicant->setAttribute('is_email_history_match', false);
+
+                    return $applicant;
+                });
+
+            return view('guest.application', [
+                'applicants' => $applicants,
+                'searchedEmail' => $lookup,
+                'applicationStatusSignature' => $this->applicationStatusSignature($applicants),
+            ]);
+        }
+
         return view('guest.application', [
-                    'applicants' => collect(), // avoid undefined variable
-                ]);
+            'applicants' => collect(), // avoid undefined variable
+        ]);
+    }
+
+    private function applicationStatusSignature($applicants): string
+    {
+        return md5(json_encode(collect($applicants)->map(fn (Applicant $applicant) => [
+            'id' => $applicant->id,
+            'application_status' => $applicant->application_status,
+            'date_hired' => optional($applicant->date_hired)->toDateString(),
+            'updated_at' => optional($applicant->updated_at)->toDateTimeString(),
+            'documents' => collect($applicant->documents ?? [])->map(fn ($document) => [
+                'id' => $document->id,
+                'filename' => $document->filename,
+                'type' => $document->type,
+                'updated_at' => optional($document->updated_at)->toDateTimeString(),
+            ])->values(),
+        ])->values()));
     }
 
     public function display_non_teaching($id){

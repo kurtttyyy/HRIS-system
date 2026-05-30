@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -3024,23 +3025,109 @@ class AdministratorPageController extends Controller
     }
 
     public function display_applicant(){
+        $payload = $this->applicantPagePayload();
+
+        return view('Admin.adminApplicant', [
+            'applicant' => $payload['applicant'],
+            'hired' => $payload['hired'],
+            'count_applicant' => $payload['count_applicant'],
+            'count_pending' => $payload['count_pending'],
+            'count_final_interview' => $payload['count_final_interview'],
+            'applicantSnapshotSignature' => $payload['signature'],
+        ]);
+    }
+
+    public function display_applicant_snapshot(Request $request)
+    {
+        $payload = $this->applicantPagePayload();
+        $clientSignature = (string) $request->query('signature', '');
+
+        if ($clientSignature !== '' && hash_equals($payload['signature'], $clientSignature)) {
+            return response()
+                ->json([
+                    'changed' => false,
+                    'signature' => $payload['signature'],
+                ])
+                ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        }
+
+        return response()
+            ->json([
+                'changed' => true,
+                'signature' => $payload['signature'],
+                'current_month' => now()->format('Y-m'),
+                'counts' => [
+                    'total' => $payload['count_applicant'],
+                    'pending' => $payload['count_pending'],
+                    'interview' => $payload['count_final_interview'],
+                    'hired_month' => $payload['hired'],
+                ],
+                'applicants' => $payload['applicant']->values(),
+                'position_options' => $payload['position_options'],
+                'status_options' => $payload['status_options'],
+            ])
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    }
+
+    private function applicantPagePayload(): array
+    {
         $this->syncFinishedInterviewApplicantStatuses();
 
         $applicant = Applicant::with(
             'position:id,title,department,employment,work_mode,job_description,responsibilities,requirements,experience_level,location,skills,benifits,job_type,one,two'
         )->latest('created_at')->get();
         $count_applicant = Applicant::count();
-        $count_pending = $applicant->where('application_status','pending')->count();
+        $count_pending = $applicant->where('application_status', 'pending')->count();
         $count_final_interview = $applicant
             ->whereIn('application_status', ['Initial Interview', 'Final Interview', 'Demo Teaching'])
             ->count();
-        $hired = Applicant::where('application_status', 'Hired')->whereMonth('created_at', now()->month)
-                                        ->whereYear('created_at', now()->year)
-                                        ->count();
+        $hired = Applicant::where('application_status', 'Hired')
+            ->whereMonth('date_hired', now()->month)
+            ->whereYear('date_hired', now()->year)
+            ->count();
+        $positionOptions = $applicant
+            ->map(fn($app) => trim((string) optional($app->position)->title))
+            ->filter(fn($value) => $value !== '')
+            ->unique()
+            ->sort()
+            ->values();
+        $statusOptions = $applicant
+            ->map(fn($app) => trim((string) ($app->application_status ?? '')))
+            ->filter(fn($value) => $value !== '')
+            ->unique()
+            ->sort()
+            ->values();
 
-        return view('Admin.adminApplicant', compact('applicant', 'hired',
-                                            'count_applicant','count_pending'
-                                            ,'count_final_interview'));
+        $signature = md5(json_encode([
+            'counts' => [$count_applicant, $count_pending, $count_final_interview, $hired],
+            'applicants' => $applicant->map(fn($app) => [
+                'id' => $app->id,
+                'first_name' => $app->first_name,
+                'last_name' => $app->last_name,
+                'email' => $app->email,
+                'position_id' => $app->position_id,
+                'position_title' => optional($app->position)->title,
+                'application_status' => $app->application_status,
+                'starRatings' => $app->starRatings,
+                'date_hired' => optional($app->date_hired)->toDateString(),
+                'created_at' => optional($app->created_at)->toDateTimeString(),
+                'updated_at' => optional($app->updated_at)->toDateTimeString(),
+            ])->values(),
+        ]));
+
+        return compact(
+            'applicant',
+            'count_applicant',
+            'count_pending',
+            'count_final_interview',
+            'hired',
+            'positionOptions',
+            'statusOptions',
+            'signature'
+        ) + [
+            'position_options' => $positionOptions,
+            'status_options' => $statusOptions,
+        ];
     }
 
     public function display_applicant_ID($id){
@@ -3062,6 +3149,10 @@ class AdministratorPageController extends Controller
             ->last();
         $completedInterviewTypes = $interviews
             ->filter(function ($interview) {
+                if ($interview->ended_at) {
+                    return true;
+                }
+
                 if (!$interview->date || !$interview->time) {
                     return false;
                 }
@@ -3104,6 +3195,7 @@ class AdministratorPageController extends Controller
             'title' => $app->position->title,
             'job_type' => $app->position->job_type,
             'status' => $app->application_status,
+            'date_hired' => optional($app->date_hired)->toDateString(),
             'location' => $app->address,
             'one' => $app->created_at->format('F d, Y'),
             'work_position' => $app->work_position,
@@ -3116,9 +3208,10 @@ class AdministratorPageController extends Controller
                         'elementary' => 10,
                         'secondary' => 20,
                         'vocational_trade' => 30,
-                        'bachelor' => 40,
-                        'master' => 50,
-                        'doctorate' => 60,
+                        'college' => 40,
+                        'bachelor' => 50,
+                        'master' => 60,
+                        'doctorate' => 70,
                     ];
                     $level = strtolower(trim((string) ($degree->degree_level ?? '')));
 
@@ -3143,12 +3236,14 @@ class AdministratorPageController extends Controller
             'star' => $app->starRatings,
             'comparison' => $comparison,
             'latest_interview' => $latestInterview ? [
+                'id' => $latestInterview->id,
                 'interview_type' => $latestInterview->interview_type,
                 'date' => optional($latestInterview->date)->toDateString(),
                 'time' => $latestInterview->time,
                 'duration' => $latestInterview->duration,
                 'interviewers' => $latestInterview->interviewers,
                 'starts_at' => Carbon::parse(optional($latestInterview->date)->toDateString().' '.$latestInterview->time)->toIso8601String(),
+                'ended_at' => optional($latestInterview->ended_at)->toIso8601String(),
             ] : null,
             'interviews' => $interviews
                 ->sortBy(function ($interview) {
@@ -3159,7 +3254,10 @@ class AdministratorPageController extends Controller
                     $start = Carbon::parse(optional($interview->date)->toDateString().' '.$interview->time);
                     $end = (clone $start)->addMinutes($this->durationToMinutes($interview->duration));
 
+                    $isFinished = $interview->ended_at || now()->gte($end);
+
                     return [
+                        'id' => $interview->id,
                         'interview_type' => $interview->interview_type,
                         'date' => optional($interview->date)->toDateString(),
                         'time' => $interview->time,
@@ -3167,7 +3265,8 @@ class AdministratorPageController extends Controller
                         'interviewers' => $interview->interviewers,
                         'starts_at' => $start->toIso8601String(),
                         'ends_at' => $end->toIso8601String(),
-                        'is_finished' => now()->gte($end),
+                        'ended_at' => optional($interview->ended_at)->toIso8601String(),
+                        'is_finished' => (bool) $isFinished,
                     ];
                 }),
             'interview_progress' => [
@@ -3184,6 +3283,8 @@ class AdministratorPageController extends Controller
                     'name' => $doc->filename,
                     'type' => $doc->type,
                     'url' => asset('storage/'.ltrim((string) ($doc->filepath ?? ''), '/')),
+                    'preview_url' => route('admin.employeeDocuments.preview', ['id' => $doc->id]),
+                    'download_url' => route('admin.employeeDocuments.download', ['id' => $doc->id]),
                     'is_reviewed' => (bool) $doc->reviewed_at,
                     'is_new' => (bool) ($comparison['is_rehire'] ?? false),
                 ];
@@ -3216,6 +3317,10 @@ class AdministratorPageController extends Controller
         $interview = $allInterviews->values();
         $upcomingInterviews = $allInterviews
             ->filter(function ($item) {
+                if ($item->ended_at) {
+                    return false;
+                }
+
                 $start = \Carbon\Carbon::parse($item->date->format('Y-m-d').' '.$item->time);
                 $end = (clone $start)->addMinutes($this->durationToMinutes($item->duration));
                 return now()->lt($end);
@@ -3223,6 +3328,10 @@ class AdministratorPageController extends Controller
             ->values();
         $completedInterviews = $allInterviews
             ->filter(function ($item) {
+                if ($item->ended_at) {
+                    return true;
+                }
+
                 $start = \Carbon\Carbon::parse($item->date->format('Y-m-d').' '.$item->time);
                 $end = (clone $start)->addMinutes($this->durationToMinutes($item->duration));
                 return now()->gte($end);
@@ -3231,6 +3340,10 @@ class AdministratorPageController extends Controller
 
         $count_daily = $allInterviews
             ->filter(function ($item) {
+                if ($item->ended_at) {
+                    return $item->ended_at->isToday();
+                }
+
                 $start = \Carbon\Carbon::parse($item->date->format('Y-m-d').' '.$item->time);
                 $end = (clone $start)->addMinutes($this->durationToMinutes($item->duration));
                 return $end->isToday() && now()->gte($end);
@@ -3238,6 +3351,10 @@ class AdministratorPageController extends Controller
             ->count();
         $count_month = $allInterviews
             ->filter(function ($item) {
+                if ($item->ended_at) {
+                    return $item->ended_at->isCurrentMonth() && $item->ended_at->isCurrentYear();
+                }
+
                 $start = \Carbon\Carbon::parse($item->date->format('Y-m-d').' '.$item->time);
                 $end = (clone $start)->addMinutes($this->durationToMinutes($item->duration));
                 return $end->isCurrentMonth() && $end->isCurrentYear() && now()->gte($end);
@@ -3245,6 +3362,10 @@ class AdministratorPageController extends Controller
             ->count();
         $count_year = $allInterviews
             ->filter(function ($item) {
+                if ($item->ended_at) {
+                    return $item->ended_at->isCurrentYear();
+                }
+
                 $start = \Carbon\Carbon::parse($item->date->format('Y-m-d').' '.$item->time);
                 $end = (clone $start)->addMinutes($this->durationToMinutes($item->duration));
                 return $end->isCurrentYear() && now()->gte($end);
@@ -3270,7 +3391,7 @@ class AdministratorPageController extends Controller
     private function syncFinishedInterviewApplicantStatuses(): void
     {
         $allInterviews = Interviewer::query()
-            ->select(['applicant_id', 'interview_type', 'date', 'time', 'duration'])
+            ->select(['applicant_id', 'interview_type', 'date', 'time', 'duration', 'ended_at'])
             ->whereNotNull('applicant_id')
             ->get();
 
@@ -3291,6 +3412,10 @@ class AdministratorPageController extends Controller
 
         $completedLatestInterviews = $latestByApplicant
             ->filter(function ($item) {
+                if ($item->ended_at) {
+                    return true;
+                }
+
                 $start = Carbon::parse($item->date->format('Y-m-d').' '.$item->time);
                 $end = (clone $start)->addMinutes($this->durationToMinutes($item->duration));
                 return now()->gte($end);
@@ -3674,6 +3799,369 @@ class AdministratorPageController extends Controller
         ActivityChangeLogger::downloadedFile($document, 'Employee Document');
 
         return $disk->download($relativePath, (string) ($document->filename ?: basename($relativePath)));
+    }
+
+    public function preview_employee_document(int $id)
+    {
+        $document = ApplicantDocument::query()
+            ->where('id', $id)
+            ->firstOrFail();
+
+        if ($this->isFolderDocumentRecord($document)) {
+            abort(404);
+        }
+
+        $relativePath = ltrim((string) ($document->filepath ?? ''), '/');
+        if ($relativePath === '') {
+            abort(404);
+        }
+
+        $disk = Storage::disk('public');
+        if (!$disk->exists($relativePath)) {
+            abort(404);
+        }
+
+        $this->markEmployeeDocumentReviewed($document);
+
+        $fileName = (string) ($document->filename ?: basename($relativePath));
+        $extension = strtolower((string) pathinfo($fileName, PATHINFO_EXTENSION));
+        $mimeType = (string) ($document->mime_type ?: $disk->mimeType($relativePath) ?: '');
+        $viewUrl = route('admin.employeeDocuments.view', ['id' => $document->id]);
+        $wordText = null;
+        $wordImages = [];
+
+        if ($extension === 'docx') {
+            $absolutePath = $disk->path($relativePath);
+            $wordText = $this->extractDocxText($absolutePath);
+            $wordImages = $this->extractDocxImages($absolutePath);
+        } elseif ($extension === 'doc') {
+            $wordText = $this->extractLegacyDocText($disk->path($relativePath));
+        }
+
+        return view('Admin.adminDocumentPreview', [
+            'document' => $document,
+            'fileName' => $fileName,
+            'extension' => $extension,
+            'mimeType' => $mimeType,
+            'viewUrl' => $viewUrl,
+            'wordText' => $wordText,
+            'wordImages' => $wordImages,
+            'isPdf' => $extension === 'pdf' || $mimeType === 'application/pdf',
+            'isImage' => in_array($extension, ['png', 'jpg', 'jpeg', 'gif', 'webp'], true) || str_starts_with($mimeType, 'image/'),
+            'isText' => $extension === 'txt' || str_starts_with($mimeType, 'text/'),
+        ]);
+    }
+
+    public function view_employee_document(int $id)
+    {
+        $document = ApplicantDocument::query()
+            ->where('id', $id)
+            ->firstOrFail();
+
+        if ($this->isFolderDocumentRecord($document)) {
+            abort(404);
+        }
+
+        $relativePath = ltrim((string) ($document->filepath ?? ''), '/');
+        if ($relativePath === '') {
+            abort(404);
+        }
+
+        $disk = Storage::disk('public');
+        if (!$disk->exists($relativePath)) {
+            abort(404);
+        }
+
+        $absolutePath = $disk->path($relativePath);
+        $fileName = (string) ($document->filename ?: basename($relativePath));
+        $safeFileName = str_replace('"', '', $fileName);
+        $extension = strtolower((string) pathinfo($fileName, PATHINFO_EXTENSION));
+        $mimeType = (string) ($document->mime_type ?: $disk->mimeType($relativePath) ?: '');
+
+        if ($mimeType === '' || $mimeType === 'application/octet-stream') {
+            $mimeType = match ($extension) {
+                'pdf' => 'application/pdf',
+                'png' => 'image/png',
+                'jpg', 'jpeg' => 'image/jpeg',
+                'gif' => 'image/gif',
+                'webp' => 'image/webp',
+                'txt' => 'text/plain',
+                default => 'application/octet-stream',
+            };
+        }
+
+        return Response::file($absolutePath, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline; filename="'.$safeFileName.'"',
+            'X-Content-Type-Options' => 'nosniff',
+            'X-Frame-Options' => 'SAMEORIGIN',
+            'Content-Security-Policy' => "frame-ancestors 'self'",
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ]);
+    }
+
+    private function extractDocxText(string $absolutePath): ?string
+    {
+        $xml = null;
+
+        if (class_exists(\ZipArchive::class)) {
+            $zip = new \ZipArchive();
+            if ($zip->open($absolutePath) === true) {
+                $entry = $zip->getFromName('word/document.xml');
+                $zip->close();
+
+                if (is_string($entry) && trim($entry) !== '') {
+                    $xml = $entry;
+                }
+            }
+        }
+
+        $entryNames = [
+            'word/document.xml',
+            'word/header1.xml',
+            'word/header2.xml',
+            'word/header3.xml',
+            'word/footer1.xml',
+            'word/footer2.xml',
+            'word/footer3.xml',
+            'word/footnotes.xml',
+            'word/endnotes.xml',
+            'word/comments.xml',
+        ];
+
+        $xmlParts = [];
+        foreach ($entryNames as $entryName) {
+            $entryXml = null;
+
+            if ($entryName === 'word/document.xml' && is_string($xml) && trim($xml) !== '') {
+                $entryXml = $xml;
+            } else {
+                $entryXml = $this->readZipEntry($absolutePath, $entryName);
+            }
+
+            if (is_string($entryXml) && trim($entryXml) !== '') {
+                $xmlParts[] = $entryXml;
+            }
+        }
+
+        if (empty($xmlParts)) {
+            return null;
+        }
+
+        $joinedXml = implode("\n\n", $xmlParts);
+        $joinedXml = preg_replace('/<w:tab\b[^>]*\/>/i', "\t", $joinedXml) ?? $joinedXml;
+        $joinedXml = preg_replace('/<w:br\b[^>]*\/>/i', "\n", $joinedXml) ?? $joinedXml;
+        $joinedXml = preg_replace('/<\/w:tc>/i', "\t", $joinedXml) ?? $joinedXml;
+        $joinedXml = preg_replace('/<\/w:tr>/i', "\n", $joinedXml) ?? $joinedXml;
+        $joinedXml = preg_replace('/<\/w:p>/i', "\n\n", $joinedXml) ?? $joinedXml;
+        $text = html_entity_decode(strip_tags($joinedXml), ENT_QUOTES | ENT_XML1, 'UTF-8');
+        $text = preg_replace("/[ \t]+\n/", "\n", $text) ?? $text;
+        $text = preg_replace("/\t+\n/", "\n", $text) ?? $text;
+        $text = preg_replace("/\n{3,}/", "\n\n", $text) ?? $text;
+
+        return trim($text) !== '' ? trim($text) : null;
+    }
+
+    private function extractDocxImages(string $absolutePath): array
+    {
+        $documentXml = $this->readZipEntry($absolutePath, 'word/document.xml');
+        $relationshipsXml = $this->readZipEntry($absolutePath, 'word/_rels/document.xml.rels');
+
+        if (!is_string($documentXml) || !is_string($relationshipsXml)) {
+            return [];
+        }
+
+        preg_match_all('/r:embed="([^"]+)"/', $documentXml, $embedMatches);
+        $embeddedIds = collect($embedMatches[1] ?? [])->unique()->values();
+        if ($embeddedIds->isEmpty()) {
+            return [];
+        }
+
+        preg_match_all('/<Relationship\b[^>]*Id="([^"]+)"[^>]*Target="([^"]+)"[^>]*>/i', $relationshipsXml, $relationshipMatches, PREG_SET_ORDER);
+        $relationships = collect($relationshipMatches)
+            ->mapWithKeys(fn (array $match): array => [$match[1] => html_entity_decode($match[2], ENT_QUOTES | ENT_XML1, 'UTF-8')]);
+
+        return $embeddedIds
+            ->map(function (string $id) use ($relationships, $absolutePath): ?array {
+                $target = (string) $relationships->get($id, '');
+                if ($target === '' || str_starts_with($target, 'http://') || str_starts_with($target, 'https://')) {
+                    return null;
+                }
+
+                $entryName = str_starts_with($target, '/')
+                    ? ltrim($target, '/')
+                    : 'word/'.ltrim($target, '/');
+                $entryName = preg_replace('#(^|/)[^/]+/\.\./#', '$1', $entryName) ?? $entryName;
+                $imageBytes = $this->readZipEntry($absolutePath, $entryName);
+                if (!is_string($imageBytes) || $imageBytes === '') {
+                    return null;
+                }
+
+                $extension = strtolower((string) pathinfo($entryName, PATHINFO_EXTENSION));
+                $mimeType = match ($extension) {
+                    'jpg', 'jpeg' => 'image/jpeg',
+                    'png' => 'image/png',
+                    'gif' => 'image/gif',
+                    'webp' => 'image/webp',
+                    'bmp' => 'image/bmp',
+                    default => null,
+                };
+
+                if ($mimeType === null) {
+                    return null;
+                }
+
+                return [
+                    'name' => basename($entryName),
+                    'data_uri' => 'data:'.$mimeType.';base64,'.base64_encode($imageBytes),
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    private function extractLegacyDocText(string $absolutePath): ?string
+    {
+        $contents = @file_get_contents($absolutePath);
+        if (!is_string($contents) || $contents === '') {
+            return null;
+        }
+
+        $decoded = @mb_convert_encoding($contents, 'UTF-8', 'UTF-16LE');
+        $candidates = [];
+
+        if (is_string($decoded)) {
+            preg_match_all('/[\p{L}\p{N}\p{P}\p{S} \t\r\n]{12,}/u', $decoded, $unicodeMatches);
+            $candidates = array_merge($candidates, $unicodeMatches[0] ?? []);
+        }
+
+        preg_match_all('/[\x20-\x7E\r\n\t]{12,}/', $contents, $asciiMatches);
+        $candidates = array_merge($candidates, $asciiMatches[0] ?? []);
+
+        $lines = collect($candidates)
+            ->map(function (string $value): string {
+                $value = str_replace("\0", '', $value);
+                $value = preg_replace('/[ \t]+/', ' ', $value) ?? $value;
+                $value = preg_replace("/\r\n|\r/", "\n", $value) ?? $value;
+                return trim($value);
+            })
+            ->filter(fn (string $value): bool => strlen($value) >= 12)
+            ->reject(fn (string $value): bool => preg_match('/^[^a-zA-Z0-9]*$/', $value) === 1)
+            ->unique()
+            ->values()
+            ->all();
+
+        if (empty($lines)) {
+            return null;
+        }
+
+        $text = implode("\n\n", $lines);
+        $text = preg_replace("/\n{3,}/", "\n\n", $text) ?? $text;
+
+        return trim($text) !== '' ? trim($text) : null;
+    }
+
+    private function readZipEntry(string $absolutePath, string $entryName): ?string
+    {
+        $contents = @file_get_contents($absolutePath);
+        if (!is_string($contents) || $contents === '') {
+            return null;
+        }
+
+        $eocdOffset = strrpos($contents, "PK\x05\x06");
+        if ($eocdOffset === false) {
+            return null;
+        }
+
+        $centralDirectoryOffset = $this->littleEndianInt(substr($contents, $eocdOffset + 16, 4));
+        $centralDirectorySize = $this->littleEndianInt(substr($contents, $eocdOffset + 12, 4));
+        if ($centralDirectoryOffset === null || $centralDirectorySize === null) {
+            return null;
+        }
+
+        $cursor = $centralDirectoryOffset;
+        $centralDirectoryEnd = $centralDirectoryOffset + $centralDirectorySize;
+        while ($cursor + 46 <= $centralDirectoryEnd && substr($contents, $cursor, 4) === "PK\x01\x02") {
+            $compressionMethod = $this->littleEndianInt(substr($contents, $cursor + 10, 2));
+            $compressedSize = $this->littleEndianInt(substr($contents, $cursor + 20, 4));
+            $fileNameLength = $this->littleEndianInt(substr($contents, $cursor + 28, 2));
+            $extraLength = $this->littleEndianInt(substr($contents, $cursor + 30, 2));
+            $commentLength = $this->littleEndianInt(substr($contents, $cursor + 32, 2));
+            $localHeaderOffset = $this->littleEndianInt(substr($contents, $cursor + 42, 4));
+
+            if (
+                $compressionMethod === null
+                || $compressedSize === null
+                || $fileNameLength === null
+                || $extraLength === null
+                || $commentLength === null
+                || $localHeaderOffset === null
+            ) {
+                return null;
+            }
+
+            $name = substr($contents, $cursor + 46, $fileNameLength);
+            if ($name === $entryName) {
+                if (substr($contents, $localHeaderOffset, 4) !== "PK\x03\x04") {
+                    return null;
+                }
+
+                $localFileNameLength = $this->littleEndianInt(substr($contents, $localHeaderOffset + 26, 2));
+                $localExtraLength = $this->littleEndianInt(substr($contents, $localHeaderOffset + 28, 2));
+                if ($localFileNameLength === null || $localExtraLength === null) {
+                    return null;
+                }
+
+                $dataOffset = $localHeaderOffset + 30 + $localFileNameLength + $localExtraLength;
+                $compressedData = substr($contents, $dataOffset, $compressedSize);
+
+                if ($compressionMethod === 0) {
+                    return $compressedData;
+                }
+
+                if ($compressionMethod === 8 && function_exists('gzinflate')) {
+                    $inflated = @gzinflate($compressedData);
+                    return is_string($inflated) ? $inflated : null;
+                }
+
+                return null;
+            }
+
+            $cursor += 46 + $fileNameLength + $extraLength + $commentLength;
+        }
+
+        return null;
+    }
+
+    private function littleEndianInt(string $bytes): ?int
+    {
+        $length = strlen($bytes);
+        if ($length === 2) {
+            $value = unpack('v', $bytes);
+            return is_array($value) ? (int) $value[1] : null;
+        }
+
+        if ($length === 4) {
+            $value = unpack('V', $bytes);
+            return is_array($value) ? (int) $value[1] : null;
+        }
+
+        return null;
+    }
+
+    private function markEmployeeDocumentReviewed(ApplicantDocument $document): void
+    {
+        if ($document->reviewed_at) {
+            return;
+        }
+
+        $document->forceFill([
+            'reviewed_at' => now(),
+            'reviewed_by' => Auth::id(),
+        ])->save();
     }
 
     public function display_create_position(){

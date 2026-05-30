@@ -209,35 +209,409 @@
             gap: 1rem;
         }
     }
+
+    .applications-shell {
+        max-width: 1240px;
+    }
+
+    .applications-board {
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 1.35rem;
+        background: #fff;
+        box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+        padding: 1.4rem;
+    }
+
+    .applications-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: flex-start;
+        margin-bottom: 1.35rem;
+        padding: 0.35rem 0.25rem 0;
+    }
+
+    .applications-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: #047857;
+        font-size: 0.76rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 0.45rem;
+    }
+
+    .applications-title {
+        margin: 0;
+        color: #1f2937;
+        font-size: clamp(1.8rem, 4vw, 2.45rem);
+        font-weight: 900;
+        letter-spacing: 0;
+    }
+
+    .applications-subtitle {
+        margin: 0.35rem 0 0;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .applications-count-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        white-space: nowrap;
+        border: 1px solid rgba(16, 185, 129, 0.28);
+        border-radius: 999px;
+        background: #ecfdf5;
+        color: #047857;
+        padding: 0.65rem 0.9rem;
+        font-size: 0.88rem;
+        font-weight: 800;
+    }
+
+    .application-card {
+        border: 1px solid rgba(15, 23, 42, 0.1);
+        border-radius: 1.25rem;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+        overflow: hidden;
+    }
+
+    .application-card + .application-card {
+        margin-top: 1rem;
+    }
+
+    .application-card-body {
+        padding: 1.15rem;
+    }
+
+    .application-card-top {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 1rem;
+        align-items: start;
+        margin-bottom: 1rem;
+    }
+
+    .application-position {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.6rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .application-position h5 {
+        margin: 0;
+        color: #111827;
+        font-size: 1.25rem;
+        font-weight: 900;
+    }
+
+    .application-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        color: #64748b;
+        font-size: 0.9rem;
+        font-weight: 700;
+    }
+
+    .application-status-badge {
+        border-radius: 999px;
+        padding: 0.55rem 0.9rem;
+        font-size: 0.78rem;
+        font-weight: 900;
+        text-transform: capitalize;
+    }
+
+    .application-flow-strip {
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 1rem;
+        background: #fff;
+        padding: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .stepper {
+        display: flex;
+        align-items: center;
+        max-width: 36rem;
+        gap: 0;
+        margin-bottom: 0.75rem;
+    }
+
+    .stepper .step {
+        display: flex;
+        align-items: center;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .stepper .step:last-child {
+        flex: 0 0 auto;
+    }
+
+    .stepper .circle {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #e5e7eb;
+        color: #64748b;
+        font-size: 0.85rem;
+        font-weight: 900;
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+    }
+
+    .stepper .line {
+        height: 0.22rem;
+        flex: 1;
+        margin: 0 0.45rem;
+        border-radius: 999px;
+        background: #e5e7eb;
+    }
+
+    .application-flow-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .next-step-text {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        color: #047857;
+        font-weight: 800;
+    }
+
+    .next-step-text::before {
+        content: "";
+        width: 0.45rem;
+        height: 0.45rem;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    .application-view-toggle {
+        border-radius: 999px;
+        padding: 0.55rem 0.9rem;
+        font-weight: 800;
+    }
+
+    .application-details-shell {
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 1.15rem;
+        background: #fff;
+        padding: 1rem;
+    }
+
+    .application-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .application-section-panel {
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 1rem;
+        background: #f8fafc;
+        padding: 1rem;
+    }
+
+    .application-section-panel-wide {
+        grid-column: 1 / -1;
+    }
+
+    .application-section-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        margin: 0 0 0.9rem;
+        color: #047857;
+        font-size: 0.82rem;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .application-section-panel > .small {
+        color: #64748b !important;
+        font-size: 0.75rem;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .application-section-panel > .small + div {
+        color: #1f2937;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+    }
+
+    .detail-list {
+        display: grid;
+        gap: 0.7rem;
+    }
+
+    .detail-row {
+        display: grid;
+        grid-template-columns: minmax(7rem, 0.35fr) minmax(0, 1fr);
+        gap: 0.75rem;
+        align-items: start;
+        border-top: 1px solid rgba(15, 23, 42, 0.06);
+        padding-top: 0.7rem;
+    }
+
+    .detail-row:first-child {
+        border-top: 0;
+        padding-top: 0;
+    }
+
+    .detail-label {
+        color: #64748b;
+        font-size: 0.76rem;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .detail-value {
+        color: #1f2937;
+        font-size: 0.94rem;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+    }
+
+    .education-card-list,
+    .document-card-grid {
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .education-card-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .document-card-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .mini-record-card {
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 0.9rem;
+        background: #fff;
+        padding: 0.9rem;
+        min-height: 5.25rem;
+    }
+
+    .mini-record-title {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        margin-bottom: 0.35rem;
+        color: #111827;
+        font-weight: 900;
+    }
+
+    .mini-record-title i {
+        color: #047857;
+    }
+
+    .mini-record-main {
+        color: #1f2937;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+    }
+
+    .mini-record-sub {
+        margin-top: 0.2rem;
+        color: #64748b;
+        font-size: 0.84rem;
+        font-weight: 600;
+        overflow-wrap: anywhere;
+    }
+
+    .application-tips {
+        border: 1px solid rgba(16, 185, 129, 0.22);
+        background: #ecfdf5;
+    }
+
+    @media (max-width: 991.98px) {
+        .application-detail-grid,
+        .education-card-list,
+        .document-card-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .applications-board {
+            padding: 1rem;
+        }
+
+        .applications-header,
+        .application-card-top,
+        .application-flow-footer,
+        .detail-row {
+            grid-template-columns: 1fr;
+        }
+
+        .applications-header,
+        .application-flow-footer {
+            align-items: stretch;
+        }
+    }
 </style>
 
 @include('layouts.header')  {{-- UNIVERSAL HEADER --}}
 
 
 <div class="header-divider"></div>
-<main class="container my-5 animated-card1 delay-5">
-    <div class="container my-5 shadow-sm p-4 bg-white rounded">
-    <h2 class="fw-bold mb-1">Your Applications</h2>
-    <p class="text-muted mb-4">Track the status of your job applications</p>
+<main class="container my-5 animated-card1 delay-5 applications-shell">
+    <div
+        id="applicationStatusBoard"
+        class="applications-board"
+        data-lookup="{{ e($searchedEmail ?? '') }}"
+        data-signature="{{ e($applicationStatusSignature ?? '') }}"
+        data-refresh-url="{{ route('guest.application.check') }}"
+    >
+    <div class="applications-header">
+        <div>
+            <div class="applications-kicker"><i class="bi bi-clipboard-check"></i> Application Status</div>
+            <h2 class="applications-title">Your Applications</h2>
+            <p class="applications-subtitle">Track each submitted application and review the details you sent to HR.</p>
+        </div>
+        <div class="applications-count-pill">
+            <i class="bi bi-folder2-open"></i>
+            {{ ($applicants ?? collect())->count() }} {{ ($applicants ?? collect())->count() === 1 ? 'Application' : 'Applications' }}
+        </div>
+    </div>
 
     @if(($applicants ?? collect())->isEmpty())
         <div class="rounded-4 border bg-light-subtle p-4 text-center">
             <h5 class="fw-bold mb-2">No application found</h5>
             @if(!empty($searchedEmail))
-                <p class="text-muted mb-0">We could not find an application submitted with {{ $searchedEmail }}.</p>
+                <p class="text-muted mb-0">We could not find an application with tracking number {{ $searchedEmail }}.</p>
             @else
-                <p class="text-muted mb-0">Enter your email from the Application Status button to view your submitted applications.</p>
+                <p class="text-muted mb-0">Enter your tracking number from the Application Status button to view your submitted application.</p>
             @endif
         </div>
     @endif
 
     @foreach($applicants as $applicant)
-        <div class="card shadow-sm mb-4 animated-card delay-5">
-            <div class="card-body">
+        <div class="application-card animated-card delay-5">
+            <div class="application-card-body card-body">
 
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="application-card-top">
                     <div>
-                        <div class="d-flex flex-wrap align-items-center gap-2">
+                        <div class="application-position">
                             <h5 class="mb-1">{{ optional($applicant->position)->title ?: 'Application' }}</h5>
                             @if((bool) ($applicant->is_email_history_match ?? false))
                                 <span class="badge rounded-pill px-3 py-2" style="background-color: rgba(108, 117, 125, 0.12); color: #495057; border: 1px solid rgba(108, 117, 125, 0.35);">
@@ -245,7 +619,13 @@
                                 </span>
                             @endif
                         </div>
-                        <small class="text-muted">Submitted: {{ $applicant->created_at->format('m/d/y') }}</small>
+                        <div class="application-meta">
+                            <span><i class="bi bi-calendar3 me-1"></i>Submitted {{ $applicant->created_at->format('M d, Y') }}</span>
+                            <span><i class="bi bi-building me-1"></i>{{ optional($applicant->position)->department ?: 'Department N/A' }}</span>
+                            @if(!empty($applicant->tracking_number))
+                                <span><i class="bi bi-upc-scan me-1"></i>{{ $applicant->tracking_number }}</span>
+                            @endif
+                        </div>
                     </div>
 
                     {{-- Status Badge --}}  
@@ -262,27 +642,29 @@
                         $badgeStyle = $statusColors[$applicant->application_status] ?? $defaultColor;
                     @endphp
 
-                    <span class="badge rounded-pill px-3 py-2" style="{{ $badgeStyle }}">
+                    <span class="application-status-badge" style="{{ $badgeStyle }}">
                         {{ $applicant->application_status }}
                     </span>
                 </div>
 
                 {{-- Progress --}}
-                <div
-                    class="stepper"
-                    data-status="{{ $applicant->application_status }}"
-                    data-job-type="{{ strtolower((string) optional($applicant->position)->job_type) }}"
-                ></div>
+                <div class="application-flow-strip">
+                    <div
+                        class="stepper"
+                        data-status="{{ $applicant->application_status }}"
+                        data-job-type="{{ strtolower((string) optional($applicant->position)->job_type) }}"
+                    ></div>
 
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="text-success next-step-text"></span>
-                    <button
-                        type="button"
-                        class="btn btn-sm btn-outline-success application-view-toggle"
-                        data-target="application-details-{{ $applicant->id }}"
-                    >
-                        View Submitted Application
-                    </button>
+                    <div class="application-flow-footer">
+                        <span class="next-step-text"></span>
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-success application-view-toggle"
+                            data-target="application-details-{{ $applicant->id }}"
+                        >
+                            View Submitted Application
+                        </button>
+                    </div>
                 </div>
 
                 {{-- Rejection Message --}}
@@ -296,11 +678,11 @@
                     </div>
                 @endif
 
-                <div id="application-details-{{ $applicant->id }}" class="application-details-panel mt-4" style="display: none;">
-                    <div class="rounded-4 border bg-light-subtle p-4">
-                        <div class="row g-4">
-                            <div class="col-md-6">
-                                <h6 class="fw-bold mb-3 text-success">Personal Information</h6>
+                <div id="application-details-{{ $applicant->id }}" class="application-details-panel mt-3" style="display: none;">
+                    <div class="application-details-shell">
+                        <div class="application-detail-grid">
+                            <div class="application-section-panel">
+                                <h6 class="application-section-title"><i class="bi bi-person-badge"></i> Personal Information</h6>
                                 <div class="small text-muted mb-2">Full Name</div>
                                 <div class="mb-3">{{ $applicant->first_name }} {{ $applicant->last_name }}</div>
                                 <div class="small text-muted mb-2">Email</div>
@@ -311,8 +693,8 @@
                                 <div>{{ $applicant->address ?: 'N/A' }}</div>
                             </div>
 
-                            <div class="col-md-6">
-                                <h6 class="fw-bold mb-3 text-success">Application Information</h6>
+                            <div class="application-section-panel">
+                                <h6 class="application-section-title"><i class="bi bi-briefcase"></i> Application Information</h6>
                                 <div class="small text-muted mb-2">Position</div>
                                 <div class="mb-3">{{ optional($applicant->position)->title ?: 'N/A' }}</div>
                                 <div class="small text-muted mb-2">Department</div>
@@ -323,23 +705,23 @@
                                 <div>{{ $applicant->skills_n_expertise ?: 'N/A' }}</div>
                             </div>
 
-                            <div class="col-md-6">
-                                <h6 class="fw-bold mb-3 text-success">Education</h6>
+                            <div class="application-section-panel">
+                                <h6 class="application-section-title"><i class="bi bi-mortarboard"></i> Education</h6>
                                 @php
                                     $degreeRows = collect($applicant->degrees ?? []);
                                 @endphp
                                 @if($degreeRows->isNotEmpty())
-                                    <div class="d-flex flex-column gap-3">
+                                    <div class="education-card-list">
                                         @foreach($degreeRows as $degree)
-                                            <div class="rounded-3 border bg-white p-3">
-                                                <div class="fw-semibold text-capitalize">{{ $degree->degree_level }}</div>
-                                                <div>{{ $degree->degree_name ?: 'N/A' }}</div>
+                                            <div class="mini-record-card">
+                                                <div class="mini-record-title"><i class="bi bi-award"></i><span class="text-capitalize">{{ $degree->degree_level }}</span></div>
+                                                <div class="mini-record-main">{{ $degree->degree_name ?: 'N/A' }}</div>
                                                 <div class="small text-muted">{{ $degree->school_name ?: 'School N/A' }}{{ $degree->year_finished ? ' • '.$degree->year_finished : '' }}</div>
                                             </div>
                                         @endforeach
                                     </div>
                                 @else
-                                    <div class="rounded-3 border bg-white p-3">
+                                    <div class="mini-record-card">
                                         <div><strong>Bachelor:</strong> {{ $applicant->bachelor_degree ?: 'N/A' }}</div>
                                         <div><strong>Master:</strong> {{ $applicant->master_degree ?: 'N/A' }}</div>
                                         <div><strong>Doctorate:</strong> {{ $applicant->doctoral_degree ?: 'N/A' }}</div>
@@ -347,8 +729,8 @@
                                 @endif
                             </div>
 
-                            <div class="col-md-6">
-                                <h6 class="fw-bold mb-3 text-success">Experience</h6>
+                            <div class="application-section-panel">
+                                <h6 class="application-section-title"><i class="bi bi-clock-history"></i> Experience</h6>
                                 <div class="small text-muted mb-2">Previous Position</div>
                                 <div class="mb-3">{{ $applicant->work_position ?: 'N/A' }}</div>
                                 <div class="small text-muted mb-2">Employer</div>
@@ -359,21 +741,19 @@
                                 <div>{{ $applicant->work_duration ?: 'N/A' }}</div>
                             </div>
 
-                            <div class="col-12">
-                                <h6 class="fw-bold mb-3 text-success">Uploaded Documents</h6>
+                            <div class="application-section-panel application-section-panel-wide">
+                                <h6 class="application-section-title"><i class="bi bi-folder-check"></i> Uploaded Documents</h6>
                                 @if(collect($applicant->documents ?? [])->isNotEmpty())
-                                    <div class="row g-3">
+                                    <div class="document-card-grid">
                                         @foreach($applicant->documents as $document)
-                                            <div class="col-md-6 col-lg-4">
-                                                <div class="rounded-3 border bg-white p-3 h-100">
-                                                    <div class="fw-semibold">{{ $document->type ?: 'Document' }}</div>
-                                                    <div class="small text-muted text-break">{{ $document->filename }}</div>
-                                                </div>
+                                            <div class="mini-record-card">
+                                                <div class="mini-record-title"><i class="bi bi-file-earmark-text"></i>{{ $document->type ?: 'Document' }}</div>
+                                                <div class="mini-record-sub">{{ $document->filename }}</div>
                                             </div>
                                         @endforeach
                                     </div>
                                 @else
-                                    <div class="rounded-3 border bg-white p-3">No uploaded documents found.</div>
+                                    <div class="mini-record-card">No uploaded documents found.</div>
                                 @endif
                             </div>
                         </div>
@@ -504,7 +884,8 @@ document.addEventListener('DOMContentLoaded', function () {
         ];
     };
 
-    document.querySelectorAll('.stepper').forEach(stepper => {
+    function initializeApplicationStatusBoard(root = document) {
+    root.querySelectorAll('.stepper').forEach(stepper => {
         const status = stepper.dataset.status;
         const steps = getSteps(stepper.dataset.jobType);
         stepper.innerHTML = steps.map((_, index) => `
@@ -582,7 +963,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    document.querySelectorAll('.application-view-toggle').forEach(button => {
+    root.querySelectorAll('.application-view-toggle').forEach(button => {
         button.addEventListener('click', function () {
             const targetId = this.dataset.target;
             const panel = document.getElementById(targetId);
@@ -592,6 +973,62 @@ document.addEventListener('DOMContentLoaded', function () {
             panel.style.display = isOpen ? 'none' : 'block';
             this.innerText = isOpen ? 'View Submitted Application' : 'Hide Submitted Application';
         });
+    });
+    }
+
+    initializeApplicationStatusBoard();
+
+    const board = document.getElementById('applicationStatusBoard');
+    let statusRefreshInFlight = false;
+
+    async function refreshApplicationStatusBoard(force = false) {
+        if (!board || statusRefreshInFlight) return;
+        if (!force && document.hidden) return;
+
+        const lookup = board.dataset.lookup || '';
+        const refreshUrl = board.dataset.refreshUrl || '';
+        if (!lookup || !refreshUrl) return;
+
+        statusRefreshInFlight = true;
+
+        try {
+            const url = new URL(refreshUrl, window.location.origin);
+            url.searchParams.set('application_lookup', lookup);
+            if (board.dataset.signature) {
+                url.searchParams.set('signature', board.dataset.signature);
+            }
+
+            const response = await fetch(url.toString(), {
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+            });
+
+            if (!response.ok) return;
+
+            const payload = await response.json();
+            board.dataset.signature = payload.signature || board.dataset.signature || '';
+
+            if (payload.changed === false || typeof payload.html !== 'string') {
+                return;
+            }
+
+            board.innerHTML = payload.html;
+            initializeApplicationStatusBoard(board);
+        } catch (error) {
+            console.warn('Application status refresh failed.', error);
+        } finally {
+            statusRefreshInFlight = false;
+        }
+    }
+
+    setInterval(() => refreshApplicationStatusBoard(), 15000);
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            refreshApplicationStatusBoard(true);
+        }
     });
 
 });

@@ -20,7 +20,7 @@
     }
     main {
       --admin-employee-sidebar-gap: 2rem;
-      transition: margin-left 0.3s ease, width 0.3s ease;
+      transition: margin-left 0.3s ease;
     }
     main.main-with-collapsed-sidebar {
       margin-left: calc(4rem + var(--admin-employee-sidebar-gap));
@@ -97,7 +97,8 @@
         background-color 260ms ease;
     }
     .employee-card-motion:hover {
-      transform: translate3d(0, -3px, 0) scale(1.01);
+      transform: translate3d(0, -3px, 0);
+      filter: none;
     }
     .employee-table-row-motion {
       transition: transform 220ms cubic-bezier(0.22, 0.9, 0.2, 1), background-color 220ms ease;

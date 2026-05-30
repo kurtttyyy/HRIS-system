@@ -123,17 +123,24 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Application Submitted</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="application-next-panel">
                     <h6>Do you want to view your application?</h6>
                     <p>Your submitted details and uploaded documents can be reviewed in Application Status.</p>
+                    @if(session('application_tracking_number'))
+                        <div class="mt-3 rounded-3 border border-success-subtle bg-success-subtle px-3 py-2">
+                            <small class="d-block text-success fw-bold text-uppercase">Tracking Number</small>
+                            <span class="fw-bold text-success">{{ session('application_tracking_number') }}</span>
+                        </div>
+                    @endif
                 </div>
             </div>
             <div class="modal-footer">
                 <form method="POST" action="{{ route('guest.application.submit') }}" class="me-auto">
                     @csrf
-                    <input type="hidden" name="email" value="{{ session('application_review_email', session('applicant_email')) }}">
+                    <input type="hidden" name="application_lookup" value="{{ session('application_tracking_number') }}">
                     <button type="submit" class="btn btn-success">View Application</button>
                 </form>
                 <button type="button" class="btn btn-outline-secondary" id="continueToRatingBtn">Rate Now</button>
@@ -146,6 +153,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Rate Your Application Experience</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ route('applicant.rating.store') }}">
                 @csrf

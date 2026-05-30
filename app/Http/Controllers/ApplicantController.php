@@ -5,14 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\Applicant;
 use App\Models\ApplicantDegree;
 use App\Models\ApplicantDocument;
+use App\Mail\ApplicationTrackingNumberMail;
 use App\Models\Education;
 use App\Models\Resignation;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class ApplicantController extends Controller
 {
@@ -189,6 +192,10 @@ class ApplicantController extends Controller
                 }
 
                 $value = $this->cleanPdsValue($value);
+                if ($field === 'name_extension') {
+                    $value = $this->cleanPdsNameExtension((string) $value);
+                }
+
                 if (!$value || $this->looksLikePdsTemplateNoise($value, (string) $field)) {
                     return null;
                 }
@@ -258,6 +265,10 @@ class ApplicantController extends Controller
 
         if (in_array($field, ['surname', 'first_name', 'middle_name', 'name_extension'], true)
             && preg_match('/\b(single|married|widow(?:ed|er)?|separated|dual citizenship|filipino|afghanistan|albania|algeria|andorra|angola|argentina|armenia|australia|austria|bahamas|bahrain|bangladesh|belgium|brazil|canada|china|denmark|france|germany|india|indonesia|italy|japan|malaysia|philippines|singapore|spain|thailand|united states)\b/iu', $value)) {
+            return true;
+        }
+
+        if ($field === 'permanent_address' && $this->looksLikePdsCitizenshipCountry($value)) {
             return true;
         }
 
@@ -354,13 +365,16 @@ class ApplicantController extends Controller
     }
 
     public function applicant_stores(Request $request){
+        $request->request->remove('pds_file');
+        $request->files->remove('pds_file');
         $draftDocumentRefs = $this->normalizeDraftDocumentRefs((array) $request->input('draft_documents', []));
         $draftDocuments = collect($draftDocumentRefs)
             ->map(fn ($documents) => collect((array) $documents)->filter()->values()->all())
             ->filter(fn ($documents) => count($documents) > 0);
         $hasDraftDocument = fn (int $index) => $draftDocuments->has((string) $index) || $draftDocuments->has($index);
 
-        $attrs = $request->validate([
+        try {
+            $attrs = $request->validate([
             'pds_record_id' => 'nullable|integer|exists:pds_table,id',
             'first_name' => 'required|string',
             'middle_name' => 'nullable|string',
@@ -424,7 +438,13 @@ class ApplicantController extends Controller
             'work_employer' => 'required_unless:fresh_graduate,1|nullable|string',
             'work_location' => 'required_unless:fresh_graduate,1|nullable|string',
             'work_duration' => 'required_unless:fresh_graduate,1|nullable|string',
-        ]);
+            ]);
+        } catch (ValidationException $exception) {
+            return redirect()->back()
+                ->withErrors($exception->validator)
+                ->withInput($this->safeApplicationOldInput($request));
+        }
+        $attrs['name_extension'] = $this->cleanPdsNameExtension((string) ($attrs['name_extension'] ?? ''));
 
         $normalizedEducationLevels = collect($attrs['education_levels'] ?? [])
             ->map(function ($education, $key) {
@@ -460,7 +480,7 @@ class ApplicantController extends Controller
 
         if ($normalizedBachelorDegrees->isEmpty()) {
             return redirect()->back()
-                ->withInput()
+                ->withInput($this->safeApplicationOldInput($request))
                 ->withErrors(['bachelor_degrees' => 'Please add at least one bachelor degree.']);
         }
 
@@ -529,11 +549,11 @@ class ApplicantController extends Controller
 
         if ($existingApplication) {
             return redirect()->back()
-                ->withInput()
+                ->withInput($this->safeApplicationOldInput($request))
                 ->with('popup_error', 'You already submitted an application for this position using this email.');
         }
 
-        DB::transaction(function () use ($request, $attrs, $draftDocumentRefs, $primaryBachelor, $normalizedEducationLevels, $normalizedBachelorDegrees, $normalizedMasterDegrees, $normalizedDoctoralDegrees, $primaryMaster, $primaryDoctoral) {
+        $applicant = DB::transaction(function () use ($request, $attrs, $draftDocumentRefs, $primaryBachelor, $normalizedEducationLevels, $normalizedBachelorDegrees, $normalizedMasterDegrees, $normalizedDoctoralDegrees, $primaryMaster, $primaryDoctoral) {
             $normalizedEmail = Str::lower(trim((string) ($attrs['email'] ?? '')));
             $rehireUser = $this->findLatestResignedEmployeeByEmail($normalizedEmail);
 
@@ -566,6 +586,7 @@ class ApplicantController extends Controller
                 'experience_years' => $attrs['experience_years'],
                 'skills_n_expertise' => $attrs['key_skills'],
                 'open_position_id' => $attrs['position'],
+                'tracking_number' => $this->generateApplicationTrackingNumber(),
                 'application_status' => 'pending',
                 'fresh_graduate' => (bool) ($attrs['fresh_graduate'] ?? false),
                 // Keep NOT NULL DB constraints satisfied for fresh graduates.
@@ -624,6 +645,7 @@ class ApplicantController extends Controller
             $elementary = $educationLevel('elementary');
             $secondary = $educationLevel('secondary');
             $vocationalTrade = $educationLevel('vocational_trade');
+            $college = $educationLevel('college');
 
             $educationPayload = [
                 'elementary_school_name' => $elementary['school_name'] ?? null,
@@ -632,6 +654,8 @@ class ApplicantController extends Controller
                 'secondary_year_finished' => $secondary['year_finished'] ?? null,
                 'vocational_trade_school_name' => $vocationalTrade['school_name'] ?? null,
                 'vocational_trade_year_finished' => $vocationalTrade['year_finished'] ?? null,
+                'college_school_name' => $college['school_name'] ?? null,
+                'college_year_finished' => $college['year_finished'] ?? null,
                 'bachelor' => $primaryBachelor['degree'],
                 'master' => $primaryMaster['degree'] ?? '',
                 'doctorate' => $primaryDoctoral['degree'] ?? '',
@@ -651,13 +675,13 @@ class ApplicantController extends Controller
                 DB::table('pds_table')
                     ->where('id', $attrs['pds_record_id'])
                     ->whereNull('applicant_id')
-                    ->update($this->buildPdsApplicationPayload(
+                    ->update($this->filterPayloadForTableColumns('pds_table', $this->buildPdsApplicationPayload(
                         $attrs,
                         $applicant_store->id,
                         $normalizedEducationLevels,
                         $normalizedMasterDegrees,
                         $normalizedDoctoralDegrees
-                    ));
+                    )));
             }
 
             foreach ((array) $request->input('documents', []) as $index => $docMeta) {
@@ -711,12 +735,61 @@ class ApplicantController extends Controller
                     ]);
                 }
             }
+
+            return $applicant_store->loadMissing('position');
         });
+
+        try {
+            Mail::to($applicant->email)->queue(new ApplicationTrackingNumberMail($applicant));
+        } catch (\Throwable $exception) {
+            Log::warning('Application submitted but tracking number email could not be queued.', [
+                'applicant_id' => $applicant->id ?? null,
+                'email' => $applicant->email ?? null,
+                'error' => $exception->getMessage(),
+            ]);
+        }
 
         return redirect()->route('guest.index')
             ->with('success', 'Submitted successfully')
             ->with('application_review_email', $attrs['email'])
+            ->with('application_tracking_number', $applicant->tracking_number)
             ->with('show_rating_modal', true);
+    }
+
+    private function generateApplicationTrackingNumber(): string
+    {
+        do {
+            $trackingNumber = 'APP-'.now()->format('Ymd').'-'.Str::upper(Str::random(6));
+        } while (Applicant::where('tracking_number', $trackingNumber)->exists());
+
+        return $trackingNumber;
+    }
+
+    private function filterPayloadForTableColumns(string $table, array $payload): array
+    {
+        if (!Schema::hasTable($table)) {
+            return [];
+        }
+
+        $columns = array_flip(Schema::getColumnListing($table));
+
+        return array_intersect_key($payload, $columns);
+    }
+
+    private function safeApplicationOldInput(Request $request): array
+    {
+        return collect($request->except([
+            '_token',
+            'pds_file',
+            'documents',
+            'draft_documents',
+        ]))->map(function ($value) {
+            if (is_string($value)) {
+                return Str::limit($value, 1000, '');
+            }
+
+            return $value;
+        })->all();
     }
 
     private function extractPdsText(string $path, string $extension): string
@@ -760,6 +833,7 @@ class ApplicantController extends Controller
             })
             ->filter()
             ->implode('; ');
+        $collegeEducation = collect($normalizedEducationLevels)->firstWhere('key', 'college');
 
         return [
             'applicant_id' => $applicantId,
@@ -777,6 +851,8 @@ class ApplicantController extends Controller
             'elementary' => $educationText('elementary'),
             'secondary' => $educationText('secondary'),
             'vocational_trade_course' => $educationText('vocational_trade'),
+            'college_school_name' => $collegeEducation['school_name'] ?? null,
+            'college_year_graduated' => $collegeEducation['year_finished'] ?? null,
             'graduate_studies' => $this->cleanPdsValue($graduateStudies),
         ];
     }
@@ -800,10 +876,12 @@ class ApplicantController extends Controller
 
     private function completePdsPermanentAddress(array $pdsData): ?string
     {
-        return $this->cleanPdsPermanentAddress(collect([
+        $address = $this->cleanPdsPermanentAddress(collect([
             $pdsData['permanent_address'] ?? null,
             $pdsData['zip_code'] ?? null,
         ])->filter()->implode(' '));
+
+        return $address && $this->looksLikePdsCitizenshipCountry($address) ? null : $address;
     }
 
     private function appendPdsEducationResponseFields(array $pdsData, array $rows): array
@@ -864,7 +942,11 @@ class ApplicantController extends Controller
             }
 
             $afterLabel = $labelIndex === null ? [] : array_slice($values, $labelIndex + 1);
-            $schoolName = $this->cleanPdsValue((string) ($afterLabel[0] ?? ''));
+            $afterLabel = array_values(array_filter(array_map(
+                fn ($value) => $this->cleanPdsEducationCell((string) $value),
+                $afterLabel
+            )));
+            $schoolName = $this->cleanPdsEducationCell((string) ($afterLabel[0] ?? ''));
             $year = $this->extractPdsGraduationYear($this->officialPdsCellValueFromNormalizedRow($row, 'M'))
                 ?: $this->extractPdsGraduationYear(implode(' ', $afterLabel))
                 ?: $this->extractPdsGraduationYear(implode(' ', array_map('strval', $row)));
@@ -874,7 +956,7 @@ class ApplicantController extends Controller
                     continue;
                 }
 
-                $degree = $this->cleanPdsValue($candidate);
+                $degree = $this->cleanPdsEducationCell($candidate);
                 break;
             }
 
@@ -901,13 +983,15 @@ class ApplicantController extends Controller
 
     private function looksLikePdsCountryListValue(string $value): bool
     {
-        return in_array($value, [
-            'Congo, Republic of the',
-            'Costa Rica',
-            "Cote d'Ivoire",
-            'Croatia',
-            'Cuba',
-            'Curacao',
+        $normalized = $this->normalizePdsLabel(str_replace([',', "'"], ' ', $value));
+
+        return in_array($normalized, [
+            'congo republic of the',
+            'costa rica',
+            'cote d ivoire',
+            'croatia',
+            'cuba',
+            'curacao',
         ], true);
     }
 
@@ -919,7 +1003,7 @@ class ApplicantController extends Controller
         }
 
         $year = $this->extractPdsGraduationYear($value);
-        $schoolName = $this->cleanPdsValue(preg_replace('/\s*-\s*\d{4}(?:\s*-\s*\d{4})?\s*$/', '', $value) ?? $value);
+        $schoolName = $this->cleanPdsEducationCell(preg_replace('/\s*-\s*\d{4}(?:\s*-\s*\d{4})?\s*$/', '', $value) ?? $value);
 
         return [
             'school_name' => $schoolName,
@@ -2505,6 +2589,119 @@ POWERSHELL;
         return $this->cleanPdsValue($value);
     }
 
+    private function cleanPdsNameExtension(string $value): ?string
+    {
+        $value = $this->cleanPdsValue($value) ?? '';
+        $normalized = $this->normalizePdsLabel(str_replace(['.', ',', '(', ')'], ' ', $value));
+
+        if ($normalized === '' || in_array($normalized, [
+            'name extension',
+            'name extension jr sr',
+            'jr sr',
+            'na',
+            'n a',
+            'none',
+            'not applicable',
+        ], true)) {
+            return null;
+        }
+
+        if (! preg_match('/[\pL\pN]/u', $value)) {
+            return null;
+        }
+
+        return $value;
+    }
+
+    private function cleanPdsEducationCell(string $value): ?string
+    {
+        $value = $this->cleanPdsValue($value) ?? '';
+        $normalized = $this->normalizePdsLabel(str_replace(['(', ')'], ' ', $value));
+
+        if ($this->looksLikePdsCountryListValue($value)) {
+            return null;
+        }
+
+        if ($normalized === '' || in_array($normalized, [
+            'elementary',
+            'secondary',
+            'vocational',
+            'trade course',
+            'vocational trade course',
+            'college',
+            'graduate studies',
+            'name of school',
+            'write in full',
+            'basic education degree course',
+            'period of attendance',
+            'from',
+            'to',
+            'highest level units earned',
+            'if not graduated',
+            'year graduated',
+            'scholarship academic honors received',
+            'continue on separate sheet if necessary',
+            'na',
+            'n a',
+            'none',
+            'not applicable',
+        ], true)) {
+            return null;
+        }
+
+        if (! preg_match('/[\pL\pN]/u', $value)) {
+            return null;
+        }
+
+        return $value;
+    }
+
+    private function looksLikePdsCitizenshipCountry(string $value): bool
+    {
+        $normalized = $this->normalizePdsLabel(str_replace(',', ' ', $value));
+        if ($normalized === '') {
+            return false;
+        }
+
+        $countriesAndCitizenshipValues = [
+            'afghanistan',
+            'albania',
+            'algeria',
+            'andorra',
+            'angola',
+            'argentina',
+            'armenia',
+            'australia',
+            'austria',
+            'bahamas',
+            'bahamas the',
+            'bahrain',
+            'bangladesh',
+            'belgium',
+            'brazil',
+            'canada',
+            'china',
+            'denmark',
+            'dual citizenship',
+            'filipino',
+            'france',
+            'germany',
+            'india',
+            'indonesia',
+            'italy',
+            'japan',
+            'malaysia',
+            'philippines',
+            'singapore',
+            'spain',
+            'thailand',
+            'united states',
+            'united states of america',
+        ];
+
+        return in_array($normalized, $countriesAndCitizenshipValues, true);
+    }
+
     private function normalizePdsDate(mixed $value): ?string
     {
         if (!$value) {
@@ -2562,12 +2759,72 @@ POWERSHELL;
 
     public function display_application(Request $request){
         $attrs = $request->validate([
-            'email' => 'required|email',
+            'application_lookup' => 'required|string|max:255',
         ]);
 
-        session(['applicant_email' => $attrs['email']]);
+        $lookup = trim((string) ($attrs['application_lookup'] ?? ''));
+        if ($lookup === '') {
+            return back()->withErrors(['application_lookup' => 'Please enter your tracking number.']);
+        }
 
-        $applicantsQuery = Applicant::with([
+        $applicantsQuery = $this->applicationStatusQuery($lookup);
+
+        if (!(clone $applicantsQuery)->exists()) {
+            return view('guest.application', [
+                'applicants' => collect(),
+                'searchedEmail' => $lookup,
+                'applicationStatusSignature' => $this->applicationStatusSignature(collect()),
+            ]);
+        }
+
+        $applicants = $this->applicationStatusApplicants($lookup);
+
+
+        return view('guest.application', [
+            'applicants' => $applicants,
+            'searchedEmail' => $lookup,
+            'applicationStatusSignature' => $this->applicationStatusSignature($applicants),
+        ]);
+    }
+
+    public function application_status_check(Request $request)
+    {
+        $attrs = $request->validate([
+            'application_lookup' => 'required|string|max:255',
+            'signature' => 'nullable|string',
+        ]);
+
+        $lookup = trim((string) ($attrs['application_lookup'] ?? ''));
+        $applicants = $lookup === ''
+            ? collect()
+            : $this->applicationStatusApplicants($lookup);
+        $signature = $this->applicationStatusSignature($applicants);
+        $clientSignature = (string) ($attrs['signature'] ?? '');
+
+        if ($clientSignature !== '' && hash_equals($signature, $clientSignature)) {
+            return response()
+                ->json([
+                    'changed' => false,
+                    'signature' => $signature,
+                ])
+                ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        }
+
+        return response()
+            ->json([
+                'changed' => true,
+                'signature' => $signature,
+                'html' => view('guest.partials.application-status-board', [
+                    'applicants' => $applicants,
+                    'searchedEmail' => $lookup,
+                ])->render(),
+            ])
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    }
+
+    private function applicationStatusQuery(string $lookup)
+    {
+        return Applicant::with([
             'position',
             'degrees' => function ($query) {
                 $query->orderBy('degree_level')->orderBy('sort_order');
@@ -2575,34 +2832,36 @@ POWERSHELL;
             'documents' => function ($query) {
                 $query->orderByDesc('created_at');
             },
-        ]);
-        $this->applyApplicantEmailHistoryFilter($applicantsQuery, (string) $attrs['email']);
+        ])->whereRaw('UPPER(TRIM(tracking_number)) = ?', [Str::upper($lookup)]);
+    }
 
-        if (!(clone $applicantsQuery)->exists()) {
-            return view('guest.application', [
-                'applicants' => collect(),
-                'searchedEmail' => $attrs['email'],
-            ]);
-        }
-
-        $applicants = $applicantsQuery
+    private function applicationStatusApplicants(string $lookup)
+    {
+        return $this->applicationStatusQuery($lookup)
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->get()
-            ->map(function (Applicant $applicant) use ($attrs) {
-                $applicant->setAttribute(
-                    'is_email_history_match',
-                    strtolower(trim((string) ($applicant->email ?? ''))) !== strtolower(trim((string) ($attrs['email'] ?? '')))
-                );
+            ->map(function (Applicant $applicant) {
+                $applicant->setAttribute('is_email_history_match', false);
 
                 return $applicant;
             });
+    }
 
-
-        return view('guest.application', [
-            'applicants' => $applicants,
-            'searchedEmail' => $attrs['email'],
-        ]);
+    private function applicationStatusSignature($applicants): string
+    {
+        return md5(json_encode(collect($applicants)->map(fn (Applicant $applicant) => [
+            'id' => $applicant->id,
+            'application_status' => $applicant->application_status,
+            'date_hired' => optional($applicant->date_hired)->toDateString(),
+            'updated_at' => optional($applicant->updated_at)->toDateTimeString(),
+            'documents' => collect($applicant->documents ?? [])->map(fn ($document) => [
+                'id' => $document->id,
+                'filename' => $document->filename,
+                'type' => $document->type,
+                'updated_at' => optional($document->updated_at)->toDateTimeString(),
+            ])->values(),
+        ])->values()));
     }
 
     private function findLatestResignedEmployeeByEmail(string $email): ?User

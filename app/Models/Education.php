@@ -21,6 +21,8 @@ class Education extends Model
         'secondary_year_finished',
         'vocational_trade_school_name',
         'vocational_trade_year_finished',
+        'college_school_name',
+        'college_year_finished',
         'bachelor',
         'master',
         'doctorate',

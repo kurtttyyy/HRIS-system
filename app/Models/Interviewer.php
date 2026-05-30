@@ -16,6 +16,7 @@ class Interviewer extends Model
         'date',
         'time',
         'duration',
+        'ended_at',
         'interviewers',
         'email_link',
         'url',
@@ -28,5 +29,6 @@ class Interviewer extends Model
 
     protected $casts = [
         'date' => 'date',
+        'ended_at' => 'datetime',
     ];
 }

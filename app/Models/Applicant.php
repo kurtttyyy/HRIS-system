@@ -45,6 +45,7 @@ class Applicant extends Model
         'skills_n_expertise',
         'benefit',
         'open_position_id',
+        'tracking_number',
         'application_status',
         'date_hired',
         'user_id',
