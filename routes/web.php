@@ -31,6 +31,7 @@ Route::controller(GuestPageController::class)->group(function () {
     Route::get('/cookie-policy', 'display_cookie')->name('guest.cookie');
     Route::post('/chatbot/reply', 'chat_reply')->name('guest.chat.reply');
     Route::get('/job/available', 'job_open_landing')->name('guest.jobOpenLanding');
+    Route::get('/job/available/check', 'job_vacancies_check')->name('guest.jobVacancies.check');
     Route::get('/job/available/{id}', 'display_job')->name('guest.jobOpen');
 });
 
@@ -40,6 +41,7 @@ Route::controller(ApplicantController::class)->group(function () {
     Route::post('applicant/document-draft', 'upload_document_draft')->name('applicant.document.draft');
     Route::post('applicant/rating', 'store_rating')->name('applicant.rating.store');
     Route::post('/application', 'display_application')->name('guest.application.submit');
+    Route::get('/application/status/check', 'application_status_check')->name('guest.application.check');
 });
 
 Route::controller(RegisterLoginController::class)->group(function () {
@@ -105,6 +107,7 @@ Route::controller(AdministratorPageController::class)->group(function () {
     Route::get('system/loads', 'display_loads')->name('admin.adminLoads');
 
     Route::get('system/applicant', 'display_applicant')->name('admin.adminApplicant');
+    Route::get('system/applicant/snapshot', 'display_applicant_snapshot')->name('admin.adminApplicant.snapshot');
     Route::get('system/applicants/ID/{id}', 'display_applicant_ID');
     Route::get('system/interviewers/ID/{id}', 'display_interview_ID');
     Route::get('system/edit/position/{id}', 'display_edit_position')->name('admin.adminEditPosition');
@@ -125,6 +128,8 @@ Route::controller(AdministratorPageController::class)->group(function () {
     Route::get('system/personal/detail/edit', 'display_edit')->name('admin.PersonalDetail.editProfile');
     Route::get('system/personal/detail/service-record/edit', 'display_service_record_edit')->name('admin.PersonalDetail.serviceRecordEdit');
     Route::get('system/personal/detail/service-record/download-word', 'download_service_record_word')->name('admin.PersonalDetail.serviceRecordEdit.downloadWord');
+    Route::get('system/personal/detail/employee/documents/{id}/preview', 'preview_employee_document')->name('admin.employeeDocuments.preview');
+    Route::get('system/personal/detail/employee/documents/{id}/view', 'view_employee_document')->name('admin.employeeDocuments.view');
     Route::get('system/personal/detail/employee/documents/{id}/download', 'download_employee_document')->name('admin.employeeDocuments.download');
 });
 
@@ -134,6 +139,8 @@ Route::controller(AdministratorStoreController::class)->group(function () {
     Route::post('system/store/new/position', 'store_new_position')->name('admin.createPositionStore');
     Route::post('system/store/ratings', 'store_star_ratings')->name('admin.adminStarStore');
     Route::post('system/store/interview', 'store_interview')->name('admin.storeNewInterview');
+    Route::post('system/interview/{interview}/end-now', 'end_interview_now')->name('admin.interview.endNow');
+    Route::post('system/interview/{interview}/extend', 'extend_interview')->name('admin.interview.extend');
     Route::post('system/communication/send', 'send_communication_message')->name('admin.communication.send');
     Route::post('system/employee/document', 'store_document')->name('admin.addDocument');
     Route::post('system/applicant/document/{document}/reviewed', 'mark_applicant_document_reviewed')->name('admin.applicantDocument.reviewed');

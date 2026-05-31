@@ -321,7 +321,7 @@
                     <div id="payslip-modal-{{ $payslip->id }}" class="hidden fixed inset-0 z-50">
                         <div class="absolute inset-0 bg-black/50" data-close-modal></div>
                         <div class="relative z-10 flex min-h-screen items-center justify-center p-4">
-                            <div class="w-full max-w-5xl overflow-y-auto rounded-[2rem] border border-slate-200 bg-white shadow-2xl max-h-[90vh]">
+                            <div class="w-full max-w-5xl overflow-y-auto rounded-[2rem] border border-slate-200 bg-white shadow-2xl max-h-[90vh]" data-payslip-scroll-panel>
                                 <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
                                     <div>
                                         <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Payslip Advice</p>
@@ -516,23 +516,44 @@
         });
     }
 
+    const closePayslipModal = (modal) => {
+        if (!modal) return;
+
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    };
+
     const modalOpenButtons = document.querySelectorAll('[data-open-modal]');
     modalOpenButtons.forEach((button) => {
         button.addEventListener('click', function () {
             const modalId = this.getAttribute('data-open-modal');
             const modal = modalId ? document.getElementById(modalId) : null;
             if (!modal) return;
+
+            document.body.appendChild(modal);
             modal.classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
 
-            const closeButtons = modal.querySelectorAll('[data-close-modal]');
-            closeButtons.forEach((closeButton) => {
-                closeButton.addEventListener('click', function () {
-                    modal.classList.add('hidden');
-                    document.body.classList.remove('overflow-hidden');
-                });
-            });
+            const scrollPanel = modal.querySelector('[data-payslip-scroll-panel]');
+            if (scrollPanel) {
+                scrollPanel.scrollTop = 0;
+            }
         });
+    });
+
+    document.addEventListener('click', function (event) {
+        const closeTrigger = event.target.closest('[data-close-modal]');
+        if (!closeTrigger) return;
+
+        closePayslipModal(closeTrigger.closest('[id^="payslip-modal-"]'));
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key !== 'Escape') return;
+
+        document
+            .querySelectorAll('[id^="payslip-modal-"]:not(.hidden)')
+            .forEach(closePayslipModal);
     });
 </script>
 

@@ -262,53 +262,223 @@
         font-weight: 700 !important;
     }
 
-    .skills-field-list {
-        display: flex;
-        flex-direction: column;
-        gap: 0.85rem;
+    .skills-control-panel {
+        border: 1px solid rgba(15, 23, 42, 0.1);
+        border-radius: 1rem;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        box-shadow: 0 14px 32px rgba(15, 23, 42, 0.06);
+        padding: 1rem;
     }
 
-    .skill-entry {
+    .skills-toolbar-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin: 0 0 0.9rem;
+        color: #047857;
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .skills-control-panel .floating-input {
+        margin-bottom: 0 !important;
+    }
+
+    .skill-add-row {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
         gap: 0.75rem;
         align-items: stretch;
     }
 
-    .skill-entry .floating-input {
-        margin-bottom: 0 !important;
-    }
-
-    .remove-skill-btn,
     .add-skill-btn {
-        min-height: 3.5rem;
-        border-radius: 0.65rem;
-        font-weight: 700;
-    }
-
-    .remove-skill-btn {
-        width: 3.5rem;
-        border: 1px solid rgba(220, 38, 38, 0.28);
-        color: #b91c1c;
-        background: #fff7f7;
-    }
-
-    .remove-skill-btn:hover {
+        min-height: 3rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
+        border: 1px solid #16a34a;
+        border-radius: 0.75rem;
+        background: #16a34a;
         color: #fff;
-        background: #dc2626;
-    }
-
-    .add-skill-btn {
-        border: 1px solid rgba(22, 163, 74, 0.28);
-        background: linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%);
-        color: #047857;
-        box-shadow: 0 10px 22px rgba(22, 163, 74, 0.12);
+        font-weight: 800;
+        padding: 0.55rem 1.05rem;
+        white-space: nowrap;
+        box-shadow: 0 10px 20px rgba(22, 163, 74, 0.18);
+        transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
     }
 
     .add-skill-btn:hover {
         color: #fff;
-        background: linear-gradient(135deg, #16a34a 0%, #047857 100%);
+        background: #047857;
+        border-color: #047857;
+        box-shadow: 0 14px 26px rgba(4, 120, 87, 0.22);
         transform: translateY(-1px);
+    }
+
+    .add-skill-btn:focus-visible {
+        outline: 3px solid rgba(22, 163, 74, 0.28);
+        outline-offset: 2px;
+    }
+
+    .add-skill-btn i {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.35rem;
+        height: 1.35rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.18);
+        font-size: 0.86rem;
+    }
+
+    .skill-chip-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.8rem;
+    }
+
+    .skill-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        border: 1px solid rgba(22, 163, 74, 0.24);
+        border-radius: 999px;
+        background: #f0fdf4;
+        color: #047857;
+        font-size: 0.83rem;
+        font-weight: 700;
+        padding: 0.4rem 0.55rem 0.4rem 0.75rem;
+    }
+
+    .skill-chip button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.45rem;
+        height: 1.45rem;
+        border: none;
+        border-radius: 999px;
+        background: rgba(4, 120, 87, 0.1);
+        color: #047857;
+        line-height: 1;
+    }
+
+    .review-section-card {
+        border: 1px solid rgba(15, 23, 42, 0.1);
+        border-radius: 1rem;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        box-shadow: 0 14px 32px rgba(15, 23, 42, 0.06);
+        padding: 1.1rem;
+    }
+
+    .review-section-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        margin: 0 0 1rem;
+        color: #047857;
+        font-size: 0.92rem;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .review-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.9rem;
+    }
+
+    .review-summary-panel {
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 0.85rem;
+        background: #fff;
+        padding: 0.9rem;
+    }
+
+    .review-summary-panel-wide {
+        grid-column: 1 / -1;
+    }
+
+    .review-panel-title {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        margin: 0 0 0.7rem;
+        color: #111827;
+        font-size: 0.85rem;
+        font-weight: 800;
+    }
+
+    .review-item-list {
+        display: grid;
+        gap: 0.55rem;
+    }
+
+    .review-item {
+        display: grid;
+        grid-template-columns: minmax(7.5rem, 0.35fr) minmax(0, 1fr);
+        gap: 0.75rem;
+        align-items: start;
+        border-top: 1px solid rgba(15, 23, 42, 0.06);
+        padding-top: 0.55rem;
+    }
+
+    .review-item:first-child {
+        border-top: 0;
+        padding-top: 0;
+    }
+
+    .review-label {
+        color: #64748b;
+        font-size: 0.74rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .review-value {
+        color: #1f2937;
+        font-size: 0.92rem;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+    }
+
+    .review-file-list {
+        margin: 0;
+        padding-left: 1.05rem;
+        display: grid;
+        gap: 0.22rem;
+    }
+
+    .review-file-list li {
+        padding-left: 0.15rem;
+    }
+
+    .review-file-list li::marker {
+        color: #059669;
+    }
+
+    .review-chip-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .review-chip {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid rgba(22, 163, 74, 0.25);
+        border-radius: 999px;
+        background: #f0fdf4;
+        color: #047857;
+        font-size: 0.8rem;
+        font-weight: 800;
+        padding: 0.35rem 0.65rem;
     }
 
     @media (max-width: 575.98px) {
@@ -321,13 +491,17 @@
             grid-template-columns: 1fr;
         }
 
-        .skill-entry {
+        .skill-add-row {
             grid-template-columns: 1fr;
         }
 
-        .remove-skill-btn {
+        .add-skill-btn {
             width: 100%;
-            min-height: 2.75rem;
+        }
+
+        .review-summary-grid,
+        .review-item {
+            grid-template-columns: 1fr;
         }
     }
 
@@ -666,7 +840,7 @@
             </div>
 
             <label id="intakeUploadZone" class="intake-upload-zone">
-                <input type="file" id="intakeUploadInput" name="pds_file" accept=".xls,.xlsx,.csv">
+                <input type="file" id="intakeUploadInput" accept=".xls,.xlsx,.csv">
                 <span class="intake-upload-icon"><i class="bi bi-cloud-arrow-up-fill"></i></span>
                 <strong id="intakeUploadTitle" class="d-block">Upload Personal Data Sheet</strong>
                 <span id="intakeUploadSubtitle" class="d-block text-secondary mt-1">Excel files only: XLS, XLSX, CSV</span>
@@ -701,7 +875,7 @@
 
     <div class="d-flex justify-content-end mt-auto step-actions">
         <div></div>
-        <button type="button" id="btnToPersonal" class="btn btn-primary">Continue</button>
+        <button type="button" id="btnToPersonal" class="btn btn-primary" disabled>Continue</button>
     </div>
 </div>
 
@@ -817,6 +991,7 @@
             'elementary' => 'Elementary',
             'secondary' => 'Secondary',
             'vocational_trade' => 'Vocational / Trade Course',
+            'college' => 'College',
         ];
     @endphp
 
@@ -1128,8 +1303,7 @@
         <label for="experience_years">Years of Relevant Experience<span class="required-asterisk"> *</span></label>
     </div>
 
-    <div>
-        <input type="hidden" id="key_skills" name="key_skills" value="{{ old('key_skills') }}">
+    <div class="skills-control-panel">
         <datalist id="skillsList">
             <option value="Team Leadership">
             <option value="Project Management">
@@ -1140,22 +1314,19 @@
             <option value="Customer Service">
         </datalist>
 
-        <div id="skillsFieldList" class="skills-field-list">
-            <div class="skill-entry">
-                <div class="floating-input">
-                    <input list="skillsList" class="form-control skill-input" id="key_skill_0" placeholder=" " required>
-                    <label for="key_skill_0">Key Skill & Expertise<span class="required-asterisk"> *</span></label>
-                </div>
-                <button type="button" class="remove-skill-btn d-none" aria-label="Remove skill">
-                    <i class="bi bi-trash"></i>
-                </button>
+        <h6 class="skills-toolbar-title"><i class="bi bi-stars"></i> Skills</h6>
+        <input type="hidden" id="key_skills" name="key_skills" value="{{ old('key_skills') }}">
+        <div class="skill-add-row">
+            <div class="floating-input">
+                <input list="skillsList" class="form-control" id="key_skill_input" placeholder=" " required>
+                <label for="key_skill_input">Key Skill & Expertise<span class="required-asterisk"> *</span></label>
             </div>
+            <button type="button" id="addSkillFieldBtn" class="btn add-skill-btn">
+                <i class="bi bi-plus-circle me-1"></i>
+                Add Skill
+            </button>
         </div>
-
-        <button type="button" id="addSkillFieldBtn" class="btn add-skill-btn mt-3 w-100">
-            <i class="bi bi-plus-circle me-1"></i>
-            Add More Skill
-        </button>
+        <div id="skillChipList" class="skill-chip-list" aria-live="polite"></div>
     </div>
     </div>
 
@@ -1178,7 +1349,7 @@
             <i class="bi bi-file-earmark-arrow-up upload-icon"></i>
             <div class="upload-main-text">Click to upload your resume</div>
             <div class="upload-sub-text">PDF, DOC, DOCX (up to 5MB)</div>
-            <input type="file" id="resume" name="documents[0][file]" accept=".pdf,.doc,.docx" required>
+            <input type="file" id="resume" data-document-index="0" accept=".pdf,.doc,.docx" required>
             <input type="hidden" name="documents[0][type]" value="Resume/CV">
         </label>
     </div>
@@ -1190,7 +1361,7 @@
             <i class="bi bi-file-earmark-arrow-up upload-icon"></i>
             <div class="upload-main-text">Click to upload your cover letter</div>
             <div class="upload-sub-text">PDF, DOC, DOCX (up to 5MB)</div>
-            <input type="file" id="cover_letter" name="documents[1][file]" accept=".pdf,.doc,.docx" required>
+            <input type="file" id="cover_letter" data-document-index="1" accept=".pdf,.doc,.docx" required>
             <input type="hidden" name="documents[1][type]" value="Cover Letter">
         </label>
     </div>
@@ -1202,7 +1373,7 @@
             <i class="bi bi-file-earmark-arrow-up upload-icon"></i>
             <div class="upload-main-text">Click to upload your Transcript Of Records</div>
             <div class="upload-sub-text">PDF, DOC, DOCX (up to 5MB)</div>
-            <input type="file" id="TOR" name="documents[3][file]" accept=".pdf,.doc,.docx" required>
+            <input type="file" id="TOR" data-document-index="3" accept=".pdf,.doc,.docx" required>
             <input type="hidden" name="documents[3][type]" value="Transcript Of Records">
         </label>
     </div>
@@ -1214,7 +1385,7 @@
             <i class="bi bi-file-earmark-arrow-up upload-icon"></i>
             <div class="upload-main-text">Click to upload your Diploma, Master's, Doctorate </div>
             <div class="upload-sub-text">PDF, DOC, DOCX (up to 5MB each)</div>
-            <input type="file" id="diploma" name="documents[4][file][]" accept=".pdf,.doc,.docx" multiple>
+            <input type="file" id="diploma" data-document-index="4" accept=".pdf,.doc,.docx" multiple>
             <input type="hidden" name="documents[4][type]" value="Diploma">
         </label>
     </div>
@@ -1226,7 +1397,7 @@
             <i class="bi bi-file-earmark-arrow-up upload-icon"></i>
             <div class="upload-main-text">Click to upload your PRC License/Board Rating</div>
             <div class="upload-sub-text">PDF, DOC, DOCX (up to 5MB each)</div>
-            <input type="file" id="board_rating" name="documents[5][file][]" accept=".pdf,.doc,.docx" multiple>
+            <input type="file" id="board_rating" data-document-index="5" accept=".pdf,.doc,.docx" multiple>
             <input type="hidden" name="documents[5][type]" value="PRC License/Board Rating">
         </label>
     </div>
@@ -1238,7 +1409,7 @@
             <i class="bi bi-file-earmark-arrow-up upload-icon"></i>
             <div class="upload-main-text">Click to upload your Certificate Of Eligibility / Certificate of Passing</div>
             <div class="upload-sub-text">PDF, DOC, DOCX (up to 5MB each)</div>
-            <input type="file" id="certification_eligibility" name="documents[6][file][]" accept=".pdf,.doc,.docx" multiple>
+            <input type="file" id="certification_eligibility" data-document-index="6" accept=".pdf,.doc,.docx" multiple>
             <input type="hidden" name="documents[6][type]" value="Certificate Of Eligibility / Certificate of Passing">
         </label>
     </div>
@@ -1250,7 +1421,7 @@
             <i class="bi bi-file-earmark-arrow-up upload-icon"></i>
             <div class="upload-main-text">Click to upload your documents</div>
             <div class="upload-sub-text">PDF, DOC, DOCX (up to 5MB each)</div>
-            <input type="file" id="certifications" name="documents[7][file][]" accept=".pdf,.doc,.docx" multiple required>
+            <input type="file" id="certifications" data-document-index="7" accept=".pdf,.doc,.docx" multiple required>
             <input type="hidden" name="documents[7][type]" value="Certifications & Supporting Document">
         </label>
     </div>
@@ -1262,7 +1433,7 @@
             <i class="bi bi-file-earmark-arrow-up upload-icon"></i>
             <div class="upload-main-text">Click to upload your documents</div>
             <div class="upload-sub-text">PDF, DOC, DOCX (up to 5MB each)</div>
-            <input type="file" id="membership_affiliation" name="documents[8][file][]" accept=".pdf,.doc,.docx" multiple>
+            <input type="file" id="membership_affiliation" data-document-index="8" accept=".pdf,.doc,.docx" multiple>
             <input type="hidden" name="documents[8][type]" value="Membership/Affiliation">
         </label>
     </div>
@@ -1292,161 +1463,200 @@
         </div>
 
         <!-- Personal Information Summary -->
-        <div class="mb-4 p-3 border rounded shadow-sm bg-light">
-            <h5 class="text-uppercase text-success">Personal Information</h5>
+        <div class="mb-4 review-section-card">
+            <h5 class="review-section-title"><i class="bi bi-person-badge"></i> Personal Information</h5>
 
-            <p class="text-uppercase fw-semibold">
-                First Name:
-                <span id="review-first-name" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
+            <div class="review-summary-grid">
+                <div class="review-summary-panel">
+                    <h6 class="review-panel-title"><i class="bi bi-person"></i> Name</h6>
+                    <div class="review-item-list">
+                        <div class="review-item">
+                            <span class="review-label">First Name</span>
+                            <span id="review-first-name" class="review-value"></span>
+                        </div>
+                        <div class="review-item">
+                            <span class="review-label">Middle Name</span>
+                            <span id="review-middle-name" class="review-value"></span>
+                        </div>
+                        <div class="review-item">
+                            <span class="review-label">Surname</span>
+                            <span id="review-last-name" class="review-value"></span>
+                        </div>
+                        <div class="review-item">
+                            <span class="review-label">Extension</span>
+                            <span id="review-name-extension" class="review-value"></span>
+                        </div>
+                    </div>
+                </div>
 
-            <p class="text-uppercase fw-semibold">
-                Middle Name:
-                <span id="review-middle-name" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
+                <div class="review-summary-panel">
+                    <h6 class="review-panel-title"><i class="bi bi-envelope"></i> Contact</h6>
+                    <div class="review-item-list">
+                        <div class="review-item">
+                            <span class="review-label">Email</span>
+                            <span id="review-email" class="review-value"></span>
+                        </div>
+                        <div class="review-item">
+                            <span class="review-label">Phone</span>
+                            <span id="review-phone" class="review-value"></span>
+                        </div>
+                    </div>
+                </div>
 
-            <p class="text-uppercase fw-semibold">
-                Surname:
-                <span id="review-last-name" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
+                <div class="review-summary-panel">
+                    <h6 class="review-panel-title"><i class="bi bi-card-list"></i> Details</h6>
+                    <div class="review-item-list">
+                        <div class="review-item">
+                            <span class="review-label">Sex</span>
+                            <span id="review-sex" class="review-value"></span>
+                        </div>
+                        <div class="review-item">
+                            <span class="review-label">Civil Status</span>
+                            <span id="review-civil-status" class="review-value"></span>
+                        </div>
+                        <div class="review-item">
+                            <span class="review-label">Date of Birth</span>
+                            <span id="review-date-of-birth" class="review-value"></span>
+                        </div>
+                    </div>
+                </div>
 
-            <p class="text-uppercase fw-semibold">
-                Name Extension:
-                <span id="review-name-extension" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
-
-            <p class="text-uppercase fw-semibold">
-                Email Address:
-                <span id="review-email" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
-
-            <p class="text-uppercase fw-semibold">
-                Phone Number:
-                <span id="review-phone" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
-
-            <p class="text-uppercase fw-semibold">
-                Sex:
-                <span id="review-sex" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
-
-            <p class="text-uppercase fw-semibold">
-                Civil Status:
-                <span id="review-civil-status" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
-
-            <p class="text-uppercase fw-semibold">
-                Date of Birth:
-                <span id="review-date-of-birth" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
-
-            <p class="text-uppercase fw-semibold">
-                Address:
-                <span id="review-address" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
+                <div class="review-summary-panel">
+                    <h6 class="review-panel-title"><i class="bi bi-geo-alt"></i> Address</h6>
+                    <div class="review-item-list">
+                        <div class="review-item">
+                            <span class="review-label">Complete Address</span>
+                            <span id="review-address" class="review-value"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
 
         <!-- Education & Experience Summary -->
-        <div class="mb-4 p-3 border rounded shadow-sm bg-light">
-            <h5 class="text-uppercase text-success">Education & Experience</h5>
+        <div class="mb-4 review-section-card">
+            <h5 class="review-section-title"><i class="bi bi-mortarboard"></i> Education & Experience</h5>
 
-            <p class="text-uppercase fw-semibold">
-                Basic Education:
-                <span id="review-basic-education" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
+            <div class="review-summary-grid">
+                <div class="review-summary-panel">
+                    <h6 class="review-panel-title"><i class="bi bi-building"></i> Basic Education</h6>
+                    <div id="review-basic-education" class="review-item-list"></div>
+                </div>
 
-            <p class="text-uppercase fw-semibold">
-                Bachelor Degree(s):
-                <span id="review-bachelor-degree" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
+                <div class="review-summary-panel">
+                    <h6 class="review-panel-title"><i class="bi bi-award"></i> Degrees</h6>
+                    <div class="review-item-list">
+                        <div class="review-item">
+                            <span class="review-label">Bachelor</span>
+                            <span id="review-bachelor-degree" class="review-value"></span>
+                        </div>
+                        <div class="review-item">
+                            <span class="review-label">Master</span>
+                            <span id="review-master-degree" class="review-value"></span>
+                        </div>
+                        <div class="review-item">
+                            <span class="review-label">Doctoral</span>
+                            <span id="review-doctoral-degree" class="review-value"></span>
+                        </div>
+                    </div>
+                </div>
 
-            <p class="text-uppercase fw-semibold">
-                Master Degree:
-                <span id="review-master-degree" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
+                <div class="review-summary-panel">
+                    <h6 class="review-panel-title"><i class="bi bi-briefcase"></i> Work Experience</h6>
+                    <div class="review-item-list">
+                        <div class="review-item">
+                            <span class="review-label">Position</span>
+                            <span id="work_po" class="review-value"></span>
+                        </div>
+                        <div class="review-item">
+                            <span class="review-label">Employer</span>
+                            <span id="work_em" class="review-value"></span>
+                        </div>
+                        <div class="review-item">
+                            <span class="review-label">Location</span>
+                            <span id="work_lo" class="review-value"></span>
+                        </div>
+                        <div class="review-item">
+                            <span class="review-label">Duration</span>
+                            <span id="work_du" class="review-value"></span>
+                        </div>
+                        <div class="review-item">
+                            <span class="review-label">Experience</span>
+                            <span id="review-experience-years" class="review-value"></span>
+                        </div>
+                    </div>
+                </div>
 
-            <p class="text-uppercase fw-semibold">
-                Doctoral Degree:
-                <span id="review-doctoral-degree" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
-
-            <p class="text-uppercase fw-semibold">
-                Position:
-                <span id="work_po" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
-
-            <p class="text-uppercase fw-semibold">
-                Employer:
-                <span id="work_em" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
-
-            <p class="text-uppercase fw-semibold">
-                Location:
-                <span id="work_lo" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
-
-            <p class="text-uppercase fw-semibold">
-                Duration:
-                <span id="work_du" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
-
-            <p class="text-uppercase fw-semibold">
-                Years of Relevant Experience:
-                <span id="review-experience-years" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
-
-            <p class="text-uppercase fw-semibold">
-                Key Skills & Expertise:
-                <span id="review-key-skills" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
+                <div class="review-summary-panel">
+                    <h6 class="review-panel-title"><i class="bi bi-stars"></i> Skills</h6>
+                    <div id="review-key-skills" class="review-chip-list"></div>
+                </div>
+            </div>
         </div>
 
 
         <!-- Documents Summary -->
-        <div class="mb-4 p-3 border rounded shadow-sm bg-light">
-            <h5 class="text-uppercase text-success">Documents</h5>
+        <div class="mb-4 review-section-card">
+            <h5 class="review-section-title"><i class="bi bi-folder-check"></i> Documents</h5>
 
-            <p class="text-uppercase fw-semibold">
-                Resume/CV:
-                <span id="review-resume-file" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
+            <div class="review-summary-grid">
+                <div class="review-summary-panel">
+                    <h6 class="review-panel-title"><i class="bi bi-file-earmark-person"></i> Application Files</h6>
+                    <div class="review-item-list">
+                        <div class="review-item">
+                            <span class="review-label">Resume/CV</span>
+                            <span id="review-resume-file" class="review-value"></span>
+                        </div>
+                        <div class="review-item">
+                            <span class="review-label">Cover Letter</span>
+                            <span id="review-cover-file" class="review-value"></span>
+                        </div>
+                    </div>
+                </div>
 
-            <p class="text-uppercase fw-semibold">
-                Cover Letter:
-                <span id="review-cover-file" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
+                <div class="review-summary-panel">
+                    <h6 class="review-panel-title"><i class="bi bi-mortarboard"></i> Academic Records</h6>
+                    <div class="review-item-list">
+                        <div class="review-item">
+                            <span class="review-label">Transcript</span>
+                            <span id="tor" class="review-value"></span>
+                        </div>
+                        <div class="review-item">
+                            <span class="review-label">Diploma / Graduate</span>
+                            <span id="dip" class="review-value"></span>
+                        </div>
+                    </div>
+                </div>
 
-            <p class="text-uppercase fw-semibold">
-                Transcript Of Records:
-                <span id="tor" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
+                <div class="review-summary-panel">
+                    <h6 class="review-panel-title"><i class="bi bi-patch-check"></i> Licenses</h6>
+                    <div class="review-item-list">
+                        <div class="review-item">
+                            <span class="review-label">PRC / Board Rating</span>
+                            <span id="prc" class="review-value"></span>
+                        </div>
+                        <div class="review-item">
+                            <span class="review-label">Eligibility / Passing</span>
+                            <span id="passing" class="review-value"></span>
+                        </div>
+                    </div>
+                </div>
 
-            <p class="text-uppercase fw-semibold">
-                Diploma, Master's, Doctorate:
-                <span id="dip" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
-
-            <p class="text-uppercase fw-semibold">
-                PRC License / Board Rating:
-                <span id="prc" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
-
-            <p class="text-uppercase fw-semibold">
-                Certificate Of Eligibility / Certificate of Passing:
-                <span id="passing" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
-
-            <p class="text-uppercase fw-semibold">
-                Certifications:
-                <span id="review-certs-file" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
-
-            <p class="text-uppercase fw-semibold">
-                Membership / Affiliation:
-                <span id="membership" class="d-block text-uppercase text-secondary fw-semibold"></span>
-            </p>
-
+                <div class="review-summary-panel">
+                    <h6 class="review-panel-title"><i class="bi bi-award"></i> Other Proofs</h6>
+                    <div class="review-item-list">
+                        <div class="review-item">
+                            <span class="review-label">Certifications</span>
+                            <span id="review-certs-file" class="review-value"></span>
+                        </div>
+                        <div class="review-item">
+                            <span class="review-label">Membership</span>
+                            <span id="membership" class="review-value"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
 
@@ -1498,6 +1708,8 @@ document.addEventListener('DOMContentLoaded', function () {
         localStorage.setItem(documentDraftKeyStorageKey, documentDraftKey);
     }
     let documentDrafts = {};
+    let documentDraftUploadTasks = {};
+    let documentDraftUploadQueue = Promise.resolve();
 
     try {
         documentDrafts = JSON.parse(localStorage.getItem(documentDraftStorageKey) || '{}') || {};
@@ -1518,6 +1730,10 @@ document.addEventListener('DOMContentLoaded', function () {
         || '';
 
     const documentIndexFromInput = (input) => {
+        if (input.dataset.documentIndex) {
+            return input.dataset.documentIndex;
+        }
+
         const match = String(input.name || '').match(/documents\[(\d+)]/);
         return match ? match[1] : null;
     };
@@ -1533,6 +1749,16 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (_) {
             // Ignore storage errors.
         }
+    }
+
+    function sanitizeDraftFile(file) {
+        return {
+            type: String(file?.type || ''),
+            filename: String(file?.filename || ''),
+            filepath: String(file?.filepath || ''),
+            mime_type: String(file?.mime_type || ''),
+            size: Number(file?.size || 0),
+        };
     }
 
     function clearDocumentDraftStorageForNextApplication() {
@@ -1551,7 +1777,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         draftHiddenContainer.textContent = '';
         Object.entries(documentDrafts).forEach(([index, files]) => {
-            (files || []).forEach((file) => {
+            documentDrafts[index] = (files || []).map(sanitizeDraftFile);
+            documentDrafts[index].forEach((file) => {
                 const input = document.createElement('input');
                 input.type = 'hidden';
                 input.name = `draft_documents[${index}][]`;
@@ -1559,7 +1786,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 draftHiddenContainer.appendChild(input);
             });
         });
+        saveDocumentDrafts();
     }
+
+    function hasDocumentDraftForIndex(index) {
+        return (documentDrafts[String(index)] || []).length > 0;
+    }
+
+    async function waitForDocumentDraftUploads() {
+        const tasks = Object.values(documentDraftUploadTasks);
+        if (tasks.length) {
+            await Promise.allSettled(tasks);
+        }
+        syncDocumentDraftInputs();
+    }
+
+    window.hasDocumentDraftForIndex = hasDocumentDraftForIndex;
+    window.waitForDocumentDraftUploads = waitForDocumentDraftUploads;
 
     function draftFilesLabel(files) {
         const names = (files || []).map((file) => file.filename).filter(Boolean);
@@ -1638,27 +1881,50 @@ document.addEventListener('DOMContentLoaded', function () {
         async function uploadDocumentDraft(files) {
             if (documentIndex === null || !files.length) return;
 
+            const selectedFiles = Array.from(files);
+            const invalidFile = selectedFiles.find((file) => {
+                const extension = file.name.split('.').pop()?.toLowerCase();
+                return !['pdf', 'doc', 'docx'].includes(extension || '') || file.size > 5 * 1024 * 1024;
+            });
+
+            if (invalidFile) {
+                throw new Error('Only PDF, DOC, or DOCX files up to 5MB each are allowed.');
+            }
+
             const formData = new FormData();
             formData.append('draft_key', documentDraftKey);
             formData.append('document_index', documentIndex);
             formData.append('document_type', documentTypeFromInput(input));
-            Array.from(files).forEach((file) => formData.append('draft_files[]', file));
+            selectedFiles.forEach((file) => formData.append('draft_files[]', file));
 
             uploadSubText.textContent = 'Saving file draft...';
-            const response = await fetch(documentDraftUploadUrl, {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': getCsrfToken(),
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                body: formData,
-            });
+            const controller = new AbortController();
+            const timeoutId = window.setTimeout(() => controller.abort(), 60000);
+
+            let response;
+            try {
+                response = await fetch(documentDraftUploadUrl, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': getCsrfToken(),
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: formData,
+                    signal: controller.signal,
+                });
+            } catch (error) {
+                throw new Error(error.name === 'AbortError'
+                    ? 'Upload timed out. Please choose a smaller file or try again.'
+                    : 'Unable to connect while saving this file.');
+            } finally {
+                window.clearTimeout(timeoutId);
+            }
 
             const payload = await response.json().catch(() => ({}));
             if (!response.ok) {
-                throw new Error(payload?.message || 'Unable to save file draft.');
+                throw new Error(payload?.message || `Unable to save file draft. Server returned ${response.status}.`);
             }
 
             documentDrafts[documentIndex] = payload.files || [];
@@ -1666,14 +1932,27 @@ document.addEventListener('DOMContentLoaded', function () {
             syncDocumentDraftInputs();
             input.required = false;
             uploadSubText.textContent = (payload.files || []).length > 1 ? 'Files saved from draft' : 'File saved from draft';
+            uploadArea.classList.remove('field-error-highlight');
         }
 
         input.addEventListener('change', function () {
             if (this.files && this.files.length > 0) {
                 setSelectedState(this.files);
-                uploadDocumentDraft(this.files).catch(() => {
-                    uploadSubText.textContent = 'Selected, but draft was not saved';
-                });
+                const selectedFiles = Array.from(this.files);
+                const uploadTask = documentDraftUploadQueue
+                    .catch(() => {})
+                    .then(() => uploadDocumentDraft(selectedFiles))
+                    .catch((error) => {
+                        uploadSubText.textContent = error.message || 'Selected, but draft was not saved';
+                        uploadArea.classList.add('field-error-highlight');
+                        delete documentDrafts[documentIndex];
+                        syncDocumentDraftInputs();
+                    })
+                    .finally(() => {
+                        delete documentDraftUploadTasks[documentIndex];
+                    });
+                documentDraftUploadQueue = uploadTask;
+                documentDraftUploadTasks[documentIndex] = uploadTask;
                 return;
             }
 
@@ -1703,6 +1982,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const scanCheckFile = document.getElementById('scanCheckFile');
     const scanCheckScan = document.getElementById('scanCheckScan');
     const pdsRecordInput = document.getElementById('pds_record_id');
+    const btnToPersonalForScan = document.getElementById('btnToPersonal');
     const pdsScanUrl = @json(route('applicant.pds.scan'));
     let isScanningPds = false;
 
@@ -1718,6 +1998,18 @@ document.addEventListener('DOMContentLoaded', function () {
         if (icon) icon.className = 'bi bi-circle';
     }
 
+    function syncContinueButtonWithScan() {
+        const hasCompletedScan = Boolean(pdsRecordInput?.value)
+            && scanCheckScan?.classList.contains('is-complete');
+        if (!btnToPersonalForScan) return;
+
+        btnToPersonalForScan.disabled = !hasCompletedScan;
+        btnToPersonalForScan.classList.toggle('disabled', !hasCompletedScan);
+        btnToPersonalForScan.title = hasCompletedScan
+            ? ''
+            : 'Scan your Personal Data Sheet before continuing';
+    }
+
     function resetIntakeScanDesign() {
         if (intakeUploadInput) intakeUploadInput.value = '';
         if (pdsRecordInput) pdsRecordInput.value = '';
@@ -1731,6 +2023,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         if (scanProgressBar) scanProgressBar.style.width = '0%';
         [scanCheckFile, scanCheckScan].forEach(setScanItemPending);
+        syncContinueButtonWithScan();
     }
 
     intakeUploadInput?.addEventListener('change', function () {
@@ -1750,20 +2043,27 @@ document.addEventListener('DOMContentLoaded', function () {
         if (pdsRecordInput) pdsRecordInput.value = '';
         setScanItemComplete(scanCheckFile);
         setScanItemPending(scanCheckScan);
+        syncContinueButtonWithScan();
     });
 
     function fillFieldFromPds(fieldId, value) {
         const field = document.getElementById(fieldId);
-        if (!field || !value) return;
+        if (!field) return;
 
-        field.value = value;
+        field.value = value || '';
         field.dispatchEvent(new Event('input', { bubbles: true }));
         field.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     function fillSelectFromPds(fieldId, value) {
         const field = document.getElementById(fieldId);
-        if (!field || !value) return;
+        if (!field) return;
+
+        if (!value) {
+            field.value = '';
+            field.dispatchEvent(new Event('change', { bubbles: true }));
+            return;
+        }
 
         const normalizedValue = String(value).trim().toLowerCase();
         const option = Array.from(field.options).find((item) =>
@@ -1775,19 +2075,135 @@ document.addEventListener('DOMContentLoaded', function () {
         field.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
+    function isPdsCitizenshipCountryValue(value) {
+        const normalized = String(value || '')
+            .toLowerCase()
+            .replace(/[-\/.:#,]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        return [
+            'afghanistan',
+            'albania',
+            'algeria',
+            'andorra',
+            'angola',
+            'argentina',
+            'armenia',
+            'australia',
+            'austria',
+            'bahamas',
+            'bahamas the',
+            'bahrain',
+            'bangladesh',
+            'belgium',
+            'brazil',
+            'canada',
+            'china',
+            'denmark',
+            'dual citizenship',
+            'filipino',
+            'france',
+            'germany',
+            'india',
+            'indonesia',
+            'italy',
+            'japan',
+            'malaysia',
+            'philippines',
+            'singapore',
+            'spain',
+            'thailand',
+            'united states',
+            'united states of america',
+        ].includes(normalized);
+    }
+
+    function pdsAddressValue(value) {
+        return isPdsCitizenshipCountryValue(value) ? '' : value;
+    }
+
+    function pdsNameExtensionValue(value) {
+        const rawValue = String(value || '').trim();
+        const normalized = rawValue
+            .toLowerCase()
+            .replace(/[.,()]/g, ' ')
+            .replace(/[-\/:#]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        if (!normalized || [
+            'name extension',
+            'name extension jr sr',
+            'jr sr',
+            'na',
+            'n a',
+            'none',
+            'not applicable',
+        ].includes(normalized)) {
+            return '';
+        }
+
+        return /[a-z0-9]/i.test(rawValue) ? rawValue : '';
+    }
+
+    function pdsEducationValue(value) {
+        const rawValue = String(value || '').trim();
+        const normalized = rawValue
+            .toLowerCase()
+            .replace(/[()']/g, ' ')
+            .replace(/[-\/.:#,]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        if (!normalized || [
+            'congo republic of the',
+            'costa rica',
+            'cote d ivoire',
+            'croatia',
+            'cuba',
+            'curacao',
+            'elementary',
+            'secondary',
+            'vocational',
+            'trade course',
+            'vocational trade course',
+            'college',
+            'graduate studies',
+            'name of school',
+            'write in full',
+            'basic education degree course',
+            'period of attendance',
+            'from',
+            'to',
+            'highest level units earned',
+            'if not graduated',
+            'year graduated',
+            'scholarship academic honors received',
+            'continue on separate sheet if necessary',
+            'na',
+            'n a',
+            'none',
+            'not applicable',
+        ].includes(normalized)) {
+            return '';
+        }
+
+        return /[a-z0-9]/i.test(rawValue) ? rawValue : '';
+    }
+
     function fillEducationFromPds(fields = {}) {
         [
             ['elementary', 'elementary'],
             ['secondary', 'secondary'],
             ['vocational_trade', 'vocational_trade'],
+            ['college', 'college'],
         ].forEach(([fieldPrefix, inputPrefix]) => {
-            fillFieldFromPds(`${inputPrefix}_school_name`, fields[`${fieldPrefix}_school_name`]);
-            fillSelectFromPds(`${inputPrefix}_year_graduated`, fields[`${fieldPrefix}_year_graduated`]);
+            fillFieldFromPds(`${inputPrefix}_school_name`, pdsEducationValue(fields[`${fieldPrefix}_school_name`]));
+            fillSelectFromPds(`${inputPrefix}_year_graduated`, pdsEducationValue(fields[`${fieldPrefix}_year_graduated`]));
         });
 
-        fillFieldFromPds('bachelor_degree_0', fields.college_degree);
-        fillFieldFromPds('bachelor_school_name_0', fields.college_school_name);
-        fillSelectFromPds('bachelor_year_finished_0', fields.college_year_graduated);
+        fillFieldFromPds('bachelor_degree_0', pdsEducationValue(fields.college_degree));
 
         fillFieldFromPds('master_degree_0', fields.graduate_studies_degree);
         fillFieldFromPds('master_school_name_0', fields.graduate_studies_school_name);
@@ -1802,11 +2218,11 @@ document.addEventListener('DOMContentLoaded', function () {
         fillFieldFromPds('first_name', fields.first_name);
         fillFieldFromPds('middle_name', fields.middle_name);
         fillFieldFromPds('last_name', fields.surname);
-        fillFieldFromPds('name_extension', fields.name_extension);
+        fillFieldFromPds('name_extension', pdsNameExtensionValue(fields.name_extension));
         fillFieldFromPds('email', fields.email_address);
         fillFieldFromPds('phone', fields.mobile_no || fields.telephone_no);
         fillFieldFromPds('date_of_birth', fields.date_of_birth);
-        fillFieldFromPds('address', fields.permanent_address || fields.permanent_address_zip_code);
+        fillFieldFromPds('address', pdsAddressValue(fields.permanent_address || fields.permanent_address_zip_code));
 
         const sexField = document.getElementById('sex');
         if (sexField && fields.sex) {
@@ -1888,6 +2304,7 @@ document.addEventListener('DOMContentLoaded', function () {
             autoSaveLabel.textContent = 'Saved to PDS table';
             autoSaveLabel.className = 'badge rounded-pill bg-success-subtle text-success';
             setScanItemComplete(scanCheckScan);
+            syncContinueButtonWithScan();
         } catch (error) {
             if (pdsRecordInput) pdsRecordInput.value = '';
             scanStateLabel.textContent = error.message || 'Unable to scan the Personal Data Sheet.';
@@ -1895,6 +2312,7 @@ document.addEventListener('DOMContentLoaded', function () {
             autoSaveLabel.textContent = 'Scan failed';
             autoSaveLabel.className = 'badge rounded-pill bg-danger-subtle text-danger';
             setScanItemPending(scanCheckScan);
+            syncContinueButtonWithScan();
         } finally {
             isScanningPds = false;
             scanUploadedFileButton.disabled = false;
@@ -1902,6 +2320,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     clearIntakeUploadButton?.addEventListener('click', resetIntakeScanDesign);
+    syncContinueButtonWithScan();
 
 });
 </script>
@@ -1993,7 +2412,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ? Array.from(applicationForm.querySelectorAll('input[id][name], select[id][name], textarea[id][name]'))
             .filter((field) => {
                 const type = (field.type || '').toLowerCase();
-                return type !== 'file' && type !== 'password';
+                return field.id !== 'pds_record_id' && type !== 'file' && type !== 'password';
             })
         : [];
 
@@ -2043,6 +2462,29 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (_) {
             // Ignore storage errors.
         }
+    }
+
+    function documentDraftIndexesForFinalSubmit() {
+        return new Set(Array.from(applicationForm.querySelectorAll('input[name^="draft_documents["]'))
+            .map((input) => String(input.name || '').match(/draft_documents\[(\d+)]/))
+            .filter(Boolean)
+            .map((match) => match[1]));
+    }
+
+    function prepareFinalSubmitPayload() {
+        // The scanned PDS is already saved in pds_table, so do not upload it again with the final application.
+        const pdsInput = document.getElementById('intakeUploadInput');
+        if (pdsInput) {
+            pdsInput.disabled = true;
+            pdsInput.removeAttribute('name');
+        }
+
+        applicationForm.querySelectorAll('#documentsForm input[type="file"]').forEach((input) => {
+            // Document files are uploaded as drafts immediately after selection.
+            // Final submit only needs the hidden draft_documents payload.
+            input.disabled = true;
+            input.removeAttribute('name');
+        });
     }
 
     certifyCheckbox.addEventListener('change', () => {
@@ -2178,13 +2620,21 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isSubmittingApplication) return;
 
             event.preventDefault();
+            await window.waitForDocumentDraftUploads?.();
 
             const requiredFields = Array.from(applicationForm.querySelectorAll('[required]'))
                 .filter((field) => !field.disabled && hasRequiredAsterisk(field));
 
             const invalidFields = requiredFields.filter((field) => {
                 const type = (field.type || '').toLowerCase();
-                if (type === 'file') return !(field.files && field.files.length > 0);
+                if (type === 'file') {
+                    const documentIndex = field.dataset?.documentIndex;
+                    if (documentIndex) {
+                        return !window.hasDocumentDraftForIndex?.(documentIndex);
+                    }
+
+                    return !(field.files && field.files.length > 0);
+                }
                 if (type === 'checkbox') return !field.checked;
                 return !field.checkValidity();
             });
@@ -2192,7 +2642,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!invalidFields.length) {
                 isSubmittingApplication = true;
                 submitButton.disabled = true;
+                submitButton.textContent = 'Submitting...';
                 await refreshCsrfToken();
+                prepareFinalSubmitPayload();
                 clearFormDraft();
                 nativeSubmit();
                 return;
@@ -2216,6 +2668,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     restoreFormDraft();
+    const scanCheckScanForNav = document.getElementById('scanCheckScan');
+    const hasCompletedCurrentPdsScan = () => Boolean(pdsRecordInputForNav?.value)
+        && scanCheckScanForNav?.classList.contains('is-complete');
+    if (btnToPersonal) {
+        btnToPersonal.disabled = !hasCompletedCurrentPdsScan();
+        btnToPersonal.classList.toggle('disabled', !hasCompletedCurrentPdsScan());
+    }
     submitButton.disabled = !certifyCheckbox.checked;
     persistableFields.forEach((field) => {
         field.addEventListener('input', saveFormDraft);
@@ -2250,7 +2709,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Step 1 → Step 2
     btnToPersonal.addEventListener('click', () => {
-        if (!pdsRecordInputForNav?.value) {
+        if (!hasCompletedCurrentPdsScan()) {
             scanStateLabelForNav.textContent = intakeUploadInputForNav?.files?.length
                 ? 'Please scan the uploaded Personal Data Sheet before continuing'
                 : 'Please upload and scan your Personal Data Sheet before continuing';
@@ -2311,18 +2770,29 @@ document.addEventListener('DOMContentLoaded', () => {
             elementary: 'Elementary',
             secondary: 'Secondary',
             vocational_trade: 'Vocational / Trade Course',
+            college: 'College',
         };
         const basicEducationLines = Object.entries(basicEducationLabels).map(([key, label]) => {
             const school = document.getElementById(`${key}_school_name`)?.value || 'N/A';
             const year = document.getElementById(`${key}_year_graduated`)?.value || 'N/A';
-            return `${label}: ${school} (${year})`;
+            return { label, value: `${school} (${year})` };
         });
         const basicEducationReview = document.getElementById('review-basic-education');
         basicEducationReview.textContent = '';
-        basicEducationLines.forEach((line) => {
-            const lineItem = document.createElement('span');
-            lineItem.className = 'd-block';
-            lineItem.textContent = line;
+        basicEducationLines.forEach((item) => {
+            const lineItem = document.createElement('div');
+            lineItem.className = 'review-item';
+
+            const label = document.createElement('span');
+            label.className = 'review-label';
+            label.textContent = item.label;
+
+            const value = document.createElement('span');
+            value.className = 'review-value';
+            value.textContent = item.value;
+
+            lineItem.appendChild(label);
+            lineItem.appendChild(value);
             basicEducationReview.appendChild(lineItem);
         });
 
@@ -2373,7 +2843,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         syncKeySkillsValue();
         document.getElementById('review-experience-years').textContent = document.getElementById('experience_years').value;
-        document.getElementById('review-key-skills').textContent = document.getElementById('key_skills').value || 'N/A';
+        const reviewSkills = document.getElementById('review-key-skills');
+        reviewSkills.textContent = '';
+        const skillValues = document.getElementById('key_skills').value
+            .split(',')
+            .map((skill) => skill.trim())
+            .filter(Boolean);
+        if (skillValues.length) {
+            skillValues.forEach((skill) => {
+                const chip = document.createElement('span');
+                chip.className = 'review-chip';
+                chip.textContent = skill;
+                reviewSkills.appendChild(chip);
+            });
+        } else {
+            const emptySkill = document.createElement('span');
+            emptySkill.className = 'review-value';
+            emptySkill.textContent = 'N/A';
+            reviewSkills.appendChild(emptySkill);
+        }
 
         document.getElementById('work_po').textContent = document.getElementById('work_position').value;
         document.getElementById('work_em').textContent = document.getElementById('work_employer').value;
@@ -2390,6 +2878,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const membershipInput  = document.getElementById('membership_affiliation');
 
         const documentIndexFromReviewInput = (input) => {
+            if (input?.dataset?.documentIndex) {
+                return input.dataset.documentIndex;
+            }
+
             const match = String(input?.name || '').match(/documents\[(\d+)]/);
             return match ? match[1] : null;
         };
@@ -2421,12 +2913,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            if (names.length === 1) {
+                target.textContent = names[0];
+                return;
+            }
+
+            const list = document.createElement('ul');
+            list.className = 'review-file-list';
             names.forEach((name) => {
-                const line = document.createElement('span');
-                line.className = 'd-block';
+                const line = document.createElement('li');
                 line.textContent = name;
-                target.appendChild(line);
+                list.appendChild(line);
             });
+            target.appendChild(list);
         };
 
         renderFileNames('review-resume-file', resumeInput);
@@ -2464,113 +2963,116 @@ document.addEventListener('DOMContentLoaded', () => {
     const workLocationInput = document.getElementById('work_location');
     const workDurationInput = document.getElementById('work_duration');
     const experienceYearsInput = document.getElementById('experience_years');
-    const skillsFieldList = document.getElementById('skillsFieldList');
     const addSkillFieldBtn = document.getElementById('addSkillFieldBtn');
     const keySkillsValue = document.getElementById('key_skills');
+    const skillDraftInput = document.getElementById('key_skill_input');
+    const skillChipList = document.getElementById('skillChipList');
+    const jobSkillRequirements = @json((string) ($openPosition->skills ?? ''));
+    let selectedSkills = [];
+
+    function parseSkillList(value = '') {
+        return String(value || '')
+            .split(/[\n,;|]+/)
+            .map((skill) => skill.replace(/^[\s\-*•]+/, '').trim())
+            .filter(Boolean);
+    }
+
+    function uniqueSkills(skills = []) {
+        const seen = new Set();
+
+        return skills.filter((skill) => {
+            const key = skill.toLowerCase();
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+    }
 
     function syncKeySkillsValue() {
-        if (!skillsFieldList || !keySkillsValue) return;
+        if (!keySkillsValue) return;
 
-        const skills = Array.from(skillsFieldList.querySelectorAll('.skill-input'))
-            .map((field) => field.value.trim())
-            .filter(Boolean);
+        const draftSkill = skillDraftInput?.value.trim();
+        const skills = [...selectedSkills];
+        if (draftSkill && !skills.some((skill) => skill.toLowerCase() === draftSkill.toLowerCase())) {
+            skills.push(draftSkill);
+        }
 
         keySkillsValue.value = skills.join(', ');
         keySkillsValue.dispatchEvent(new Event('input', { bubbles: true }));
+        if (skillDraftInput) {
+            skillDraftInput.required = selectedSkills.length === 0;
+        }
     }
 
-    function updateSkillRemoveButtons() {
-        if (!skillsFieldList) return;
+    function renderSkillChips() {
+        if (!skillChipList) return;
 
-        const entries = Array.from(skillsFieldList.querySelectorAll('.skill-entry'));
-        entries.forEach((entry, index) => {
-            const removeBtn = entry.querySelector('.remove-skill-btn');
-            if (removeBtn) {
-                removeBtn.classList.toggle('d-none', index === 0 && entries.length === 1);
-            }
-        });
-    }
+        skillChipList.textContent = '';
+        selectedSkills.forEach((skill, index) => {
+            const chip = document.createElement('span');
+            chip.className = 'skill-chip';
+            chip.textContent = skill;
 
-    function bindSkillEntry(entry) {
-        const input = entry.querySelector('.skill-input');
-        const removeBtn = entry.querySelector('.remove-skill-btn');
-
-        input?.addEventListener('input', () => {
-            clearErrorHighlight(input);
-            syncKeySkillsValue();
-        });
-
-        input?.addEventListener('change', syncKeySkillsValue);
-
-        removeBtn?.addEventListener('click', () => {
-            const entries = skillsFieldList?.querySelectorAll('.skill-entry') || [];
-            if (entries.length <= 1) {
-                if (input) input.value = '';
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.setAttribute('aria-label', `Remove ${skill}`);
+            removeButton.innerHTML = '<i class="bi bi-x"></i>';
+            removeButton.addEventListener('click', () => {
+                selectedSkills.splice(index, 1);
+                renderSkillChips();
                 syncKeySkillsValue();
-                input?.focus();
-                return;
-            }
+                skillDraftInput?.focus();
+            });
 
-            entry.remove();
-            updateSkillRemoveButtons();
-            syncKeySkillsValue();
-            skillsFieldList?.querySelector('.skill-input')?.focus();
+            chip.appendChild(removeButton);
+            skillChipList.appendChild(chip);
         });
     }
 
-    function addSkillField(value = '') {
-        if (!skillsFieldList) return null;
-
-        const firstEntry = skillsFieldList.querySelector('.skill-entry');
-        if (!firstEntry) return null;
-
-        const index = skillsFieldList.querySelectorAll('.skill-entry').length;
-        const clone = firstEntry.cloneNode(true);
-        const input = clone.querySelector('.skill-input');
-        const label = clone.querySelector('label');
-
-        if (input) {
-            input.id = `key_skill_${index}`;
-            input.value = value;
-            input.required = false;
-            input.classList.remove('field-error-highlight');
+    function addSkillChip(value = '') {
+        const skill = value.trim();
+        if (!skill) {
+            skillDraftInput?.focus();
+            return;
         }
 
-        if (label) {
-            label.setAttribute('for', `key_skill_${index}`);
-            label.innerHTML = 'Additional Skill';
+        if (!selectedSkills.some((item) => item.toLowerCase() === skill.toLowerCase())) {
+            selectedSkills.push(skill);
         }
 
-        clone.querySelector('.remove-skill-btn')?.classList.remove('d-none');
-        skillsFieldList.appendChild(clone);
-        bindSkillEntry(clone);
-        updateSkillRemoveButtons();
+        if (skillDraftInput) {
+            skillDraftInput.value = '';
+            clearErrorHighlight(skillDraftInput);
+        }
+
+        renderSkillChips();
         syncKeySkillsValue();
-
-        return input;
+        skillDraftInput?.focus();
     }
 
     function hydrateSkillFieldsFromValue() {
-        if (!skillsFieldList || !keySkillsValue) return;
+        if (!keySkillsValue) return;
 
-        const existingSkills = keySkillsValue.value
-            .split(',')
-            .map((skill) => skill.trim())
-            .filter(Boolean);
+        selectedSkills = uniqueSkills(parseSkillList(keySkillsValue.value || jobSkillRequirements));
 
-        const firstInput = skillsFieldList.querySelector('.skill-input');
-        if (firstInput) firstInput.value = existingSkills.shift() || '';
-
-        existingSkills.forEach((skill) => addSkillField(skill));
-        updateSkillRemoveButtons();
+        renderSkillChips();
         syncKeySkillsValue();
     }
 
-    if (skillsFieldList && addSkillFieldBtn && keySkillsValue) {
-        skillsFieldList.querySelectorAll('.skill-entry').forEach(bindSkillEntry);
+    if (skillDraftInput && addSkillFieldBtn && keySkillsValue) {
+        skillDraftInput.addEventListener('input', () => {
+            clearErrorHighlight(skillDraftInput);
+            syncKeySkillsValue();
+        });
+        skillDraftInput.addEventListener('change', syncKeySkillsValue);
+        skillDraftInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addSkillChip(skillDraftInput.value);
+            }
+        });
         addSkillFieldBtn.addEventListener('click', () => {
-            const input = addSkillField();
-            input?.focus();
+            addSkillChip(skillDraftInput.value);
         });
     }
 

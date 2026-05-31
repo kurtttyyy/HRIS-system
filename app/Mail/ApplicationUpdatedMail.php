@@ -29,9 +29,15 @@ class ApplicationUpdatedMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         $status = trim((string) ($this->review->application_status ?? 'Updated'));
+        $isHired = strcasecmp($status, 'Hired') === 0;
+        $reportDate = $this->review->date_hired
+            ? \Illuminate\Support\Carbon::parse($this->review->date_hired)->format('F d, Y')
+            : null;
 
         return new Envelope(
-            subject: 'Application Status Update: '.$status,
+            subject: $isHired && $reportDate
+                ? 'You are hired - Report / Start Date: '.$reportDate
+                : 'Application Status Update: '.$status,
         );
     }
 

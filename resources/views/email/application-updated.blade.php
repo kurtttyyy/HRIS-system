@@ -29,7 +29,9 @@
         str_contains($statusKey, 'review') => '#ede9fe',
         default => '#ccfbf1',
     };
-    $statusUrl = route('guest.application');
+    $statusUrl = !empty($review->tracking_number)
+        ? route('guest.application', ['application_lookup' => $review->tracking_number])
+        : route('guest.application');
     $registerUrl = route('register');
 @endphp
 
@@ -61,7 +63,7 @@
 
                             <p style="margin:0 0 20px; font-size:15px; line-height:1.7;">
                                 @if($isHired)
-                                    Congratulations. You have been hired for the position below. Please report on the date listed and create your employee account to access the HR portal.
+                                    Congratulations. You have been hired for the position below. Please report or start work on the date listed and create your employee account to access the HR portal.
                                 @elseif($isPassingDocument)
                                     Your application has moved to the document passing stage. Please prepare and submit the remaining requirements to the HR Office for verification.
                                 @else
@@ -88,7 +90,7 @@
 
                                 @if($isHired && $reportDate)
                                     <tr>
-                                        <td style="padding:16px 18px; background:#f8fafc; border-bottom:1px solid #e2e8f0; font-size:13px; font-weight:700; color:#475569;">Date of Report</td>
+                                        <td style="padding:16px 18px; background:#f8fafc; border-bottom:1px solid #e2e8f0; font-size:13px; font-weight:700; color:#475569;">Report / Start Date</td>
                                         <td style="padding:16px 18px; background:#ffffff; border-bottom:1px solid #e2e8f0; font-size:14px; font-weight:800; color:#047857;">{{ $reportDate }}</td>
                                     </tr>
                                 @endif
@@ -108,12 +110,12 @@
                                             <p style="margin:0 0 8px; font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#047857;">Welcome Aboard</p>
                                             <h2 style="margin:0 0 10px; font-size:21px; line-height:1.35; color:#064e3b;">You may create your employee account now</h2>
                                             <p style="margin:0; font-size:14px; line-height:1.7; color:#14532d;">
-                                                Your account registration is now available. Create your account using the same email address from your application, then report to the HR Office on your scheduled date.
+                                                Your account registration is now available. Create your account using the same email address from your application, then report to the HR Office or start work on your scheduled date.
                                             </p>
 
                                             @if($reportDate)
                                                 <div style="margin-top:16px; padding:14px 16px; background:#ffffff; border:1px solid #bbf7d0; border-radius:12px;">
-                                                    <p style="margin:0; font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#047857;">Date of Report</p>
+                                                    <p style="margin:0; font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#047857;">Report / Start Date</p>
                                                     <p style="margin:6px 0 0; font-size:18px; font-weight:800; color:#0f172a;">{{ $reportDate }}</p>
                                                 </div>
                                             @endif

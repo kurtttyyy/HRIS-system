@@ -13,10 +13,55 @@ use Illuminate\Support\Str;
 
 class GuestPageController extends Controller
 {
-    public function display_application(){
+    public function display_application(Request $request){
+        $lookup = trim((string) $request->query('application_lookup', ''));
+
+        if ($lookup !== '') {
+            $applicants = Applicant::with([
+                'position',
+                'degrees' => function ($query) {
+                    $query->orderBy('degree_level')->orderBy('sort_order');
+                },
+                'documents' => function ($query) {
+                    $query->orderByDesc('created_at');
+                },
+            ])
+                ->whereRaw('UPPER(TRIM(tracking_number)) = ?', [Str::upper($lookup)])
+                ->orderByDesc('created_at')
+                ->orderByDesc('id')
+                ->get()
+                ->map(function (Applicant $applicant) {
+                    $applicant->setAttribute('is_email_history_match', false);
+
+                    return $applicant;
+                });
+
+            return view('guest.application', [
+                'applicants' => $applicants,
+                'searchedEmail' => $lookup,
+                'applicationStatusSignature' => $this->applicationStatusSignature($applicants),
+            ]);
+        }
+
         return view('guest.application', [
-                    'applicants' => collect(), // avoid undefined variable
-                ]);
+            'applicants' => collect(), // avoid undefined variable
+        ]);
+    }
+
+    private function applicationStatusSignature($applicants): string
+    {
+        return md5(json_encode(collect($applicants)->map(fn (Applicant $applicant) => [
+            'id' => $applicant->id,
+            'application_status' => $applicant->application_status,
+            'date_hired' => optional($applicant->date_hired)->toDateString(),
+            'updated_at' => optional($applicant->updated_at)->toDateTimeString(),
+            'documents' => collect($applicant->documents ?? [])->map(fn ($document) => [
+                'id' => $document->id,
+                'filename' => $document->filename,
+                'type' => $document->type,
+                'updated_at' => optional($document->updated_at)->toDateTimeString(),
+            ])->values(),
+        ])->values()));
     }
 
     public function display_non_teaching($id){
@@ -33,14 +78,15 @@ class GuestPageController extends Controller
         $appliedPositionIds = $this->getBlockedPositionIds($applicantEmail);
         $newCutoff = now()->subDays(3);
 
-        $open_position = OpenPosition::when($appliedPositionIds->isNotEmpty(), function ($query) use ($appliedPositionIds) {
-            $query->whereNotIn('id', $appliedPositionIds);
-        })
+        $open_position = $this->availablePositionsQuery($appliedPositionIds)
             ->orderByRaw('CASE WHEN created_at >= ? THEN 0 ELSE 1 END', [$newCutoff->toDateTimeString()])
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->get();
+        $featuredOpenPositions = $open_position->take(6);
+        $vacancySignature = $this->vacancySignature($appliedPositionIds);
         $openCount = $open_position->count();
+        $hasMoreOpenPositions = $openCount > $featuredOpenPositions->count();
         $department = $open_position->groupBy('department')->count();
         $employee = User::where('role', 'Employee')->count();
         $ratingStats = Applicant::query()
@@ -60,7 +106,10 @@ class GuestPageController extends Controller
             'department',
             'employee',
             'companyRating',
-            'ratingCount'
+            'ratingCount',
+            'vacancySignature',
+            'featuredOpenPositions',
+            'hasMoreOpenPositions'
         ));
     }
 
@@ -104,9 +153,7 @@ class GuestPageController extends Controller
         $applicantEmail = session('applicant_email');
         $appliedPositionIds = $this->getBlockedPositionIds($applicantEmail);
 
-        $firstAvailableJob = OpenPosition::when($appliedPositionIds->isNotEmpty(), function ($query) use ($appliedPositionIds) {
-            $query->whereNotIn('id', $appliedPositionIds);
-        })
+        $firstAvailableJob = $this->availablePositionsQuery($appliedPositionIds)
             ->latest('created_at')
             ->latest('id')
             ->first();
@@ -117,6 +164,46 @@ class GuestPageController extends Controller
         }
 
         return redirect()->route('guest.jobOpen', ['id' => $firstAvailableJob->id]);
+    }
+
+    public function job_vacancies_check(Request $request)
+    {
+        $appliedPositionIds = $this->getBlockedPositionIds(session('applicant_email'));
+        $signature = $this->vacancySignature($appliedPositionIds);
+        $clientSignature = (string) $request->query('signature', '');
+
+        if ($clientSignature === '' || hash_equals($signature, $clientSignature)) {
+            return response()
+                ->json([
+                    'changed' => false,
+                    'signature' => $signature,
+                ])
+                ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        }
+
+        $newCutoff = now()->subDays(3);
+        $openPosition = $this->availablePositionsQuery($appliedPositionIds)
+            ->orderByRaw('CASE WHEN created_at >= ? THEN 0 ELSE 1 END', [$newCutoff->toDateTimeString()])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->get();
+        $featuredOpenPositions = $openPosition->take(6);
+
+        return response()
+            ->json([
+                'changed' => true,
+                'signature' => $signature,
+                'html' => view('guest.partials.job-vacancies-list', [
+                    'open_position' => $featuredOpenPositions,
+                ])->render(),
+                'count' => $openPosition->count(),
+                'hasMore' => $openPosition->count() > $featuredOpenPositions->count(),
+                'seeMoreUrl' => route('guest.jobOpenLanding'),
+                'departments' => $openPosition->pluck('department')->filter()->unique()->values(),
+                'employments' => $openPosition->pluck('employment')->filter()->unique()->values(),
+                'locations' => $openPosition->pluck('location')->filter()->unique()->values(),
+            ])
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
     }
 
     public function display_job($id){
@@ -157,14 +244,35 @@ class GuestPageController extends Controller
             ->latest('id')
             ->get();
 
-        $jobOpen = OpenPosition::when($appliedPositionIds->isNotEmpty(), function ($query) use ($appliedPositionIds) {
-            $query->whereNotIn('id', $appliedPositionIds);
-        })
+        $jobOpen = $this->availablePositionsQuery($appliedPositionIds)
             ->latest('created_at')
             ->latest('id')
             ->get();
 
         return view('guest.jobOpen', compact('jobOpen','job','other'));
+    }
+
+    private function availablePositionsQuery($appliedPositionIds)
+    {
+        return OpenPosition::query()
+            ->when($appliedPositionIds->isNotEmpty(), function ($query) use ($appliedPositionIds) {
+                $query->whereNotIn('id', $appliedPositionIds);
+            });
+    }
+
+    private function vacancySignature($appliedPositionIds): string
+    {
+        $query = OpenPosition::withTrashed()
+            ->when($appliedPositionIds->isNotEmpty(), function ($query) use ($appliedPositionIds) {
+                $query->whereNotIn('id', $appliedPositionIds);
+            });
+
+        return implode(':', [
+            (clone $query)->count(),
+            (clone $query)->max('id') ?: 0,
+            (string) ((clone $query)->max('updated_at') ?: ''),
+            (string) ((clone $query)->max('deleted_at') ?: ''),
+        ]);
     }
 
     private function getBlockedPositionIds(?string $applicantEmail)

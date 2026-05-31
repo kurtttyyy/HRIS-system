@@ -37,8 +37,8 @@
             <div class="modal-header border-0 pb-0 justify-content-center position-relative">
                 <div class="text-center w-100">
                     <i class="bi bi-envelope-check text-primary display-4 mb-2"></i>
-                    <h5 class="modal-title fw-bold" id="emailCheckLabel">Verify Your Email</h5>
-                    <p class="text-muted small">Enter your email to continue to your applications</p>
+                    <h5 class="modal-title fw-bold" id="emailCheckLabel">Track Application</h5>
+                    <p class="text-muted small">Enter your tracking number</p>
                 </div>
 
                 <!-- X Close Button -->
@@ -47,8 +47,8 @@
             <form action="{{ route('guest.application.submit') }}" method="POST">
                 @csrf
                 <div class="modal-body px-4">
-                    <input type="email" id="verifyEmail" name="email" class="form-control py-2 rounded-pill shadow-sm" placeholder="you@example.com">
-                    <div id="emailError" class="text-danger mt-2 text-center small" style="display:none;">Please enter a valid email.</div>
+                    <input type="text" id="verifyEmail" name="application_lookup" class="form-control py-2 rounded-pill shadow-sm" placeholder="APP-YYYYMMDD-XXXXXX">
+                    <div id="emailError" class="text-danger mt-2 text-center small" style="display:none;">Please enter your tracking number.</div>
                 </div>
 
                 <div class="modal-footer border-0 justify-content-center pb-4">

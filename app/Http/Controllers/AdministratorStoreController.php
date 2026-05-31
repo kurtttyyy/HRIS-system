@@ -259,7 +259,25 @@ class AdministratorStoreController extends Controller
             'email_link' => 'required',
             'url' => 'nullable',
             'notes' => 'nullable',
+            'next_interview_confirmed' => 'nullable|in:0,1',
         ]);
+
+        $applicant = Applicant::findOrFail((int) $attrs['applicants_id']);
+        $requestedInterviewType = (string) $attrs['interview_type'];
+        $normalizedCurrentStatus = strtolower(trim((string) $applicant->application_status));
+        $normalizedRequestedType = strtolower(trim($requestedInterviewType));
+        $requiresProceedConfirmation = in_array($normalizedRequestedType, ['final interview', 'demo teaching'], true)
+            && $normalizedCurrentStatus !== $normalizedRequestedType;
+
+        if ($requiresProceedConfirmation) {
+            $confirmedByProceedAction = (string) ($attrs['next_interview_confirmed'] ?? '0') === '1';
+            if (!$confirmedByProceedAction || !$this->hasRequiredPreviousInterviewStage((int) $attrs['applicants_id'], $requestedInterviewType)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Click Proceed before scheduling '.$requestedInterviewType.'.')
+                    ->with('scheduled_applicant_id', $attrs['applicants_id']);
+            }
+        }
 
         if ($this->hasCompletedInterviewStage((int) $attrs['applicants_id'], (string) $attrs['interview_type'])) {
             return redirect()
@@ -274,6 +292,7 @@ class AdministratorStoreController extends Controller
             'date' => $attrs['date'],
             'time' => $attrs['time'],
             'duration' => $attrs['duration'],
+            'ended_at' => null,
             'interviewers' => $attrs['interviewers'],
             'email_link' => $attrs['email_link'],
             'url' => $attrs['url'],
@@ -2237,7 +2256,18 @@ class AdministratorStoreController extends Controller
 
         $review->update($updatePayload);
 
-        $this->syncDepartmentHeadFromApplicant($review->fresh(['position']));
+        if (
+            strcasecmp(trim((string) $attrs['status']), 'Hired') === 0
+            && !empty($attrs['date_hired'])
+            && (int) ($review->user_id ?? 0) > 0
+        ) {
+            Employee::query()
+                ->where('user_id', (int) $review->user_id)
+                ->update(['employement_date' => $attrs['date_hired']]);
+        }
+
+        $review = $review->fresh(['position']);
+        $this->syncDepartmentHeadFromApplicant($review);
 
         $successMessage = 'Success Update Application Status';
 
@@ -2310,6 +2340,7 @@ class AdministratorStoreController extends Controller
             'date' => $attrs['date'],
             'time' => $attrs['time'],
             'duration' => $attrs['duration'],
+            'ended_at' => null,
             'interviewers' => $attrs['interviewers'],
             'email_link' => $attrs['email_link'],
             'url' => $attrs['url'],
@@ -2326,6 +2357,53 @@ class AdministratorStoreController extends Controller
         //         ->send(new ApplicationInterviewMail($store));
 
         return redirect()->back()->with('success','Success Added Interview');
+    }
+
+    public function end_interview_now(Request $request, Interviewer $interview)
+    {
+        if (!$interview->ended_at) {
+            $interview->forceFill([
+                'ended_at' => now(),
+            ])->save();
+        }
+
+        return response()->json([
+            'ok' => true,
+            'interview_id' => $interview->id,
+            'ended_at' => optional($interview->ended_at)->toIso8601String(),
+            'duration' => $interview->duration,
+        ]);
+    }
+
+    public function extend_interview(Request $request, Interviewer $interview)
+    {
+        $attrs = $request->validate([
+            'minutes' => 'nullable|integer|min:1|max:240',
+        ]);
+
+        if ($interview->ended_at) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'This interview is already finished.',
+            ], 422);
+        }
+
+        $extraMinutes = (int) ($attrs['minutes'] ?? 15);
+        $nextDuration = max(1, $this->durationToMinutes($interview->duration)) + $extraMinutes;
+
+        $interview->update([
+            'duration' => $nextDuration.' minutes',
+        ]);
+
+        $start = Carbon::parse($interview->date->toDateString().' '.$interview->time);
+        $end = (clone $start)->addMinutes($nextDuration);
+
+        return response()->json([
+            'ok' => true,
+            'interview_id' => $interview->id,
+            'duration' => $interview->duration,
+            'ends_at' => $end->toIso8601String(),
+        ]);
     }
 
     private function resolveApplicantStatusFromInterviewType(string $interviewType): string
@@ -2357,8 +2435,23 @@ class AdministratorStoreController extends Controller
             ->contains(fn (Interviewer $interview) => $this->interviewIsFinished($interview));
     }
 
+    private function hasRequiredPreviousInterviewStage(int $applicantId, string $interviewType): bool
+    {
+        $normalizedType = strtolower(trim($interviewType));
+
+        if ($normalizedType === 'final interview' || $normalizedType === 'demo teaching') {
+            return $this->hasCompletedInterviewStage($applicantId, 'Initial Interview');
+        }
+
+        return true;
+    }
+
     private function interviewIsFinished(Interviewer $interview): bool
     {
+        if ($interview->ended_at) {
+            return true;
+        }
+
         if (!$interview->date || !$interview->time) {
             return false;
         }

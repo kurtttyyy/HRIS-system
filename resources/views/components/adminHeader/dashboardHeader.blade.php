@@ -1,8 +1,9 @@
 @php
     $headerTitle = $headerTitle ?? 'HR Dashboard';
     $headerSubtitle = $headerSubtitle ?? "Welcome back! Here's what's happening today.";
-    $headerSearchPlaceholder = $headerSearchPlaceholder ?? 'Search employees...';
+    $headerSearchPlaceholder = trim((string) ($headerSearchPlaceholder ?? ''));
     $headerSearchInputId = trim((string) ($headerSearchInputId ?? 'admin-header-search-input'));
+    $showHeaderSearch = $headerSearchPlaceholder !== '';
     $adminUser = auth()->user();
     $adminName = trim(implode(' ', array_filter([
         $adminUser?->first_name ?? null,
@@ -205,16 +206,18 @@
             <p class="admin-header-meta mt-3 inline-flex rounded-full border border-white/10 bg-white/8 px-3 py-1.5 text-xs font-medium text-emerald-50/80">{{ now()->format('l, F j, Y') }}</p>
         </div>
 
-        <div class="relative flex w-full min-w-0 flex-col gap-4 lg:max-w-[720px] lg:self-end xl:flex-row xl:items-center xl:justify-end">
-            <label class="admin-header-search group relative flex min-w-0 flex-1 items-center rounded-2xl border border-white/10 bg-white px-4 py-3 focus-within:border-emerald-300 focus-within:shadow-sm">
-                <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
-                <input
-                    id="{{ $headerSearchInputId }}"
-                    data-admin-header-search
-                    class="w-full min-w-0 bg-transparent pl-3 pr-2 text-sm text-slate-700 outline-none placeholder:text-slate-400"
-                    placeholder="{{ $headerSearchPlaceholder }}"
-                />
-            </label>
+        <div class="relative flex w-full min-w-0 flex-col gap-4 {{ $showHeaderSearch ? 'lg:max-w-[720px]' : 'lg:max-w-[420px]' }} lg:self-end xl:flex-row xl:items-center xl:justify-end">
+            @if ($showHeaderSearch)
+                <label class="admin-header-search group relative flex min-w-0 flex-1 items-center rounded-2xl border border-white/10 bg-white px-4 py-3 focus-within:border-emerald-300 focus-within:shadow-sm">
+                    <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
+                    <input
+                        id="{{ $headerSearchInputId }}"
+                        data-admin-header-search
+                        class="w-full min-w-0 bg-transparent pl-3 pr-2 text-sm text-slate-700 outline-none placeholder:text-slate-400"
+                        placeholder="{{ $headerSearchPlaceholder }}"
+                    />
+                </label>
+            @endif
 
             <div class="flex flex-wrap items-center justify-end gap-3">
                 <div class="admin-header-meta hidden items-center gap-2 rounded-full border border-white/10 bg-white/8 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-50 sm:inline-flex">

@@ -99,6 +99,44 @@
     $tabSession = trim((string) request()->query('tab_session', ''));
     $authRatingValue = is_null($companyRating ?? null) ? 0.0 : max(0, min(5, (float) $companyRating));
     $authRatingCount = (int) ($ratingCount ?? 0);
+    $defaultLoginAccounts = [
+        [
+            'label' => 'Kurt Robin',
+            'role' => 'Admin',
+            'email' => 'kurtrobin@gmail.com',
+            'password' => 'Kurt12345',
+        ],
+        [
+            'label' => 'Demo Admin',
+            'role' => 'Admin',
+            'email' => 'demo.admin@example.com',
+            'password' => 'Demo12345',
+        ],
+        [
+            'label' => 'Default Employee',
+            'role' => 'Employee',
+            'email' => 'employee@example.com',
+            'password' => 'Employee12345',
+        ],
+        [
+            'label' => 'Maria Santos',
+            'role' => 'Employee',
+            'email' => 'maria.santos@example.com',
+            'password' => 'Maria12345',
+        ],
+        [
+            'label' => 'Juan Dela Cruz',
+            'role' => 'Employee',
+            'email' => 'juan.delacruz@example.com',
+            'password' => 'Juan12345',
+        ],
+        [
+            'label' => 'Carlos Rivera',
+            'role' => 'Employee',
+            'email' => 'carlos.rivera@example.com',
+            'password' => 'Carlos12345',
+        ],
+    ];
 @endphp
 
 <div
@@ -121,53 +159,27 @@
                     </div>
                 </div>
 
-                <div class="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-green-700">
+                <div class="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-green-700 {{ $isRegister ? '' : 'hidden' }}" data-register-showcase-extra>
                     {{ $isRegister ? 'Registration' : 'Sign In' }}
                 </div>
 
-                @if (!$isRegister)
-                    <div class="mt-8">
-                        <h2 class="text-3xl font-extrabold text-gray-900">Default Accounts</h2>
-                        <p class="mt-2 text-sm leading-6 text-gray-500">Choose an account to fill the login form.</p>
+                <h2 class="mt-6 text-4xl font-extrabold text-gray-900 mb-4">
+                    Streamline Your Workforce
+                </h2>
 
-                        <div class="mt-6 grid gap-3">
-                            @foreach ($defaultAccounts ?? [] as $defaultAccount)
-                                <button
-                                    type="button"
-                                    class="group flex w-full items-center justify-between gap-3 rounded-2xl border border-emerald-100 bg-white px-4 py-4 text-left shadow-sm transition hover:border-emerald-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                                    data-default-account
-                                    data-default-email="{{ $defaultAccount['email'] }}"
-                                    data-default-password="{{ $defaultAccount['password'] }}"
-                                >
-                                    <span class="min-w-0">
-                                        <span class="block text-sm font-bold text-gray-900">{{ $defaultAccount['label'] }}</span>
-                                        <span class="block truncate text-xs text-gray-500">{{ $defaultAccount['email'] }}</span>
-                                    </span>
-                                    <span class="shrink-0 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700 group-hover:bg-emerald-700 group-hover:text-white">
-                                        {{ $defaultAccount['role'] }}
-                                    </span>
-                                </button>
-                            @endforeach
+                <p class="text-gray-600 mb-8 leading-relaxed">
+                    Powerful HRIS platform designed to simplify employee management,
+                    attendance tracking, and HR operations for modern businesses.
+                </p>
+
+                <div class="space-y-5">
+                    <div class="flex items-start gap-4">
+                        <div class="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold">&#10003;</div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">Employee Management</h3>
+                            <p class="text-sm text-gray-500">Centralized employee records and comprehensive profiles.</p>
                         </div>
                     </div>
-                @else
-                    <h2 class="mt-6 text-4xl font-extrabold text-gray-900 mb-4">
-                        Streamline Your Workforce
-                    </h2>
-
-                    <p class="text-gray-600 mb-8 leading-relaxed">
-                        Powerful HRIS platform designed to simplify employee management,
-                        attendance tracking, and HR operations for modern businesses.
-                    </p>
-
-                    <div class="space-y-5">
-                        <div class="flex items-start gap-4">
-                            <div class="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold">&#10003;</div>
-                            <div>
-                                <h3 class="font-semibold text-gray-900">Employee Management</h3>
-                                <p class="text-sm text-gray-500">Centralized employee records and comprehensive profiles.</p>
-                            </div>
-                        </div>
 
                         <div class="flex items-start gap-4">
                             <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">&#10003;</div>
@@ -188,22 +200,20 @@
                 @endif
             </div>
 
-            @if ($isRegister)
-                <div class="grid grid-cols-3 gap-6 mt-10 pt-8 border-t">
-                    <div>
-                        <p class="text-2xl font-bold text-gray-900">50K+</p>
-                        <p class="text-sm text-gray-500">Active Users</p>
-                    </div>
-                    <div>
-                        <p class="text-2xl font-bold text-gray-900">99.9%</p>
-                        <p class="text-sm text-gray-500">Uptime</p>
-                    </div>
-                    <div>
-                        <p class="text-2xl font-bold text-gray-900">{{ number_format($authRatingValue, 1) }}/5</p>
-                        <p class="text-sm text-gray-500">{{ $authRatingCount > 0 ? number_format($authRatingCount).' Ratings' : 'User Rating' }}</p>
-                    </div>
+            <div class="grid grid-cols-3 gap-6 mt-10 pt-8 border-t">
+                <div>
+                    <p class="text-2xl font-bold text-gray-900">50K+</p>
+                    <p class="text-sm text-gray-500">Active Users</p>
                 </div>
-            @endif
+                <div>
+                    <p class="text-2xl font-bold text-gray-900">99.9%</p>
+                    <p class="text-sm text-gray-500">Uptime</p>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-gray-900">{{ number_format($authRatingValue, 1) }}/5</p>
+                    <p class="text-sm text-gray-500">{{ $authRatingCount > 0 ? number_format($authRatingCount).' Ratings' : 'User Rating' }}</p>
+                </div>
+            </div>
         </section>
 
         <section class="auth-card auth-form-card rounded-3xl bg-white p-10 shadow-2xl flex items-center">
@@ -399,6 +409,12 @@
         const setMode = (mode, pushHistory = true) => {
             const isRegister = mode === 'register';
             root.classList.toggle('is-register', isRegister);
+            document.querySelectorAll('[data-default-accounts-panel]').forEach((panel) => {
+                panel.classList.toggle('hidden', isRegister);
+            });
+            document.querySelectorAll('[data-register-showcase-extra]').forEach((panel) => {
+                panel.classList.toggle('hidden', !isRegister);
+            });
 
             if (pushHistory) {
                 const targetUrl = isRegister ? registerUrl : loginUrl;
@@ -454,6 +470,31 @@
                 showIcon.classList.toggle('hidden', !showing);
                 hideIcon.classList.toggle('hidden', showing);
                 toggle.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+            });
+        });
+
+        document.querySelectorAll('[data-default-login]').forEach((button) => {
+            button.addEventListener('click', () => {
+                setMode('login');
+
+                const loginForm = document.querySelector('[data-login-form]');
+                if (!loginForm) {
+                    return;
+                }
+
+                const emailInput = loginForm.querySelector('input[name="email"]');
+                const passwordInput = loginForm.querySelector('input[name="password"]');
+
+                if (emailInput) {
+                    emailInput.value = button.getAttribute('data-email') || '';
+                    emailInput.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+
+                if (passwordInput) {
+                    passwordInput.value = button.getAttribute('data-password') || '';
+                    passwordInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    passwordInput.focus();
+                }
             });
         });
     })();

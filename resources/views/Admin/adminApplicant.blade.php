@@ -147,7 +147,7 @@
           <div class="flex items-start justify-between gap-4">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Total Applicants</p>
-              <p class="mt-3 text-4xl font-black tracking-tight text-slate-900">{{ $count_applicant }}</p>
+              <p class="mt-3 text-4xl font-black tracking-tight text-slate-900" data-applicant-stat-count="total">{{ $count_applicant }}</p>
               <p class="mt-1 text-sm text-slate-500">All candidate submissions</p>
             </div>
             <div class="text-right">
@@ -163,7 +163,7 @@
           <div class="flex items-start justify-between gap-4">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Pending</p>
-              <p class="mt-3 text-4xl font-black tracking-tight text-slate-900">{{ $count_pending }}</p>
+              <p class="mt-3 text-4xl font-black tracking-tight text-slate-900" data-applicant-stat-count="pending">{{ $count_pending }}</p>
               <p class="mt-1 text-sm text-slate-500">Applicants awaiting review</p>
             </div>
             <div class="text-right">
@@ -179,7 +179,7 @@
           <div class="flex items-start justify-between gap-4">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Interviews Scheduled</p>
-              <p class="mt-3 text-4xl font-black tracking-tight text-slate-900">{{ $count_final_interview }}</p>
+              <p class="mt-3 text-4xl font-black tracking-tight text-slate-900" data-applicant-stat-count="interview">{{ $count_final_interview }}</p>
               <p class="mt-1 text-sm text-slate-500">Candidates moved into interview stage</p>
             </div>
             <div class="text-right">
@@ -195,7 +195,7 @@
           <div class="flex items-start justify-between gap-4">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Hired This Month</p>
-              <p class="mt-3 text-4xl font-black tracking-tight text-slate-900">{{ $hired }}</p>
+              <p class="mt-3 text-4xl font-black tracking-tight text-slate-900" data-applicant-stat-count="hired_month">{{ $hired }}</p>
               <p class="mt-1 text-sm text-slate-500">Successful hires completed</p>
             </div>
             <div class="text-right">
@@ -323,7 +323,7 @@
                 <button type="button" id="nextApplicantButton" onclick="showApplicantInterviewPanel()" disabled class="inline-flex items-center justify-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-5 py-3 text-sm font-semibold text-sky-700 transition hover:border-sky-300 hover:bg-sky-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-400">
                   Proceed
                 </button>
-                <p id="documentReviewProgress" class="text-center text-xs font-semibold text-slate-400">Download all documents to continue</p>
+                <p id="documentReviewProgress" class="text-center text-xs font-semibold text-slate-400">Review all documents to continue</p>
               </div>
             </div>
           </div>
@@ -446,6 +446,7 @@
           <form class="rounded-[1.35rem] border border-slate-200 bg-white p-5 shadow-sm" action="{{ route('admin.storeNewInterview') }}" method="POST" id="applicantInterviewPanelForm">
             @csrf
             <input type="hidden" id="panel_applicants_id" name="applicants_id">
+            <input type="hidden" id="panel_next_interview_confirmed" name="next_interview_confirmed" value="0">
 
             <div class="grid gap-4 sm:grid-cols-2">
               <div class="sm:col-span-2">
@@ -536,7 +537,7 @@
                 <div class="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
                   <div id="passingDocumentProgressBar" class="h-full w-0 rounded-full bg-emerald-500 transition-all"></div>
                 </div>
-                <p id="passingDocumentHint" class="mt-3 text-xs font-semibold text-slate-500">Download/review every document to enable completion.</p>
+                <p id="passingDocumentHint" class="mt-3 text-xs font-semibold text-slate-500">View or download every document to enable completion.</p>
               </div>
 
               <div id="hireApplicantPanel" class="mt-4 hidden rounded-[1.1rem] border border-sky-200 bg-white p-4 shadow-sm">
@@ -549,6 +550,10 @@
                     <p class="mt-1 text-xs font-semibold text-slate-500">Documents are complete. Confirm hiring to move this applicant into Hired status.</p>
                   </div>
                 </div>
+                <label class="mt-4 block">
+                  <span class="mb-1 block text-xs font-bold uppercase tracking-[0.14em] text-sky-700">Report / Start Date</span>
+                  <input type="date" id="hireApplicantStartDate" class="w-full rounded-2xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-sky-300 focus:bg-white">
+                </label>
               </div>
             </div>
 
@@ -582,8 +587,10 @@
 </form>
 
 <script>
-  const applicants = @json($applicant);
-  const currentApplicantMonth = @json(now()->format('Y-m'));
+  let applicants = @json($applicant);
+  let currentApplicantMonth = @json(now()->format('Y-m'));
+  const applicantSnapshotUrl = @json(route('admin.adminApplicant.snapshot'));
+  let applicantSnapshotSignature = @json($applicantSnapshotSignature ?? null);
   const recentlyScheduledApplicantId = @json(session('scheduled_applicant_id'));
   const recentlyUpdatedApplicantId = @json(session('updated_applicant_id'));
   const recentlyUpdatedApplicantStatus = @json(session('updated_applicant_status'));
@@ -596,6 +603,7 @@
   let currentApplicantModalData = null;
   let interviewCountdownTimer = null;
   let autoUnderReviewSubmitted = false;
+  let applicantRefreshInFlight = false;
 
   const initApplicantPageAnimation = () => {
     const page = document.getElementById('admin-applicant-page');
@@ -682,6 +690,20 @@
       day: 'numeric',
       year: 'numeric'
     });
+  }
+
+  function dateInputValue(dateValue) {
+    if (!dateValue) {
+      return '';
+    }
+
+    const raw = dateValue.toString();
+    if (/^\d{4}-\d{2}-\d{2}/.test(raw)) {
+      return raw.slice(0, 10);
+    }
+
+    const parsed = new Date(raw);
+    return Number.isNaN(parsed.getTime()) ? '' : parsed.toISOString().slice(0, 10);
   }
 
   function formatInterviewTime(timeValue) {
@@ -779,7 +801,7 @@
       const matchesPosition = !positionFilter || normalizeText(position) === positionFilter;
       const matchesStatus = !statusFilter || normalizeText(status) === statusFilter;
       const normalizedStatus = normalizeText(status);
-      const applicationMonth = (app.created_at ?? '').toString().slice(0, 7);
+      const applicationMonth = (app.date_hired || app.created_at || '').toString().slice(0, 7);
       const matchesDashboardFilter = (() => {
         if (activeDashboardFilter === 'pending') {
           return normalizedStatus === 'pending';
@@ -817,6 +839,80 @@
     const normalizedValue = normalizeText(value);
     const option = Array.from(select.options).find(item => normalizeText(item.value) === normalizedValue);
     select.value = option ? option.value : '';
+  }
+
+  function updateApplicantStatCounts(counts = {}) {
+    const countMap = {
+      total: counts.total,
+      pending: counts.pending,
+      interview: counts.interview,
+      hired_month: counts.hired_month,
+    };
+
+    Object.entries(countMap).forEach(([key, value]) => {
+      const target = document.querySelector(`[data-applicant-stat-count="${key}"]`);
+      if (target && value !== undefined && value !== null) {
+        target.textContent = value;
+      }
+    });
+  }
+
+  function syncApplicantSelectOptions(selectId, label, options = []) {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+
+    const previousValue = select.value;
+    select.innerHTML = `<option value="">${label}</option>`;
+
+    options.forEach(optionLabel => {
+      const option = document.createElement('option');
+      option.value = normalizeText(optionLabel);
+      option.textContent = optionLabel;
+      select.appendChild(option);
+    });
+
+    setSelectValueIfPresent(selectId, previousValue);
+  }
+
+  async function refreshApplicantSnapshot(force = false) {
+    if (applicantRefreshInFlight || !applicantSnapshotUrl) return;
+    if (!force && document.hidden) return;
+
+    applicantRefreshInFlight = true;
+
+    try {
+      const url = new URL(applicantSnapshotUrl, window.location.origin);
+      if (applicantSnapshotSignature) {
+        url.searchParams.set('signature', applicantSnapshotSignature);
+      }
+
+      const response = await fetch(url.toString(), {
+        headers: {
+          Accept: 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        credentials: 'same-origin',
+      });
+
+      if (!response.ok) return;
+
+      const payload = await response.json();
+      applicantSnapshotSignature = payload.signature || applicantSnapshotSignature;
+
+      if (payload.changed === false) return;
+
+      applicants = Array.isArray(payload.applicants) ? payload.applicants : applicants;
+      currentApplicantMonth = payload.current_month || currentApplicantMonth;
+      updateApplicantStatCounts(payload.counts || {});
+      syncApplicantSelectOptions('applicantPositionFilter', 'All Positions', payload.position_options || []);
+      syncApplicantSelectOptions('applicantStatusFilter', 'All Status', payload.status_options || []);
+      updateDashboardCardState();
+      renderTable(currentPage);
+    } catch (error) {
+      console.warn('Applicant refresh failed.', error);
+    } finally {
+      applicantRefreshInFlight = false;
+    }
   }
 
   function applyDashboardFilter(filter) {
@@ -1006,16 +1102,16 @@
     if (!nextButton || !currentApplicantId) return;
 
     const total = currentApplicantDocumentKeys.size;
-    const downloaded = Array.from(currentApplicantDocumentKeys)
+    const reviewed = Array.from(currentApplicantDocumentKeys)
       .filter(key => downloadedApplicantDocuments.has(key))
       .length;
-    const isComplete = total > 0 && downloaded >= total;
+    const isComplete = total > 0 && reviewed >= total;
 
     nextButton.disabled = !isComplete;
-    nextButton.title = isComplete ? 'Set initial interview' : 'Download all documents first';
+    nextButton.title = isComplete ? 'Set initial interview' : 'Review all documents first';
     if (progress) {
       progress.textContent = total
-        ? `${downloaded}/${total} documents downloaded`
+        ? `${reviewed}/${total} documents reviewed`
         : 'No documents available to review';
       progress.className = `text-center text-xs font-semibold ${isComplete ? 'text-emerald-600' : 'text-slate-400'}`;
     }
@@ -1117,7 +1213,6 @@
     const progress = currentApplicantModalData?.interview_progress || {};
     const isTeaching = Boolean(progress.is_teaching);
     const status = normalizeText(currentApplicantModalData?.status);
-    const proceedTarget = progress.proceed_target || '';
     const pendingNextInterviewType = currentApplicantModalData?.pending_next_interview_type || '';
     const title = document.getElementById('interviewSetupTitle');
     const saveButton = document.getElementById('saveInterviewButton');
@@ -1136,9 +1231,9 @@
       allowedType = 'Demo Teaching';
     } else if (!isTeaching && status === 'final interview') {
       allowedType = 'Final Interview';
-    } else if (isTeaching && (pendingNextInterviewType === 'Demo Teaching' || proceedTarget === 'Demo Teaching')) {
+    } else if (isTeaching && pendingNextInterviewType === 'Demo Teaching') {
       allowedType = 'Demo Teaching';
-    } else if (!isTeaching && (pendingNextInterviewType === 'Final Interview' || proceedTarget === 'Final Interview')) {
+    } else if (!isTeaching && pendingNextInterviewType === 'Final Interview') {
       allowedType = 'Final Interview';
     }
 
@@ -1165,10 +1260,17 @@
     }
     if (saveButton) {
       saveButton.disabled = allowedType === '';
-      saveButton.title = allowedType === '' ? 'This interview stage is already finished.' : `Save ${allowedType}`;
+      saveButton.title = allowedType === ''
+        ? 'Click Proceed before scheduling the next interview stage.'
+        : `Save ${allowedType}`;
     }
     if (title) {
-      title.textContent = allowedType === '' ? 'Interview Stage Finished' : `Set ${allowedType}`;
+      title.textContent = allowedType === '' ? 'Proceed Required' : `Set ${allowedType}`;
+    }
+
+    const confirmedInput = document.getElementById('panel_next_interview_confirmed');
+    if (confirmedInput) {
+      confirmedInput.value = pendingNextInterviewType === allowedType ? '1' : '0';
     }
   }
 
@@ -1209,14 +1311,17 @@
                 </div>
                 <div class="min-w-0">
                   <p class="max-w-[280px] truncate text-sm font-semibold text-slate-800" title="${doc.name}">${doc.name}</p>
-                  <p class="text-xs font-medium text-slate-400">Click download to mark reviewed</p>
+                  <p class="text-xs font-medium text-slate-400">View or download to mark reviewed</p>
                 </div>
               </div>
               <div class="flex shrink-0 items-center gap-1.5">
                 <span class="applicant-doc-check flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-600" title="Reviewed">
                   <i class="fa-solid fa-check text-xs"></i>
                 </span>
-                <a href="${doc.url}" target="_blank" onclick="markApplicantDocumentDownloaded('${getApplicantDocumentKey(doc)}', ${Number(doc.id) || 'null'})" class="flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition hover:bg-emerald-100 hover:text-emerald-600" title="Download ${doc.name}">
+                <a href="${doc.preview_url || doc.url}" target="_blank" onclick="markApplicantDocumentDownloaded('${getApplicantDocumentKey(doc)}', ${Number(doc.id) || 'null'})" class="flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition hover:bg-sky-100 hover:text-sky-600" title="View ${doc.name}">
+                  <i class="fa-regular fa-eye"></i>
+                </a>
+                <a href="${doc.download_url || doc.url}" target="_blank" onclick="markApplicantDocumentDownloaded('${getApplicantDocumentKey(doc)}', ${Number(doc.id) || 'null'})" class="flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition hover:bg-emerald-100 hover:text-emerald-600" title="Download ${doc.name}">
                   <i class="fa-solid fa-download"></i>
                 </a>
               </div>
@@ -1248,7 +1353,7 @@
     if (hint) {
       hint.textContent = isComplete
         ? 'All documents reviewed. You can mark this step complete.'
-        : 'Download/review every document to enable completion.';
+        : 'View or download every document to enable completion.';
       hint.className = `mt-3 text-xs font-semibold ${isComplete ? 'text-emerald-700' : 'text-slate-500'}`;
     }
     if (completeButton) {
@@ -1280,30 +1385,28 @@
 
   function hireApplicantFromCompleted() {
     if (!currentApplicantId || normalizeText(currentApplicantModalData?.status) !== 'completed') return;
+    const startDateInput = document.getElementById('hireApplicantStartDate');
+    const startDate = startDateInput?.value || '';
+
+    if (!startDate) {
+      startDateInput?.focus();
+      Swal.fire({
+        icon: 'info',
+        title: 'Set report date',
+        text: 'Please choose the date the applicant should report or start work.'
+      });
+      return;
+    }
 
     Swal.fire({
       title: 'Hire applicant?',
-      html: '<p class="text-sm text-slate-600">Set the date the employee should report/start work.</p>',
-      input: 'date',
-      inputLabel: 'Date of report',
-      inputValue: new Date().toISOString().slice(0, 10),
-      inputAttributes: {
-        required: 'required'
-      },
+      html: `<p class="text-sm text-slate-600">This applicant will report/start work on <strong>${formatDate(startDate)}</strong>.</p>`,
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#059669',
       cancelButtonColor: '#64748b',
       confirmButtonText: 'Hire Applicant',
-      cancelButtonText: 'Cancel',
-      preConfirm: (dateValue) => {
-        if (!dateValue) {
-          Swal.showValidationMessage('Please select the date of report.');
-          return false;
-        }
-
-        return dateValue;
-      }
+      cancelButtonText: 'Cancel'
     }).then(result => {
       if (!result.isConfirmed) {
         return;
@@ -1311,7 +1414,7 @@
 
       document.getElementById('statusId').value = currentApplicantId;
       document.getElementById('statusAutoValue').value = 'Hired';
-      document.getElementById('statusDateHired').value = result.value;
+      document.getElementById('statusDateHired').value = startDate;
       document.getElementById('updateStatus').submit();
     });
   }
@@ -1322,13 +1425,16 @@
     const decisionHint = document.getElementById('interviewDecisionHint');
 
     const progress = currentApplicantModalData?.interview_progress || {};
+    const pendingNextInterviewType = currentApplicantModalData?.pending_next_interview_type || '';
     const canProceed = Boolean(progress.can_proceed_passing_document);
     const proceedTarget = progress.proceed_target || 'Next Step';
     const proceedLabel = `Proceed to ${proceedTarget}`;
 
     if (decisionButton) {
-      decisionButton.disabled = !canProceed;
-      decisionButton.title = canProceed
+      decisionButton.disabled = !canProceed || Boolean(pendingNextInterviewType);
+      decisionButton.title = pendingNextInterviewType
+        ? `${pendingNextInterviewType} schedule is already unlocked.`
+        : canProceed
         ? proceedLabel
         : progress.is_teaching
           ? 'Finish Initial Interview first, then Demo Teaching'
@@ -1336,11 +1442,15 @@
     }
 
     if (decisionLabel) {
-      decisionLabel.textContent = proceedLabel;
+      decisionLabel.textContent = pendingNextInterviewType
+        ? `${pendingNextInterviewType} Unlocked`
+        : proceedLabel;
     }
 
     if (decisionHint) {
-      decisionHint.textContent = canProceed
+      decisionHint.textContent = pendingNextInterviewType
+        ? `You can now schedule ${pendingNextInterviewType} in the form.`
+        : canProceed
         ? `Applicant passed this stage. Next step: ${proceedTarget}.`
         : progress.is_teaching
           ? 'Finish Initial Interview first, then Demo Teaching.'
@@ -1351,7 +1461,8 @@
   function updateInterviewDecisionActions(isFinished) {
     const decisionActions = document.getElementById('interviewDecisionActions');
     const canProceed = Boolean(currentApplicantModalData?.interview_progress?.proceed_target);
-    decisionActions?.classList.toggle('hidden', !isFinished || !canProceed);
+    const hasUnlockedNextSchedule = Boolean(currentApplicantModalData?.pending_next_interview_type);
+    decisionActions?.classList.toggle('hidden', !isFinished || (!canProceed && !hasUnlockedNextSchedule));
     updateInterviewProceedButton();
   }
 
@@ -1430,6 +1541,8 @@
 
         currentApplicantModalData.pending_next_interview_type = proceedTarget;
         configureInterviewTypeOptions();
+        updateInterviewDecisionActions(true);
+        document.getElementById('applicantInterviewPanelForm')?.classList.remove('hidden');
         focusInterviewForm();
       });
       return;
@@ -1486,6 +1599,33 @@
     configureInterviewTypeOptions();
   }
 
+  function unmarkCurrentInterviewFinished(interview) {
+    if (!currentApplicantModalData || !interview?.interview_type) {
+      return;
+    }
+
+    currentApplicantModalData.interview_progress = currentApplicantModalData.interview_progress || {};
+    const progress = currentApplicantModalData.interview_progress;
+    const type = interview.interview_type.toString().trim().toLowerCase();
+
+    if (type === 'initial interview') {
+      progress.completed_initial = false;
+    }
+
+    if (type === 'final interview') {
+      progress.completed_final = false;
+    }
+
+    if (type === 'demo teaching') {
+      progress.completed_demo_teaching = false;
+    }
+
+    progress.proceed_target = null;
+    progress.can_proceed_passing_document = false;
+    updateInterviewProceedButton();
+    configureInterviewTypeOptions();
+  }
+
   function cancelApplicantInterview() {
     if (!currentApplicantId) {
       return;
@@ -1533,7 +1673,7 @@
       const isFinished = Boolean(item.is_finished);
 
       return `
-        <div class="interview-schedule-card overflow-hidden rounded-[1.25rem] border ${isFinished ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200 bg-white'} shadow-sm transition" data-index="${index}" data-starts-at="${item.starts_at || `${item.date}T${item.time || '00:00'}`}" data-ends-at="${item.ends_at || item.starts_at || `${item.date}T${item.time || '00:00'}`}" data-type="${item.interview_type || ''}">
+        <div class="interview-schedule-card overflow-hidden rounded-[1.25rem] border ${isFinished ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200 bg-white'} shadow-sm transition" data-index="${index}" data-interview-id="${item.id || ''}" data-starts-at="${item.starts_at || `${item.date}T${item.time || '00:00'}`}" data-ends-at="${item.ended_at || item.ends_at || item.starts_at || `${item.date}T${item.time || '00:00'}`}" data-type="${item.interview_type || ''}">
           <div class="flex">
             <div class="interview-time-strip flex w-20 shrink-0 flex-col items-center justify-center ${isFinished ? 'bg-emerald-100' : 'bg-indigo-50'} px-2 py-5 text-center">
               <p class="text-[1.35rem] font-black leading-none text-indigo-600">${timeParts.time}</p>
@@ -1563,11 +1703,19 @@
               </div>
               <p class="interview-countdown mt-3 text-xs font-semibold ${isFinished ? 'text-emerald-700' : 'text-indigo-600'}">Waiting for schedule</p>
               <div class="interview-schedule-actions mt-4 ${isFinished ? 'hidden' : 'flex'} flex-wrap gap-2">
-                <button type="button" onclick="focusInterviewForm()" class="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-indigo-700">
+                <button type="button" onclick="focusInterviewForm()" class="interview-reschedule-button inline-flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-indigo-700">
                   <i class="fa-regular fa-pen-to-square"></i>
                   Reschedule
                 </button>
-                <button type="button" onclick="cancelApplicantInterview()" class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600 transition hover:border-rose-200 hover:text-rose-600">
+                <button type="button" onclick="endApplicantInterviewNow(${index})" class="interview-end-now-button hidden items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-emerald-700">
+                  <i class="fa-solid fa-flag-checkered"></i>
+                  End Now
+                </button>
+                <button type="button" onclick="extendApplicantInterview(${index}, 15)" class="interview-extend-button hidden items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-bold text-amber-700 transition hover:bg-amber-100">
+                  <i class="fa-regular fa-clock"></i>
+                  +15 min
+                </button>
+                <button type="button" onclick="cancelApplicantInterview()" class="interview-cancel-button inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600 transition hover:border-rose-200 hover:text-rose-600">
                   <i class="fa-solid fa-ban"></i>
                   Cancel
                 </button>
@@ -1591,15 +1739,20 @@
         const stateBadge = card.querySelector('.interview-state-badge');
         const actions = card.querySelector('.interview-schedule-actions');
         const timeStrip = card.querySelector('.interview-time-strip');
+        const rescheduleButton = card.querySelector('.interview-reschedule-button');
+        const cancelButton = card.querySelector('.interview-cancel-button');
+        const endButton = card.querySelector('.interview-end-now-button');
+        const extendButton = card.querySelector('.interview-extend-button');
         if (!countdown || Number.isNaN(startTime.getTime()) || Number.isNaN(endTime.getTime())) return;
 
         const hasStarted = now >= startTime.getTime();
-        const isFinished = now >= endTime.getTime();
+        const isManuallyEnded = Boolean(interviews[index]?.ended_at);
+        const isFinished = isManuallyEnded || now >= endTime.getTime();
         const remainingToStart = startTime.getTime() - now;
         const remainingToEnd = endTime.getTime() - now;
 
         countdown.textContent = isFinished
-          ? 'Interview finished. Ready for the next review step.'
+          ? (isManuallyEnded ? 'Interview ended early. Ready for the next review step.' : 'Interview finished. Ready for the next review step.')
           : hasStarted
             ? `In progress, ends in ${formatCountdownDistance(remainingToEnd)}`
             : `Starts in ${formatCountdownDistance(remainingToStart)}`;
@@ -1613,8 +1766,16 @@
         timeStrip?.classList.toggle('bg-emerald-100', isFinished);
         timeStrip?.classList.toggle('bg-indigo-50', !isFinished);
         stateBadge?.classList.toggle('hidden', !isFinished);
-        actions?.classList.toggle('hidden', isFinished);
-        actions?.classList.toggle('flex', !isFinished);
+        actions?.classList.toggle('hidden', isManuallyEnded);
+        actions?.classList.toggle('flex', !isManuallyEnded);
+        rescheduleButton?.classList.toggle('hidden', isFinished);
+        rescheduleButton?.classList.toggle('inline-flex', !isFinished);
+        cancelButton?.classList.toggle('hidden', isFinished);
+        cancelButton?.classList.toggle('inline-flex', !isFinished);
+        endButton?.classList.toggle('hidden', !hasStarted || isFinished);
+        endButton?.classList.toggle('inline-flex', hasStarted && !isFinished);
+        extendButton?.classList.toggle('hidden', !hasStarted || isManuallyEnded);
+        extendButton?.classList.toggle('inline-flex', hasStarted && !isManuallyEnded);
 
         if (isFinished) {
           markCurrentInterviewFinished(interviews[index]);
@@ -1630,6 +1791,99 @@
 
     updateCountdown();
     interviewCountdownTimer = setInterval(updateCountdown, 1000);
+  }
+
+  function syncInterviewCardState(index, updates = {}) {
+    if (!Array.isArray(currentApplicantModalData?.interviews) || !currentApplicantModalData.interviews[index]) {
+      return;
+    }
+
+    currentApplicantModalData.interviews[index] = {
+      ...currentApplicantModalData.interviews[index],
+      ...updates,
+    };
+
+    renderInterviewScheduleSummary(currentApplicantModalData.interviews[index]);
+  }
+
+  function postInterviewTimingAction(interviewId, url, payload = {}) {
+    return fetch(url, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-TOKEN': applicantCsrfToken(),
+      },
+      body: JSON.stringify(payload),
+    }).then(async response => {
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.ok === false) {
+        throw new Error(data.message || 'Unable to update interview timing.');
+      }
+
+      return data;
+    });
+  }
+
+  function endApplicantInterviewNow(index) {
+    const interview = currentApplicantModalData?.interviews?.[index];
+    if (!interview?.id) return;
+
+    Swal.fire({
+      title: 'End interview now?',
+      text: 'Use this when the interview finished earlier than the scheduled duration.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#059669',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'End Now',
+      cancelButtonText: 'Keep running'
+    }).then(result => {
+      if (!result.isConfirmed) return;
+
+      postInterviewTimingAction(interview.id, `/system/interview/${encodeURIComponent(interview.id)}/end-now`)
+        .then(data => {
+          syncInterviewCardState(index, {
+            ended_at: data.ended_at || new Date().toISOString(),
+            is_finished: true,
+          });
+          Swal.fire({
+            icon: 'success',
+            title: 'Interview ended',
+            text: 'You can now choose the next review step.',
+            timer: 1600,
+            showConfirmButton: false
+          });
+        })
+        .catch(error => {
+          Swal.fire({ icon: 'error', title: 'Unable to end interview', text: error.message });
+        });
+    });
+  }
+
+  function extendApplicantInterview(index, minutes = 15) {
+    const interview = currentApplicantModalData?.interviews?.[index];
+    if (!interview?.id) return;
+
+    postInterviewTimingAction(interview.id, `/system/interview/${encodeURIComponent(interview.id)}/extend`, { minutes })
+      .then(data => {
+        const nextEndsAt = data.ends_at || interview.ends_at;
+        if (nextEndsAt && new Date(nextEndsAt).getTime() > Date.now()) {
+          unmarkCurrentInterviewFinished(interview);
+        }
+
+        syncInterviewCardState(index, {
+          duration: data.duration || interview.duration,
+          ends_at: nextEndsAt,
+          ended_at: null,
+          is_finished: nextEndsAt ? new Date(nextEndsAt).getTime() <= Date.now() : Boolean(interview.is_finished),
+        });
+      })
+      .catch(error => {
+        Swal.fire({ icon: 'error', title: 'Unable to extend interview', text: error.message });
+      });
   }
 
   function escapeApplicantHtml(value) {
@@ -1740,6 +1994,10 @@
         document.getElementById('one').innerText = data.one;
         document.getElementById('number').innerText = data.number;
         document.getElementById('applicantInitials').innerText = getInitials(data.name, '');
+        const hireStartDate = document.getElementById('hireApplicantStartDate');
+        if (hireStartDate) {
+          hireStartDate.value = dateInputValue(data.date_hired) || new Date().toISOString().slice(0, 10);
+        }
 
         renderWorkExperience(data);
         renderEducationBackground(data.education_background);
@@ -1806,7 +2064,10 @@
                       <span class="applicant-doc-check flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-600" title="Downloaded">
                         <i class="fa-solid fa-check text-xs"></i>
                       </span>
-                      <a href="${doc.url}" target="_blank" onclick="markApplicantDocumentDownloaded('${getApplicantDocumentKey(doc)}', ${Number(doc.id) || 'null'})" class="flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition hover:bg-sky-100 hover:text-sky-600" title="Download ${doc.name}">
+                      <a href="${doc.preview_url || doc.url}" target="_blank" onclick="markApplicantDocumentDownloaded('${getApplicantDocumentKey(doc)}', ${Number(doc.id) || 'null'})" class="flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition hover:bg-sky-100 hover:text-sky-600" title="View ${doc.name}">
+                        <i class="fa-regular fa-eye"></i>
+                      </a>
+                      <a href="${doc.download_url || doc.url}" target="_blank" onclick="markApplicantDocumentDownloaded('${getApplicantDocumentKey(doc)}', ${Number(doc.id) || 'null'})" class="flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition hover:bg-sky-100 hover:text-sky-600" title="Download ${doc.name}">
                         <i class="fa-solid fa-download"></i>
                       </a>
                     </div>
@@ -1933,9 +2194,12 @@
   });
   document.getElementById('clearApplicantFilters')?.addEventListener('click', () => {
     activeDashboardFilter = 'all';
-    document.getElementById('headerApplicantSearch').value = '';
-    document.getElementById('applicantPositionFilter').value = '';
-    document.getElementById('applicantStatusFilter').value = '';
+    const search = document.getElementById('headerApplicantSearch');
+    const position = document.getElementById('applicantPositionFilter');
+    const status = document.getElementById('applicantStatusFilter');
+    if (search) search.value = '';
+    if (position) position.value = '';
+    if (status) status.value = '';
     updateDashboardCardState();
     renderTable(1);
   });
@@ -1966,6 +2230,13 @@
 
   updateDashboardCardState();
   renderTable(1);
+
+  setInterval(() => refreshApplicantSnapshot(), 15000);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      refreshApplicantSnapshot(true);
+    }
+  });
 
   if (recentlyScheduledApplicantId) {
     openApplicantModal(recentlyScheduledApplicantId, true);
