@@ -31,6 +31,32 @@ class PageController extends Controller
         return [
             'companyRating' => $ratingStats->count() ? round((float) $ratingStats->avg(), 1) : null,
             'ratingCount' => $ratingStats->count(),
+            'defaultAccounts' => [
+                [
+                    'label' => 'Main Admin',
+                    'role' => 'Admin',
+                    'email' => env('DEFAULT_ADMIN_EMAIL', 'kurtrobin20031118@gmail.com'),
+                    'password' => env('DEFAULT_ADMIN_PASSWORD', 'Kurt12345'),
+                ],
+                [
+                    'label' => 'Demo Admin',
+                    'role' => 'Admin',
+                    'email' => env('DEMO_ADMIN_EMAIL', 'demo.admin@example.com'),
+                    'password' => env('DEMO_ADMIN_PASSWORD', 'Demo12345'),
+                ],
+                [
+                    'label' => 'Employee One',
+                    'role' => 'Employee',
+                    'email' => 'employee.one@example.com',
+                    'password' => 'Employee12345',
+                ],
+                [
+                    'label' => 'Employee Two',
+                    'role' => 'Employee',
+                    'email' => 'employee.two@example.com',
+                    'password' => 'Employee12345',
+                ],
+            ],
         ];
     }
 }

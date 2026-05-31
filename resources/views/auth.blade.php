@@ -125,56 +125,85 @@
                     {{ $isRegister ? 'Registration' : 'Sign In' }}
                 </div>
 
-                <h2 class="mt-6 text-4xl font-extrabold text-gray-900 mb-4">
-                    Streamline Your Workforce
-                </h2>
+                @if (!$isRegister)
+                    <div class="mt-8">
+                        <h2 class="text-3xl font-extrabold text-gray-900">Default Accounts</h2>
+                        <p class="mt-2 text-sm leading-6 text-gray-500">Choose an account to fill the login form.</p>
 
-                <p class="text-gray-600 mb-8 leading-relaxed">
-                    Powerful HRIS platform designed to simplify employee management,
-                    attendance tracking, and HR operations for modern businesses.
-                </p>
-
-                <div class="space-y-5">
-                    <div class="flex items-start gap-4">
-                        <div class="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold">&#10003;</div>
-                        <div>
-                            <h3 class="font-semibold text-gray-900">Employee Management</h3>
-                            <p class="text-sm text-gray-500">Centralized employee records and comprehensive profiles.</p>
+                        <div class="mt-6 grid gap-3">
+                            @foreach ($defaultAccounts ?? [] as $defaultAccount)
+                                <button
+                                    type="button"
+                                    class="group flex w-full items-center justify-between gap-3 rounded-2xl border border-emerald-100 bg-white px-4 py-4 text-left shadow-sm transition hover:border-emerald-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    data-default-account
+                                    data-default-email="{{ $defaultAccount['email'] }}"
+                                    data-default-password="{{ $defaultAccount['password'] }}"
+                                >
+                                    <span class="min-w-0">
+                                        <span class="block text-sm font-bold text-gray-900">{{ $defaultAccount['label'] }}</span>
+                                        <span class="block truncate text-xs text-gray-500">{{ $defaultAccount['email'] }}</span>
+                                    </span>
+                                    <span class="shrink-0 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700 group-hover:bg-emerald-700 group-hover:text-white">
+                                        {{ $defaultAccount['role'] }}
+                                    </span>
+                                </button>
+                            @endforeach
                         </div>
                     </div>
+                @else
+                    <h2 class="mt-6 text-4xl font-extrabold text-gray-900 mb-4">
+                        Streamline Your Workforce
+                    </h2>
 
-                    <div class="flex items-start gap-4">
-                        <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">&#10003;</div>
-                        <div>
-                            <h3 class="font-semibold text-gray-900">Attendance Tracking</h3>
-                            <p class="text-sm text-gray-500">Monitor time-in, time-out, and attendance records in real time.</p>
+                    <p class="text-gray-600 mb-8 leading-relaxed">
+                        Powerful HRIS platform designed to simplify employee management,
+                        attendance tracking, and HR operations for modern businesses.
+                    </p>
+
+                    <div class="space-y-5">
+                        <div class="flex items-start gap-4">
+                            <div class="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold">&#10003;</div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Employee Management</h3>
+                                <p class="text-sm text-gray-500">Centralized employee records and comprehensive profiles.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-4">
+                            <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">&#10003;</div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Attendance Tracking</h3>
+                                <p class="text-sm text-gray-500">Monitor time-in, time-out, and attendance records in real time.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-4">
+                            <div class="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold">&#10003;</div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Analytics & Reports</h3>
+                                <p class="text-sm text-gray-500">Real-time insights and comprehensive reporting.</p>
+                            </div>
                         </div>
                     </div>
-
-                    <div class="flex items-start gap-4">
-                        <div class="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold">&#10003;</div>
-                        <div>
-                            <h3 class="font-semibold text-gray-900">Analytics & Reports</h3>
-                            <p class="text-sm text-gray-500">Real-time insights and comprehensive reporting.</p>
-                        </div>
-                    </div>
-                </div>
+                @endif
             </div>
 
-            <div class="grid grid-cols-3 gap-6 mt-10 pt-8 border-t">
-                <div>
-                    <p class="text-2xl font-bold text-gray-900">50K+</p>
-                    <p class="text-sm text-gray-500">Active Users</p>
+            @if ($isRegister)
+                <div class="grid grid-cols-3 gap-6 mt-10 pt-8 border-t">
+                    <div>
+                        <p class="text-2xl font-bold text-gray-900">50K+</p>
+                        <p class="text-sm text-gray-500">Active Users</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-gray-900">99.9%</p>
+                        <p class="text-sm text-gray-500">Uptime</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-gray-900">{{ number_format($authRatingValue, 1) }}/5</p>
+                        <p class="text-sm text-gray-500">{{ $authRatingCount > 0 ? number_format($authRatingCount).' Ratings' : 'User Rating' }}</p>
+                    </div>
                 </div>
-                <div>
-                    <p class="text-2xl font-bold text-gray-900">99.9%</p>
-                    <p class="text-sm text-gray-500">Uptime</p>
-                </div>
-                <div>
-                    <p class="text-2xl font-bold text-gray-900">{{ number_format($authRatingValue, 1) }}/5</p>
-                    <p class="text-sm text-gray-500">{{ $authRatingCount > 0 ? number_format($authRatingCount).' Ratings' : 'User Rating' }}</p>
-                </div>
-            </div>
+            @endif
         </section>
 
         <section class="auth-card auth-form-card rounded-3xl bg-white p-10 shadow-2xl flex items-center">
@@ -195,18 +224,18 @@
                         </div>
                     @endif
 
-                    <form class="space-y-6" method="POST" action="{{ route('login') }}">
+                    <form class="space-y-6" method="POST" action="{{ route('login') }}" data-login-form>
                         @csrf
                         <input type="hidden" name="tab_session" value="{{ $tabSession }}">
                         <div>
                             <label class="text-sm font-medium text-gray-700">Email Address</label>
-                            <input type="email" name="email" value="{{ old('email') }}" placeholder="john@example.com" class="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-600 focus:outline-none">
+                            <input type="email" name="email" value="{{ old('email') }}" placeholder="john@example.com" class="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-600 focus:outline-none" data-login-email>
                         </div>
 
                         <div>
                             <label class="text-sm font-medium text-gray-700">Password</label>
                             <div class="relative mt-2">
-                                <input type="password" name="password" placeholder="........" class="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-600 focus:outline-none" data-password-input>
+                                <input type="password" name="password" placeholder="........" class="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-600 focus:outline-none" data-password-input data-login-password>
                                 <button type="button" class="absolute inset-y-0 right-3 inline-flex items-center text-gray-400 transition hover:text-green-700" data-password-toggle aria-label="Show password">
                                     <svg data-password-icon-show xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z" />
@@ -383,6 +412,22 @@
             link.addEventListener('click', (event) => {
                 event.preventDefault();
                 setMode(link.getAttribute('data-auth-target') || 'login');
+            });
+        });
+
+        document.querySelectorAll('[data-default-account]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const form = document.querySelector('[data-login-form]');
+                const emailInput = form ? form.querySelector('[data-login-email]') : null;
+                const passwordInput = form ? form.querySelector('[data-login-password]') : null;
+
+                if (!form || !emailInput || !passwordInput) {
+                    return;
+                }
+
+                emailInput.value = button.getAttribute('data-default-email') || '';
+                passwordInput.value = button.getAttribute('data-default-password') || '';
+                passwordInput.focus();
             });
         });
 

@@ -1366,9 +1366,13 @@ class ApplicantController extends Controller
                 continue;
             }
 
-            $column = ($anchor[0] ?? 0) + 1;
-            $row = ($anchor[2] ?? 0) + 1;
-            $choice = $this->pdsCheckboxChoiceFromPosition($row, $column, false);
+            $startColumn = ($anchor[0] ?? 0) + 1;
+            $endColumn = ($anchor[4] ?? $anchor[0] ?? 0) + 1;
+            $startRow = ($anchor[2] ?? 0) + 1;
+            $endRow = ($anchor[6] ?? $anchor[2] ?? 0) + 1;
+            $column = (int) round(($startColumn + $endColumn) / 2);
+            $row = (int) round(($startRow + $endRow) / 2);
+            $choice = $this->pdsCheckboxChoiceFromPosition($row, $column);
             if ($choice) {
                 $data[$choice[0]] = $choice[1];
             }
@@ -1738,7 +1742,7 @@ POWERSHELL;
 
             return null;
         };
-        $valueFromRange = function (string $startColumn, string $endColumn, int $row) use ($cells) {
+        $valueFromRange = function (string $startColumn, string $endColumn, int $row, ?callable $filter = null) use ($cells) {
             $values = [];
             $start = $this->spreadsheetColumnIndex($startColumn);
             $end = $this->spreadsheetColumnIndex($endColumn);
@@ -1747,20 +1751,77 @@ POWERSHELL;
                 $reference = $this->spreadsheetColumnName($column) . $row;
                 $value = trim((string) ($cells[$reference] ?? ''));
                 if ($value !== '') {
+                    if ($filter && !$filter($value, $reference)) {
+                        continue;
+                    }
+
                     $values[] = $value;
                 }
             }
 
             return $this->cleanPdsValue(implode(' ', $values));
         };
+        $ignoreOfficialPdsNoise = function (string $value): bool {
+            $normalized = $this->normalizePdsLabel($value);
+            if ($normalized === '') {
+                return false;
+            }
+
+            $noise = [
+                'single',
+                'married',
+                'widow er',
+                'widowed',
+                'separated',
+                'other s',
+                'others',
+                'house block lot no',
+                'street',
+                'subdivision village',
+                'barangay',
+                'city municipality',
+                'province',
+                'zip code',
+                'telephone no',
+                'mobile no',
+                'e mail address if any',
+                'if holder of dual citizenship',
+                'please indicate the details',
+                'pls indicate country',
+            ];
+
+            if (in_array($normalized, $noise, true)) {
+                return false;
+            }
+
+            $countryNoise = [
+                'afghanistan',
+                'albania',
+                'algeria',
+                'andorra',
+                'angola',
+                'bahamas the',
+                'bahrain',
+                'bangladesh',
+                'barbados',
+                'belarus',
+                'belgium',
+                'belize',
+                'benin',
+                'bhutan',
+                'bolivia',
+            ];
+
+            return !in_array($normalized, $countryNoise, true);
+        };
 
         return [
-            'surname' => $valueFromRange('C', 'N', 10) ?: $valueFromRange('B', 'N', 10),
-            'first_name' => $valueFromRange('C', 'I', 11) ?: $valueFromRange('B', 'I', 11),
-            'middle_name' => $valueFromRange('C', 'N', 12) ?: $valueFromRange('B', 'N', 12),
+            'surname' => $valueFromRange('C', 'E', 10, $ignoreOfficialPdsNoise) ?: $valueFromRange('B', 'E', 10, $ignoreOfficialPdsNoise),
+            'first_name' => $valueFromRange('C', 'E', 11, $ignoreOfficialPdsNoise) ?: $valueFromRange('B', 'E', 11, $ignoreOfficialPdsNoise),
+            'middle_name' => $valueFromRange('C', 'D', 12, $ignoreOfficialPdsNoise) ?: $valueFromRange('B', 'D', 12, $ignoreOfficialPdsNoise),
             'name_extension' => $valueFromRange('J', 'N', 11),
             'date_of_birth' => $this->normalizePdsDate($valueFromRange('C', 'E', 13) ?: $valueFromRange('B', 'E', 13)),
-            'place_of_birth' => $valueFromRange('C', 'E', 15) ?: $valueFromRange('B', 'E', 15),
+            'place_of_birth' => $valueFromRange('C', 'D', 15, $ignoreOfficialPdsNoise) ?: $valueFromRange('B', 'D', 15, $ignoreOfficialPdsNoise),
             'sex' => $this->extractCheckedPdsChoiceFromCells($cells, [
                     'Male' => [16],
                     'Female' => [16],
@@ -1777,23 +1838,23 @@ POWERSHELL;
                 ?: $this->extractCheckedPdsOption($cells, ['F17', 'G17', 'H17'], 'Married')
                 ?: $this->extractCheckedPdsOption($cells, ['B18', 'C18', 'D18', 'E18'], 'Widowed')
                 ?: $this->extractCheckedPdsOption($cells, ['F18', 'G18', 'H18'], 'Separated'),
-            'gsis_id_no' => $valueFromRange('C', 'E', 27),
-            'gsis_no' => $valueFromRange('C', 'E', 27),
-            'pag_ibig_id_no' => $valueFromRange('C', 'E', 29),
-            'philhealth_no' => $valueFromRange('C', 'E', 31),
-            'sss_no' => $valueFromRange('C', 'E', 32),
-            'tin_no' => $valueFromRange('C', 'E', 33),
+            'gsis_id_no' => $valueFromRange('C', 'D', 27, $ignoreOfficialPdsNoise),
+            'gsis_no' => $valueFromRange('C', 'D', 27, $ignoreOfficialPdsNoise),
+            'pag_ibig_id_no' => $valueFromRange('C', 'D', 29, $ignoreOfficialPdsNoise),
+            'philhealth_no' => $valueFromRange('C', 'D', 31, $ignoreOfficialPdsNoise),
+            'sss_no' => $valueFromRange('C', 'D', 32, $ignoreOfficialPdsNoise),
+            'tin_no' => $valueFromRange('B', 'D', 33, $ignoreOfficialPdsNoise),
             'permanent_address' => $this->cleanPdsPermanentAddress(collect([
-                $valueFromRange('I', 'N', 25),
-                $valueFromRange('I', 'N', 26),
-                $valueFromRange('I', 'N', 27),
-                $valueFromRange('I', 'N', 28),
-                $valueFromRange('I', 'N', 29),
+                $valueFromRange('H', 'K', 25, $ignoreOfficialPdsNoise),
+                $valueFromRange('H', 'K', 26, $ignoreOfficialPdsNoise),
+                $valueFromRange('E', 'K', 27, $ignoreOfficialPdsNoise),
+                $valueFromRange('H', 'K', 28, $ignoreOfficialPdsNoise),
+                $valueFromRange('E', 'K', 29, $ignoreOfficialPdsNoise),
             ])->filter()->implode(' ')),
-            'zip_code' => $valueFromRange('I', 'N', 30),
-            'telephone_no' => $valueFromRange('I', 'N', 32),
-            'mobile_no' => $valueFromRange('I', 'N', 33),
-            'email_address' => $valueFromRange('I', 'N', 34),
+            'zip_code' => $valueFromRange('H', 'H', 31, $ignoreOfficialPdsNoise) ?: $valueFromRange('I', 'K', 30, $ignoreOfficialPdsNoise),
+            'telephone_no' => $valueFromRange('H', 'H', 32, $ignoreOfficialPdsNoise),
+            'mobile_no' => $valueFromRange('H', 'H', 33, $ignoreOfficialPdsNoise),
+            'email_address' => $valueFromRange('H', 'H', 34, $ignoreOfficialPdsNoise),
             'elementary' => $this->cleanPdsValue(collect([$valueFrom(['D54', 'E54', 'F54']), $valueFrom(['L54', 'M54'])])->filter()->implode(' - ')),
             'secondary' => $this->cleanPdsValue(collect([$valueFrom(['D55', 'E55', 'F55']), $valueFrom(['L55', 'M55'])])->filter()->implode(' - ')),
             'vocational_trade_course' => $this->cleanPdsValue(collect([$valueFrom(['D56', 'E56', 'F56']), $valueFrom(['L56', 'M56'])])->filter()->implode(' - ')),
