@@ -502,7 +502,12 @@ class EmployeeStoreController extends Controller
         $attrs = $request->validate([
             'submitted_at' => 'required|date',
             'effective_date' => 'required|date|after_or_equal:submitted_at',
-            'reason' => 'nullable|string|max:4000',
+            'resignation_file' => 'required|file|mimes:pdf,doc,docx|max:10240',
+        ], [
+            'resignation_file.required' => 'Please upload your resignation letter.',
+            'resignation_file.file' => 'Please upload a valid resignation letter file.',
+            'resignation_file.mimes' => 'Please upload your resignation letter as a PDF, DOC, or DOCX file.',
+            'resignation_file.max' => 'Your resignation letter is too large. Please upload a file that is 10 MB or smaller.',
         ]);
 
         $authUser = Auth::user();
@@ -518,6 +523,9 @@ class EmployeeStoreController extends Controller
             trim((string) ($authUser->last_name ?? '')),
         ])));
 
+        $attachment = $request->file('resignation_file');
+        $attachmentPath = $attachment->store('resignation-attachments', 'public');
+
         Resignation::create([
             'user_id' => $authUser->id,
             'employee_id' => (string) ($authUser->employee?->employee_id ?? ''),
@@ -526,12 +534,44 @@ class EmployeeStoreController extends Controller
             'position' => (string) ($authUser->employee?->position ?? ''),
             'submitted_at' => $attrs['submitted_at'],
             'effective_date' => $attrs['effective_date'],
-            'reason' => trim((string) ($attrs['reason'] ?? '')),
+            'reason' => '',
+            'attachment_path' => $attachmentPath,
+            'attachment_name' => $attachment->getClientOriginalName(),
+            'attachment_mime' => $attachment->getClientMimeType(),
             'status' => 'Pending',
         ]);
 
         return redirect()->route('employee.employeeResignation')
             ->with('success', 'Resignation request submitted.');
+    }
+
+    public function cancel_resignation(Resignation $resignation)
+    {
+        $authUser = Auth::user();
+        if (!$authUser || (int) $resignation->user_id !== (int) $authUser->id) {
+            abort(403);
+        }
+
+        if (strcasecmp((string) ($resignation->status ?? ''), 'Pending') !== 0) {
+            return redirect()->route('employee.employeeResignation')
+                ->with('error', 'Only pending resignation requests can be cancelled.');
+        }
+
+        if (!empty($resignation->attachment_path)) {
+            Storage::disk('public')->delete($resignation->attachment_path);
+        }
+
+        $resignation->update([
+            'status' => 'Cancelled',
+            'admin_note' => 'Employee cancelled the resignation request.',
+            'attachment_path' => null,
+            'attachment_name' => null,
+            'attachment_mime' => null,
+            'processed_at' => now(),
+        ]);
+
+        return redirect()->route('employee.employeeResignation', ['status' => 'closed'])
+            ->with('success', 'Resignation request cancelled and uploaded letter removed.');
     }
 
     public function send_communication_message(Request $request)

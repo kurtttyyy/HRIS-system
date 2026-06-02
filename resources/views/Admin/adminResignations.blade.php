@@ -81,7 +81,7 @@
 
   <main class="flex-1 ml-16 transition-all duration-300">
     <div id="admin-resignation-page" class="space-y-6 p-4 pt-10 md:p-8">
-      <section class="resignation-reveal relative overflow-hidden rounded-[2rem] border border-emerald-950/70 bg-[linear-gradient(135deg,_#020617_0%,_#020617_42%,_#111827_68%,_#064e3b_100%)] px-6 py-7 text-white shadow-[0_24px_60px_rgba(3,19,29,0.34)] md:px-8" style="--resignation-delay: 0ms;">
+      <section class="relative overflow-hidden rounded-[2rem] border border-emerald-950/70 bg-[linear-gradient(135deg,_#020617_0%,_#020617_42%,_#111827_68%,_#064e3b_100%)] px-6 py-7 text-white shadow-[0_24px_60px_rgba(3,19,29,0.34)] md:px-8">
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.14),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(110,231,183,0.14),_transparent_32%)]"></div>
         <div class="absolute -right-12 -top-16 h-44 w-44 rounded-full bg-cyan-300/10 blur-2xl"></div>
         <div class="absolute bottom-0 right-24 h-28 w-28 rounded-full bg-emerald-300/20 blur-2xl"></div>
@@ -98,12 +98,12 @@
           </div>
 
             <div class="grid gap-3 sm:grid-cols-2">
-            <div class="resignation-card-motion resignation-reveal rounded-[1.5rem] border border-white/10 bg-white/8 px-5 py-4 backdrop-blur" style="--resignation-delay: 70ms;">
+            <div class="resignation-card-motion rounded-[1.5rem] border border-white/10 bg-white/8 px-5 py-4 backdrop-blur">
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-50/75">Today</p>
               <p class="mt-2 text-lg font-bold">{{ now()->format('F j, Y') }}</p>
               <p class="text-sm text-emerald-50/80">{{ now()->format('l') }}</p>
             </div>
-            <div class="resignation-card-motion resignation-reveal rounded-[1.5rem] border border-white/10 bg-white/8 px-5 py-4 backdrop-blur" style="--resignation-delay: 100ms;">
+            <div class="resignation-card-motion rounded-[1.5rem] border border-white/10 bg-white/8 px-5 py-4 backdrop-blur">
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-50/75">Pending Queue</p>
               <p class="mt-2 text-2xl font-black">{{ $pendingResignations->count() }}</p>
               <p class="text-sm text-emerald-50/80">Requests waiting for review</p>
@@ -249,7 +249,17 @@
                       </div>
                     </div>
 
-                    <p class="mt-3 text-sm leading-6 text-slate-600">{{ $pending->reason ?: 'No reason provided.' }}</p>
+                    <div class="mt-3 rounded-2xl bg-white/90 px-4 py-3 text-sm text-slate-600">
+                      <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">Uploaded File</p>
+                      @if(!empty($pending->attachment_path))
+                        <a href="{{ route('admin.resignationAttachment.preview', $pending->id) }}" target="_blank" rel="noopener" class="mt-2 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100">
+                          <i class="fa-solid fa-file-lines"></i>
+                          {{ $pending->attachment_name ?: 'Open resignation file' }}
+                        </a>
+                      @else
+                        <p class="mt-2 text-sm leading-6">{{ $pending->reason ?: 'No file uploaded.' }}</p>
+                      @endif
+                    </div>
 
                     <div class="mt-4 grid grid-cols-2 gap-3">
                       <form method="POST" action="{{ route('admin.updateResignationStatus', $pending->id) }}" class="js-pending-action-form">
@@ -326,7 +336,7 @@
           <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
             <div class="rounded-[1.5rem] border border-slate-200 bg-slate-50 px-4 py-4">
               <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Records Shown</p>
-              <p class="mt-2 text-2xl font-black tracking-tight text-slate-900">{{ $resignations->count() }}</p>
+              <p id="resignation-records-shown-count" class="mt-2 text-2xl font-black tracking-tight text-slate-900">{{ $resignations->count() }}</p>
             </div>
             <div class="rounded-[1.5rem] border border-slate-200 bg-slate-50 px-4 py-4">
               <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Filter Status</p>
@@ -345,6 +355,7 @@
                   <th class="px-5 py-4 font-semibold">Employee</th>
                   <th class="px-5 py-4 font-semibold">Submitted</th>
                   <th class="px-5 py-4 font-semibold">Effective</th>
+                  <th class="px-5 py-4 font-semibold">File</th>
                   <th class="px-5 py-4 font-semibold">Status</th>
                   <th class="px-5 py-4 font-semibold">Action</th>
                 </tr>
@@ -361,7 +372,7 @@
                       default => 'bg-amber-100 text-amber-700',
                     };
                   @endphp
-                  <tr class="resignation-row-motion transition hover:bg-slate-50/80">
+                  <tr class="resignation-row-motion transition hover:bg-slate-50/80" data-resignation-record-row="{{ $row->id }}">
                     <td class="px-5 py-4">
                       <p class="font-semibold text-slate-800">{{ $row->employee_name }}</p>
                       <p class="mt-1 text-xs text-slate-500">
@@ -371,10 +382,20 @@
                     <td class="px-5 py-4 text-slate-600">{{ optional($row->submitted_at)->format('M d, Y') ?? '-' }}</td>
                     <td class="px-5 py-4 text-slate-600">{{ optional($row->effective_date)->format('M d, Y') ?? '-' }}</td>
                     <td class="px-5 py-4">
-                      <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $statusClass }}">{{ $statusText }}</span>
+                      @if(!empty($row->attachment_path))
+                        <a href="{{ route('admin.resignationAttachment.preview', $row->id) }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100">
+                          <i class="fa-solid fa-file-lines"></i>
+                          Open
+                        </a>
+                      @else
+                        <span class="text-xs text-slate-400">No file</span>
+                      @endif
                     </td>
                     <td class="px-5 py-4">
-                      <form method="POST" action="{{ route('admin.updateResignationStatus', $row->id) }}" class="grid gap-2 xl:grid-cols-[120px_minmax(0,1fr)_auto] xl:items-center">
+                      <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $statusClass }}" data-resignation-status-badge>{{ $statusText }}</span>
+                    </td>
+                    <td class="px-5 py-4">
+                      <form method="POST" action="{{ route('admin.updateResignationStatus', $row->id) }}" class="js-resignation-record-form grid gap-2 xl:grid-cols-[120px_minmax(0,1fr)_auto] xl:items-center">
                         @csrf
                         <select name="status" class="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 outline-none">
                           @foreach (['Pending', 'Approved', 'Completed', 'Rejected', 'Cancelled'] as $option)
@@ -391,7 +412,7 @@
                   </tr>
                 @empty
                   <tr>
-                    <td colspan="5" class="px-6 py-10 text-center text-slate-500">
+                    <td colspan="6" class="px-6 py-10 text-center text-slate-500">
                       <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-400">
                         <i class="fa-regular fa-folder-open text-lg"></i>
                       </div>
@@ -475,6 +496,11 @@
   const approvedCardCount = document.getElementById('resignation-count-approved');
   const rejectedCardCount = document.getElementById('resignation-count-rejected');
   const cancelledCardCount = document.getElementById('resignation-count-cancelled');
+  const recordsShownCount = document.getElementById('resignation-records-shown-count');
+  const selectedResignationStatusFilter = @json(strtolower(trim((string) ($selectedStatus ?? 'All'))));
+  const resignationSnapshotUrl = @json(route('admin.resignations.snapshot', request()->only(['status', 'search'])));
+  let resignationSnapshotSignature = null;
+  let resignationSnapshotInFlight = false;
 
   function applyStatusCounts(counts) {
     if (!counts || typeof counts !== 'object') return;
@@ -483,6 +509,60 @@
     if (rejectedCardCount && counts.Rejected !== undefined) rejectedCardCount.textContent = String(counts.Rejected);
     if (cancelledCardCount && counts.Cancelled !== undefined) cancelledCardCount.textContent = String(counts.Cancelled);
     if (pendingBadge && counts.Pending !== undefined) pendingBadge.textContent = String(counts.Pending);
+  }
+
+  function resignationStatusClass(status) {
+    switch (String(status || '').trim().toLowerCase()) {
+      case 'approved':
+        return 'bg-sky-100 text-sky-700';
+      case 'completed':
+        return 'bg-emerald-100 text-emerald-700';
+      case 'rejected':
+        return 'bg-rose-100 text-rose-700';
+      case 'cancelled':
+        return 'bg-slate-200 text-slate-700';
+      default:
+        return 'bg-amber-100 text-amber-700';
+    }
+  }
+
+  function refreshRecordsShownCount() {
+    if (!recordsShownCount) return;
+    const visibleRows = document.querySelectorAll('[data-resignation-record-row]').length;
+    recordsShownCount.textContent = String(visibleRows);
+  }
+
+  function removeResignationRow(row) {
+    if (!row) return;
+    row.remove();
+    refreshRecordsShownCount();
+  }
+
+  function shouldHideUpdatedResignation(status) {
+    const normalizedStatus = String(status || '').trim().toLowerCase();
+    if (normalizedStatus === 'cancelled') return true;
+    if (!selectedResignationStatusFilter || selectedResignationStatusFilter === 'all') return false;
+    return normalizedStatus !== selectedResignationStatusFilter;
+  }
+
+  function applyResignationRecordUpdate(recordId, status) {
+    const row = document.querySelector(`[data-resignation-record-row="${recordId}"]`);
+    if (!row) return;
+
+    if (shouldHideUpdatedResignation(status)) {
+      removeResignationRow(row);
+      return;
+    }
+
+    const statusBadge = row.querySelector('[data-resignation-status-badge]');
+    const statusSelect = row.querySelector('select[name="status"]');
+    if (statusBadge) {
+      statusBadge.textContent = status;
+      statusBadge.className = `inline-flex rounded-full px-3 py-1 text-xs font-semibold ${resignationStatusClass(status)}`;
+    }
+    if (statusSelect) {
+      statusSelect.value = status;
+    }
   }
 
   function ensurePendingEmptyState() {
@@ -525,6 +605,7 @@
 
         const payload = await response.json();
         applyStatusCounts(payload.statusCounts || null);
+        applyResignationRecordUpdate(payload.id, payload.status);
 
         const pendingItem = form.closest('[data-pending-item]');
         if (pendingItem) {
@@ -538,6 +619,83 @@
       }
     });
   });
+
+  document.querySelectorAll('.js-resignation-record-form').forEach((form) => {
+    form.addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const statusSelect = form.querySelector('select[name="status"]');
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+      }
+
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+          },
+          body: new FormData(form),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update resignation status.');
+        }
+
+        const payload = await response.json();
+        const status = payload.status || statusSelect?.value || 'Pending';
+
+        applyStatusCounts(payload.statusCounts || null);
+        applyResignationRecordUpdate(payload.id, status);
+      } catch (error) {
+        window.location.reload();
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+        }
+      }
+    });
+  });
+
+  async function checkResignationSnapshot() {
+    if (resignationSnapshotInFlight || document.hidden) return;
+    resignationSnapshotInFlight = true;
+
+    try {
+      const response = await fetch(resignationSnapshotUrl, {
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      });
+
+      if (!response.ok) return;
+
+      const payload = await response.json();
+      if (!payload.signature) return;
+
+      if (resignationSnapshotSignature === null) {
+        resignationSnapshotSignature = payload.signature;
+        return;
+      }
+
+      if (payload.signature !== resignationSnapshotSignature) {
+        window.location.reload();
+      }
+    } catch (error) {
+      // Keep the current page usable if the background check fails.
+    } finally {
+      resignationSnapshotInFlight = false;
+    }
+  }
+
+  checkResignationSnapshot();
+  setInterval(checkResignationSnapshot, 7000);
 </script>
 </body>
 </html>

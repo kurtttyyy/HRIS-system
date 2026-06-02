@@ -164,27 +164,35 @@
                             </div>
                         </div>
 
-                        <div class="employee-dashboard-card-motion employee-dashboard-reveal rounded-[1.5rem] border border-white/15 bg-white/10 p-4 backdrop-blur-sm" style="--employee-dashboard-delay: 130ms;">
-                            <div class="flex items-center justify-between gap-2">
+                        <div class="employee-dashboard-card-motion employee-dashboard-reveal rounded-[1.5rem] border border-white/15 bg-white/10 p-5 backdrop-blur-sm" style="--employee-dashboard-delay: 130ms;">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
                                 <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-100">Quick Actions</p>
                                 <span class="text-[11px] text-emerald-50/85">Most-used tools</span>
                             </div>
-                            <div class="mt-3 grid grid-cols-2 gap-2">
-                                <a href="{{ route('employee.employeeLeave') }}" class="inline-flex items-center justify-start gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2.5 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white/20">
-                                    <i class="fa fa-calendar-check-o"></i>
-                                    <span>Leave</span>
+                            <div class="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-4">
+                                <a href="{{ route('employee.employeeLeave') }}" class="group flex min-h-[3rem] items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/20">
+                                    <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/10 text-emerald-50 transition group-hover:bg-white/20">
+                                        <i class="fa fa-calendar-check-o"></i>
+                                    </span>
+                                    <span class="truncate">Leave</span>
                                 </a>
-                                <a href="{{ route('employee.employeeDocument') }}" class="inline-flex items-center justify-start gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2.5 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white/20">
-                                    <i class="fa fa-folder-open"></i>
-                                    <span>Documents</span>
+                                <a href="{{ route('employee.employeeDocument') }}" class="group flex min-h-[3rem] items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/20">
+                                    <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/10 text-emerald-50 transition group-hover:bg-white/20">
+                                        <i class="fa fa-folder-open"></i>
+                                    </span>
+                                    <span class="truncate">Documents</span>
                                 </a>
-                                <a href="{{ route('employee.employeePayslip') }}" class="inline-flex items-center justify-start gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2.5 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white/20">
-                                    <i class="fa fa-money"></i>
-                                    <span>Payslip</span>
+                                <a href="{{ route('employee.employeePayslip') }}" class="group flex min-h-[3rem] items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/20">
+                                    <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/10 text-emerald-50 transition group-hover:bg-white/20">
+                                        <i class="fa fa-money"></i>
+                                    </span>
+                                    <span class="truncate">Payslip</span>
                                 </a>
-                                <a href="{{ route('employee.employeeCommunication') }}" class="inline-flex items-center justify-start gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2.5 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white/20">
-                                    <i class="fa fa-users"></i>
-                                    <span>Directory</span>
+                                <a href="{{ route('employee.employeeCommunication') }}" class="group flex min-h-[3rem] items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/20">
+                                    <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/10 text-emerald-50 transition group-hover:bg-white/20">
+                                        <i class="fa fa-users"></i>
+                                    </span>
+                                    <span class="truncate">Directory</span>
                                 </a>
                             </div>
                         </div>

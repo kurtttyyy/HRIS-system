@@ -1090,7 +1090,7 @@ class AdministratorPageController extends Controller
                 })
                 ->count();
 
-            if (!$hasDateFilter && $quickTotalCount > 0) {
+            if (!$hasDateFilter && !$this->isSundayDate(now()->toDateString()) && !$this->isHolidayDate(now()->toDateString())) {
                 $attendanceEmployeeLookupMaps = $this->getAttendanceEmployeeLookupMaps();
                 $allEmployeeIds = collect($attendanceEmployeeLookupMaps['job_type'] ?? [])
                     ->keys()
@@ -1357,7 +1357,7 @@ class AdministratorPageController extends Controller
         $absentEmployees = $rowLevelAbsentEmployees;
 
         // Business rule: employees with no attendance row for a day are also absent.
-        if (!$shouldAutoPresentHolidayDate && !$isSundayNoClassDate && (!$defaultedAttendanceTabToToday || $records->isNotEmpty())) {
+        if (!$shouldAutoPresentHolidayDate && !$isSundayNoClassDate) {
             if ($exactDateFilter) {
                 $absentEmployees = $absentEmployees
                     ->concat($this->buildMissingEmployeeAbsences($records, $exactDateFilter, $selectedJobType, $employeeJobTypeMap, $employeeDepartmentMap))
@@ -2711,6 +2711,9 @@ class AdministratorPageController extends Controller
     public function display_resignations(Request $request){
         $selectedStatus = trim((string) $request->query('status', 'All'));
         $search = trim((string) $request->query('search', ''));
+        $excludeCancelled = function ($query) {
+            return $query->whereRaw("LOWER(TRIM(COALESCE(status, ''))) <> ?", ['cancelled']);
+        };
 
         $resignationsQuery = Resignation::query()
             ->with([
@@ -2719,6 +2722,7 @@ class AdministratorPageController extends Controller
             ])
             ->orderByDesc('submitted_at')
             ->orderByDesc('id');
+        $excludeCancelled($resignationsQuery);
 
         if ($selectedStatus !== '' && strcasecmp($selectedStatus, 'All') !== 0) {
             $resignationsQuery->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", [strtolower($selectedStatus)]);
@@ -2755,11 +2759,11 @@ class AdministratorPageController extends Controller
             ->get();
 
         $statusCounts = [
-            'Pending' => (int) Resignation::query()->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['pending'])->count(),
-            'Approved' => (int) Resignation::query()->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['approved'])->count(),
-            'Completed' => (int) Resignation::query()->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['completed'])->count(),
-            'Rejected' => (int) Resignation::query()->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['rejected'])->count(),
-            'Cancelled' => (int) Resignation::query()->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['cancelled'])->count(),
+            'Pending' => (int) $excludeCancelled(Resignation::query())->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['pending'])->count(),
+            'Approved' => (int) $excludeCancelled(Resignation::query())->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['approved'])->count(),
+            'Completed' => (int) $excludeCancelled(Resignation::query())->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['completed'])->count(),
+            'Rejected' => (int) $excludeCancelled(Resignation::query())->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['rejected'])->count(),
+            'Cancelled' => (int) $excludeCancelled(Resignation::query())->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['cancelled'])->count(),
         ];
 
         return view('Admin.adminResignations', compact(
@@ -2772,8 +2776,290 @@ class AdministratorPageController extends Controller
         ));
     }
 
-    public function display_reports(){
-        return view('Admin.adminReports');
+    public function resignations_snapshot(Request $request)
+    {
+        $selectedStatus = trim((string) $request->query('status', 'All'));
+        $search = trim((string) $request->query('search', ''));
+
+        $recordsQuery = Resignation::query()
+            ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) <> ?", ['cancelled'])
+            ->orderByDesc('submitted_at')
+            ->orderByDesc('id');
+
+        if ($selectedStatus !== '' && strcasecmp($selectedStatus, 'All') !== 0) {
+            $recordsQuery->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", [strtolower($selectedStatus)]);
+        }
+
+        if ($search !== '') {
+            $needle = strtolower($search);
+            $recordsQuery->where(function ($query) use ($needle) {
+                $query
+                    ->orWhereRaw("LOWER(COALESCE(employee_name, '')) LIKE ?", ['%'.$needle.'%'])
+                    ->orWhereRaw("LOWER(COALESCE(employee_id, '')) LIKE ?", ['%'.$needle.'%'])
+                    ->orWhereRaw("LOWER(COALESCE(department, '')) LIKE ?", ['%'.$needle.'%'])
+                    ->orWhereRaw("LOWER(COALESCE(position, '')) LIKE ?", ['%'.$needle.'%']);
+            });
+        }
+
+        $records = $recordsQuery
+            ->get(['id', 'status', 'admin_note', 'attachment_path', 'attachment_name', 'submitted_at', 'effective_date', 'updated_at'])
+            ->map(fn ($row): array => [
+                'id' => (int) $row->id,
+                'status' => (string) ($row->status ?? ''),
+                'admin_note' => (string) ($row->admin_note ?? ''),
+                'attachment_path' => (string) ($row->attachment_path ?? ''),
+                'attachment_name' => (string) ($row->attachment_name ?? ''),
+                'submitted_at' => optional($row->submitted_at)->toDateTimeString(),
+                'effective_date' => optional($row->effective_date)->toDateString(),
+                'updated_at' => optional($row->updated_at)->toDateTimeString(),
+            ])
+            ->values();
+
+        $pendingRecords = Resignation::query()
+            ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['pending'])
+            ->orderByDesc('submitted_at')
+            ->orderByDesc('id')
+            ->get(['id', 'status', 'attachment_path', 'attachment_name', 'submitted_at', 'effective_date', 'updated_at'])
+            ->map(fn ($row): array => [
+                'id' => (int) $row->id,
+                'status' => (string) ($row->status ?? ''),
+                'attachment_path' => (string) ($row->attachment_path ?? ''),
+                'attachment_name' => (string) ($row->attachment_name ?? ''),
+                'submitted_at' => optional($row->submitted_at)->toDateTimeString(),
+                'effective_date' => optional($row->effective_date)->toDateString(),
+                'updated_at' => optional($row->updated_at)->toDateTimeString(),
+            ])
+            ->values();
+
+        $statusCounts = [
+            'Pending' => (int) Resignation::query()->whereRaw("LOWER(TRIM(COALESCE(status, ''))) <> ?", ['cancelled'])->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['pending'])->count(),
+            'Approved' => (int) Resignation::query()->whereRaw("LOWER(TRIM(COALESCE(status, ''))) <> ?", ['cancelled'])->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['approved'])->count(),
+            'Completed' => (int) Resignation::query()->whereRaw("LOWER(TRIM(COALESCE(status, ''))) <> ?", ['cancelled'])->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['completed'])->count(),
+            'Rejected' => (int) Resignation::query()->whereRaw("LOWER(TRIM(COALESCE(status, ''))) <> ?", ['cancelled'])->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['rejected'])->count(),
+            'Cancelled' => 0,
+        ];
+
+        $payload = [
+            'records' => $records,
+            'pending' => $pendingRecords,
+            'statusCounts' => $statusCounts,
+        ];
+
+        return response()->json([
+            'signature' => md5(json_encode($payload)),
+            'recordCount' => $records->count(),
+            'pendingCount' => $pendingRecords->count(),
+            'statusCounts' => $statusCounts,
+        ]);
+    }
+
+    public function display_reports(Request $request){
+        $selectedMonth = trim((string) $request->query('month', now()->format('Y-m')));
+        try {
+            $monthCursor = Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
+        } catch (\Throwable $e) {
+            $monthCursor = now()->startOfMonth();
+            $selectedMonth = $monthCursor->format('Y-m');
+        }
+
+        $monthStart = $monthCursor->copy()->startOfMonth();
+        $monthEnd = $monthCursor->copy()->endOfMonth();
+
+        $approvedEmployees = User::query()
+            ->with('employee')
+            ->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee'])
+            ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['approved'])
+            ->get();
+
+        $totalEmployees = $approvedEmployees->count();
+        $departmentCounts = $approvedEmployees
+            ->groupBy(function ($user) {
+                $department = trim((string) ($user->department ?? ''));
+                if ($department === '') {
+                    $department = trim((string) ($user->employee?->department ?? ''));
+                }
+
+                return $department !== '' ? $department : 'Unassigned';
+            })
+            ->map(fn ($rows) => $rows->count())
+            ->sortDesc()
+            ->take(8);
+
+        $resolveReportJobType = function ($value): string {
+            $normalized = strtolower(trim((string) $value));
+            if ($normalized === '') {
+                return 'Unassigned';
+            }
+
+            if (in_array($normalized, ['teaching', 't', 't/ft', 't/pt', 'full-time', 'part-time', 'full time', 'part time'], true)) {
+                return 'Teaching';
+            }
+
+            if (in_array($normalized, ['non-teaching', 'non teaching', 'nonteaching', 'nt'], true)) {
+                return 'Non-Teaching';
+            }
+
+            return $this->normalizeJobType($normalized) ?? ucwords($normalized);
+        };
+
+        $jobTypeCounts = $approvedEmployees
+            ->groupBy(function ($user) use ($resolveReportJobType) {
+                $jobType = trim((string) ($user->employee?->job_type ?? ''));
+                if ($jobType === '') {
+                    $jobType = trim((string) ($user->employee?->classification ?? ''));
+                }
+
+                return $jobType !== '' ? $resolveReportJobType($jobType) : 'Unassigned';
+            })
+            ->map(fn ($rows) => $rows->count())
+            ->sortDesc();
+
+        $genderCounts = [
+            'male' => $approvedEmployees
+                ->filter(fn ($user) => strcasecmp(trim((string) ($user->employee?->sex ?? '')), 'Male') === 0)
+                ->count(),
+            'female' => $approvedEmployees
+                ->filter(fn ($user) => strcasecmp(trim((string) ($user->employee?->sex ?? '')), 'Female') === 0)
+                ->count(),
+        ];
+        $headUserIds = $approvedEmployees
+            ->filter(fn ($user) => strcasecmp(trim((string) ($user->department_head ?? '')), 'Approved') === 0)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->filter()
+            ->values();
+        $coordinatorUserIds = $approvedEmployees
+            ->filter(function ($user) {
+                $position = strtolower(trim((string) ($user->employee?->position ?? '')));
+                $classification = strtolower(trim((string) ($user->employee?->classification ?? '')));
+
+                return str_contains($position, 'coordinator') || str_contains($classification, 'coordinator');
+            })
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->filter()
+            ->values();
+        $headOrCoordinatorUserIds = $headUserIds
+            ->concat($coordinatorUserIds)
+            ->unique()
+            ->values();
+        $roleGroupCounts = [
+            'heads' => $headUserIds->count(),
+            'coordinators' => $coordinatorUserIds->count(),
+            'staff' => max($totalEmployees - $headOrCoordinatorUserIds->count(), 0),
+            'teaching' => (int) ($jobTypeCounts->get('Teaching', 0) ?? 0),
+            'non_teaching' => (int) ($jobTypeCounts->get('Non-Teaching', 0) ?? 0),
+        ];
+
+        $joinYearCounts = $approvedEmployees
+            ->map(function ($user) {
+                $joinDate = $user->employee?->employement_date;
+                if (empty($joinDate)) {
+                    return null;
+                }
+
+                try {
+                    return Carbon::parse($joinDate)->format('Y');
+                } catch (\Throwable $e) {
+                    return null;
+                }
+            })
+            ->filter()
+            ->countBy()
+            ->sortKeys();
+        $joinYearRange = collect(range(now()->year - 11, now()->year));
+        $joinYearCounts = $joinYearRange
+            ->mapWithKeys(fn ($year) => [(string) $year => (int) ($joinYearCounts->get((string) $year, 0))]);
+
+        $attendanceRecords = AttendanceRecord::query()
+            ->whereBetween('attendance_date', [$monthStart->toDateString(), $monthEnd->toDateString()])
+            ->get();
+
+        $attendanceTotal = $attendanceRecords->count();
+        $attendanceAbsent = $attendanceRecords->filter(fn ($row) => (bool) ($row->is_absent ?? false))->count();
+        $attendancePresent = max($attendanceTotal - $attendanceAbsent, 0);
+        $attendanceTardy = $attendanceRecords
+            ->filter(fn ($row) => (bool) ($row->is_tardy ?? false) || (int) ($row->late_minutes ?? 0) > 0)
+            ->count();
+        $attendanceRate = $attendanceTotal > 0 ? round(($attendancePresent / $attendanceTotal) * 100, 1) : 0;
+
+        $leaveApplications = LeaveApplication::query()
+            ->where(function ($query) use ($monthStart, $monthEnd) {
+                $query->whereBetween('filing_date', [$monthStart->toDateString(), $monthEnd->toDateString()])
+                    ->orWhere(function ($createdQuery) use ($monthStart, $monthEnd) {
+                        $createdQuery->whereNull('filing_date')
+                            ->whereBetween('created_at', [$monthStart, $monthEnd]);
+                    });
+            })
+            ->get();
+        $leaveStatusCounts = $leaveApplications
+            ->groupBy(fn ($row) => trim((string) ($row->status ?? 'Pending')) ?: 'Pending')
+            ->map(fn ($rows) => $rows->count())
+            ->sortDesc();
+        $leaveTypeDays = $leaveApplications
+            ->groupBy(fn ($row) => trim((string) ($row->leave_type ?? 'Leave')) ?: 'Leave')
+            ->map(fn ($rows) => round((float) $rows->sum('number_of_working_days'), 1))
+            ->sortDesc()
+            ->take(6);
+
+        $resignationStatusCounts = Resignation::query()
+            ->get()
+            ->groupBy(fn ($row) => trim((string) ($row->status ?? 'Pending')) ?: 'Pending')
+            ->map(fn ($rows) => $rows->count())
+            ->sortDesc();
+
+        $documentCount = ApplicantDocument::query()->count();
+        $monthlyDocumentCount = ApplicantDocument::query()->whereBetween('created_at', [$monthStart, $monthEnd])->count();
+        $payslipUploadCount = PayslipUpload::query()->count();
+        $processedPayslipCount = PayslipUpload::query()
+            ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) IN (?, ?)", ['processed', 'scanned'])
+            ->count();
+        $payslipRecordCount = PayslipRecord::query()->count();
+        $openPositionCount = OpenPosition::query()->count();
+        $conversationCount = Conversation::query()->count();
+        $resignationCount = Resignation::query()->count();
+
+        $recordVolume = collect([
+            'Employees' => $totalEmployees,
+            'Attendance' => $attendanceTotal,
+            'Leave' => $leaveApplications->count(),
+            'Documents' => $monthlyDocumentCount,
+            'Payslips' => $payslipRecordCount,
+            'Messages' => $conversationCount,
+        ]);
+
+        $recentActivities = ActivityLog::query()
+            ->orderByDesc('created_at')
+            ->limit(6)
+            ->get(['action', 'description', 'user_name', 'created_at']);
+
+        return view('Admin.adminReports', compact(
+            'selectedMonth',
+            'totalEmployees',
+            'departmentCounts',
+            'jobTypeCounts',
+            'genderCounts',
+            'roleGroupCounts',
+            'joinYearCounts',
+            'attendanceTotal',
+            'attendancePresent',
+            'attendanceAbsent',
+            'attendanceTardy',
+            'attendanceRate',
+            'leaveStatusCounts',
+            'leaveTypeDays',
+            'resignationStatusCounts',
+            'documentCount',
+            'monthlyDocumentCount',
+            'payslipUploadCount',
+            'processedPayslipCount',
+            'payslipRecordCount',
+            'openPositionCount',
+            'conversationCount',
+            'resignationCount',
+            'recordVolume',
+            'recentActivities'
+        ));
     }
 
     public function display_activity_logs(Request $request)
@@ -3799,6 +4085,81 @@ class AdministratorPageController extends Controller
         ActivityChangeLogger::downloadedFile($document, 'Employee Document');
 
         return $disk->download($relativePath, (string) ($document->filename ?: basename($relativePath)));
+    }
+
+    public function preview_resignation_attachment(Resignation $resignation)
+    {
+        $disk = Storage::disk('public');
+        $relativePath = ltrim((string) ($resignation->attachment_path ?? ''), '/');
+        if ($relativePath === '' || !$disk->exists($relativePath)) {
+            abort(404);
+        }
+
+        $fileName = (string) ($resignation->attachment_name ?: basename($relativePath));
+        $extension = strtolower((string) pathinfo($fileName, PATHINFO_EXTENSION));
+        $mimeType = (string) ($resignation->attachment_mime ?: $disk->mimeType($relativePath) ?: '');
+        $viewUrl = route('admin.resignationAttachment.view', ['resignation' => $resignation->id]);
+        $wordText = null;
+        $wordImages = [];
+
+        if ($extension === 'docx') {
+            $absolutePath = $disk->path($relativePath);
+            $wordText = $this->extractDocxText($absolutePath);
+            $wordImages = $this->extractDocxImages($absolutePath);
+        } elseif ($extension === 'doc') {
+            $wordText = $this->extractLegacyDocText($disk->path($relativePath));
+        }
+
+        return view('Admin.adminDocumentPreview', [
+            'document' => $resignation,
+            'fileName' => $fileName,
+            'extension' => $extension,
+            'mimeType' => $mimeType,
+            'viewUrl' => $viewUrl,
+            'wordText' => $wordText,
+            'wordImages' => $wordImages,
+            'isPdf' => $extension === 'pdf' || $mimeType === 'application/pdf',
+            'isImage' => in_array($extension, ['png', 'jpg', 'jpeg', 'gif', 'webp'], true) || str_starts_with($mimeType, 'image/'),
+            'isText' => $extension === 'txt' || str_starts_with($mimeType, 'text/'),
+        ]);
+    }
+
+    public function view_resignation_attachment(Resignation $resignation)
+    {
+        $disk = Storage::disk('public');
+        $relativePath = ltrim((string) ($resignation->attachment_path ?? ''), '/');
+        if ($relativePath === '' || !$disk->exists($relativePath)) {
+            abort(404);
+        }
+
+        $absolutePath = $disk->path($relativePath);
+        $fileName = (string) ($resignation->attachment_name ?: basename($relativePath));
+        $safeFileName = str_replace('"', '', $fileName);
+        $extension = strtolower((string) pathinfo($fileName, PATHINFO_EXTENSION));
+        $mimeType = (string) ($resignation->attachment_mime ?: $disk->mimeType($relativePath) ?: '');
+
+        if ($mimeType === '' || $mimeType === 'application/octet-stream') {
+            $mimeType = match ($extension) {
+                'pdf' => 'application/pdf',
+                'png' => 'image/png',
+                'jpg', 'jpeg' => 'image/jpeg',
+                'gif' => 'image/gif',
+                'webp' => 'image/webp',
+                'txt' => 'text/plain',
+                default => 'application/octet-stream',
+            };
+        }
+
+        return Response::file($absolutePath, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline; filename="'.$safeFileName.'"',
+            'X-Content-Type-Options' => 'nosniff',
+            'X-Frame-Options' => 'SAMEORIGIN',
+            'Content-Security-Policy' => "frame-ancestors 'self'",
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ]);
     }
 
     public function preview_employee_document(int $id)

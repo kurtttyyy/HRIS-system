@@ -464,6 +464,17 @@
       @endif
     </a>
 
+    <!-- Reports -->
+    <a href="{{ route('admin.adminReports', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}"
+       data-admin-nav
+       class="flex items-center gap-0 group-hover:gap-3 px-4 py-2.5 rounded-lg font-medium transition justify-center group-hover:justify-start
+       {{ request()->routeIs('admin.adminReports')
+        ? 'bg-green-600 text-white'
+        : 'text-white hover:bg-green-600/30' }}">
+      <i class="fa-solid fa-chart-line"></i>
+      <span class="admin-sidebar-text whitespace-nowrap inline-block max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300">Reports</span>
+    </a>
+
     <details class="space-y-1 hiring-menu" {{ $isHiringRoute ? 'open' : '' }}>
       <summary
         class="w-full flex items-center justify-center group-hover:justify-between px-4 py-2.5 rounded-lg font-medium transition text-white hover:bg-green-600/30 cursor-pointer"
@@ -557,16 +568,6 @@
       </summary>
 
       <div class="ml-0 group-hover:ml-8 space-y-1">
-        <a href="{{ route('admin.adminCalendar', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}"
-           data-admin-nav
-           class="flex items-center gap-0 group-hover:gap-2 px-4 py-2 rounded-md text-sm justify-center group-hover:justify-start
-           {{ request()->routeIs('admin.adminCalendar')
-                ? 'bg-green-600 text-white'
-                : 'text-white hover:bg-green-600/30' }}">
-          <i class="fa-solid fa-calendar-days"></i>
-          <span class="admin-sidebar-text whitespace-nowrap inline-block max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300">Calendar</span>
-        </a>
-
         <a href="{{ route('admin.adminLoads', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}"
            data-admin-nav
            class="flex items-center gap-0 group-hover:gap-2 px-4 py-2 rounded-md text-sm justify-center group-hover:justify-start

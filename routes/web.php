@@ -65,6 +65,9 @@ Route::controller(EmployeePageController::class)->group(function () {
     Route::get('employee/profile', 'display_profile')->name('employee.employeeProfile');
     Route::get('employee/communication', 'display_communication')->name('employee.employeeCommunication');
     Route::get('employee/resignation', 'display_resignation')->name('employee.employeeResignation');
+    Route::get('employee/resignation/snapshot', 'resignation_snapshot')->name('employee.resignation.snapshot');
+    Route::get('employee/resignation/{resignation}/attachment', 'display_resignation_attachment')->name('employee.resignationAttachment.preview');
+    Route::get('employee/resignation/{resignation}/attachment/file', 'view_resignation_attachment')->name('employee.resignationAttachment.view');
     Route::get('employee/document', 'display_document')->name('employee.employeeDocument');
     Route::get('employee/document/preview/{id}', 'display_document_preview')->name('employee.employeeDocument.preview');
     Route::get('employee/document/view/{id}', 'view_document')->name('employee.employeeDocument.view');
@@ -80,6 +83,7 @@ Route::controller(EmployeeStoreController::class)->group(function () {
     Route::post('employee/document/{id}/remove', 'remove_document')->name('employee.remove_document');
     Route::post('employee/leave/application', 'leave_application_store')->name('employee.leaveApplication.store');
     Route::post('employee/resignation/store', 'store_resignation')->name('employee.storeResignation');
+    Route::post('employee/resignation/{resignation}/cancel', 'cancel_resignation')->name('employee.cancelResignation');
     Route::post('employee/communication/send', 'send_communication_message')->name('employee.communication.send');
 
 });
@@ -99,6 +103,9 @@ Route::controller(AdministratorPageController::class)->group(function () {
     Route::get('system/payslip', 'display_payslip')->name('admin.adminPayslip');
     Route::get('system/payslip/view', 'display_payslip_view')->name('admin.adminPaySlipView');
     Route::get('system/resignations', 'display_resignations')->name('admin.adminResignations');
+    Route::get('system/resignations/snapshot', 'resignations_snapshot')->name('admin.resignations.snapshot');
+    Route::get('system/resignations/{resignation}/attachment/preview', 'preview_resignation_attachment')->name('admin.resignationAttachment.preview');
+    Route::get('system/resignations/{resignation}/attachment/view', 'view_resignation_attachment')->name('admin.resignationAttachment.view');
     Route::get('system/reports', 'display_reports')->name('admin.adminReports');
     Route::get('system/logs', 'display_activity_logs')->name('admin.activityLogs');
     Route::get('system/matrix/school-administrator', 'display_school_administrator')->name('admin.schoolAdministrator');

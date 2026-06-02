@@ -18,6 +18,9 @@ class Resignation extends Model
         'submitted_at',
         'effective_date',
         'reason',
+        'attachment_path',
+        'attachment_name',
+        'attachment_mime',
         'status',
         'admin_note',
         'processed_by',
@@ -40,4 +43,3 @@ class Resignation extends Model
         return $this->belongsTo(User::class, 'processed_by', 'id');
     }
 }
-

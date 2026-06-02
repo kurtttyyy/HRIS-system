@@ -99,7 +99,7 @@
             </p>
           </div>
 
-          <div class="flex flex-col items-start gap-3 xl:items-stretch">
+          <div class="flex w-full max-w-[18rem] shrink-0 flex-col items-stretch gap-3 sm:w-[18rem] xl:items-stretch">
             <div class="interview-card-motion interview-reveal rounded-[1.5rem] border border-white/15 bg-white/10 px-5 py-4 backdrop-blur" style="--interview-delay: 70ms;">
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-100">Today</p>
               <p class="mt-2 text-lg font-bold">{{ now()->format('F j, Y') }}</p>
@@ -109,7 +109,7 @@
             <button
               type="button"
               onclick="openEmptyScheduleModal()"
-              class="inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-slate-950/10 transition hover:-translate-y-0.5 hover:bg-slate-100"
+              class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-slate-950/10 transition hover:-translate-y-0.5 hover:bg-slate-100"
             >
               <i class="fa-solid fa-calendar-plus text-emerald-600"></i>
               Schedule Interview
@@ -321,12 +321,22 @@
                 <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-500">Archive</p>
                 <h3 class="mt-1 text-xl font-black tracking-tight text-slate-900">Completed Interviews</h3>
               </div>
-              <span class="inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-semibold text-emerald-700 shadow-sm">
-                Finished sessions
-              </span>
+              <div class="flex flex-wrap items-center justify-end gap-2">
+                <span class="inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-semibold text-emerald-700 shadow-sm">
+                  Finished sessions
+                </span>
+                <button
+                  type="button"
+                  onclick="openCompletedInterviewTableModal()"
+                  class="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+                >
+                  <i class="fa-solid fa-table-list text-[11px]"></i>
+                  View table
+                </button>
+              </div>
             </div>
 
-            <div id="completedInterviewList" class="space-y-4">
+            <div id="completedInterviewList" class="max-h-[620px] space-y-4 overflow-y-auto pr-2">
               @forelse($completedInterviews as $inter)
                 @php
                   $firstName = trim((string) ($inter->applicant->first_name ?? ''));
@@ -401,6 +411,76 @@
           </section>
         </div>
       </section>
+
+      <div id="completedInterviewTableModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
+        <div class="w-full max-w-6xl overflow-hidden rounded-[2rem] border border-white/70 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.28)]">
+          <div class="flex flex-col gap-4 border-b border-slate-100 bg-[linear-gradient(135deg,#064e3b,#059669)] px-6 py-5 text-white md:flex-row md:items-center md:justify-between md:px-8">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-100">Interview Archive</p>
+              <h2 class="mt-2 text-2xl font-black tracking-tight">Completed Interview List</h2>
+            </div>
+            <button onclick="closeCompletedInterviewTableModal()" class="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-lg text-white transition hover:bg-white/20">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="p-5 md:p-6">
+            <div class="max-h-[430px] overflow-auto rounded-[1.25rem] border border-slate-200">
+              <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+                <thead class="sticky top-0 bg-slate-50 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                  <tr>
+                    <th class="px-4 py-3">Applicant</th>
+                    <th class="px-4 py-3">Position</th>
+                    <th class="px-4 py-3">Type</th>
+                    <th class="px-4 py-3">Date</th>
+                    <th class="px-4 py-3">Time</th>
+                    <th class="px-4 py-3">Duration</th>
+                    <th class="px-4 py-3">Interviewers</th>
+                  </tr>
+                </thead>
+                <tbody id="completedInterviewTableBody" class="divide-y divide-slate-100 bg-white">
+                  @forelse($completedInterviews as $inter)
+                    @php
+                      $firstName = trim((string) ($inter->applicant->first_name ?? ''));
+                      $lastName = trim((string) ($inter->applicant->last_name ?? ''));
+                      $positionTitle = $inter->applicant->position->title ?? $inter->applicant->applied_position ?? '-';
+                    @endphp
+                    <tr class="completed-interview-table-row">
+                      <td class="whitespace-nowrap px-4 py-3 font-semibold text-slate-900">{{ $firstName }} {{ $lastName }}</td>
+                      <td class="whitespace-nowrap px-4 py-3 text-slate-600">{{ $positionTitle }}</td>
+                      <td class="whitespace-nowrap px-4 py-3">
+                        <span class="inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">{{ $inter->interview_type }}</span>
+                      </td>
+                      <td class="whitespace-nowrap px-4 py-3 text-slate-600">{{ $inter->date->format('M j, Y') }}</td>
+                      <td class="whitespace-nowrap px-4 py-3 text-slate-600">{{ \Carbon\Carbon::parse($inter->time)->format('h:i A') }}</td>
+                      <td class="whitespace-nowrap px-4 py-3 text-slate-600">{{ $inter->duration }}</td>
+                      <td class="whitespace-nowrap px-4 py-3 text-slate-600">{{ $inter->interviewers }}</td>
+                    </tr>
+                  @empty
+                    <tr>
+                      <td colspan="7" class="px-4 py-10 text-center font-semibold text-slate-500">No completed interviews yet.</td>
+                    </tr>
+                  @endforelse
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p id="completedInterviewTablePageInfo" class="text-sm font-semibold text-slate-500"></p>
+              <div class="flex items-center gap-2">
+                <button id="completedInterviewPrevPage" type="button" onclick="changeCompletedInterviewTablePage(-1)" class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-emerald-200 hover:text-emerald-700">
+                  <i class="fa-solid fa-chevron-left text-xs"></i>
+                  Previous
+                </button>
+                <button id="completedInterviewNextPage" type="button" onclick="changeCompletedInterviewTablePage(1)" class="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700">
+                  Next
+                  <i class="fa-solid fa-chevron-right text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div id="scheduleInterviewModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
         <div class="w-full max-w-3xl overflow-hidden rounded-[2rem] border border-white/70 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.28)]">
@@ -658,6 +738,63 @@
   function closeScheduleModal() {
     document.getElementById('scheduleInterviewModal').classList.add('hidden');
     document.getElementById('scheduleInterviewModal').classList.remove('flex');
+  }
+
+  const completedInterviewTablePageSize = 5;
+  let completedInterviewTablePage = 1;
+
+  function getCompletedInterviewTableRows() {
+    return Array.from(document.querySelectorAll('.completed-interview-table-row'));
+  }
+
+  function renderCompletedInterviewTablePage() {
+    const rows = getCompletedInterviewTableRows();
+    const pageInfo = document.getElementById('completedInterviewTablePageInfo');
+    const prevButton = document.getElementById('completedInterviewPrevPage');
+    const nextButton = document.getElementById('completedInterviewNextPage');
+    const totalPages = Math.max(1, Math.ceil(rows.length / completedInterviewTablePageSize));
+
+    completedInterviewTablePage = Math.min(Math.max(completedInterviewTablePage, 1), totalPages);
+
+    rows.forEach((row, index) => {
+      const rowPage = Math.floor(index / completedInterviewTablePageSize) + 1;
+      row.classList.toggle('hidden', rowPage !== completedInterviewTablePage);
+    });
+
+    if (pageInfo) {
+      pageInfo.textContent = rows.length
+        ? `Page ${completedInterviewTablePage} of ${totalPages} - ${rows.length} completed interviews`
+        : 'No completed interviews yet';
+    }
+
+    if (prevButton) {
+      prevButton.disabled = completedInterviewTablePage <= 1;
+      prevButton.classList.toggle('opacity-50', completedInterviewTablePage <= 1);
+      prevButton.classList.toggle('cursor-not-allowed', completedInterviewTablePage <= 1);
+    }
+
+    if (nextButton) {
+      nextButton.disabled = completedInterviewTablePage >= totalPages;
+      nextButton.classList.toggle('opacity-50', completedInterviewTablePage >= totalPages);
+      nextButton.classList.toggle('cursor-not-allowed', completedInterviewTablePage >= totalPages);
+    }
+  }
+
+  function changeCompletedInterviewTablePage(direction) {
+    completedInterviewTablePage += direction;
+    renderCompletedInterviewTablePage();
+  }
+
+  function openCompletedInterviewTableModal() {
+    completedInterviewTablePage = 1;
+    renderCompletedInterviewTablePage();
+    document.getElementById('completedInterviewTableModal').classList.remove('hidden');
+    document.getElementById('completedInterviewTableModal').classList.add('flex');
+  }
+
+  function closeCompletedInterviewTableModal() {
+    document.getElementById('completedInterviewTableModal').classList.add('hidden');
+    document.getElementById('completedInterviewTableModal').classList.remove('flex');
   }
 </script>
 

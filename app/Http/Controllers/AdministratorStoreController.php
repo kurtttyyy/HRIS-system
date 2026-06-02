@@ -3253,15 +3253,19 @@ class AdministratorStoreController extends Controller
         }
 
         if ($request->expectsJson() || $request->ajax()) {
+            $excludeCancelled = function ($query) {
+                return $query->whereRaw("LOWER(TRIM(COALESCE(status, ''))) <> ?", ['cancelled']);
+            };
+
             return response()->json([
                 'message' => 'Resignation status updated.',
                 'id' => (int) $resignation->id,
                 'status' => $status,
                 'statusCounts' => [
-                    'Pending' => (int) Resignation::query()->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['pending'])->count(),
-                    'Approved' => (int) Resignation::query()->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['approved'])->count(),
-                    'Rejected' => (int) Resignation::query()->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['rejected'])->count(),
-                    'Cancelled' => (int) Resignation::query()->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['cancelled'])->count(),
+                    'Pending' => (int) $excludeCancelled(Resignation::query())->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['pending'])->count(),
+                    'Approved' => (int) $excludeCancelled(Resignation::query())->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['approved'])->count(),
+                    'Rejected' => (int) $excludeCancelled(Resignation::query())->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['rejected'])->count(),
+                    'Cancelled' => (int) $excludeCancelled(Resignation::query())->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['cancelled'])->count(),
                 ],
             ]);
         }

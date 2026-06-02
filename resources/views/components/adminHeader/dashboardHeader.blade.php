@@ -303,6 +303,10 @@
                             <i class="fa-solid fa-clipboard-list text-slate-400"></i>
                             Logs
                         </a>
+                        <a href="{{ route('admin.adminCalendar', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}" class="flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50">
+                            <i class="fa-solid fa-calendar-days text-slate-400"></i>
+                            Calendar
+                        </a>
                         <button type="button" class="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-50">
                             <i class="fa-solid fa-gear text-slate-400"></i>
                             Settings

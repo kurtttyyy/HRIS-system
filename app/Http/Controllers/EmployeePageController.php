@@ -1329,19 +1329,361 @@ class EmployeePageController extends Controller
         ));
     }
 
-    public function display_resignation(){
+    public function display_resignation(Request $request){
         $user = Auth::user();
         if (!$user) {
             return redirect()->route('login_display');
         }
 
-        $resignations = Resignation::query()
+        $allResignations = Resignation::query()
             ->where('user_id', $user->id)
             ->orderByDesc('submitted_at')
             ->orderByDesc('id')
             ->get();
 
-        return view('employee.employeeResignation', compact('resignations'));
+        $resignationFilter = strtolower(trim((string) $request->query('status', 'active')));
+        $resignations = $allResignations->filter(function ($row) use ($resignationFilter) {
+            $status = strtolower(trim((string) ($row->status ?? 'pending')));
+
+            return match ($resignationFilter) {
+                'all' => true,
+                'pending' => $status === 'pending',
+                'processed' => in_array($status, ['approved', 'completed'], true),
+                'closed' => in_array($status, ['rejected', 'cancelled'], true),
+                default => !in_array($status, ['rejected', 'cancelled'], true),
+            };
+        })->values();
+
+        return view('employee.employeeResignation', compact('resignations', 'allResignations', 'resignationFilter'));
+    }
+
+    public function resignation_snapshot(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            abort(401);
+        }
+
+        $resignationFilter = strtolower(trim((string) $request->query('status', 'active')));
+        $allResignations = Resignation::query()
+            ->where('user_id', $user->id)
+            ->orderByDesc('submitted_at')
+            ->orderByDesc('id')
+            ->get(['id', 'status', 'admin_note', 'attachment_path', 'attachment_name', 'submitted_at', 'effective_date', 'processed_at', 'updated_at']);
+
+        $visibleResignations = $allResignations
+            ->filter(function ($row) use ($resignationFilter) {
+                $status = strtolower(trim((string) ($row->status ?? 'pending')));
+
+                return match ($resignationFilter) {
+                    'all' => true,
+                    'pending' => $status === 'pending',
+                    'processed' => in_array($status, ['approved', 'completed'], true),
+                    'closed' => in_array($status, ['rejected', 'cancelled'], true),
+                    default => !in_array($status, ['rejected', 'cancelled'], true),
+                };
+            })
+            ->values();
+
+        $payload = [
+            'all' => $allResignations
+                ->map(fn ($row): array => [
+                    'id' => (int) $row->id,
+                    'status' => (string) ($row->status ?? ''),
+                    'admin_note' => (string) ($row->admin_note ?? ''),
+                    'attachment_path' => (string) ($row->attachment_path ?? ''),
+                    'attachment_name' => (string) ($row->attachment_name ?? ''),
+                    'submitted_at' => optional($row->submitted_at)->toDateTimeString(),
+                    'effective_date' => optional($row->effective_date)->toDateString(),
+                    'processed_at' => optional($row->processed_at)->toDateTimeString(),
+                    'updated_at' => optional($row->updated_at)->toDateTimeString(),
+                ])
+                ->values(),
+            'visible_ids' => $visibleResignations->pluck('id')->map(fn ($id) => (int) $id)->values(),
+        ];
+
+        return response()->json([
+            'signature' => md5(json_encode($payload)),
+            'recordCount' => $visibleResignations->count(),
+            'latestStatus' => (string) ($allResignations->first()?->status ?? 'No Request Yet'),
+        ]);
+    }
+
+    public function display_resignation_attachment(Resignation $resignation)
+    {
+        $this->authorizeEmployeeResignationAttachment($resignation);
+
+        $disk = Storage::disk('public');
+        $path = (string) $resignation->attachment_path;
+        if ($path === '' || !$disk->exists($path)) {
+            abort(404);
+        }
+
+        $fileName = (string) ($resignation->attachment_name ?: basename($path));
+        $extension = strtolower((string) pathinfo($fileName, PATHINFO_EXTENSION));
+        $mimeType = (string) ($resignation->attachment_mime ?: $disk->mimeType($path) ?: '');
+        if ($mimeType === '' || $mimeType === 'application/octet-stream') {
+            $mimeType = match ($extension) {
+                'pdf' => 'application/pdf',
+                'png' => 'image/png',
+                'jpg', 'jpeg' => 'image/jpeg',
+                'gif' => 'image/gif',
+                'webp' => 'image/webp',
+                'txt' => 'text/plain',
+                default => 'application/octet-stream',
+            };
+        }
+
+        $wordText = null;
+        $wordImages = [];
+        if ($extension === 'docx') {
+            $wordText = $this->extractDocxText($disk->path($path));
+            $wordImages = $this->extractDocxImages($disk->path($path));
+        } elseif ($extension === 'doc') {
+            $wordText = $this->extractLegacyDocText($disk->path($path));
+        }
+
+        return view('Admin.adminDocumentPreview', [
+            'document' => $resignation,
+            'fileName' => $fileName,
+            'extension' => $extension,
+            'mimeType' => $mimeType,
+            'viewUrl' => route('employee.resignationAttachment.view', $resignation->id),
+            'wordText' => $wordText,
+            'wordImages' => $wordImages,
+            'isPdf' => $extension === 'pdf' || $mimeType === 'application/pdf',
+            'isImage' => in_array($extension, ['png', 'jpg', 'jpeg', 'gif', 'webp'], true) || str_starts_with($mimeType, 'image/'),
+            'isText' => $extension === 'txt' || str_starts_with($mimeType, 'text/'),
+        ]);
+    }
+
+    public function view_resignation_attachment(Resignation $resignation)
+    {
+        $this->authorizeEmployeeResignationAttachment($resignation);
+
+        $disk = Storage::disk('public');
+        $path = (string) $resignation->attachment_path;
+        if ($path === '' || !$disk->exists($path)) {
+            abort(404);
+        }
+
+        $fileName = $resignation->attachment_name ?: basename($path);
+        $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+        $mimeType = (string) ($resignation->attachment_mime ?: $disk->mimeType($path) ?: '');
+        if ($mimeType === '' || $mimeType === 'application/octet-stream') {
+            $mimeType = match ($extension) {
+                'pdf' => 'application/pdf',
+                'png' => 'image/png',
+                'jpg', 'jpeg' => 'image/jpeg',
+                'gif' => 'image/gif',
+                'webp' => 'image/webp',
+                'txt' => 'text/plain',
+                default => 'application/octet-stream',
+            };
+        }
+
+        $safeFileName = str_replace('"', '', (string) $fileName);
+
+        return Response::file($disk->path($path), [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline; filename="'.$safeFileName.'"',
+            'X-Content-Type-Options' => 'nosniff',
+            'X-Frame-Options' => 'SAMEORIGIN',
+            'Content-Security-Policy' => "frame-ancestors 'self'",
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ]);
+    }
+
+    private function authorizeEmployeeResignationAttachment(Resignation $resignation): void
+    {
+        $user = Auth::user();
+        if (!$user || (int) $resignation->user_id !== (int) $user->id || empty($resignation->attachment_path)) {
+            abort(404);
+        }
+    }
+
+    private function extractDocxText(string $absolutePath): string
+    {
+        if (!is_file($absolutePath)) {
+            return '';
+        }
+
+        $xml = $this->extractZipEntry($absolutePath, 'word/document.xml');
+
+        if (!is_string($xml) || trim($xml) === '') {
+            return '';
+        }
+
+        $xml = preg_replace('/<\/w:p>/', "\n", $xml);
+        $xml = preg_replace('/<w:tab\/>/', "\t", $xml);
+        $xml = preg_replace('/<w:br\/>/', "\n", $xml);
+        $text = trim(html_entity_decode(strip_tags($xml), ENT_QUOTES | ENT_XML1, 'UTF-8'));
+
+        return preg_replace("/\n{3,}/", "\n\n", $text) ?: '';
+    }
+
+    private function extractDocxImages(string $absolutePath): array
+    {
+        $documentXml = $this->extractZipEntry($absolutePath, 'word/document.xml');
+        $relationshipsXml = $this->extractZipEntry($absolutePath, 'word/_rels/document.xml.rels');
+
+        if (!is_string($documentXml) || !is_string($relationshipsXml)) {
+            return [];
+        }
+
+        preg_match_all('/r:embed="([^"]+)"/', $documentXml, $embedMatches);
+        $embeddedIds = collect($embedMatches[1] ?? [])->unique()->values();
+        if ($embeddedIds->isEmpty()) {
+            return [];
+        }
+
+        preg_match_all('/<Relationship\b[^>]*Id="([^"]+)"[^>]*Target="([^"]+)"[^>]*>/i', $relationshipsXml, $relationshipMatches, PREG_SET_ORDER);
+        $relationships = collect($relationshipMatches)
+            ->mapWithKeys(fn (array $match): array => [$match[1] => html_entity_decode($match[2], ENT_QUOTES | ENT_XML1, 'UTF-8')]);
+
+        return $embeddedIds
+            ->map(function (string $id) use ($relationships, $absolutePath): ?array {
+                $target = (string) $relationships->get($id, '');
+                if ($target === '' || str_starts_with($target, 'http://') || str_starts_with($target, 'https://')) {
+                    return null;
+                }
+
+                $entryName = str_starts_with($target, '/')
+                    ? ltrim($target, '/')
+                    : 'word/'.ltrim($target, '/');
+                $entryName = preg_replace('#(^|/)[^/]+/\.\./#', '$1', $entryName) ?? $entryName;
+                $imageBytes = $this->extractZipEntry($absolutePath, $entryName);
+                if (!is_string($imageBytes) || $imageBytes === '') {
+                    return null;
+                }
+
+                $extension = strtolower((string) pathinfo($entryName, PATHINFO_EXTENSION));
+                $mimeType = match ($extension) {
+                    'jpg', 'jpeg' => 'image/jpeg',
+                    'png' => 'image/png',
+                    'gif' => 'image/gif',
+                    'webp' => 'image/webp',
+                    'bmp' => 'image/bmp',
+                    default => null,
+                };
+
+                if ($mimeType === null) {
+                    return null;
+                }
+
+                return [
+                    'name' => basename($entryName),
+                    'data_uri' => 'data:'.$mimeType.';base64,'.base64_encode($imageBytes),
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    private function extractLegacyDocText(string $absolutePath): string
+    {
+        $contents = @file_get_contents($absolutePath);
+        if (!is_string($contents) || $contents === '') {
+            return '';
+        }
+
+        $decoded = @mb_convert_encoding($contents, 'UTF-8', 'UTF-16LE');
+        $candidates = [];
+
+        if (is_string($decoded)) {
+            preg_match_all('/[\p{L}\p{N}\p{P}\p{S} \t\r\n]{12,}/u', $decoded, $unicodeMatches);
+            $candidates = array_merge($candidates, $unicodeMatches[0] ?? []);
+        }
+
+        preg_match_all('/[\x20-\x7E\r\n\t]{12,}/', $contents, $asciiMatches);
+        $candidates = array_merge($candidates, $asciiMatches[0] ?? []);
+
+        $lines = collect($candidates)
+            ->map(function (string $value): string {
+                $value = str_replace("\0", '', $value);
+                $value = preg_replace('/[ \t]+/', ' ', $value) ?? $value;
+                $value = preg_replace("/\r\n|\r/", "\n", $value) ?? $value;
+                return trim($value);
+            })
+            ->filter(fn (string $value): bool => strlen($value) >= 12)
+            ->reject(fn (string $value): bool => preg_match('/^[^a-zA-Z0-9]*$/', $value) === 1)
+            ->unique()
+            ->values()
+            ->all();
+
+        if (empty($lines)) {
+            return '';
+        }
+
+        $text = implode("\n\n", $lines);
+        $text = preg_replace("/\n{3,}/", "\n\n", $text) ?? $text;
+
+        return trim($text);
+    }
+
+    private function extractZipEntry(string $absolutePath, string $entryName): string
+    {
+        $contents = file_get_contents($absolutePath);
+        if (!is_string($contents) || $contents === '') {
+            return '';
+        }
+
+        $tail = substr($contents, -65557);
+        $eocdOffsetInTail = strrpos($tail, "PK\x05\x06");
+        if ($eocdOffsetInTail === false) {
+            return '';
+        }
+
+        $eocdOffset = strlen($contents) - strlen($tail) + $eocdOffsetInTail;
+        $centralDirectorySize = $this->readLittleEndian($contents, $eocdOffset + 12, 4);
+        $centralDirectoryOffset = $this->readLittleEndian($contents, $eocdOffset + 16, 4);
+        if ($centralDirectorySize <= 0 || $centralDirectoryOffset <= 0) {
+            return '';
+        }
+
+        $offset = $centralDirectoryOffset;
+        $end = $centralDirectoryOffset + $centralDirectorySize;
+
+        while ($offset + 46 <= $end && substr($contents, $offset, 4) === "PK\x01\x02") {
+            $method = $this->readLittleEndian($contents, $offset + 10, 2);
+            $compressedSize = $this->readLittleEndian($contents, $offset + 20, 4);
+            $fileNameLength = $this->readLittleEndian($contents, $offset + 28, 2);
+            $extraLength = $this->readLittleEndian($contents, $offset + 30, 2);
+            $commentLength = $this->readLittleEndian($contents, $offset + 32, 2);
+            $localHeaderOffset = $this->readLittleEndian($contents, $offset + 42, 4);
+            $fileName = substr($contents, $offset + 46, $fileNameLength);
+
+            if ($fileName === $entryName && substr($contents, $localHeaderOffset, 4) === "PK\x03\x04") {
+                $localFileNameLength = $this->readLittleEndian($contents, $localHeaderOffset + 26, 2);
+                $localExtraLength = $this->readLittleEndian($contents, $localHeaderOffset + 28, 2);
+                $dataOffset = $localHeaderOffset + 30 + $localFileNameLength + $localExtraLength;
+                $data = substr($contents, $dataOffset, $compressedSize);
+
+                return match ($method) {
+                    0 => $data,
+                    8 => @gzinflate($data) ?: '',
+                    default => '',
+                };
+            }
+
+            $offset += 46 + $fileNameLength + $extraLength + $commentLength;
+        }
+
+        return '';
+    }
+
+    private function readLittleEndian(string $contents, int $offset, int $length): int
+    {
+        $bytes = substr($contents, $offset, $length);
+        if ($length === 2) {
+            return unpack('v', $bytes)[1] ?? 0;
+        }
+
+        return unpack('V', $bytes)[1] ?? 0;
     }
 
     private function formatEmployeeDisplayName($firstName, $middleName, $lastName): ?string
