@@ -2211,6 +2211,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function fillVisibleFormFromPds(fields = {}) {
+        const normalizeChoiceValue = (value) => String(value || '')
+            .toLowerCase()
+            .replace(/[^a-z]/g, '');
+
         fillFieldFromPds('first_name', fields.first_name);
         fillFieldFromPds('middle_name', fields.middle_name);
         fillFieldFromPds('last_name', fields.surname);
@@ -2222,9 +2226,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const sexField = document.getElementById('sex');
         if (sexField && fields.sex) {
-            const normalizedSex = String(fields.sex).toLowerCase();
+            const normalizedSex = normalizeChoiceValue(fields.sex);
             const sexOption = Array.from(sexField.options).find((option) =>
-                option.value.toLowerCase() === normalizedSex || option.textContent.toLowerCase().includes(normalizedSex)
+                normalizeChoiceValue(option.value) === normalizedSex
+                || normalizeChoiceValue(option.textContent).includes(normalizedSex)
             );
             if (sexOption) {
                 sexField.value = sexOption.value;
@@ -2238,9 +2243,11 @@ document.addEventListener('DOMContentLoaded', function () {
             civilStatusField.dispatchEvent(new Event('change', { bubbles: true }));
         }
         if (civilStatusField && fields.civil_status) {
-            const normalizedStatus = String(fields.civil_status).toLowerCase();
+            const normalizedStatus = normalizeChoiceValue(fields.civil_status);
             const statusOption = Array.from(civilStatusField.options).find((option) =>
-                option.value.toLowerCase() === normalizedStatus || option.textContent.toLowerCase().includes(normalizedStatus)
+                normalizeChoiceValue(option.value) === normalizedStatus
+                || normalizeChoiceValue(option.textContent).includes(normalizedStatus)
+                || normalizedStatus.includes(normalizeChoiceValue(option.value))
             );
             if (statusOption) {
                 civilStatusField.value = statusOption.value;
