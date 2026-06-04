@@ -29,7 +29,7 @@
   <main class="flex-1 ml-16 transition-all duration-300">
 
     <!-- Header -->
-     @include('components.adminHeader.attendanceHeader')
+     @include('components.adminHeader.interviewHeader')
 
     <!-- Dashboard Content -->
     <div class="p-8 space-y-6">

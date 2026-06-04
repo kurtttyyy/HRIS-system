@@ -291,7 +291,8 @@
                 </article>
             </section>
 
-            <section class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <section class="grid grid-cols-1 gap-6">
+                {{--
                 <div id="weekly-attendance-section" class="employee-dashboard-reveal bg-white rounded-2xl border border-gray-200 p-4 md:p-6" style="--employee-dashboard-delay: 300ms;">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-bold text-gray-900">This Week's Attendance</h3>
@@ -343,6 +344,7 @@
                         @endforelse
                     </div>
                 </div>
+                --}}
 
                 <div class="employee-dashboard-reveal rounded-[2rem] border border-slate-200 bg-white p-4 shadow-sm md:p-6" style="--employee-dashboard-delay: 340ms;">
                     <div class="mb-4 flex items-center justify-between">

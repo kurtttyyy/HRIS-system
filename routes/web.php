@@ -94,11 +94,6 @@ Route::controller(AdministratorPageController::class)->group(function () {
     Route::get('system/notifications/summary', 'notification_summary')->name('admin.adminNotifications.summary');
     Route::get('system/communication', 'display_communication')->name('admin.adminCommunication');
     Route::get('system/employee', 'display_employee')->name('admin.adminEmployee');
-    Route::get('system/attendance', 'display_attendance')->name('admin.adminAttendance');
-    Route::get('system/attendance/present', 'display_attendance_present')->name('admin.attendance.present');
-    Route::get('system/attendance/absent', 'display_attendance_absent')->name('admin.attendance.absent');
-    Route::get('system/attendance/tardiness', 'display_attendance_tardiness')->name('admin.attendance.tardiness');
-    Route::get('system/attendance/total-employee', 'display_attendance_total_employee')->name('admin.attendance.totalEmployee');
     Route::get('system/leave/management', 'display_leave')->name('admin.adminLeaveManagement');
     Route::get('system/payslip', 'display_payslip')->name('admin.adminPayslip');
     Route::get('system/payslip/view', 'display_payslip_view')->name('admin.adminPaySlipView');
@@ -151,7 +146,6 @@ Route::controller(AdministratorStoreController::class)->group(function () {
     Route::post('system/communication/send', 'send_communication_message')->name('admin.communication.send');
     Route::post('system/employee/document', 'store_document')->name('admin.addDocument');
     Route::post('system/applicant/document/{document}/reviewed', 'mark_applicant_document_reviewed')->name('admin.applicantDocument.reviewed');
-    Route::post('system/attendance/upload', 'store_attendance_excel')->name('admin.uploadAttendanceExcel');
     Route::post('system/payslip/upload', 'store_payslip_file')->name('admin.uploadPayslipFile');
     Route::post('system/loads/upload', 'store_loads_file')->name('admin.uploadLoadsFile');
     Route::post('system/employee/document/requirements', 'store_required_documents')->name('admin.saveRequiredDocuments');
@@ -169,8 +163,6 @@ Route::controller(AdministratorStoreController::class)->group(function () {
     Route::post('system/personal/detail/service-record/update', 'update_service_record')->name('admin.PersonalDetail.serviceRecordEdit.update');
     Route::post('system/calendar/hidden-official-holidays/sync', 'sync_hidden_official_holidays')->name('admin.syncHiddenOfficialHolidays');
     Route::post('system/logs/{activityLog}/note', 'update_activity_log_note')->name('admin.activityLogs.note');
-    Route::post('admin/attendance/update-status/{id}', 'update_attendance_status')->name('admin.updateAttendanceStatus');
-    Route::post('admin/attendance/delete/{id}', 'delete_attendance_file')->name('admin.deleteAttendanceFile');
     Route::post('admin/payslip/update-status/{id}', 'scan_payslip_file')->name('admin.scanPayslipFile');
     Route::post('system/loads/delete/{id}', 'delete_loads_file')->name('admin.deleteLoadsFile');
     Route::post('system/loads/update-status/{id}', 'scan_loads_file')->name('admin.scanLoadsFile');

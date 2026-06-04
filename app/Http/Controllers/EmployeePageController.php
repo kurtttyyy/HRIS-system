@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Applicant;
 use App\Models\ApplicantDocument;
 use App\Models\Conversation;
-use App\Models\AttendanceRecord;
 use App\Models\PayslipRecord;
 use App\Models\Resignation;
 use App\Models\User;
@@ -430,51 +429,7 @@ class EmployeePageController extends Controller
                 ];
             });
 
-        $attendanceNotifications = AttendanceRecord::query()
-            ->where(function ($query) use ($user, $employeeId) {
-                if ($employeeId !== '') {
-                    $query->where('employee_id', $employeeId);
-                } else {
-                    $query->whereRaw('LOWER(TRIM(COALESCE(employee_name, \'\'))) = ?', [
-                        strtolower($this->formatEmployeeDisplayName($user->first_name, $user->middle_name, $user->last_name) ?? ''),
-                    ]);
-                }
-            })
-            ->whereDate('attendance_date', '>=', now()->subDays(21)->toDateString())
-            ->orderByDesc('attendance_date')
-            ->orderByDesc('id')
-            ->limit(8)
-            ->get()
-            ->filter(function ($record) {
-                $lateMinutes = (int) ($record->late_minutes ?? 0);
-                $hasMissingLogs = !empty($record->missing_time_logs) && $record->missing_time_logs !== '[]';
-                return !empty($record->is_absent) || $lateMinutes > 0 || $hasMissingLogs;
-            })
-            ->map(function ($record) {
-                $attendanceDate = $record->attendance_date
-                    ? Carbon::parse($record->attendance_date)
-                    : Carbon::parse($record->created_at);
-                $lateMinutes = (int) ($record->late_minutes ?? 0);
-                $statusLabel = !empty($record->is_absent)
-                    ? 'Absent'
-                    : ($lateMinutes > 0 ? 'Tardy' : 'Missing Logs');
-
-                $message = !empty($record->is_absent)
-                    ? 'You were marked absent on '.$attendanceDate->format('F j, Y').'.'
-                    : ($lateMinutes > 0
-                        ? 'Recorded '.$lateMinutes.' late minute(s) on '.$attendanceDate->format('F j, Y').'.'
-                        : 'Your attendance entry on '.$attendanceDate->format('F j, Y').' has incomplete logs.');
-
-                return [
-                    'category' => 'Attendance',
-                    'title' => 'Attendance follow-up',
-                    'message' => $message,
-                    'date' => $attendanceDate,
-                    'href' => route('employee.employeeHome', ['focus' => 'weekly-attendance-section']),
-                    'badge' => $statusLabel,
-                    'tone' => !empty($record->is_absent) ? 'rose' : ($lateMinutes > 0 ? 'amber' : 'sky'),
-                ];
-            });
+        $attendanceNotifications = collect();
 
         $resignationNotifications = Resignation::query()
             ->where('user_id', $user->id)
@@ -2144,12 +2099,9 @@ class EmployeePageController extends Controller
             $monthCursor = now()->startOfMonth();
         }
 
-        $rangeStart = $monthCursor->copy()->startOfMonth();
         $rangeEnd = $monthCursor->copy()->endOfMonth();
-        $holidayNoClassDates = $this->getHolidayNoClassDatesForMonth($monthCursor);
-
         $eligibleDays = 0;
-        $cursor = $rangeStart->copy();
+        $cursor = $monthCursor->copy()->startOfMonth();
         while ($cursor->lte($rangeEnd)) {
             if (!$cursor->isSunday()) {
                 $eligibleDays++;
@@ -2157,93 +2109,12 @@ class EmployeePageController extends Controller
             $cursor->addDay();
         }
 
-        $employeeIdCandidates = $this->buildEmployeeIdCandidatesForAttendance($user);
-        if (empty($employeeIdCandidates)) {
-            return [
-                'attendanceRatePercent' => 0.0,
-                'attendancePresentDays' => 0,
-                'attendanceTotalDays' => $eligibleDays,
-                'attendanceTardyDays' => 0,
-                'attendanceStatusLabel' => 'No Data',
-                'attendanceMonthLabel' => $monthCursor->format('F Y'),
-            ];
-        }
-
-        $recordsByDate = AttendanceRecord::query()
-            ->whereIn('employee_id', $employeeIdCandidates)
-            ->whereDate('attendance_date', '>=', $rangeStart->toDateString())
-            ->whereDate('attendance_date', '<=', $rangeEnd->toDateString())
-            ->orderByDesc('updated_at')
-            ->orderByDesc('id')
-            ->get()
-            ->groupBy(function ($row) {
-                try {
-                    return $row->attendance_date
-                        ? Carbon::parse($row->attendance_date)->toDateString()
-                        : null;
-                } catch (\Throwable $e) {
-                    return null;
-                }
-            });
-
-        $presentDays = 0;
-        $tardyDays = 0;
-        $cursor = $rangeStart->copy();
-
-        while ($cursor->lte($rangeEnd)) {
-            if ($cursor->isSunday()) {
-                $cursor->addDay();
-                continue;
-            }
-
-            $dateKey = $cursor->toDateString();
-            if (in_array($dateKey, $holidayNoClassDates, true)) {
-                $presentDays++;
-                $cursor->addDay();
-                continue;
-            }
-            $dateRows = $recordsByDate->get($dateKey, collect());
-            $isPresent = false;
-            $isTardy = false;
-
-            foreach ($dateRows as $row) {
-                if (!$this->isAttendanceRowPresent($row)) {
-                    continue;
-                }
-
-                $isPresent = true;
-
-                $isHolidayPresent = (bool) ($row->is_holiday_present ?? false)
-                    || trim((string) ($row->main_gate ?? '')) === 'Holiday - No Class';
-                if (!$isHolidayPresent && $this->calculateAttendanceLateMinutes($row) > 0) {
-                    $isTardy = true;
-                }
-            }
-
-            if ($isPresent) {
-                $presentDays++;
-            }
-            if ($isTardy) {
-                $tardyDays++;
-            }
-
-            $cursor->addDay();
-        }
-
-        $attendanceRate = $eligibleDays > 0
-            ? round(($presentDays / $eligibleDays) * 100, 1)
-            : 0.0;
-
-        $statusLabel = $tardyDays > 0
-            ? $tardyDays.' Late Day'.($tardyDays > 1 ? 's' : '')
-            : 'On Time';
-
         return [
-            'attendanceRatePercent' => $attendanceRate,
-            'attendancePresentDays' => $presentDays,
+            'attendanceRatePercent' => 0.0,
+            'attendancePresentDays' => 0,
             'attendanceTotalDays' => $eligibleDays,
-            'attendanceTardyDays' => $tardyDays,
-            'attendanceStatusLabel' => $statusLabel,
+            'attendanceTardyDays' => 0,
+            'attendanceStatusLabel' => 'No Data',
             'attendanceMonthLabel' => $monthCursor->format('F Y'),
         ];
     }
@@ -2253,97 +2124,19 @@ class EmployeePageController extends Controller
         $weekStart = now()->startOfWeek(Carbon::MONDAY)->startOfDay();
         $weekEnd = $weekStart->copy()->addDays(5)->endOfDay(); // Monday-Saturday
 
-        $employeeIdCandidates = $this->buildEmployeeIdCandidatesForAttendance($user);
-        $recordsByDate = collect();
-
-        if (!empty($employeeIdCandidates)) {
-            $recordsByDate = AttendanceRecord::query()
-                ->whereIn('employee_id', $employeeIdCandidates)
-                ->whereDate('attendance_date', '>=', $weekStart->toDateString())
-                ->whereDate('attendance_date', '<=', $weekEnd->toDateString())
-                ->orderByDesc('updated_at')
-                ->orderByDesc('id')
-                ->get()
-                ->groupBy(function ($row) {
-                    try {
-                        return $row->attendance_date
-                            ? Carbon::parse($row->attendance_date)->toDateString()
-                            : null;
-                    } catch (\Throwable $e) {
-                        return null;
-                    }
-                });
-        }
-
         $weeklyRows = collect();
         $cursor = $weekStart->copy();
         while ($cursor->lte($weekEnd)) {
-            $dateKey = $cursor->toDateString();
-            $rows = $recordsByDate->get($dateKey, collect());
-            $selectedRow = null;
-
-            foreach ($rows as $row) {
-                if ($this->isAttendanceRowPresent($row)) {
-                    $selectedRow = $row;
-                    break;
-                }
-            }
-            if (!$selectedRow && $rows->isNotEmpty()) {
-                $selectedRow = $rows->first();
-            }
-
-            $morningRange = $this->formatTimeRangeForDisplay(
-                $selectedRow->morning_in ?? null,
-                $selectedRow->morning_out ?? null
-            );
-            $afternoonRange = $this->formatTimeRangeForDisplay(
-                $selectedRow->afternoon_in ?? null,
-                $selectedRow->afternoon_out ?? null
-            );
-            $morningHours = $this->calculateWorkedHoursForDisplay(
-                $selectedRow->morning_in ?? null,
-                $selectedRow->morning_out ?? null
-            );
-            $afternoonHours = $this->calculateWorkedHoursForDisplay(
-                $selectedRow->afternoon_in ?? null,
-                $selectedRow->afternoon_out ?? null
-            );
-
-            $status = 'Absent';
-            $statusClass = 'bg-rose-100 text-rose-600';
-            if ($selectedRow) {
-                $isHolidayPresent = (bool) ($selectedRow->is_holiday_present ?? false)
-                    || trim((string) ($selectedRow->main_gate ?? '')) === 'Holiday - No Class';
-                if ($isHolidayPresent) {
-                    $status = 'No Class (Holiday)';
-                    $statusClass = 'bg-indigo-100 text-indigo-600';
-                } elseif ($this->isAttendanceRowPresent($selectedRow)) {
-                    $late = $this->calculateAttendanceLateMinutes($selectedRow);
-                    if ($late > 0) {
-                        $status = 'Late ('.$late.' mins)';
-                        $statusClass = 'bg-amber-100 text-amber-700';
-                    } else {
-                        $status = 'Present';
-                        $statusClass = 'bg-green-100 text-green-600';
-                    }
-                }
-            } else {
-                $morningRange = 'No Log';
-                $afternoonRange = 'No Log';
-                $morningHours = '0 hrs worked';
-                $afternoonHours = '0 hrs worked';
-            }
-
             $weeklyRows->push([
                 'day_short' => $cursor->format('D'),
                 'day_number' => $cursor->format('d'),
                 'date_label' => $cursor->format('M d, Y'),
-                'morning_range' => $morningRange,
-                'afternoon_range' => $afternoonRange,
-                'morning_hours' => $morningHours,
-                'afternoon_hours' => $afternoonHours,
-                'status' => $status,
-                'status_class' => $statusClass,
+                'morning_range' => 'No Log',
+                'afternoon_range' => 'No Log',
+                'morning_hours' => '0 hrs worked',
+                'afternoon_hours' => '0 hrs worked',
+                'status' => 'No Data',
+                'status_class' => 'bg-slate-100 text-slate-600',
             ]);
 
             $cursor->addDay();
@@ -2366,30 +2159,6 @@ class EmployeePageController extends Controller
             if (preg_match('/^\d+$/', $normalized)) {
                 $candidates->push($normalized.'.0');
             }
-        }
-
-        // Fallback: resolve employee IDs from attendance employee_name for accounts
-        // where employee_id mapping is missing or inconsistent.
-        $firstName = trim((string) ($user?->first_name ?? ''));
-        $lastName = trim((string) ($user?->last_name ?? ''));
-        if ($firstName !== '' || $lastName !== '') {
-            $matchedIds = AttendanceRecord::query()
-                ->whereNotNull('employee_name')
-                ->where(function ($query) use ($firstName, $lastName) {
-                    if ($lastName !== '') {
-                        $query->where('employee_name', 'like', '%'.$lastName.'%');
-                    }
-                    if ($firstName !== '') {
-                        $query->where('employee_name', 'like', '%'.$firstName.'%');
-                    }
-                })
-                ->distinct()
-                ->pluck('employee_id')
-                ->map(fn ($id) => $this->normalizeEmployeeIdForAttendance($id))
-                ->filter()
-                ->values();
-
-            $candidates = $candidates->merge($matchedIds);
         }
 
         return $candidates
@@ -2444,27 +2213,6 @@ class EmployeePageController extends Controller
                     }
                 }
             }
-        } catch (\Throwable $e) {
-        }
-
-        // Also include attendance rows tagged as holiday no-class.
-        try {
-            $dates = $dates->merge(
-                AttendanceRecord::query()
-                    ->whereDate('attendance_date', '>=', $monthStart->toDateString())
-                    ->whereDate('attendance_date', '<=', $monthEnd->toDateString())
-                    ->where('main_gate', 'Holiday - No Class')
-                    ->pluck('attendance_date')
-                    ->map(function ($date) {
-                        try {
-                            return Carbon::parse($date)->toDateString();
-                        } catch (\Throwable $e) {
-                            return null;
-                        }
-                    })
-                    ->filter()
-                    ->values()
-            );
         } catch (\Throwable $e) {
         }
 

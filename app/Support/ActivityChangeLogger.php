@@ -3,7 +3,6 @@
 namespace App\Support;
 
 use App\Models\ActivityLog;
-use App\Models\AttendanceUpload;
 use App\Models\LoadsUpload;
 use App\Models\PayslipUpload;
 use Illuminate\Database\Eloquent\Model;
@@ -208,7 +207,7 @@ class ActivityChangeLogger
 
     private static function isScannedUploadStatusUpdate(Model $model, array $changes): bool
     {
-        if (!($model instanceof AttendanceUpload || $model instanceof PayslipUpload || $model instanceof LoadsUpload)) {
+        if (!($model instanceof PayslipUpload || $model instanceof LoadsUpload)) {
             return false;
         }
 

@@ -164,29 +164,7 @@
                 ->count()
             : 0;
 
-        $attendanceNotificationsCount = \Illuminate\Support\Facades\Schema::hasTable('attendance_records')
-            ? \App\Models\AttendanceRecord::query()
-                ->where(function ($query) use ($employeeUser, $employeeId) {
-                    if ($employeeId !== '') {
-                        $query->where('employee_id', $employeeId);
-                    } else {
-                        $displayName = strtolower(trim(implode(' ', array_filter([
-                            $employeeUser->first_name ?? null,
-                            $employeeUser->middle_name ?? null,
-                            $employeeUser->last_name ?? null,
-                        ]))));
-                        $query->whereRaw('LOWER(TRIM(COALESCE(employee_name, \'\'))) = ?', [$displayName]);
-                    }
-                })
-                ->whereDate('attendance_date', '>=', now()->subDays(21)->toDateString())
-                ->get()
-                ->filter(function ($record) {
-                    $lateMinutes = (int) ($record->late_minutes ?? 0);
-                    $hasMissingLogs = !empty($record->missing_time_logs) && $record->missing_time_logs !== '[]';
-                    return !empty($record->is_absent) || $lateMinutes > 0 || $hasMissingLogs;
-                })
-                ->count()
-            : 0;
+        $attendanceNotificationsCount = 0;
 
         $resignationNotificationsCount = \Illuminate\Support\Facades\Schema::hasTable('resignations')
             ? \App\Models\Resignation::query()->where('user_id', (int) $employeeUser->id)->limit(3)->count()

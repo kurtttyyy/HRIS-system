@@ -140,7 +140,7 @@
               Admin Command Center
             </div>
             <div>
-              <h1 class="admin-display max-w-3xl text-3xl leading-tight text-white md:text-5xl">Lead hiring, attendance, and approvals from one clean dashboard.</h1>
+              <h1 class="admin-display max-w-3xl text-3xl leading-tight text-white md:text-5xl">Lead hiring, leave requests, and approvals from one clean dashboard.</h1>
               <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-200 md:text-base">
                 Watch workforce changes, review urgent requests, and move quickly between the HR tasks that matter most today.
               </p>
@@ -153,19 +153,19 @@
                 <p class="mt-1 text-xs {{ $employeeChangeClass }}">{{ $employeeChangeArrow }} {{ $employeeChangeSign }}{{ number_format($employeeChange, 1) }}% this month</p>
               </div>
               <div class="dashboard-card-motion dashboard-reveal rounded-[1.35rem] border border-white/10 bg-white/10 px-4 py-4 backdrop-blur-sm" style="--dashboard-delay: 60ms;">
-                <p class="admin-kicker text-[11px] font-semibold uppercase text-slate-300">Present Today</p>
-                <p class="admin-display mt-2 text-3xl text-white">{{ number_format($presentTodayCount ?? 0) }}</p>
-                <p class="mt-1 text-xs text-slate-300">{{ number_format((float) ($presentTodayRate ?? 0), 1) }}% attendance rate</p>
-              </div>
-              <div class="dashboard-card-motion dashboard-reveal rounded-[1.35rem] border border-white/10 bg-white/10 px-4 py-4 backdrop-blur-sm" style="--dashboard-delay: 90ms;">
                 <p class="admin-kicker text-[11px] font-semibold uppercase text-slate-300">On Leave</p>
                 <p class="admin-display mt-2 text-3xl text-white">{{ number_format($onLeaveTodayCount ?? 0) }}</p>
                 <p class="mt-1 text-xs text-amber-200">{{ number_format($pendingLeaveRequestCount ?? 0) }} pending requests</p>
               </div>
-              <div class="dashboard-card-motion dashboard-reveal rounded-[1.35rem] border border-white/10 bg-white/10 px-4 py-4 backdrop-blur-sm" style="--dashboard-delay: 120ms;">
+              <div class="dashboard-card-motion dashboard-reveal rounded-[1.35rem] border border-white/10 bg-white/10 px-4 py-4 backdrop-blur-sm" style="--dashboard-delay: 90ms;">
                 <p class="admin-kicker text-[11px] font-semibold uppercase text-slate-300">Open Roles</p>
                 <p class="admin-display mt-2 text-3xl text-white">{{ number_format($openPositionsCount ?? 0) }}</p>
                 <p class="mt-1 text-xs text-sky-200">{{ number_format($openPositionApplicationsCount ?? 0) }} applications</p>
+              </div>
+              <div class="dashboard-card-motion dashboard-reveal rounded-[1.35rem] border border-white/10 bg-white/10 px-4 py-4 backdrop-blur-sm" style="--dashboard-delay: 120ms;">
+                <p class="admin-kicker text-[11px] font-semibold uppercase text-slate-300">Departments</p>
+                <p class="admin-display mt-2 text-3xl text-white">{{ number_format($departments->count() ?? 0) }}</p>
+                <p class="mt-1 text-xs text-emerald-200">Active workforce groups</p>
               </div>
             </div>
           </div>
@@ -232,14 +232,6 @@
             </div>
             <h3 class="admin-display mt-5 text-lg text-slate-900">Review Applicants</h3>
             <p class="mt-2 text-sm leading-6 text-slate-500">Track incoming applications and move qualified candidates through the pipeline.</p>
-          </a>
-
-          <a href="{{ route('admin.adminAttendance') }}" class="dashboard-card-motion dashboard-reveal group rounded-[1.5rem] border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-5" style="--dashboard-delay: 230ms;">
-            <div class="dashboard-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-lg shadow-amber-500/25" style="--dashboard-delay: 250ms;">
-              <i class="fa-solid fa-calendar-check text-2xl"></i>
-            </div>
-            <h3 class="admin-display mt-5 text-lg text-slate-900">Open Attendance</h3>
-            <p class="mt-2 text-sm leading-6 text-slate-500">Inspect daily logs, verify attendance, and monitor workforce presence.</p>
           </a>
 
           <a href="{{ route('admin.adminPosition') }}" class="dashboard-card-motion dashboard-reveal group rounded-[1.5rem] border border-violet-100 bg-gradient-to-br from-violet-50 to-white p-5" style="--dashboard-delay: 270ms;">

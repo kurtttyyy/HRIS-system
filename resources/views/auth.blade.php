@@ -197,7 +197,6 @@
                             </div>
                         </div>
                     </div>
-                @endif
             </div>
 
             <div class="grid grid-cols-3 gap-6 mt-10 pt-8 border-t">

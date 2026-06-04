@@ -5,8 +5,6 @@ namespace App\Providers;
 use App\Models\Applicant;
 use App\Models\ApplicantDegree;
 use App\Models\ApplicantDocument;
-use App\Models\AttendanceRecord;
-use App\Models\AttendanceUpload;
 use App\Models\Education;
 use App\Models\Employee;
 use App\Models\EmployeePositionHistory;
@@ -66,8 +64,6 @@ class AppServiceProvider extends ServiceProvider
             Interviewer::class,
             LeaveApplication::class,
             Resignation::class,
-            AttendanceUpload::class,
-            AttendanceRecord::class,
             PayslipUpload::class,
             LoadsUpload::class,
             EmployeePositionHistory::class,

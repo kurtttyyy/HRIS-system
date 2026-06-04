@@ -402,17 +402,6 @@
       @endif
     </a>
 
-    <!-- Attendance -->
-    <a href="{{ route('admin.adminAttendance', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}"
-       data-admin-nav
-       class="flex items-center gap-0 group-hover:gap-3 px-4 py-2.5 rounded-lg font-medium transition justify-center group-hover:justify-start
-       {{ request()->routeIs('admin.adminAttendance')
-        ? 'bg-green-600 text-white'
-        : 'text-white hover:bg-green-600/30' }}">
-      <i class="fa-solid fa-calendar-check"></i>
-      <span class="admin-sidebar-text whitespace-nowrap inline-block max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300">Attendance</span>
-    </a>
-
     <!-- Leave -->
     <a href="{{ route('admin.adminLeaveManagement', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}"
        data-admin-nav
