@@ -662,26 +662,41 @@ class ApplicantController extends Controller
             ];
 
             if (Schema::hasColumn('education', 'applicant_id')) {
-                Education::updateOrCreate(
-                    ['applicant_id' => (int) $applicant_store->id],
-                    [
-                        ...$educationPayload,
-                        'user_id' => $applicant_store->user_id,
-                    ]
-                );
+                $educationValues = $educationPayload;
+
+                if (Schema::hasColumn('education', 'user_id')) {
+                    $userId = $applicant_store->user_id ? (int) $applicant_store->user_id : null;
+
+                    if ($userId !== null || $this->educationUserIdAllowsNull()) {
+                        $educationValues['user_id'] = $userId;
+                    } else {
+                        $educationValues = null;
+                    }
+                }
+
+                if ($educationValues !== null) {
+                    Education::updateOrCreate(
+                        ['applicant_id' => (int) $applicant_store->id],
+                        $educationValues
+                    );
+                }
             }
 
             if (!empty($attrs['pds_record_id'])) {
-                DB::table('pds_table')
-                    ->where('id', $attrs['pds_record_id'])
-                    ->whereNull('applicant_id')
-                    ->update($this->filterPayloadForTableColumns('pds_table', $this->buildPdsApplicationPayload(
-                        $attrs,
-                        $applicant_store->id,
-                        $normalizedEducationLevels,
-                        $normalizedMasterDegrees,
-                        $normalizedDoctoralDegrees
-                    )));
+                $pdsPayload = $this->filterPayloadForTableColumns('pds_table', $this->buildPdsApplicationPayload(
+                    $attrs,
+                    $applicant_store->id,
+                    $normalizedEducationLevels,
+                    $normalizedMasterDegrees,
+                    $normalizedDoctoralDegrees
+                ));
+
+                if ($pdsPayload !== []) {
+                    DB::table('pds_table')
+                        ->where('id', $attrs['pds_record_id'])
+                        ->whereNull('applicant_id')
+                        ->update($pdsPayload);
+                }
             }
 
             foreach ((array) $request->input('documents', []) as $index => $docMeta) {
@@ -2389,8 +2404,13 @@ POWERSHELL;
                     continue;
                 }
 
-                $window = collect(array_slice($tokens, max(0, $index - 3), 4))->implode(' ');
-                if ($this->containsCheckedMarker($window)) {
+                $window = collect(array_slice($tokens, max(0, $index - 3), 7))->implode(' ');
+                $choiceHasTrailingCheckedValue = preg_match(
+                    '/\b'.preg_quote($choice, '/').'\b(?:\s+\S+){0,4}\s+\b(?:1|true|yes|checked)\b/iu',
+                    $window
+                );
+
+                if ($this->containsCheckedMarker($window) || $choiceHasTrailingCheckedValue) {
                     return $choice;
                 }
             }
@@ -2674,6 +2694,25 @@ POWERSHELL;
         }
 
         return $value;
+    }
+
+    private function educationUserIdAllowsNull(): bool
+    {
+        if (! Schema::hasColumn('education', 'user_id')) {
+            return true;
+        }
+
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            return true;
+        }
+
+        foreach (DB::select('PRAGMA table_info(education)') as $column) {
+            if (($column->name ?? null) === 'user_id') {
+                return (int) ($column->notnull ?? 0) === 0;
+            }
+        }
+
+        return true;
     }
 
     private function cleanPdsEducationCell(string $value): ?string
