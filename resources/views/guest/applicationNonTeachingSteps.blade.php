@@ -228,6 +228,10 @@
         margin-bottom: 0 !important;
     }
 
+    .work-field-grid .work-location-field {
+        grid-column: 1 / -1;
+    }
+
     .fresh-graduate-card {
         display: flex;
         align-items: center;
@@ -948,6 +952,7 @@
                     <option value="Married">Married</option>
                     <option value="Widowed">Widowed</option>
                     <option value="Separated">Separated</option>
+                    <option value="Other/s">Other/s</option>
                 </select>
                 <label for="civil_status">Civil Status<span class="required-asterisk"> *</span></label>
             </div>
@@ -1272,24 +1277,31 @@
 
     <div class="work-field-grid mb-3">
     <div class="floating-input">
+        <input type="date" class="form-control" id="work_date_from" name="work_date_from" placeholder=" " required>
+        <label for="work_date_from">Date From<span class="required-asterisk"> *</span></label>
+    </div>
+
+    <div class="floating-input">
+        <input type="date" class="form-control" id="work_date_to" name="work_date_to" placeholder=" " required>
+        <label for="work_date_to">Date To<span class="required-asterisk"> *</span></label>
+    </div>
+
+    <div class="floating-input">
         <input type="text" class="form-select" id="work_position" name="work_position" placeholder=" " required>
         <label for="work_position">Position<span class="required-asterisk"> *</span></label>
     </div>
 
     <div class="floating-input">
         <input type="text" class="form-select" id="work_employer" name="work_employer" placeholder=" " required>
-        <label for="work_employer">Employer<span class="required-asterisk"> *</span></label>
+        <label for="work_employer">Company/Agency/Office<span class="required-asterisk"> *</span></label>
     </div>
 
-    <div class="floating-input">
+    <div class="floating-input work-location-field">
         <input type="text" class="form-select" id="work_location" name="work_location" placeholder=" " required>
         <label for="work_location">Location<span class="required-asterisk"> *</span></label>
     </div>
 
-    <div class="floating-input">
-        <input type="text" class="form-control" id="work_duration" name="work_duration" placeholder=" " required>
-        <label for="work_duration">Duration<span class="required-asterisk"> *</span></label>
-    </div>
+    <input type="hidden" id="work_duration" name="work_duration">
     </div>
 
     <div class="mb-3 floating-input">
@@ -1566,20 +1578,20 @@
                     <h6 class="review-panel-title"><i class="bi bi-briefcase"></i> Work Experience</h6>
                     <div class="review-item-list">
                         <div class="review-item">
+                            <span class="review-label">Date</span>
+                            <span id="work_du" class="review-value"></span>
+                        </div>
+                        <div class="review-item">
                             <span class="review-label">Position</span>
                             <span id="work_po" class="review-value"></span>
                         </div>
                         <div class="review-item">
-                            <span class="review-label">Employer</span>
+                            <span class="review-label">Company/Agency/Office</span>
                             <span id="work_em" class="review-value"></span>
                         </div>
                         <div class="review-item">
                             <span class="review-label">Location</span>
                             <span id="work_lo" class="review-value"></span>
-                        </div>
-                        <div class="review-item">
-                            <span class="review-label">Duration</span>
-                            <span id="work_du" class="review-value"></span>
                         </div>
                         <div class="review-item">
                             <span class="review-label">Experience</span>
@@ -2055,6 +2067,25 @@ document.addEventListener('DOMContentLoaded', function () {
         field.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
+    function syncScannedWorkDurationValue() {
+        const workDuration = document.getElementById('work_duration');
+        const dateFromInput = document.getElementById('work_date_from');
+        const dateToInput = document.getElementById('work_date_to');
+        if (!workDuration || !dateFromInput || !dateToInput) return;
+
+        const formatDate = (value) => {
+            if (!value) return '';
+
+            const [year, month, day] = String(value).split('-');
+            return year && month && day ? `${month}/${day}/${year}` : value;
+        };
+
+        const dateFrom = formatDate(dateFromInput.value);
+        const dateTo = formatDate(dateToInput.value);
+        dateToInput.min = dateFromInput.value || '';
+        workDuration.value = dateFrom && dateTo ? `${dateFrom} - ${dateTo}` : '';
+    }
+
     function fillSelectFromPds(fieldId, value) {
         const field = document.getElementById(fieldId);
         if (!field) return;
@@ -2119,8 +2150,29 @@ document.addEventListener('DOMContentLoaded', function () {
         ].includes(normalized);
     }
 
-    function pdsAddressValue(value) {
-        return isPdsCitizenshipCountryValue(value) ? '' : value;
+    function pdsAddressValue(value, zipCode = '') {
+        if (isPdsCitizenshipCountryValue(value)) return '';
+
+        let address = String(value || '').trim();
+        const zip = String(zipCode || '').trim();
+
+        if (!address) return '';
+
+        if (zip) {
+            address = address
+                .replace(new RegExp(`\\s*[-,]?\\s*${zip.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`), '')
+                .trim()
+                .replace(/[-,]\s*$/, '')
+                .trim();
+        } else {
+            const match = address.match(/^(.*?)(?:\s+)?(?:zip\s*code\s*)?(\d{4})$/i);
+            if (match) {
+                address = match[1].trim().replace(/[-,]\s*$/, '').trim();
+                return address ? `${address} - ${match[2]}` : match[2];
+            }
+        }
+
+        return address && zip ? `${address} - ${zip}` : address;
     }
 
     function pdsNameExtensionValue(value) {
@@ -2215,6 +2267,32 @@ document.addEventListener('DOMContentLoaded', function () {
             .toLowerCase()
             .replace(/[^a-z]/g, '');
 
+        const fillChoiceSelectFromPds = (fieldId, value) => {
+            const field = document.getElementById(fieldId);
+            if (!field || !value) return false;
+
+            const normalizedValue = normalizeChoiceValue(value);
+            const option = Array.from(field.options).find((option) => {
+                const normalizedOptionValue = normalizeChoiceValue(option.value);
+                const normalizedOptionText = normalizeChoiceValue(option.textContent);
+
+                return normalizedOptionValue !== ''
+                    && (
+                        normalizedOptionValue === normalizedValue
+                        || normalizedOptionText === normalizedValue
+                        || normalizedOptionText.includes(normalizedValue)
+                        || normalizedValue.includes(normalizedOptionValue)
+                    );
+            });
+
+            if (!option) return false;
+
+            field.value = option.value;
+            field.dispatchEvent(new Event('change', { bubbles: true }));
+
+            return true;
+        };
+
         fillFieldFromPds('first_name', fields.first_name);
         fillFieldFromPds('middle_name', fields.middle_name);
         fillFieldFromPds('last_name', fields.surname);
@@ -2222,40 +2300,20 @@ document.addEventListener('DOMContentLoaded', function () {
         fillFieldFromPds('email', fields.email_address);
         fillFieldFromPds('phone', fields.mobile_no || fields.telephone_no);
         fillFieldFromPds('date_of_birth', fields.date_of_birth);
-        fillFieldFromPds('address', pdsAddressValue(fields.permanent_address || fields.permanent_address_zip_code));
-
-        const sexField = document.getElementById('sex');
-        if (sexField && fields.sex) {
-            const normalizedSex = normalizeChoiceValue(fields.sex);
-            const sexOption = Array.from(sexField.options).find((option) =>
-                normalizeChoiceValue(option.value) === normalizedSex
-                || normalizeChoiceValue(option.textContent).includes(normalizedSex)
-            );
-            if (sexOption) {
-                sexField.value = sexOption.value;
-                sexField.dispatchEvent(new Event('change', { bubbles: true }));
-            }
+        fillFieldFromPds('address', pdsAddressValue(fields.permanent_address || fields.permanent_address_zip_code, fields.zip_code));
+        fillFieldFromPds('work_date_from', fields.work_date_from);
+        fillFieldFromPds('work_date_to', fields.work_date_to);
+        fillFieldFromPds('work_position', fields.work_position);
+        fillFieldFromPds('work_employer', fields.work_employer);
+        if ('work_location' in fields) {
+            fillFieldFromPds('work_location', fields.work_location);
         }
 
-        const civilStatusField = document.getElementById('civil_status');
-        if (civilStatusField) {
-            civilStatusField.value = '';
-            civilStatusField.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-        if (civilStatusField && fields.civil_status) {
-            const normalizedStatus = normalizeChoiceValue(fields.civil_status);
-            const statusOption = Array.from(civilStatusField.options).find((option) =>
-                normalizeChoiceValue(option.value) === normalizedStatus
-                || normalizeChoiceValue(option.textContent).includes(normalizedStatus)
-                || normalizedStatus.includes(normalizeChoiceValue(option.value))
-            );
-            if (statusOption) {
-                civilStatusField.value = statusOption.value;
-                civilStatusField.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-        }
+        fillChoiceSelectFromPds('sex', fields.sex);
+        fillChoiceSelectFromPds('civil_status', fields.civil_status);
 
         fillEducationFromPds(fields);
+        syncScannedWorkDurationValue();
     }
 
     scanUploadedFileButton?.addEventListener('click', async function () {
@@ -2298,7 +2356,10 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if (pdsRecordInput) pdsRecordInput.value = payload.id || '';
-            fillVisibleFormFromPds(payload.fields || {});
+            const scannedFields = payload.fields || {};
+            scannedFields.sex = scannedFields.sex || (payload.choice_debug && payload.choice_debug.sex) || '';
+            scannedFields.civil_status = scannedFields.civil_status || (payload.choice_debug && payload.choice_debug.civil_status) || '';
+            fillVisibleFormFromPds(scannedFields);
             scanStateLabel.textContent = payload.message || 'Personal Data Sheet scan complete';
             scanProgressBar.style.width = '100%';
             autoSaveLabel.textContent = 'Saved to PDS table';
@@ -2644,6 +2705,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 submitButton.disabled = true;
                 submitButton.textContent = 'Submitting...';
                 await refreshCsrfToken();
+                syncWorkDurationValue();
                 prepareFinalSubmitPayload();
                 clearFormDraft();
                 nativeSubmit();
@@ -2742,6 +2804,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Step 2 → Step 3
     btnToDocuments.addEventListener('click', () => {
+        syncWorkDurationValue();
         transitionForms(experienceForm, documentsForm, 'forward');
         setStep(4);
     });
@@ -2863,10 +2926,11 @@ document.addEventListener('DOMContentLoaded', () => {
             reviewSkills.appendChild(emptySkill);
         }
 
+        const workDurationValue = syncWorkDurationValue();
+        document.getElementById('work_du').textContent = workDurationValue || 'N/A';
         document.getElementById('work_po').textContent = document.getElementById('work_position').value;
         document.getElementById('work_em').textContent = document.getElementById('work_employer').value;
         document.getElementById('work_lo').textContent = document.getElementById('work_location').value;
-        document.getElementById('work_du').textContent = document.getElementById('work_duration').value;
 
         const resumeInput = document.getElementById('resume');
         const coverInput  = document.getElementById('cover_letter');
@@ -2958,6 +3022,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const addDoctoralDegreeBtn = document.getElementById('addDoctoralDegreeBtn');
     const yearRevealDelayMs = 140;
     const freshGraduateCheckbox = document.getElementById('fresh_graduate');
+    const workDateFromInput = document.getElementById('work_date_from');
+    const workDateToInput = document.getElementById('work_date_to');
     const workPositionInput = document.getElementById('work_position');
     const workEmployerInput = document.getElementById('work_employer');
     const workLocationInput = document.getElementById('work_location');
@@ -3003,6 +3069,28 @@ document.addEventListener('DOMContentLoaded', () => {
             skillDraftInput.required = selectedSkills.length === 0;
         }
     }
+
+    const formatWorkDate = (value) => {
+        if (!value) return '';
+
+        const [year, month, day] = String(value).split('-');
+        if (!year || !month || !day) return value;
+
+        return `${month}/${day}/${year}`;
+    };
+
+    const syncWorkDurationValue = () => {
+        if (!workDurationInput) return '';
+
+        const dateFrom = formatWorkDate(workDateFromInput?.value || '');
+        const dateTo = formatWorkDate(workDateToInput?.value || '');
+        if (workDateFromInput && workDateToInput) {
+            workDateToInput.min = workDateFromInput.value || '';
+        }
+        workDurationInput.value = dateFrom && dateTo ? `${dateFrom} - ${dateTo}` : '';
+
+        return workDurationInput.value;
+    };
 
     function renderSkillChips() {
         if (!skillChipList) return;
@@ -3381,6 +3469,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleFreshGraduateFields = () => {
         if (
             !freshGraduateCheckbox
+            || !workDateFromInput
+            || !workDateToInput
             || !workPositionInput
             || !workEmployerInput
             || !workLocationInput
@@ -3391,7 +3481,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const isFreshGraduate = freshGraduateCheckbox.checked;
-        const workFields = [workPositionInput, workEmployerInput, workLocationInput, workDurationInput];
+        const workFields = [workDateFromInput, workDateToInput, workPositionInput, workEmployerInput, workLocationInput];
 
         workFields.forEach((field) => {
             field.disabled = isFreshGraduate;
@@ -3400,6 +3490,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 clearErrorHighlight(field);
             }
         });
+
+        syncWorkDurationValue();
 
         if (isFreshGraduate) {
             const zeroToOneOption = Array.from(experienceYearsInput.options).find((option) => option.value.startsWith('0'));
@@ -3425,6 +3517,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     freshGraduateCheckbox?.addEventListener('change', toggleFreshGraduateFields);
+    workDateFromInput?.addEventListener('input', syncWorkDurationValue);
+    workDateFromInput?.addEventListener('change', syncWorkDurationValue);
+    workDateToInput?.addEventListener('input', syncWorkDurationValue);
+    workDateToInput?.addEventListener('change', syncWorkDurationValue);
     hydrateSkillFieldsFromValue();
     toggleFreshGraduateFields();
 

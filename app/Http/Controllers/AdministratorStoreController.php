@@ -263,6 +263,13 @@ class AdministratorStoreController extends Controller
                 ->with('scheduled_applicant_id', $attrs['applicants_id']);
         }
 
+        if ($this->findActiveInterviewSchedule((int) $attrs['applicants_id'], (string) $attrs['interview_type'])) {
+            return redirect()
+                ->back()
+                ->with('error', $attrs['interview_type'].' is already scheduled for this applicant. Please reschedule or cancel the existing interview instead.')
+                ->with('scheduled_applicant_id', $attrs['applicants_id']);
+        }
+
         $store = Interviewer::create([
             'applicant_id' => $attrs['applicants_id'],
             'interview_type' => $attrs['interview_type'],
@@ -2130,6 +2137,21 @@ class AdministratorStoreController extends Controller
         }
 
         return true;
+    }
+
+    private function findActiveInterviewSchedule(int $applicantId, string $interviewType): ?Interviewer
+    {
+        $normalizedType = strtolower(trim($interviewType));
+        if ($applicantId <= 0 || $normalizedType === '') {
+            return null;
+        }
+
+        return Interviewer::query()
+            ->where('applicant_id', $applicantId)
+            ->whereRaw('LOWER(TRIM(interview_type)) = ?', [$normalizedType])
+            ->orderByDesc('created_at')
+            ->get()
+            ->first(fn (Interviewer $interview) => !$this->interviewIsFinished($interview));
     }
 
     private function interviewIsFinished(Interviewer $interview): bool

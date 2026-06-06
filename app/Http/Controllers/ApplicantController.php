@@ -84,7 +84,7 @@ class ApplicantController extends Controller
             ->all();
         $pdsData = $this->removePdsTemplateNoise($pdsData);
         $pdsData['sex'] = $this->normalizePdsChoice($pdsData['sex'] ?? null, ['Male', 'Female']);
-        $pdsData['civil_status'] = $this->normalizePdsChoice($pdsData['civil_status'] ?? null, ['Single', 'Married', 'Widowed', 'Separated']);
+        $pdsData['civil_status'] = $this->normalizePdsChoice($pdsData['civil_status'] ?? null, ['Single', 'Married', 'Widowed', 'Separated', 'Other/s']);
         if (blank($pdsData['civil_status'] ?? null)) {
             $pdsData['civil_status'] = $this->inferOfficialPdsCivilStatus($scanRows, $scanText, $pdsData);
         }
@@ -92,6 +92,8 @@ class ApplicantController extends Controller
         $pdsData['permanent_address'] = $this->completePdsPermanentAddress($pdsData);
         $responseFields = $this->appendPdsEducationResponseFields($pdsData, $scanRows);
         $responseFields['permanent_address'] = $pdsData['permanent_address'];
+        $responseFields['zip_code'] = $pdsData['zip_code'] ?? null;
+        $responseFields = array_merge($responseFields, $this->extractPdsWorkExperienceResponseFields($file->getRealPath(), $extension));
 
         $filledFields = collect($pdsData)
             ->reject(fn ($value) => blank($value))
@@ -118,7 +120,7 @@ class ApplicantController extends Controller
                 'sex' => $pdsData['sex'] ?? null,
                 'civil_status' => $pdsData['civil_status'] ?? null,
                 'upload_debug_path' => $debugUploadPath,
-                'civil_status_rows' => $this->debugPdsChoiceRows($scanRows, ['civil status', 'single', 'widowed']),
+                'civil_status_rows' => $this->debugPdsChoiceRows($scanRows, ['civil status', 'single', 'widowed', 'other/s']),
             ],
             'message' => 'Personal Data Sheet scanned and saved.',
         ]);
@@ -137,6 +139,21 @@ class ApplicantController extends Controller
         }
 
         return $debugPath;
+    }
+
+    private function formatWorkDurationFromDates(?string $dateFrom, ?string $dateTo): ?string
+    {
+        if (blank($dateFrom) || blank($dateTo)) {
+            return null;
+        }
+
+        $from = date_create($dateFrom);
+        $to = date_create($dateTo);
+        if (!$from || !$to) {
+            return null;
+        }
+
+        return $from->format('m/d/Y').' - '.$to->format('m/d/Y');
     }
 
     private function isOfficialPdsTemplate(array $rows, string $text): bool
@@ -434,15 +451,21 @@ class ApplicantController extends Controller
             'draft_documents' => 'nullable|array',
             'draft_documents.*' => 'nullable|array',
             'draft_documents.*.*' => 'nullable|string',
+            'work_date_from' => 'required_unless:fresh_graduate,1|nullable|date',
+            'work_date_to' => 'required_unless:fresh_graduate,1|nullable|date|after_or_equal:work_date_from',
             'work_position' => 'required_unless:fresh_graduate,1|nullable|string',
             'work_employer' => 'required_unless:fresh_graduate,1|nullable|string',
             'work_location' => 'required_unless:fresh_graduate,1|nullable|string',
-            'work_duration' => 'required_unless:fresh_graduate,1|nullable|string',
+            'work_duration' => 'nullable|string',
             ]);
         } catch (ValidationException $exception) {
             return redirect()->back()
                 ->withErrors($exception->validator)
                 ->withInput($this->safeApplicationOldInput($request));
+        }
+
+        if (empty($attrs['fresh_graduate']) && blank($attrs['work_duration'] ?? null)) {
+            $attrs['work_duration'] = $this->formatWorkDurationFromDates($attrs['work_date_from'] ?? null, $attrs['work_date_to'] ?? null);
         }
         $attrs['name_extension'] = $this->cleanPdsNameExtension((string) ($attrs['name_extension'] ?? ''));
 
@@ -593,6 +616,8 @@ class ApplicantController extends Controller
                 'work_position' => !empty($attrs['fresh_graduate']) ? 'N/A' : ($attrs['work_position'] ?? 'N/A'),
                 'work_employer' => !empty($attrs['fresh_graduate']) ? 'N/A' : ($attrs['work_employer'] ?? 'N/A'),
                 'work_location' => !empty($attrs['fresh_graduate']) ? 'N/A' : ($attrs['work_location'] ?? 'N/A'),
+                'work_date_from' => !empty($attrs['fresh_graduate']) ? null : ($attrs['work_date_from'] ?? null),
+                'work_date_to' => !empty($attrs['fresh_graduate']) ? null : ($attrs['work_date_to'] ?? null),
                 'work_duration' => !empty($attrs['fresh_graduate']) ? 'N/A' : ($attrs['work_duration'] ?? 'N/A'),
                 'experience_years' => !empty($attrs['fresh_graduate']) ? '0-1' : $attrs['experience_years'],
             ]);
@@ -891,10 +916,29 @@ class ApplicantController extends Controller
 
     private function completePdsPermanentAddress(array $pdsData): ?string
     {
-        $address = $this->cleanPdsPermanentAddress(collect([
-            $pdsData['permanent_address'] ?? null,
-            $pdsData['zip_code'] ?? null,
-        ])->filter()->implode(' '));
+        $address = $this->cleanPdsPermanentAddress((string) ($pdsData['permanent_address'] ?? ''));
+        $zipCode = $this->cleanPdsValue((string) ($pdsData['zip_code'] ?? '')) ?? '';
+
+        if ($address && $zipCode) {
+            $address = preg_replace('/(?:\s*[-,]?\s*)'.preg_quote($zipCode, '/').'$/', '', $address) ?? $address;
+            $address = trim($address, " \t\n\r\0\x0B,-");
+        }
+
+        if ($address) {
+            $parts = collect(preg_split('/\s*,\s*/', $address) ?: [])
+                ->map(fn ($part) => $this->cleanPdsPermanentAddress($part))
+                ->filter()
+                ->unique(fn ($part) => strtolower((string) $part))
+                ->values();
+
+            $address = $parts->implode(', ');
+        }
+
+        if ($address && $zipCode) {
+            $address .= ' - '.$zipCode;
+        } elseif (!$address && $zipCode) {
+            $address = $zipCode;
+        }
 
         return $address && $this->looksLikePdsCitizenshipCountry($address) ? null : $address;
     }
@@ -932,6 +976,61 @@ class ApplicantController extends Controller
         $pdsData['graduate_studies_year_graduated'] = $education['graduate_studies']['year_graduated'] ?? null;
 
         return $pdsData;
+    }
+
+    private function extractPdsWorkExperienceResponseFields(string $path, string $extension): array
+    {
+        if (!in_array($extension, ['xlsx', 'xlsm'], true)) {
+            return [];
+        }
+
+        $cells = $this->readXlsxSheetCells($path, 2);
+        if ($cells === []) {
+            return [];
+        }
+
+        $dateFrom = $this->normalizePdsWorkDate(($cells['D17'] ?? '') ?: ($cells['A18'] ?? ''));
+        $dateTo = $this->normalizePdsWorkDate(($cells['B18'] ?? '') ?: ($cells['B17'] ?? ''));
+        $position = $this->cleanPdsValue((string) (($cells['D18'] ?? '') ?: ($cells['C18'] ?? '')));
+        $company = $this->cleanPdsValue((string) (($cells['E18'] ?? '') ?: ($cells['F18'] ?? '')));
+
+        if (blank($dateFrom) && blank($dateTo) && blank($position) && blank($company)) {
+            return [];
+        }
+
+        return [
+            'work_date_from' => $dateFrom,
+            'work_date_to' => $dateTo,
+            'work_position' => $position,
+            'work_employer' => $company,
+            'work_location' => null,
+        ];
+    }
+
+    private function normalizePdsWorkDate(mixed $value): ?string
+    {
+        $rawValue = trim((string) $value);
+        if ($rawValue === '') {
+            return null;
+        }
+
+        if (is_numeric($rawValue)) {
+            $serial = (int) floor((float) $rawValue);
+            if ($serial > 0) {
+                return date('Y-m-d', strtotime('1899-12-30 +'.$serial.' days')) ?: null;
+            }
+        }
+
+        foreach (['m/d/Y', 'm/d/y', 'Y-m-d', 'm-d-Y', 'm-d-y'] as $format) {
+            $date = \DateTime::createFromFormat($format, $rawValue);
+            if ($date instanceof \DateTime) {
+                return $date->format('Y-m-d');
+            }
+        }
+
+        $timestamp = strtotime($rawValue);
+
+        return $timestamp ? date('Y-m-d', $timestamp) : null;
     }
 
     private function extractOfficialPdsEducationRow(array $rows, int $excelRowNumber, array $labels): ?array
@@ -1272,6 +1371,76 @@ class ApplicantController extends Controller
         return $rows;
     }
 
+    private function readXlsxSheetCells(string $path, int $sheetNumber): array
+    {
+        if ($sheetNumber < 1) {
+            return [];
+        }
+
+        if (!class_exists(\ZipArchive::class)) {
+            $expandedPath = $this->expandXlsxWithPowerShell($path);
+            if (!$expandedPath) {
+                return [];
+            }
+
+            try {
+                $sheetPath = $expandedPath.DIRECTORY_SEPARATOR.'xl'.DIRECTORY_SEPARATOR.'worksheets'.DIRECTORY_SEPARATOR.'sheet'.$sheetNumber.'.xml';
+                if (!is_file($sheetPath)) {
+                    return [];
+                }
+
+                return $this->readXlsxCellsByReference(
+                    (string) file_get_contents($sheetPath),
+                    $this->readXlsxSharedStringsFromExpandedPath($expandedPath)
+                );
+            } finally {
+                $this->deleteDirectory($expandedPath);
+            }
+        }
+
+        $zip = new \ZipArchive();
+        if ($zip->open($path) !== true) {
+            return [];
+        }
+
+        $sheetXml = $zip->getFromName('xl/worksheets/sheet'.$sheetNumber.'.xml') ?: '';
+        $sharedStrings = $this->parseXlsxSharedStrings($zip->getFromName('xl/sharedStrings.xml') ?: '');
+        $zip->close();
+
+        return $sheetXml !== '' ? $this->readXlsxCellsByReference($sheetXml, $sharedStrings) : [];
+    }
+
+    private function readXlsxSharedStringsFromExpandedPath(string $expandedPath): array
+    {
+        $sharedStringsPath = $expandedPath.DIRECTORY_SEPARATOR.'xl'.DIRECTORY_SEPARATOR.'sharedStrings.xml';
+
+        return is_file($sharedStringsPath)
+            ? $this->parseXlsxSharedStrings((string) file_get_contents($sharedStringsPath))
+            : [];
+    }
+
+    private function parseXlsxSharedStrings(string $sharedStringsXml): array
+    {
+        if ($sharedStringsXml === '') {
+            return [];
+        }
+
+        preg_match_all('/<(?:\w+:)?si[^>]*>(.*?)<\/(?:\w+:)?si>/su', $sharedStringsXml, $matches);
+
+        return collect($matches[1] ?? [])
+            ->map(function ($sharedStringXml) {
+                preg_match_all('/<(?:\w+:)?t[^>]*>(.*?)<\/(?:\w+:)?t>/su', $sharedStringXml, $textMatches);
+
+                return html_entity_decode(
+                    collect($textMatches[1] ?? [])->implode(''),
+                    ENT_QUOTES | ENT_XML1,
+                    'UTF-8'
+                );
+            })
+            ->values()
+            ->all();
+    }
+
     private function extractXlsxRowsWithPowerShell(string $path): array
     {
         $sharedStrings = $this->extractXlsxSharedStringsWithPowerShell($path);
@@ -1502,7 +1671,11 @@ class ApplicantController extends Controller
                     continue;
                 }
 
-                $data = array_merge($data, $this->extractCheckedPdsOptionsFromVml($vmlXml));
+                foreach ($this->extractCheckedPdsOptionsFromVml($vmlXml) as $field => $value) {
+                    if (blank($data[$field] ?? null)) {
+                        $data[$field] = $value;
+                    }
+                }
                 if (filled($data['sex'] ?? null) && filled($data['civil_status'] ?? null)) {
                     $zip->close();
                     return $data;
@@ -1567,7 +1740,11 @@ class ApplicantController extends Controller
                         continue;
                     }
 
-                    $data = array_merge($data, $this->extractCheckedPdsOptionsFromVml((string) file_get_contents($vmlPath)));
+                    foreach ($this->extractCheckedPdsOptionsFromVml((string) file_get_contents($vmlPath)) as $field => $value) {
+                        if (blank($data[$field] ?? null)) {
+                            $data[$field] = $value;
+                        }
+                    }
                     if (filled($data['sex'] ?? null) && filled($data['civil_status'] ?? null)) {
                         return $data;
                     }
@@ -1631,7 +1808,7 @@ class ApplicantController extends Controller
 
         foreach ([
             'sex' => ['Male', 'Female'],
-            'civil_status' => ['Single', 'Married', 'Widowed', 'Separated'],
+            'civil_status' => ['Single', 'Married', 'Widowed', 'Separated', 'Other/s'],
         ] as $field => $choices) {
             foreach ($choices as $choice) {
                 if (preg_match('/\b'.preg_quote($this->normalizePdsLabel($choice), '/').'\b/u', $text)) {
@@ -1680,7 +1857,7 @@ class ApplicantController extends Controller
                 continue;
             }
 
-            $choice = $this->pdsCheckboxChoiceFromPosition($position['row'], $position['column']);
+            $choice = $this->pdsCheckboxChoiceFromDrawingPosition($position['row'], $position['column'], $position['row_offset'] ?? null);
             if ($choice) {
                 $data[$choice[0]] = $choice[1];
             }
@@ -1733,10 +1910,20 @@ class ApplicantController extends Controller
             $positions[$shapeId] = [
                 'column' => ((int) $fromMatch[1]) + 1,
                 'row' => ((int) $fromMatch[2]) + 1,
+                'row_offset' => $this->extractDrawingAnchorOffset($anchorXml, 'rowOff'),
             ];
         }
 
         return $positions;
+    }
+
+    private function extractDrawingAnchorOffset(string $anchorXml, string $tag): ?int
+    {
+        if (!preg_match('/<(?:\w+:)?from>.*?<(?:\w+:)?'.preg_quote($tag, '/').'>\s*(\d+)\s*<\/(?:\w+:)?'.preg_quote($tag, '/').'>.*?<\/(?:\w+:)?from>/su', $anchorXml, $match)) {
+            return null;
+        }
+
+        return (int) $match[1];
     }
 
     private function controlPropertyIsChecked(string $controlXml): bool
@@ -1774,7 +1961,7 @@ class ApplicantController extends Controller
     private function pdsCheckboxChoiceFromPosition(int $row, int $column, bool $includeCivilStatus = true): ?array
     {
         if ($row === 16) {
-            return ['sex', $column <= 5 ? 'Male' : 'Female'];
+            return ['sex', $column <= 4 ? 'Male' : 'Female'];
         }
 
         if (!$includeCivilStatus) {
@@ -1782,14 +1969,35 @@ class ApplicantController extends Controller
         }
 
         if ($row === 17) {
-            return ['civil_status', $column <= 5 ? 'Single' : 'Married'];
+            return ['civil_status', $column <= 4 ? 'Single' : 'Married'];
         }
 
         if ($row === 18) {
-            return ['civil_status', $column <= 5 ? 'Widowed' : 'Separated'];
+            return ['civil_status', $column <= 4 ? 'Widowed' : 'Separated'];
+        }
+
+        if ($row === 19 && $column <= 4) {
+            return ['civil_status', 'Other/s'];
         }
 
         return null;
+    }
+
+    private function pdsCheckboxChoiceFromDrawingPosition(int $row, int $column, ?int $rowOffset = null): ?array
+    {
+        if ($row === 16 && $rowOffset !== null && $rowOffset >= 200000) {
+            return ['civil_status', $column <= 4 ? 'Single' : 'Married'];
+        }
+
+        if ($row === 17) {
+            return ['civil_status', $column <= 4 ? 'Widowed' : 'Separated'];
+        }
+
+        if ($row === 19 && $column <= 4) {
+            return ['civil_status', 'Other/s'];
+        }
+
+        return $this->pdsCheckboxChoiceFromPosition($row, $column);
     }
 
     private function readXmlAttribute(string $attributes, string $name): ?string
@@ -1928,7 +2136,7 @@ try {
         philhealth_no = Get-RangeJoin 'C31:E31'
         sss_no = Get-RangeJoin 'C32:E32'
         tin_no = Get-RangeJoin 'C33:E33'
-        permanent_address = ((Get-RangeJoin 'I25:N25'), (Get-RangeJoin 'I27:N27'), (Get-RangeJoin 'I29:N29') | Where-Object { $_ }) -join ' '
+        permanent_address = ((Get-RangeJoin 'I25:N25'), (Get-RangeJoin 'I27:N27'), (Get-RangeJoin 'I29:N29') | Where-Object { $_ }) -join ', '
         zip_code = $(if ((Get-RangeJoin 'I31:N31')) { Get-RangeJoin 'I31:N31' } else { Get-RangeJoin 'I30:N30' })
         telephone_no = Get-RangeJoin 'I32:N32'
         mobile_no = Get-RangeJoin 'I33:N33'
@@ -2077,11 +2285,13 @@ POWERSHELL;
                     'Married' => [17],
                     'Widowed' => [18],
                     'Separated' => [18],
+                    'Other/s' => [19],
                 ])
                 ?: $this->extractCheckedPdsOption($cells, ['B17', 'C17', 'D17', 'E17'], 'Single')
                 ?: $this->extractCheckedPdsOption($cells, ['F17', 'G17', 'H17'], 'Married')
                 ?: $this->extractCheckedPdsOption($cells, ['B18', 'C18', 'D18', 'E18'], 'Widowed')
-                ?: $this->extractCheckedPdsOption($cells, ['F18', 'G18', 'H18'], 'Separated'),
+                ?: $this->extractCheckedPdsOption($cells, ['F18', 'G18', 'H18'], 'Separated')
+                ?: $this->extractCheckedPdsOption($cells, ['B19', 'C19', 'D19', 'E19'], 'Other/s'),
             'gsis_id_no' => $valueFromRange('C', 'D', 27, $ignoreOfficialPdsNoise),
             'gsis_no' => $valueFromRange('C', 'D', 27, $ignoreOfficialPdsNoise),
             'pag_ibig_id_no' => $valueFromRange('C', 'D', 29, $ignoreOfficialPdsNoise),
@@ -2090,11 +2300,9 @@ POWERSHELL;
             'tin_no' => $valueFromRange('B', 'D', 33, $ignoreOfficialPdsNoise),
             'permanent_address' => $this->cleanPdsPermanentAddress(collect([
                 $valueFromRange('I', 'N', 25),
-                $valueFromRange('I', 'N', 26),
                 $valueFromRange('I', 'N', 27),
-                $valueFromRange('I', 'N', 28),
                 $valueFromRange('I', 'N', 29),
-            ])->filter()->implode(' ')),
+            ])->filter()->implode(', ')),
             'zip_code' => $valueFromRange('I', 'N', 30),
             'telephone_no' => $valueFromRange('I', 'N', 32),
             'mobile_no' => $valueFromRange('I', 'N', 33),
@@ -2313,7 +2521,7 @@ POWERSHELL;
         }
 
         $fields['sex'] = $this->extractPdsChoiceFromRows($rows, ['sex'], ['Male', 'Female']) ?: $fields['sex'];
-        $fields['civil_status'] = $this->extractPdsChoiceFromRows($rows, ['civil status'], ['Single', 'Married', 'Widowed', 'Separated'], 3) ?: $fields['civil_status'];
+        $fields['civil_status'] = $this->extractPdsChoiceFromRows($rows, ['civil status'], ['Single', 'Married', 'Widowed', 'Separated', 'Other/s'], 3) ?: $fields['civil_status'];
         $fields['date_of_birth'] = $this->normalizePdsDate($fields['date_of_birth'] ?? null);
 
         return collect($fields)
@@ -2433,7 +2641,7 @@ POWERSHELL;
             return $choice;
         }
 
-        $choice = $this->extractPdsChoiceFromRows($rows, ['civil status'], ['Single', 'Married', 'Widowed', 'Separated'], 4);
+        $choice = $this->extractPdsChoiceFromRows($rows, ['civil status'], ['Single', 'Married', 'Widowed', 'Separated', 'Other/s'], 4);
         if ($choice) {
             return $choice;
         }
@@ -2456,6 +2664,7 @@ POWERSHELL;
         $officialRows = [
             17 => ['Single', 'Married'],
             18 => ['Widowed', 'Separated'],
+            19 => ['Other/s'],
         ];
 
         foreach ($officialRows as $excelRowNumber => $choices) {
@@ -2464,11 +2673,32 @@ POWERSHELL;
                     continue;
                 }
 
+                $choice = $this->extractOfficialPdsChoiceFromRowZones($row, $choices[0], $choices[1] ?? '');
+                if ($choice) {
+                    return $choice;
+                }
+
                 $choice = $this->extractCheckedChoiceFromCandidateRows([$row], $choices);
                 if ($choice) {
                     return $choice;
                 }
             }
+        }
+
+        return null;
+    }
+
+    private function extractOfficialPdsChoiceFromRowZones(array $row, string $leftChoice, string $rightChoice): ?string
+    {
+        $leftCells = array_slice($row, 0, 5);
+        $rightCells = array_slice($row, 5, 5);
+
+        if ($this->containsCheckedMarker(implode(' ', array_map('strval', $leftCells)))) {
+            return $leftChoice;
+        }
+
+        if ($rightChoice !== '' && $this->containsCheckedMarker(implode(' ', array_map('strval', $rightCells)))) {
+            return $rightChoice;
         }
 
         return null;

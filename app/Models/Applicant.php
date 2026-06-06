@@ -52,6 +52,8 @@ class Applicant extends Model
         'work_position',
         'work_employer',
         'work_location',
+        'work_date_from',
+        'work_date_to',
         'work_duration',
         'fresh_graduate',
         'starRatings',
@@ -86,6 +88,8 @@ class Applicant extends Model
     protected $casts = [
         'date_hired' => 'date',
         'date_of_birth' => 'date',
+        'work_date_from' => 'date',
+        'work_date_to' => 'date',
         'fresh_graduate' => 'boolean',
         'starRatings' => 'integer',
     ];
