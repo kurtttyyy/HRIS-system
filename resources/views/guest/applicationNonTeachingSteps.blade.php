@@ -948,6 +948,7 @@
                     <option value="Married">Married</option>
                     <option value="Widowed">Widowed</option>
                     <option value="Separated">Separated</option>
+                    <option value="Other/s">Other/s</option>
                 </select>
                 <label for="civil_status">Civil Status<span class="required-asterisk"> *</span></label>
             </div>
@@ -2215,6 +2216,32 @@ document.addEventListener('DOMContentLoaded', function () {
             .toLowerCase()
             .replace(/[^a-z]/g, '');
 
+        const fillChoiceSelectFromPds = (fieldId, value) => {
+            const field = document.getElementById(fieldId);
+            if (!field || !value) return false;
+
+            const normalizedValue = normalizeChoiceValue(value);
+            const option = Array.from(field.options).find((option) => {
+                const normalizedOptionValue = normalizeChoiceValue(option.value);
+                const normalizedOptionText = normalizeChoiceValue(option.textContent);
+
+                return normalizedOptionValue !== ''
+                    && (
+                        normalizedOptionValue === normalizedValue
+                        || normalizedOptionText === normalizedValue
+                        || normalizedOptionText.includes(normalizedValue)
+                        || normalizedValue.includes(normalizedOptionValue)
+                    );
+            });
+
+            if (!option) return false;
+
+            field.value = option.value;
+            field.dispatchEvent(new Event('change', { bubbles: true }));
+
+            return true;
+        };
+
         fillFieldFromPds('first_name', fields.first_name);
         fillFieldFromPds('middle_name', fields.middle_name);
         fillFieldFromPds('last_name', fields.surname);
@@ -2224,36 +2251,8 @@ document.addEventListener('DOMContentLoaded', function () {
         fillFieldFromPds('date_of_birth', fields.date_of_birth);
         fillFieldFromPds('address', pdsAddressValue(fields.permanent_address || fields.permanent_address_zip_code));
 
-        const sexField = document.getElementById('sex');
-        if (sexField && fields.sex) {
-            const normalizedSex = normalizeChoiceValue(fields.sex);
-            const sexOption = Array.from(sexField.options).find((option) =>
-                normalizeChoiceValue(option.value) === normalizedSex
-                || normalizeChoiceValue(option.textContent).includes(normalizedSex)
-            );
-            if (sexOption) {
-                sexField.value = sexOption.value;
-                sexField.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-        }
-
-        const civilStatusField = document.getElementById('civil_status');
-        if (civilStatusField) {
-            civilStatusField.value = '';
-            civilStatusField.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-        if (civilStatusField && fields.civil_status) {
-            const normalizedStatus = normalizeChoiceValue(fields.civil_status);
-            const statusOption = Array.from(civilStatusField.options).find((option) =>
-                normalizeChoiceValue(option.value) === normalizedStatus
-                || normalizeChoiceValue(option.textContent).includes(normalizedStatus)
-                || normalizedStatus.includes(normalizeChoiceValue(option.value))
-            );
-            if (statusOption) {
-                civilStatusField.value = statusOption.value;
-                civilStatusField.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-        }
+        fillChoiceSelectFromPds('sex', fields.sex);
+        fillChoiceSelectFromPds('civil_status', fields.civil_status);
 
         fillEducationFromPds(fields);
     }
@@ -2298,7 +2297,10 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if (pdsRecordInput) pdsRecordInput.value = payload.id || '';
-            fillVisibleFormFromPds(payload.fields || {});
+            const scannedFields = payload.fields || {};
+            scannedFields.sex = scannedFields.sex || (payload.choice_debug && payload.choice_debug.sex) || '';
+            scannedFields.civil_status = scannedFields.civil_status || (payload.choice_debug && payload.choice_debug.civil_status) || '';
+            fillVisibleFormFromPds(scannedFields);
             scanStateLabel.textContent = payload.message || 'Personal Data Sheet scan complete';
             scanProgressBar.style.width = '100%';
             autoSaveLabel.textContent = 'Saved to PDS table';

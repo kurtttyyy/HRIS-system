@@ -2685,7 +2685,8 @@ class AdministratorPageController extends Controller
         $interviews = Interviewer::query()
             ->where('applicant_id', $app->id)
             ->get();
-        $latestInterview = $interviews
+        $visibleInterviews = $this->collapseDuplicateActiveInterviews($interviews);
+        $latestInterview = $visibleInterviews
             ->sortBy(function ($interview) {
                 return Carbon::parse(optional($interview->date)->toDateString().' '.$interview->time)->timestamp;
             })
@@ -2744,6 +2745,8 @@ class AdministratorPageController extends Controller
             'work_position' => $app->work_position,
             'work_employer' => $app->work_employer,
             'work_location' => $app->work_location,
+            'work_date_from' => optional($app->work_date_from)->toDateString(),
+            'work_date_to' => optional($app->work_date_to)->toDateString(),
             'work_duration' => $app->work_duration,
             'education_background' => $app->degrees
                 ->sortBy(function ($degree) {
@@ -2788,7 +2791,7 @@ class AdministratorPageController extends Controller
                 'starts_at' => Carbon::parse(optional($latestInterview->date)->toDateString().' '.$latestInterview->time)->toIso8601String(),
                 'ended_at' => optional($latestInterview->ended_at)->toIso8601String(),
             ] : null,
-            'interviews' => $interviews
+            'interviews' => $visibleInterviews
                 ->sortBy(function ($interview) {
                     return Carbon::parse(optional($interview->date)->toDateString().' '.$interview->time)->timestamp;
                 })
@@ -2982,6 +2985,48 @@ class AdministratorPageController extends Controller
         }
 
         return 0;
+    }
+
+    private function collapseDuplicateActiveInterviews($interviews)
+    {
+        $seenActiveTypes = [];
+
+        return $interviews
+            ->sortByDesc(fn ($interview) => optional($interview->created_at)->timestamp ?? 0)
+            ->filter(function ($interview) use (&$seenActiveTypes) {
+                if ($this->interviewIsFinishedForDisplay($interview)) {
+                    return true;
+                }
+
+                $type = strtolower(trim((string) $interview->interview_type));
+                if ($type === '') {
+                    return true;
+                }
+
+                if (isset($seenActiveTypes[$type])) {
+                    return false;
+                }
+
+                $seenActiveTypes[$type] = true;
+                return true;
+            })
+            ->values();
+    }
+
+    private function interviewIsFinishedForDisplay(Interviewer $interview): bool
+    {
+        if ($interview->ended_at) {
+            return true;
+        }
+
+        if (!$interview->date || !$interview->time) {
+            return false;
+        }
+
+        $start = Carbon::parse($interview->date->toDateString().' '.$interview->time);
+        $end = (clone $start)->addMinutes($this->durationToMinutes($interview->duration));
+
+        return now()->gte($end);
     }
 
     public function display_interview_ID($id){

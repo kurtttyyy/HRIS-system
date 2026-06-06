@@ -84,7 +84,7 @@ class ApplicantController extends Controller
             ->all();
         $pdsData = $this->removePdsTemplateNoise($pdsData);
         $pdsData['sex'] = $this->normalizePdsChoice($pdsData['sex'] ?? null, ['Male', 'Female']);
-        $pdsData['civil_status'] = $this->normalizePdsChoice($pdsData['civil_status'] ?? null, ['Single', 'Married', 'Widowed', 'Separated']);
+        $pdsData['civil_status'] = $this->normalizePdsChoice($pdsData['civil_status'] ?? null, ['Single', 'Married', 'Widowed', 'Separated', 'Other/s']);
         if (blank($pdsData['civil_status'] ?? null)) {
             $pdsData['civil_status'] = $this->inferOfficialPdsCivilStatus($scanRows, $scanText, $pdsData);
         }
@@ -118,7 +118,7 @@ class ApplicantController extends Controller
                 'sex' => $pdsData['sex'] ?? null,
                 'civil_status' => $pdsData['civil_status'] ?? null,
                 'upload_debug_path' => $debugUploadPath,
-                'civil_status_rows' => $this->debugPdsChoiceRows($scanRows, ['civil status', 'single', 'widowed']),
+                'civil_status_rows' => $this->debugPdsChoiceRows($scanRows, ['civil status', 'single', 'widowed', 'other/s']),
             ],
             'message' => 'Personal Data Sheet scanned and saved.',
         ]);
@@ -662,26 +662,41 @@ class ApplicantController extends Controller
             ];
 
             if (Schema::hasColumn('education', 'applicant_id')) {
-                Education::updateOrCreate(
-                    ['applicant_id' => (int) $applicant_store->id],
-                    [
-                        ...$educationPayload,
-                        'user_id' => $applicant_store->user_id,
-                    ]
-                );
+                $educationValues = $educationPayload;
+
+                if (Schema::hasColumn('education', 'user_id')) {
+                    $userId = $applicant_store->user_id ? (int) $applicant_store->user_id : null;
+
+                    if ($userId !== null || $this->educationUserIdAllowsNull()) {
+                        $educationValues['user_id'] = $userId;
+                    } else {
+                        $educationValues = null;
+                    }
+                }
+
+                if ($educationValues !== null) {
+                    Education::updateOrCreate(
+                        ['applicant_id' => (int) $applicant_store->id],
+                        $educationValues
+                    );
+                }
             }
 
             if (!empty($attrs['pds_record_id'])) {
-                DB::table('pds_table')
-                    ->where('id', $attrs['pds_record_id'])
-                    ->whereNull('applicant_id')
-                    ->update($this->filterPayloadForTableColumns('pds_table', $this->buildPdsApplicationPayload(
-                        $attrs,
-                        $applicant_store->id,
-                        $normalizedEducationLevels,
-                        $normalizedMasterDegrees,
-                        $normalizedDoctoralDegrees
-                    )));
+                $pdsPayload = $this->filterPayloadForTableColumns('pds_table', $this->buildPdsApplicationPayload(
+                    $attrs,
+                    $applicant_store->id,
+                    $normalizedEducationLevels,
+                    $normalizedMasterDegrees,
+                    $normalizedDoctoralDegrees
+                ));
+
+                if ($pdsPayload !== []) {
+                    DB::table('pds_table')
+                        ->where('id', $attrs['pds_record_id'])
+                        ->whereNull('applicant_id')
+                        ->update($pdsPayload);
+                }
             }
 
             foreach ((array) $request->input('documents', []) as $index => $docMeta) {
@@ -1487,7 +1502,11 @@ class ApplicantController extends Controller
                     continue;
                 }
 
-                $data = array_merge($data, $this->extractCheckedPdsOptionsFromVml($vmlXml));
+                foreach ($this->extractCheckedPdsOptionsFromVml($vmlXml) as $field => $value) {
+                    if (blank($data[$field] ?? null)) {
+                        $data[$field] = $value;
+                    }
+                }
                 if (filled($data['sex'] ?? null) && filled($data['civil_status'] ?? null)) {
                     $zip->close();
                     return $data;
@@ -1552,7 +1571,11 @@ class ApplicantController extends Controller
                         continue;
                     }
 
-                    $data = array_merge($data, $this->extractCheckedPdsOptionsFromVml((string) file_get_contents($vmlPath)));
+                    foreach ($this->extractCheckedPdsOptionsFromVml((string) file_get_contents($vmlPath)) as $field => $value) {
+                        if (blank($data[$field] ?? null)) {
+                            $data[$field] = $value;
+                        }
+                    }
                     if (filled($data['sex'] ?? null) && filled($data['civil_status'] ?? null)) {
                         return $data;
                     }
@@ -1616,7 +1639,7 @@ class ApplicantController extends Controller
 
         foreach ([
             'sex' => ['Male', 'Female'],
-            'civil_status' => ['Single', 'Married', 'Widowed', 'Separated'],
+            'civil_status' => ['Single', 'Married', 'Widowed', 'Separated', 'Other/s'],
         ] as $field => $choices) {
             foreach ($choices as $choice) {
                 if (preg_match('/\b'.preg_quote($this->normalizePdsLabel($choice), '/').'\b/u', $text)) {
@@ -1665,7 +1688,7 @@ class ApplicantController extends Controller
                 continue;
             }
 
-            $choice = $this->pdsCheckboxChoiceFromPosition($position['row'], $position['column']);
+            $choice = $this->pdsCheckboxChoiceFromDrawingPosition($position['row'], $position['column'], $position['row_offset'] ?? null);
             if ($choice) {
                 $data[$choice[0]] = $choice[1];
             }
@@ -1718,10 +1741,20 @@ class ApplicantController extends Controller
             $positions[$shapeId] = [
                 'column' => ((int) $fromMatch[1]) + 1,
                 'row' => ((int) $fromMatch[2]) + 1,
+                'row_offset' => $this->extractDrawingAnchorOffset($anchorXml, 'rowOff'),
             ];
         }
 
         return $positions;
+    }
+
+    private function extractDrawingAnchorOffset(string $anchorXml, string $tag): ?int
+    {
+        if (!preg_match('/<(?:\w+:)?from>.*?<(?:\w+:)?'.preg_quote($tag, '/').'>\s*(\d+)\s*<\/(?:\w+:)?'.preg_quote($tag, '/').'>.*?<\/(?:\w+:)?from>/su', $anchorXml, $match)) {
+            return null;
+        }
+
+        return (int) $match[1];
     }
 
     private function controlPropertyIsChecked(string $controlXml): bool
@@ -1759,7 +1792,7 @@ class ApplicantController extends Controller
     private function pdsCheckboxChoiceFromPosition(int $row, int $column, bool $includeCivilStatus = true): ?array
     {
         if ($row === 16) {
-            return ['sex', $column <= 5 ? 'Male' : 'Female'];
+            return ['sex', $column <= 4 ? 'Male' : 'Female'];
         }
 
         if (!$includeCivilStatus) {
@@ -1767,14 +1800,35 @@ class ApplicantController extends Controller
         }
 
         if ($row === 17) {
-            return ['civil_status', $column <= 5 ? 'Single' : 'Married'];
+            return ['civil_status', $column <= 4 ? 'Single' : 'Married'];
         }
 
         if ($row === 18) {
-            return ['civil_status', $column <= 5 ? 'Widowed' : 'Separated'];
+            return ['civil_status', $column <= 4 ? 'Widowed' : 'Separated'];
+        }
+
+        if ($row === 19 && $column <= 4) {
+            return ['civil_status', 'Other/s'];
         }
 
         return null;
+    }
+
+    private function pdsCheckboxChoiceFromDrawingPosition(int $row, int $column, ?int $rowOffset = null): ?array
+    {
+        if ($row === 16 && $rowOffset !== null && $rowOffset >= 200000) {
+            return ['civil_status', $column <= 4 ? 'Single' : 'Married'];
+        }
+
+        if ($row === 17) {
+            return ['civil_status', $column <= 4 ? 'Widowed' : 'Separated'];
+        }
+
+        if ($row === 19 && $column <= 4) {
+            return ['civil_status', 'Other/s'];
+        }
+
+        return $this->pdsCheckboxChoiceFromPosition($row, $column);
     }
 
     private function readXmlAttribute(string $attributes, string $name): ?string
@@ -2062,11 +2116,13 @@ POWERSHELL;
                     'Married' => [17],
                     'Widowed' => [18],
                     'Separated' => [18],
+                    'Other/s' => [19],
                 ])
                 ?: $this->extractCheckedPdsOption($cells, ['B17', 'C17', 'D17', 'E17'], 'Single')
                 ?: $this->extractCheckedPdsOption($cells, ['F17', 'G17', 'H17'], 'Married')
                 ?: $this->extractCheckedPdsOption($cells, ['B18', 'C18', 'D18', 'E18'], 'Widowed')
-                ?: $this->extractCheckedPdsOption($cells, ['F18', 'G18', 'H18'], 'Separated'),
+                ?: $this->extractCheckedPdsOption($cells, ['F18', 'G18', 'H18'], 'Separated')
+                ?: $this->extractCheckedPdsOption($cells, ['B19', 'C19', 'D19', 'E19'], 'Other/s'),
             'gsis_id_no' => $valueFromRange('C', 'D', 27, $ignoreOfficialPdsNoise),
             'gsis_no' => $valueFromRange('C', 'D', 27, $ignoreOfficialPdsNoise),
             'pag_ibig_id_no' => $valueFromRange('C', 'D', 29, $ignoreOfficialPdsNoise),
@@ -2298,7 +2354,7 @@ POWERSHELL;
         }
 
         $fields['sex'] = $this->extractPdsChoiceFromRows($rows, ['sex'], ['Male', 'Female']) ?: $fields['sex'];
-        $fields['civil_status'] = $this->extractPdsChoiceFromRows($rows, ['civil status'], ['Single', 'Married', 'Widowed', 'Separated'], 3) ?: $fields['civil_status'];
+        $fields['civil_status'] = $this->extractPdsChoiceFromRows($rows, ['civil status'], ['Single', 'Married', 'Widowed', 'Separated', 'Other/s'], 3) ?: $fields['civil_status'];
         $fields['date_of_birth'] = $this->normalizePdsDate($fields['date_of_birth'] ?? null);
 
         return collect($fields)
@@ -2389,8 +2445,13 @@ POWERSHELL;
                     continue;
                 }
 
-                $window = collect(array_slice($tokens, max(0, $index - 3), 4))->implode(' ');
-                if ($this->containsCheckedMarker($window)) {
+                $window = collect(array_slice($tokens, max(0, $index - 3), 7))->implode(' ');
+                $choiceHasTrailingCheckedValue = preg_match(
+                    '/\b'.preg_quote($choice, '/').'\b(?:\s+\S+){0,4}\s+\b(?:1|true|yes|checked)\b/iu',
+                    $window
+                );
+
+                if ($this->containsCheckedMarker($window) || $choiceHasTrailingCheckedValue) {
                     return $choice;
                 }
             }
@@ -2413,7 +2474,7 @@ POWERSHELL;
             return $choice;
         }
 
-        $choice = $this->extractPdsChoiceFromRows($rows, ['civil status'], ['Single', 'Married', 'Widowed', 'Separated'], 4);
+        $choice = $this->extractPdsChoiceFromRows($rows, ['civil status'], ['Single', 'Married', 'Widowed', 'Separated', 'Other/s'], 4);
         if ($choice) {
             return $choice;
         }
@@ -2436,6 +2497,7 @@ POWERSHELL;
         $officialRows = [
             17 => ['Single', 'Married'],
             18 => ['Widowed', 'Separated'],
+            19 => ['Other/s'],
         ];
 
         foreach ($officialRows as $excelRowNumber => $choices) {
@@ -2444,11 +2506,32 @@ POWERSHELL;
                     continue;
                 }
 
+                $choice = $this->extractOfficialPdsChoiceFromRowZones($row, $choices[0], $choices[1] ?? '');
+                if ($choice) {
+                    return $choice;
+                }
+
                 $choice = $this->extractCheckedChoiceFromCandidateRows([$row], $choices);
                 if ($choice) {
                     return $choice;
                 }
             }
+        }
+
+        return null;
+    }
+
+    private function extractOfficialPdsChoiceFromRowZones(array $row, string $leftChoice, string $rightChoice): ?string
+    {
+        $leftCells = array_slice($row, 0, 5);
+        $rightCells = array_slice($row, 5, 5);
+
+        if ($this->containsCheckedMarker(implode(' ', array_map('strval', $leftCells)))) {
+            return $leftChoice;
+        }
+
+        if ($rightChoice !== '' && $this->containsCheckedMarker(implode(' ', array_map('strval', $rightCells)))) {
+            return $rightChoice;
         }
 
         return null;
@@ -2674,6 +2757,25 @@ POWERSHELL;
         }
 
         return $value;
+    }
+
+    private function educationUserIdAllowsNull(): bool
+    {
+        if (! Schema::hasColumn('education', 'user_id')) {
+            return true;
+        }
+
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            return true;
+        }
+
+        foreach (DB::select('PRAGMA table_info(education)') as $column) {
+            if (($column->name ?? null) === 'user_id') {
+                return (int) ($column->notnull ?? 0) === 0;
+            }
+        }
+
+        return true;
     }
 
     private function cleanPdsEducationCell(string $value): ?string

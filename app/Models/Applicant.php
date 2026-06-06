@@ -52,6 +52,8 @@ class Applicant extends Model
         'work_position',
         'work_employer',
         'work_location',
+        'work_date_from',
+        'work_date_to',
         'work_duration',
         'fresh_graduate',
         'starRatings',
@@ -60,14 +62,16 @@ class Applicant extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id'); // Adjust 'user_id' if your column name differs
+        return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function position(){
+    public function position()
+    {
         return $this->belongsTo(OpenPosition::class, 'open_position_id', 'id');
     }
 
-    public function documents(){
+    public function documents()
+    {
         return $this->hasMany(ApplicantDocument::class, 'applicant_id', 'id');
     }
 
@@ -86,6 +90,8 @@ class Applicant extends Model
     protected $casts = [
         'date_hired' => 'date',
         'date_of_birth' => 'date',
+        'work_date_from' => 'date',
+        'work_date_to' => 'date',
         'fresh_graduate' => 'boolean',
         'starRatings' => 'integer',
     ];
@@ -138,4 +144,3 @@ class Applicant extends Model
         }
     }
 }
-
