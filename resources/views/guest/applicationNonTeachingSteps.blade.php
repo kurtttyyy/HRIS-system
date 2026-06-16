@@ -228,6 +228,10 @@
         margin-bottom: 0 !important;
     }
 
+    .work-field-grid .work-location-field {
+        grid-column: 1 / -1;
+    }
+
     .fresh-graduate-card {
         display: flex;
         align-items: center;
@@ -774,49 +778,42 @@
                 </div>
                 <div class="apply-meta">
                     <p class="apply-meta-label">Application Flow</p>
-                    <p id="currentStepText" class="apply-meta-value">Step 1 of 6: Application</p>
+                    <p id="currentStepText" class="apply-meta-value">Step 1 of 5: Personal Info</p>
                 </div>
             </div>
 
             <div class="stepper1">
 
-                <div class="step1 completed1">
+                <div class="step1 active">
                     <div class="circle1">1</div>
-                    <div class="label1">Application</div>
-                </div>
-
-                <div class="line1 completed1"></div>
-
-                <div class="step1 completed1">
-                    <div class="circle1">2</div>
                     <div class="label1">Personal Info</div>
                 </div>
 
-                <div class="line1 completed1"></div>
+                <div class="line1"></div>
 
-                <div class="step1 completed1">
-                    <div class="circle1">3</div>
+                <div class="step1">
+                    <div class="circle1">2</div>
                     <div class="label1">Experience</div>
                 </div>
 
-                <div class="line1 completed1"></div>
+                <div class="line1"></div>
 
                 <div class="step1">
-                    <div class="circle1">4</div>
+                    <div class="circle1">3</div>
                     <div class="label1">Documents</div>
                 </div>
 
                 <div class="line1"></div>
 
                 <div class="step1">
-                    <div class="circle1">5</div>
+                    <div class="circle1">4</div>
                     <div class="label1">Review</div>
                 </div>
 
                 <div class="line1"></div>
 
                 <div class="step1">
-                    <div class="circle1">6</div>
+                    <div class="circle1">5</div>
                     <div class="label1">Submit</div>
                 </div>
 
@@ -826,9 +823,11 @@
     @csrf
     <input type="text" name="position" class="form-control" value="{{ $openPosition->id}}" hidden>
     <input type="hidden" id="pds_record_id" name="pds_record_id">
+<!-- Temporarily hidden: Application Details step.
 <div id="applicationFormStep" class="mt-4 form-step">
     <h4 class="fw-bold mb-3">Application Details</h4>
 
+    {{-- Temporarily hidden: Personal Data Sheet upload/scan intake.
     <div class="application-intake-grid">
         <div class="application-intake-card application-scan-card">
             <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
@@ -872,14 +871,16 @@
             </div>
         </div>
     </div>
+    --}}
 
     <div class="d-flex justify-content-end mt-auto step-actions">
         <div></div>
-        <button type="button" id="btnToPersonal" class="btn btn-primary" disabled>Continue</button>
+        <button type="button" id="btnToPersonal" class="btn btn-primary">Continue</button>
     </div>
 </div>
+-->
 
-<div id="personalForm" class="mt-4 d-none form-step">
+<div id="personalForm" class="mt-4 form-step">
     <h4 class="fw-bold mb-3">Personal Information</h4>
 
     <div class="row mb-3">
@@ -969,8 +970,10 @@
         </div>
     </div>
 
-    <div class="d-flex justify-content-between mt-auto step-actions personal-info-actions">
+    <div class="d-flex justify-content-end mt-auto step-actions personal-info-actions">
+        {{-- Temporarily hidden: Application Details step.
         <button type="button" id="btnBackToApplication" class="btn btn-secondary">Previous</button>
+        --}}
         <button type="button" id="btnToExperience" class="btn btn-primary">Proceed</button>
     </div>
 </div>
@@ -1273,24 +1276,31 @@
 
     <div class="work-field-grid mb-3">
     <div class="floating-input">
+        <input type="date" class="form-control" id="work_date_from" name="work_date_from" placeholder=" " required>
+        <label for="work_date_from">Date From<span class="required-asterisk"> *</span></label>
+    </div>
+
+    <div class="floating-input">
+        <input type="date" class="form-control" id="work_date_to" name="work_date_to" placeholder=" " required>
+        <label for="work_date_to">Date To<span class="required-asterisk"> *</span></label>
+    </div>
+
+    <div class="floating-input">
         <input type="text" class="form-select" id="work_position" name="work_position" placeholder=" " required>
         <label for="work_position">Position<span class="required-asterisk"> *</span></label>
     </div>
 
     <div class="floating-input">
         <input type="text" class="form-select" id="work_employer" name="work_employer" placeholder=" " required>
-        <label for="work_employer">Employer<span class="required-asterisk"> *</span></label>
+        <label for="work_employer">Company/Agency/Office<span class="required-asterisk"> *</span></label>
     </div>
 
-    <div class="floating-input">
+    <div class="floating-input work-location-field">
         <input type="text" class="form-select" id="work_location" name="work_location" placeholder=" " required>
         <label for="work_location">Location<span class="required-asterisk"> *</span></label>
     </div>
 
-    <div class="floating-input">
-        <input type="text" class="form-control" id="work_duration" name="work_duration" placeholder=" " required>
-        <label for="work_duration">Duration<span class="required-asterisk"> *</span></label>
-    </div>
+    <input type="hidden" id="work_duration" name="work_duration">
     </div>
 
     <div class="mb-3 floating-input">
@@ -1567,20 +1577,20 @@
                     <h6 class="review-panel-title"><i class="bi bi-briefcase"></i> Work Experience</h6>
                     <div class="review-item-list">
                         <div class="review-item">
+                            <span class="review-label">Date</span>
+                            <span id="work_du" class="review-value"></span>
+                        </div>
+                        <div class="review-item">
                             <span class="review-label">Position</span>
                             <span id="work_po" class="review-value"></span>
                         </div>
                         <div class="review-item">
-                            <span class="review-label">Employer</span>
+                            <span class="review-label">Company/Agency/Office</span>
                             <span id="work_em" class="review-value"></span>
                         </div>
                         <div class="review-item">
                             <span class="review-label">Location</span>
                             <span id="work_lo" class="review-value"></span>
-                        </div>
-                        <div class="review-item">
-                            <span class="review-label">Duration</span>
-                            <span id="work_du" class="review-value"></span>
                         </div>
                         <div class="review-item">
                             <span class="review-label">Experience</span>
@@ -1971,6 +1981,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     syncDocumentDraftInputs();
 
+    /* Temporarily hidden: Personal Data Sheet upload/scan intake.
     const intakeUploadZone = document.getElementById('intakeUploadZone');
     const intakeUploadInput = document.getElementById('intakeUploadInput');
     const intakeUploadTitle = document.getElementById('intakeUploadTitle');
@@ -2056,6 +2067,25 @@ document.addEventListener('DOMContentLoaded', function () {
         field.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
+    function syncScannedWorkDurationValue() {
+        const workDuration = document.getElementById('work_duration');
+        const dateFromInput = document.getElementById('work_date_from');
+        const dateToInput = document.getElementById('work_date_to');
+        if (!workDuration || !dateFromInput || !dateToInput) return;
+
+        const formatDate = (value) => {
+            if (!value) return '';
+
+            const [year, month, day] = String(value).split('-');
+            return year && month && day ? `${month}/${day}/${year}` : value;
+        };
+
+        const dateFrom = formatDate(dateFromInput.value);
+        const dateTo = formatDate(dateToInput.value);
+        dateToInput.min = dateFromInput.value || '';
+        workDuration.value = dateFrom && dateTo ? `${dateFrom} - ${dateTo}` : '';
+    }
+
     function fillSelectFromPds(fieldId, value) {
         const field = document.getElementById(fieldId);
         if (!field) return;
@@ -2120,8 +2150,29 @@ document.addEventListener('DOMContentLoaded', function () {
         ].includes(normalized);
     }
 
-    function pdsAddressValue(value) {
-        return isPdsCitizenshipCountryValue(value) ? '' : value;
+    function pdsAddressValue(value, zipCode = '') {
+        if (isPdsCitizenshipCountryValue(value)) return '';
+
+        let address = String(value || '').trim();
+        const zip = String(zipCode || '').trim();
+
+        if (!address) return '';
+
+        if (zip) {
+            address = address
+                .replace(new RegExp(`\\s*[-,]?\\s*${zip.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`), '')
+                .trim()
+                .replace(/[-,]\s*$/, '')
+                .trim();
+        } else {
+            const match = address.match(/^(.*?)(?:\s+)?(?:zip\s*code\s*)?(\d{4})$/i);
+            if (match) {
+                address = match[1].trim().replace(/[-,]\s*$/, '').trim();
+                return address ? `${address} - ${match[2]}` : match[2];
+            }
+        }
+
+        return address && zip ? `${address} - ${zip}` : address;
     }
 
     function pdsNameExtensionValue(value) {
@@ -2249,12 +2300,20 @@ document.addEventListener('DOMContentLoaded', function () {
         fillFieldFromPds('email', fields.email_address);
         fillFieldFromPds('phone', fields.mobile_no || fields.telephone_no);
         fillFieldFromPds('date_of_birth', fields.date_of_birth);
-        fillFieldFromPds('address', pdsAddressValue(fields.permanent_address || fields.permanent_address_zip_code));
+        fillFieldFromPds('address', pdsAddressValue(fields.permanent_address || fields.permanent_address_zip_code, fields.zip_code));
+        fillFieldFromPds('work_date_from', fields.work_date_from);
+        fillFieldFromPds('work_date_to', fields.work_date_to);
+        fillFieldFromPds('work_position', fields.work_position);
+        fillFieldFromPds('work_employer', fields.work_employer);
+        if ('work_location' in fields) {
+            fillFieldFromPds('work_location', fields.work_location);
+        }
 
         fillChoiceSelectFromPds('sex', fields.sex);
         fillChoiceSelectFromPds('civil_status', fields.civil_status);
 
         fillEducationFromPds(fields);
+        syncScannedWorkDurationValue();
     }
 
     scanUploadedFileButton?.addEventListener('click', async function () {
@@ -2323,6 +2382,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     clearIntakeUploadButton?.addEventListener('click', resetIntakeScanDesign);
     syncContinueButtonWithScan();
+    */
 
 });
 </script>
@@ -2367,12 +2427,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentStepText = document.getElementById('currentStepText');
 
     const stepMeta = {
-        1: 'Step 1 of 6: Application',
-        2: 'Step 2 of 6: Personal Info',
-        3: 'Step 3 of 6: Experience',
-        4: 'Step 4 of 6: Documents',
-        5: 'Step 5 of 6: Review',
-        6: 'Step 6 of 6: Submit',
+        1: 'Step 1 of 5: Personal Info',
+        2: 'Step 2 of 5: Experience',
+        3: 'Step 3 of 5: Documents',
+        4: 'Step 4 of 5: Review',
+        5: 'Step 5 of 5: Submit',
     };
 
     function setStep(stepNumber) {
@@ -2549,7 +2608,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isInDocuments = !!field.closest('#documentsForm');
         const isInReview = !!field.closest('#reviewForm');
 
-        applicationFormStep.classList.add('d-none');
+        applicationFormStep?.classList.add('d-none');
         personalForm.classList.add('d-none');
         experienceForm.classList.add('d-none');
         documentsForm.classList.add('d-none');
@@ -2557,27 +2616,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isInPersonal) {
             personalForm.classList.remove('d-none');
-            setStep(2);
+            setStep(1);
             return;
         }
         if (isInExperience) {
             experienceForm.classList.remove('d-none');
-            setStep(3);
+            setStep(2);
             return;
         }
         if (isInDocuments) {
             documentsForm.classList.remove('d-none');
-            setStep(4);
+            setStep(3);
             return;
         }
         if (isInReview) {
             reviewForm.classList.remove('d-none');
-            setStep(5);
+            setStep(4);
             return;
         }
 
         reviewForm.classList.remove('d-none');
-        setStep(5);
+        setStep(4);
     }
 
     if (applicationForm) {
@@ -2646,6 +2705,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 submitButton.disabled = true;
                 submitButton.textContent = 'Submitting...';
                 await refreshCsrfToken();
+                syncWorkDurationValue();
                 prepareFinalSubmitPayload();
                 clearFormDraft();
                 nativeSubmit();
@@ -2671,8 +2731,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     restoreFormDraft();
     const scanCheckScanForNav = document.getElementById('scanCheckScan');
-    const hasCompletedCurrentPdsScan = () => Boolean(pdsRecordInputForNav?.value)
-        && scanCheckScanForNav?.classList.contains('is-complete');
+    // Temporarily bypassed while Personal Data Sheet upload/scan intake is hidden.
+    const hasCompletedCurrentPdsScan = () => true;
     if (btnToPersonal) {
         btnToPersonal.disabled = !hasCompletedCurrentPdsScan();
         btnToPersonal.classList.toggle('disabled', !hasCompletedCurrentPdsScan());
@@ -2710,7 +2770,9 @@ document.addEventListener('DOMContentLoaded', () => {
     ======================= */
 
     // Step 1 → Step 2
-    btnToPersonal.addEventListener('click', () => {
+    btnToPersonal?.addEventListener('click', () => {
+        /*
+        Temporarily hidden: Personal Data Sheet upload/scan intake guard.
         if (!hasCompletedCurrentPdsScan()) {
             scanStateLabelForNav.textContent = intakeUploadInputForNav?.files?.length
                 ? 'Please scan the uploaded Personal Data Sheet before continuing'
@@ -2721,37 +2783,39 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => intakeUploadZoneForNav?.classList.remove('field-error-highlight'), 1400);
             return;
         }
+        */
 
         transitionForms(applicationFormStep, personalForm, 'forward');
-        setStep(2);
+        setStep(1);
     });
 
-    btnBackToApplication.addEventListener('click', () => {
+    btnBackToApplication?.addEventListener('click', () => {
         transitionForms(personalForm, applicationFormStep, 'back');
         setStep(1);
     });
 
     btnToExperience.addEventListener('click', () => {
         transitionForms(personalForm, experienceForm, 'forward');
-        setStep(3);
+        setStep(2);
     });
 
     // Step 2 → Step 1
     btnBackToPersonal.addEventListener('click', () => {
         transitionForms(experienceForm, personalForm, 'back');
-        setStep(2);
+        setStep(1);
     });
 
     // Step 2 → Step 3
     btnToDocuments.addEventListener('click', () => {
+        syncWorkDurationValue();
         transitionForms(experienceForm, documentsForm, 'forward');
-        setStep(4);
+        setStep(3);
     });
 
     // Step 3 → Step 2
     btnBackToExperience.addEventListener('click', () => {
         transitionForms(documentsForm, experienceForm, 'back');
-        setStep(3);
+        setStep(2);
     });
 
     // Step 3 → Step 4 (Review)
@@ -2865,10 +2929,11 @@ document.addEventListener('DOMContentLoaded', () => {
             reviewSkills.appendChild(emptySkill);
         }
 
+        const workDurationValue = syncWorkDurationValue();
+        document.getElementById('work_du').textContent = workDurationValue || 'N/A';
         document.getElementById('work_po').textContent = document.getElementById('work_position').value;
         document.getElementById('work_em').textContent = document.getElementById('work_employer').value;
         document.getElementById('work_lo').textContent = document.getElementById('work_location').value;
-        document.getElementById('work_du').textContent = document.getElementById('work_duration').value;
 
         const resumeInput = document.getElementById('resume');
         const coverInput  = document.getElementById('cover_letter');
@@ -2943,13 +3008,13 @@ document.addEventListener('DOMContentLoaded', () => {
         transitionForms(documentsForm, reviewForm, 'forward');
         certifyCheckbox.checked = false;
         submitButton.disabled = true;
-        setStep(5);
+        setStep(4);
     });
 
     // Step 4 → Step 3
     btnBackToDocumentsFromReview.addEventListener('click', () => {
         transitionForms(reviewForm, documentsForm, 'back');
-        setStep(4);
+        setStep(3);
     });
 
     const bachelorDegreesContainer = document.getElementById('bachelor-degrees-container');
@@ -2960,6 +3025,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const addDoctoralDegreeBtn = document.getElementById('addDoctoralDegreeBtn');
     const yearRevealDelayMs = 140;
     const freshGraduateCheckbox = document.getElementById('fresh_graduate');
+    const workDateFromInput = document.getElementById('work_date_from');
+    const workDateToInput = document.getElementById('work_date_to');
     const workPositionInput = document.getElementById('work_position');
     const workEmployerInput = document.getElementById('work_employer');
     const workLocationInput = document.getElementById('work_location');
@@ -3005,6 +3072,28 @@ document.addEventListener('DOMContentLoaded', () => {
             skillDraftInput.required = selectedSkills.length === 0;
         }
     }
+
+    const formatWorkDate = (value) => {
+        if (!value) return '';
+
+        const [year, month, day] = String(value).split('-');
+        if (!year || !month || !day) return value;
+
+        return `${month}/${day}/${year}`;
+    };
+
+    const syncWorkDurationValue = () => {
+        if (!workDurationInput) return '';
+
+        const dateFrom = formatWorkDate(workDateFromInput?.value || '');
+        const dateTo = formatWorkDate(workDateToInput?.value || '');
+        if (workDateFromInput && workDateToInput) {
+            workDateToInput.min = workDateFromInput.value || '';
+        }
+        workDurationInput.value = dateFrom && dateTo ? `${dateFrom} - ${dateTo}` : '';
+
+        return workDurationInput.value;
+    };
 
     function renderSkillChips() {
         if (!skillChipList) return;
@@ -3088,6 +3177,32 @@ document.addEventListener('DOMContentLoaded', () => {
             select.classList.add('text-secondary');
         }
     };
+
+    const getEducationYearSelects = () => Array.from(document.querySelectorAll('.education-year-select'));
+
+    function syncEducationYearOptions() {
+        const selectedYears = new Set(
+            getEducationYearSelects()
+                .map((select) => select.value)
+                .filter(Boolean)
+        );
+
+        getEducationYearSelects().forEach((select) => {
+            Array.from(select.options).forEach((option) => {
+                option.disabled = Boolean(option.value)
+                    && option.value !== select.value
+                    && selectedYears.has(option.value);
+            });
+
+            updateSingleSelectColor(select);
+        });
+    }
+
+    getEducationYearSelects().forEach((select) => {
+        select.addEventListener('change', syncEducationYearOptions);
+        select.addEventListener('input', syncEducationYearOptions);
+    });
+    syncEducationYearOptions();
 
     const toggleBachelorEntryFields = (entry, shouldResetWhenEmpty = true) => {
         if (!entry) return;
@@ -3383,6 +3498,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleFreshGraduateFields = () => {
         if (
             !freshGraduateCheckbox
+            || !workDateFromInput
+            || !workDateToInput
             || !workPositionInput
             || !workEmployerInput
             || !workLocationInput
@@ -3393,7 +3510,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const isFreshGraduate = freshGraduateCheckbox.checked;
-        const workFields = [workPositionInput, workEmployerInput, workLocationInput, workDurationInput];
+        const workFields = [workDateFromInput, workDateToInput, workPositionInput, workEmployerInput, workLocationInput];
 
         workFields.forEach((field) => {
             field.disabled = isFreshGraduate;
@@ -3402,6 +3519,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 clearErrorHighlight(field);
             }
         });
+
+        syncWorkDurationValue();
 
         if (isFreshGraduate) {
             const zeroToOneOption = Array.from(experienceYearsInput.options).find((option) => option.value.startsWith('0'));
@@ -3427,6 +3546,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     freshGraduateCheckbox?.addEventListener('change', toggleFreshGraduateFields);
+    workDateFromInput?.addEventListener('input', syncWorkDurationValue);
+    workDateFromInput?.addEventListener('change', syncWorkDurationValue);
+    workDateToInput?.addEventListener('input', syncWorkDurationValue);
+    workDateToInput?.addEventListener('change', syncWorkDurationValue);
     hydrateSkillFieldsFromValue();
     toggleFreshGraduateFields();
 
