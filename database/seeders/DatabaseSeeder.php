@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(OpenPositionSeeder::class);
+
         User::updateOrCreate([
             'email' => env('DEFAULT_ADMIN_EMAIL', 'kurtrobin@gmail.com'),
         ], [

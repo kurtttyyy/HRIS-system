@@ -10,6 +10,20 @@ class OpenPosition extends Model
 {
     use HasFactory, SoftDeletes;
 
+    public function scopePublicVacancies($query)
+    {
+        return $query->where(function ($vacancyQuery) {
+            $vacancyQuery
+                ->whereNull('job_description')
+                ->orWhereNotIn('job_description', [
+                    'Default position for seeded employee accounts.',
+                    'Default employee position for demo account access.',
+                    'Default position for the seeded department head team.',
+                    'Auto-generated fallback position for employee sync.',
+                ]);
+        });
+    }
+
     protected static function booted(): void
     {
         static::updated(function (self $openPosition) {

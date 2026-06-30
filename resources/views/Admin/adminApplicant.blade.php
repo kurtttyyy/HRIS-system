@@ -74,10 +74,28 @@
       border-color: #86efac;
       background: #f0fdf4;
     }
+    .interview-conflict-popup {
+      border-radius: 1.75rem !important;
+      animation: interview-conflict-pop 0.48s cubic-bezier(0.22, 0.9, 0.2, 1) both;
+    }
+    .interview-conflict-popup .swal2-icon {
+      animation: interview-conflict-shake 0.65s ease-in-out 0.18s both;
+    }
     .applicant-doc-check {
       opacity: 0;
       transform: scale(0.88);
       transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    @keyframes interview-conflict-pop {
+      0% { opacity: 0; transform: translateY(24px) scale(0.9); }
+      65% { opacity: 1; transform: translateY(-5px) scale(1.025); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes interview-conflict-shake {
+      0%, 100% { transform: rotate(0); }
+      25% { transform: rotate(-8deg); }
+      50% { transform: rotate(7deg); }
+      75% { transform: rotate(-4deg); }
     }
     .applicant-doc-card.is-downloaded .applicant-doc-check {
       opacity: 1;
@@ -560,6 +578,10 @@
             <div class="mt-auto flex flex-wrap items-center justify-between gap-3 pt-6">
               <button type="button" onclick="showApplicantReviewPanel()" class="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900">Back</button>
               <div class="flex flex-wrap gap-2">
+                <button type="button" onclick="rejectApplicantFromFinalReview()" class="inline-flex items-center gap-2 rounded-full bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-700">
+                  <i class="fa-solid fa-xmark"></i>
+                  Reject
+                </button>
                 <button type="button" id="markPassingDocumentCompleteButton" onclick="markApplicantDocumentsComplete()" disabled class="rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500">Mark Complete</button>
                 <button type="button" id="hireApplicantButton" onclick="hireApplicantFromCompleted()" class="hidden rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700">Hire Applicant</button>
               </div>
@@ -594,6 +616,7 @@
   const recentlyScheduledApplicantId = @json(session('scheduled_applicant_id'));
   const recentlyUpdatedApplicantId = @json(session('updated_applicant_id'));
   const recentlyUpdatedApplicantStatus = @json(session('updated_applicant_status'));
+  const interviewScheduleConflictMessage = @json(session('interview_schedule_conflict'));
   const rowsPerPage = 5;
   let currentPage = 1;
   let currentApplicantId = null;
@@ -604,6 +627,7 @@
   let interviewCountdownTimer = null;
   let autoUnderReviewSubmitted = false;
   let applicantRefreshInFlight = false;
+  let shouldWarnOnInterviewPanelOpen = false;
 
   const initApplicantPageAnimation = () => {
     const page = document.getElementById('admin-applicant-page');
@@ -1032,12 +1056,100 @@
   }
 
   function scheduleInterview() {
+    shouldWarnOnInterviewPanelOpen = true;
     showApplicantInterviewPanel(true);
+  }
+
+  function activeApplicantInterviewSchedule() {
+    const interviews = Array.isArray(currentApplicantModalData?.interviews)
+      ? currentApplicantModalData.interviews
+      : [];
+
+    return interviews.find(interview => !Boolean(interview?.is_finished)) || null;
+  }
+
+  function showInterviewScheduleConflict(message, activeInterview = null) {
+    const type = activeInterview?.interview_type || 'interview';
+    const date = activeInterview?.date ? formatDate(activeInterview.date) : '';
+    const scheduleDetails = date
+      ? `<p class="mt-3 rounded-xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">Active schedule: ${escapeApplicantHtml(type)} on ${escapeApplicantHtml(date)}</p>`
+      : '';
+
+    Swal.fire({
+      icon: 'warning',
+      title: 'Only one schedule is allowed',
+      html: `
+        <p class="text-sm leading-6 text-slate-600">${escapeApplicantHtml(message || 'This applicant already has an active interview schedule.')}</p>
+        ${scheduleDetails}
+        <p class="mt-3 text-xs font-semibold text-slate-500">Please reschedule, finish, or cancel the existing interview before creating another one.</p>
+      `,
+      confirmButtonText: 'View Existing Schedule',
+      confirmButtonColor: '#d97706',
+      customClass: {
+        popup: 'interview-conflict-popup',
+      },
+    }).then(() => {
+      document.getElementById('interviewScheduleList')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    });
+  }
+
+  function warnAboutApplicantInterviewState() {
+    const activeInterview = activeApplicantInterviewSchedule();
+    if (activeInterview) {
+      window.setTimeout(() => {
+        showInterviewScheduleConflict(
+          `This applicant is still assigned to an active ${activeInterview.interview_type || 'interview'}.`,
+          activeInterview
+        );
+      }, 180);
+      return;
+    }
+
+    const status = normalizeText(currentApplicantModalData?.status);
+    const interviews = Array.isArray(currentApplicantModalData?.interviews)
+      ? currentApplicantModalData.interviews
+      : [];
+    const nextInterviewUnlocked = Boolean(currentApplicantModalData?.pending_next_interview_type);
+
+    if (['hired', 'rejected', 'completed', 'passing document'].includes(status)) {
+      window.setTimeout(() => {
+        Swal.fire({
+          icon: 'info',
+          title: status === 'hired' ? 'Applicant already hired' : 'Interview scheduling is closed',
+          text: `This applicant is already in the ${currentApplicantModalData?.status || status} stage. Another interview cannot be scheduled.`,
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#0f172a',
+          customClass: { popup: 'interview-conflict-popup' },
+        });
+      }, 180);
+      return;
+    }
+
+    if (
+      interviews.length > 0
+      && ['initial interview', 'final interview', 'demo teaching'].includes(status)
+      && !nextInterviewUnlocked
+    ) {
+      window.setTimeout(() => {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Interview decision required',
+          text: 'The previous interview has ended, but this applicant is still in the interview stage. Choose Proceed or Reject before creating another schedule.',
+          confirmButtonText: 'Review Interview',
+          confirmButtonColor: '#d97706',
+          customClass: { popup: 'interview-conflict-popup' },
+        });
+      }, 180);
+    }
   }
 
   function openApplicantInterviewFromTable(appId) {
     if (!appId) return;
 
+    shouldWarnOnInterviewPanelOpen = true;
     openApplicantModal(appId, true);
   }
 
@@ -1184,6 +1296,10 @@
     document.getElementById('applicantReviewPanel')?.classList.add('hidden');
     document.getElementById('applicantPassingDocumentPanel')?.classList.add('hidden');
     document.getElementById('applicantInterviewPanel')?.classList.remove('hidden');
+    if (shouldWarnOnInterviewPanelOpen) {
+      shouldWarnOnInterviewPanelOpen = false;
+      warnAboutApplicantInterviewState();
+    }
   }
 
   function showApplicantPassingDocumentPanel() {
@@ -1504,6 +1620,16 @@
       icon: 'warning',
       confirmButtonColor: '#e11d48',
       confirmButtonText: 'Reject'
+    });
+  }
+
+  function rejectApplicantFromFinalReview() {
+    updateApplicantStatusFromModal('Rejected', {
+      title: 'Reject applicant?',
+      text: 'This applicant will be rejected during the final document review. This action will update the application status immediately.',
+      icon: 'warning',
+      confirmButtonColor: '#e11d48',
+      confirmButtonText: 'Reject Applicant'
     });
   }
 
@@ -2103,6 +2229,31 @@
     hideFlexModal('applicantModal');
   }
 
+  document.getElementById('applicantInterviewPanelForm')?.addEventListener('submit', (event) => {
+    const status = normalizeText(currentApplicantModalData?.status);
+    if (['hired', 'rejected', 'completed', 'passing document'].includes(status)) {
+      event.preventDefault();
+      warnAboutApplicantInterviewState();
+      return;
+    }
+
+    const activeInterview = activeApplicantInterviewSchedule();
+    if (!activeInterview) {
+      const saveButton = document.getElementById('saveInterviewButton');
+      if (saveButton) {
+        saveButton.disabled = true;
+        saveButton.textContent = 'Saving Interview…';
+      }
+      return;
+    }
+
+    event.preventDefault();
+    showInterviewScheduleConflict(
+      `This applicant already has an active ${activeInterview.interview_type || 'interview'}.`,
+      activeInterview
+    );
+  });
+
   const stars = document.querySelectorAll('.star');
   const ratingText = document.getElementById('ratingText');
   const ratingInput = document.getElementById('ratingValue');
@@ -2239,6 +2390,7 @@
   });
 
   if (recentlyScheduledApplicantId) {
+    shouldWarnOnInterviewPanelOpen = Boolean(interviewScheduleConflictMessage);
     openApplicantModal(recentlyScheduledApplicantId, true);
   } else if (recentlyUpdatedApplicantId) {
     openApplicantModal(
@@ -2247,6 +2399,7 @@
       ['passing document', 'completed'].includes(normalizeText(recentlyUpdatedApplicantStatus))
     );
   }
+
 </script>
 
 <script>

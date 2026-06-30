@@ -262,10 +262,10 @@
                     </div>
                             <div class="final-approval-signatory flex justify-center mt-6">
                                 <div class="w-full text-center" style="width: 240px;">
-                                    <h1 class="text-sm font-bold" style="margin-bottom: 4px; font-size: 17px; line-height: 1.15;">
+                                    <h1 class="text-sm font-bold" style="margin-bottom: 0; font-size: 17px; line-height: 1.05;">
                                         TOMAS C. BAUTISTA, PhD
                                     </h1>
-                                    <div class="border-b border-gray-600 w-full h-0.5 mt-2"></div>
+                                    <div class="border-b border-gray-600 w-full h-0.5 mt-0"></div>
                                     <label class="text-sm font-medium block mt-1 mb-2">President</label>
                                 </div>
                             </div>
@@ -320,14 +320,14 @@
                 onclick="downloadApplicationOBFForm()"
                 class="rounded-lg bg-blue-600 px-6 py-2 text-white hover:bg-blue-700"
             >
-                Download Form
+                Download Word Form
             </button>
         </div>
 
 
 
         <script>
-            const applicationOBFLogoUrl = @json(asset('images/logo.png'));
+            const applicationOBFLogoUrl = @json(file_exists(public_path('images/logo.png')) ? 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('images/logo.png'))) : asset('images/logo.png'));
             const obfLeaveBalanceState = {
                 beginningVacation: {{ json_encode((float) ($beginningVacationBalance ?? 0)) }},
                 beginningSick: {{ json_encode((float) ($beginningSickBalance ?? 0)) }},
@@ -372,6 +372,295 @@
                 });
 
                 return clone.outerHTML;
+            }
+
+            function escapeApplicationOBFExportValue(value) {
+                return String(value ?? '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            function getApplicationOBFFieldValue(selector) {
+                const field = document.querySelector(selector);
+                return escapeApplicationOBFExportValue(field?.value || field?.textContent || '');
+            }
+
+            function getApplicationOBFCheckbox(id) {
+                return document.getElementById(id)?.checked ? '&#9745;' : '&#9744;';
+            }
+
+            function getApplicationOBFExportData() {
+                return {
+                    officeDepartment: getApplicationOBFFieldValue('input[name="office_department"]'),
+                    employeeName: getApplicationOBFFieldValue('input[name="employee_name"]'),
+                    filingDate: getApplicationOBFFieldValue('input[name="filing_date"]'),
+                    position: getApplicationOBFFieldValue('input[name="position"]'),
+                    salary: getApplicationOBFFieldValue('input[name="salary"]'),
+                    otherType: getApplicationOBFFieldValue('#obf-other-type'),
+                    workingDays: getApplicationOBFFieldValue('#obf-working-days'),
+                    inclusiveDates: getApplicationOBFFieldValue('#obf-inclusive-dates'),
+                    purpose: getApplicationOBFFieldValue('#application-obf-print-area input[placeholder="Purpose of Business"]'),
+                    venue: getApplicationOBFFieldValue('#application-obf-print-area input[placeholder="Venue location"]'),
+                    venueInclusiveDates: getApplicationOBFFieldValue('#application-obf-print-area input[placeholder="Inclusive Dates"]'),
+                    checks: {
+                        officialTime: getApplicationOBFCheckbox('obf-type-time'),
+                        others: getApplicationOBFCheckbox('obf-type-others'),
+                    },
+                };
+            }
+
+            function buildApplicationOBFWordFormMarkup() {
+                const data = getApplicationOBFExportData();
+                const officialBusinessCheck = data.checks.officialTime === '&#9744;' && data.checks.others === '&#9744;' ? '&#9745;' : '&#9744;';
+                const line = 'border-bottom: 1px solid #000; display: inline-block; min-height: 15px;';
+                const cell = 'border: 1px solid #000; padding: 5px 7px; vertical-align: top;';
+                const sectionHeading = 'border: 1px solid #000; padding: 2px 0; text-align: center; font-weight: 700; text-transform: uppercase; font-size: 9pt; line-height: 1.05;';
+                const bold = 'font-weight: 700;';
+
+                return `
+                    <table class="obf-export-form" width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #000; border-collapse: collapse; width: 100%; table-layout: fixed;">
+                        <colgroup>
+                            <col style="width: 16.66%;">
+                            <col style="width: 16.66%;">
+                            <col style="width: 16.66%;">
+                            <col style="width: 16.66%;">
+                            <col style="width: 16.66%;">
+                            <col style="width: 16.7%;">
+                        </colgroup>
+                        <tr>
+                            <td colspan="2" style="${cell}; height: 0.36in;">
+                                <div><span style="${bold}">1. Office/Department</span></div>
+                                <div style="${line}; width: 95%;">${data.officeDepartment}&nbsp;</div>
+                            </td>
+                            <td colspan="4" style="${cell}; height: 0.36in;">
+                                <table width="100%" cellpadding="0" cellspacing="0" style="border: 0; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="border: 0; font-weight: 700; width: 0.85in; white-space: nowrap;">2. Name</td>
+                                        <td style="border: 0; width: 0.85in; white-space: nowrap;">(Last)</td>
+                                        <td style="border: 0; width: 0.85in; white-space: nowrap;">(First)</td>
+                                        <td style="border: 0; width: 0.85in; white-space: nowrap;">(Middle)</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" style="border: 0; border-bottom: 1px solid #000; height: 14px; font-size: 8pt;">${data.employeeName}&nbsp;</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="${cell}; height: 0.34in;">
+                                <div><span style="${bold}">3. Date of Filing</span></div>
+                                <div style="${line}; width: 85%;">${data.filingDate}&nbsp;</div>
+                            </td>
+                            <td colspan="2" style="${cell}; height: 0.34in;">
+                                <div><span style="${bold}">4.Position</span></div>
+                                <div style="${line}; width: 85%;">${data.position}&nbsp;</div>
+                            </td>
+                            <td colspan="2" style="${cell}; height: 0.34in;">
+                                <div><span style="${bold}">5.Salary</span></div>
+                                <div style="${line}; width: 85%;">${data.salary}&nbsp;</div>
+                            </td>
+                        </tr>
+                        <tr><td colspan="6" style="${sectionHeading}">Details of Application</td></tr>
+                        <tr>
+                            <td colspan="3" style="${cell}; width: 50%; height: 2.95in; padding: 6px 12px;">
+                                <div style="${bold}">6. a) Application for</div>
+                                <div style="margin-left: 0.42in; margin-top: 4px;">${officialBusinessCheck} Official Business</div>
+                                <div style="margin-left: 0.42in;">${data.checks.officialTime} Official Time</div>
+                                <div style="margin-left: 0.42in;">${data.checks.others} Others (Specify)</div>
+                                <table width="100%" cellpadding="0" cellspacing="0" style="border: 0; border-collapse: collapse; margin-top: 12px;">
+                                    <tr>
+                                        <td style="border: 0; width: 0.76in;">&nbsp;</td>
+                                        <td style="border: 0; border-bottom: 1px solid #000; width: 2.25in; height: 16px;">${data.otherType}&nbsp;</td>
+                                        <td style="border: 0;">&nbsp;</td>
+                                    </tr>
+                                </table>
+                                <table cellpadding="0" cellspacing="0" style="border: 0; border-collapse: collapse; margin-top: 24px; width: auto;">
+                                    <tr>
+                                        <td style="border: 0; font-weight: 700; white-space: nowrap; padding-right: 6px;">6. c) Number of Working Days Applied for:</td>
+                                        <td style="border: 0; border-bottom: 1px solid #000; width: 0.85in; height: 16px;">${data.workingDays}&nbsp;</td>
+                                    </tr>
+                                </table>
+                                <table cellpadding="0" cellspacing="0" style="border: 0; border-collapse: collapse; margin-top: 52px; margin-left: 0.28in; width: auto;">
+                                    <tr>
+                                        <td style="border: 0; white-space: nowrap; padding-right: 6px;">Inclusive dates:</td>
+                                        <td style="border: 0; border-bottom: 1px solid #000; width: 1.55in; height: 16px;">${data.inclusiveDates}&nbsp;</td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td colspan="3" style="${cell}; width: 50%; height: 2.95in; padding: 6px 16px;">
+                                <div style="${bold}">6. b) Purpose of Business</div>
+                                <table width="100%" cellpadding="0" cellspacing="0" style="border: 0; border-collapse: collapse; margin-top: 18px;">
+                                    <tr>
+                                        <td style="border: 0; width: 0.55in;">&nbsp;</td>
+                                        <td style="border: 0; border-bottom: 1px solid #000; height: 16px;">${data.purpose}&nbsp;</td>
+                                    </tr>
+                                </table>
+                                <div style="margin-left: 0.55in; margin-top: 28px;"><span style="${bold}">2. Venue</span></div>
+                                <table width="100%" cellpadding="0" cellspacing="0" style="border: 0; border-collapse: collapse; margin-top: 10px;">
+                                    <tr>
+                                        <td style="border: 0; width: 0.55in;">&nbsp;</td>
+                                        <td style="border: 0; border-bottom: 1px solid #000; height: 16px;">${data.venue}&nbsp;</td>
+                                    </tr>
+                                </table>
+                                <div style="margin-left: 0.55in; margin-top: 30px;"><span style="${bold}">3. Inclusive Dates</span></div>
+                                <table width="100%" cellpadding="0" cellspacing="0" style="border: 0; border-collapse: collapse; margin-top: 8px;">
+                                    <tr>
+                                        <td style="border: 0; width: 0.55in;">&nbsp;</td>
+                                        <td style="border: 0; border-bottom: 1px solid #000; height: 16px;">${data.venueInclusiveDates || data.inclusiveDates}&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: 0; width: 0.55in;">&nbsp;</td>
+                                        <td style="border: 0; border-bottom: 1px solid #000; height: 16px;">&nbsp;</td>
+                                    </tr>
+                                </table>
+                                <table width="100%" cellpadding="0" cellspacing="0" style="border: 0; border-collapse: collapse; margin-top: 46px;">
+                                    <tr>
+                                        <td style="border: 0; width: 0.95in;">&nbsp;</td>
+                                        <td style="border: 0; border-bottom: 1px solid #000; height: 16px;">&nbsp;</td>
+                                    </tr>
+                                </table>
+                                <div style="font-weight: 700; text-align: center; margin-top: 2px;">(Signature of Applicant)</div>
+                            </td>
+                        </tr>
+                        <tr><td colspan="6" style="${sectionHeading}">Details of Action on Application</td></tr>
+                        <tr>
+                            <td colspan="6" style="${cell}; height: 2.3in; padding: 7px 10px;">
+                                <div><span style="${bold}">7. Recommendation</span></div>
+                                <div>&#9744; Approved</div>
+                                <div>&#9744; Disapproved due to</div>
+                                <div style="${line}; width: 2.45in; margin-top: 18px;">&nbsp;</div>
+                                <div style="${line}; width: 2.45in; margin-top: 54px;">&nbsp;</div>
+                                <div>Immediate Supervisor</div>
+                                <div style="margin-top: 58px; font-weight: 700; text-decoration: underline;">DR. DIONICIO D. VILORIA, ACP</div>
+                                <div>Human Resources Director</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="6" style="${cell}; height: 2.1in; padding: 8px 10px;">
+                                <div><span style="${bold}">8. &#9744; Approved</span></div>
+                                <div style="margin-left: 0.17in;">&#9744; Disapproved due to</div>
+                                <div style="height: 0.72in;">&nbsp;</div>
+                                <div style="font-weight: 700; text-align: center; text-decoration: underline; margin-top: 0.38in;">TOMAS C. BAUTISTA, PhD</div>
+                                <div style="text-align: center;">President</div>
+                                <div style="height: 0.2in;"></div>
+                                <table width="100%" cellpadding="0" cellspacing="0" style="border: 0; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="border: 0; width: 1.1in; padding: 2px 0;">Attachments:</td>
+                                        <td style="border: 0; border-bottom: 1px solid #000; width: 1.7in; padding: 2px 0;">&nbsp;</td>
+                                        <td style="border: 0;">&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: 0; width: 1.1in; padding: 3px 0 0;">Date:</td>
+                                        <td style="border: 0; border-bottom: 1px solid #000; width: 1.7in; padding: 3px 0 0;">&nbsp;</td>
+                                        <td style="border: 0;">&nbsp;</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                    <div style="text-align: center; font-size: 9pt; margin-top: 0.26in;">
+                        NC HR Form No. 13 - Application for Official Business and Official Time Rev. 01
+                    </div>
+                `;
+            }
+
+            function buildApplicationOBFWordDocument() {
+                return `
+                    <!doctype html>
+                    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+                    <head>
+                        <meta charset="utf-8">
+                        <title>Application for Official Business / Official Time</title>
+                        <!--[if gte mso 9]>
+                        <xml>
+                            <w:WordDocument>
+                                <w:View>Print</w:View>
+                                <w:Zoom>90</w:Zoom>
+                                <w:DoNotOptimizeForBrowser/>
+                            </w:WordDocument>
+                        </xml>
+                        <![endif]-->
+                        <style>
+                            @page {
+                                size: 612pt 936pt;
+                                margin: 13pt 18pt;
+                            }
+                            @page WordSection1 {
+                                size: 612pt 936pt;
+                                margin: 13pt 18pt;
+                            }
+                            html,
+                            body {
+                                width: 576pt;
+                                margin: 0;
+                                padding: 0;
+                                background: #fff;
+                                color: #000;
+                                font-family: Calibri, Arial, sans-serif;
+                                font-size: 8.5pt;
+                                line-height: 1.14;
+                            }
+                            .WordSection1 {
+                                page: WordSection1;
+                                width: 576pt;
+                            }
+                            .print-form-header {
+                                text-align: center;
+                                margin-bottom: 0.04in;
+                            }
+                            .print-form-header img {
+                                display: block;
+                                width: 4.3in;
+                                height: 0.68in;
+                                max-width: 100%;
+                                margin: 0 auto 0.04in;
+                            }
+                            .print-form-header h3 {
+                                font-size: 10pt;
+                                font-weight: 700;
+                                line-height: 1.05;
+                                margin: 0;
+                                text-transform: uppercase;
+                            }
+                            .obf-export-form,
+                            .obf-export-form table {
+                                mso-table-lspace: 0pt;
+                                mso-table-rspace: 0pt;
+                            }
+                            .obf-export-form td,
+                            .obf-export-form th {
+                                font-size: 8.5pt;
+                                line-height: 1.14;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="WordSection1">
+                            <div class="print-form-header">
+                                <img src="${applicationOBFLogoUrl}" alt="Logo" width="413" height="65">
+                                <h3>Office of the Human Resource</h3>
+                                <h3>Application Form for Official Business and Official Time</h3>
+                            </div>
+                            ${buildApplicationOBFWordFormMarkup()}
+                        </div>
+                    </body>
+                    </html>
+                `;
+            }
+
+            function downloadApplicationOBFWordFile(html) {
+                const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `official-business-form-${new Date().toISOString().slice(0, 10)}.doc`;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                URL.revokeObjectURL(url);
             }
 
             function deriveOBFLeaveTypeValue() {
@@ -529,200 +818,26 @@
             updateOBFPayDays();
 
             async function downloadApplicationOBFForm() {
+                const button = document.getElementById('application-obf-download-button');
+                const originalButtonText = button ? button.textContent : '';
+
+                if (button) {
+                    button.disabled = true;
+                    button.textContent = 'Preparing...';
+                    button.classList.add('opacity-70', 'cursor-not-allowed');
+                }
+
                 const isSaved = await saveApplicationOBFRecord();
                 if (!isSaved) {
                     console.warn('OBF application was not saved, continuing with download.');
                 }
 
-                const printArea = document.getElementById('application-obf-print-area');
-                const instructionsArea = document.getElementById('application-obf-instructions');
-                const footerArea = document.querySelector('.download-form-footer');
-                if (!printArea) {
-                    return;
+                downloadApplicationOBFWordFile(buildApplicationOBFWordDocument());
+
+                if (button) {
+                    button.disabled = false;
+                    button.textContent = originalButtonText;
+                    button.classList.remove('opacity-70', 'cursor-not-allowed');
                 }
-
-                const printWindow = window.open('', '_blank');
-                if (!printWindow) {
-                    return;
-                }
-
-                const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
-                    .map((node) => node.outerHTML)
-                    .join('');
-
-                printWindow.document.open();
-                printWindow.document.write(`
-                    <!doctype html>
-                    <html>
-                    <head>
-                        <meta charset="utf-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1">
-                        <title>Application for Official Business / Official Time</title>
-                        ${styles}
-                        <style>
-                            @page {
-                                size: 8.5in 13in;
-                                margin: 0.25in;
-                            }
-                            body {
-                                margin: 0;
-                                padding: 0;
-                                background: #fff;
-                            }
-                            .print-form-header {
-                                text-align: center;
-                                padding-top: 8px;
-                            }
-                            .print-form-header img {
-                                height: 96px;
-                                width: auto;
-                                margin: 0 auto 6px;
-                            }
-                            .print-form-header h3 {
-                                margin: 2px 0;
-                                font-size: 1.15rem;
-                                font-weight: 500;
-                                line-height: 1.15;
-                                text-transform: uppercase;
-                            }
-                            #obf-print-fit-wrapper {
-                                width: 100%;
-                            }
-                            #application-obf-print-area {
-                                width: 100% !important;
-                                margin: 0 !important;
-                                box-sizing: border-box !important;
-                                min-height: auto !important;
-                                padding-left: 12px !important;
-                                padding-right: 12px !important;
-                                border-radius: 0 !important;
-                                font-size: 1rem !important;
-                                line-height: 1.25 !important;
-                            }
-                            #application-obf-print-area h4 {
-                                margin-bottom: 0.15rem !important;
-                            }
-                            #application-obf-print-area .print-row-two {
-                                margin-top: -0.2rem !important;
-                            }
-                            #application-obf-print-area .print-row-three {
-                                margin-top: -0.15rem !important;
-                                margin-bottom: -0.1rem !important;
-                            }
-                            #application-obf-print-area .print-row-two,
-                            #application-obf-print-area .print-row-three {
-                                gap: 0.25rem !important;
-                                margin-bottom: 0.05rem !important;
-                            }
-                            #application-obf-print-area .print-row-two label,
-                            #application-obf-print-area .print-row-three label {
-                                margin-bottom: 0 !important;
-                                display: block !important;
-                            }
-                            #application-obf-print-area .print-row-three {
-                                margin-bottom: -0.1rem !important;
-                            }
-                            #application-obf-print-area .border-t.pt-4 {
-                                padding-top: 0.2rem !important;
-                            }
-                            #application-obf-print-area .border-t.pt-4 h5 {
-                                margin-bottom: 0.45rem !important;
-                            }
-                            #application-obf-print-area .border-t.pt-6 {
-                                padding-top: 0.35rem !important;
-                            }
-                            #application-obf-print-area .border-t.pt-6 h5 {
-                                margin-bottom: 0.45rem !important;
-                            }
-                            #application-obf-print-area .print-action-two {
-                                gap: 0.45rem !important;
-                            }
-                            #application-obf-print-area .border-t.pt-6.space-y-4 {
-                                gap: 0.35rem !important;
-                            }
-                            #application-obf-print-area .print-details-two {
-                                gap: 0.55rem !important;
-                            }
-                            #application-obf-print-area .space-y-3 {
-                                gap: 0.25rem !important;
-                            }
-                            #application-obf-print-area .space-y-1 {
-                                gap: 0.05rem !important;
-                            }
-                            #application-obf-print-area .print-right-divider {
-                                padding-left: 0.55rem !important;
-                            }
-                            #application-obf-print-area .mt-6 {
-                                margin-top: 0.2rem !important;
-                            }
-                            #application-obf-print-area .mt-20 {
-                                margin-top: 3.5rem !important;
-                            }
-                            #application-obf-print-area .final-approval-signatory {
-                                margin-top: 0.5rem !important;
-                            }
-                            #application-obf-print-area .final-approval-signatory h1 {
-                                margin-bottom: 0.2rem !important;
-                                line-height: 1.1 !important;
-                            }
-                            #application-obf-print-area .final-approval-signatory .mt-2 {
-                                margin-top: 0.15rem !important;
-                            }
-                            #application-obf-print-area .final-approval-signatory label {
-                                margin-top: 0.2rem !important;
-                                margin-bottom: 0 !important;
-                            }
-                            #application-obf-print-area label,
-                            #application-obf-print-area p,
-                            #application-obf-print-area span {
-                                font-size: 1.02rem !important;
-                            }
-                            #application-obf-print-area table th,
-                            #application-obf-print-area table td {
-                                font-size: 0.96rem !important;
-                            }
-                            #application-obf-instructions {
-                                margin-top: 8px !important;
-                            }
-                            #application-obf-instructions .download-form-footer,
-                            .download-form-footer {
-                                display: block !important;
-                                font-size: 1rem !important;
-                                font-weight: 400 !important;
-                                margin-top: 0.5rem !important;
-                            }
-                            #obf-print-fit-wrapper,
-                            #application-obf-instructions {
-                                zoom: 0.95;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="print-form-header">
-                            <img src="${applicationOBFLogoUrl}" alt="Logo">
-                            <h3>OFFICE OF THE HUMAN RESOURCE</h3>
-                            <h3>APPLICATION FOR OFFICIAL BUSINESS / OFFICIAL TIME</h3>
-                        </div>
-                        <div id="obf-print-fit-wrapper">${buildApplicationOBFPrintMarkup(printArea)}</div>
-                        ${instructionsArea ? instructionsArea.outerHTML : ''}
-                        ${footerArea ? footerArea.outerHTML : ''}
-                    </body>
-                    </html>
-                `);
-                printWindow.document.close();
-
-                printWindow.onload = function () {
-                    const wrapper = printWindow.document.getElementById('obf-print-fit-wrapper');
-                    const content = printWindow.document.getElementById('application-obf-print-area');
-                    if (wrapper && content) {
-                        wrapper.style.transform = 'none';
-                        wrapper.style.width = '100%';
-                    }
-
-                    printWindow.focus();
-                    printWindow.print();
-                    printWindow.close();
-                    window.location.reload();
-                };
             }
         </script>

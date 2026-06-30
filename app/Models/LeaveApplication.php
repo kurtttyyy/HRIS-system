@@ -37,6 +37,9 @@ class LeaveApplication extends Model
         'days_with_pay',
         'days_without_pay',
         'commutation',
+        'medical_receipt_path',
+        'medical_receipt_name',
+        'medical_receipt_mime',
         'status',
     ];
 

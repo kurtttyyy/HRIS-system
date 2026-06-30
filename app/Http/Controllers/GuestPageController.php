@@ -65,7 +65,7 @@ class GuestPageController extends Controller
     }
 
     public function display_non_teaching($id){
-        $openPosition = OpenPosition::findOrFail($id);
+        $openPosition = OpenPosition::publicVacancies()->findOrFail($id);
         return view('guest.applicationNonTeachingSteps', compact('openPosition'));
     }
 
@@ -114,8 +114,8 @@ class GuestPageController extends Controller
     }
 
     public function display_about(){
-        $openCount = OpenPosition::count();
-        $department = OpenPosition::query()->distinct('department')->count('department');
+        $openCount = OpenPosition::publicVacancies()->count();
+        $department = OpenPosition::publicVacancies()->distinct('department')->count('department');
         $employee = User::where('role', 'Employee')->count();
 
         return view('guest.about', compact(
@@ -207,7 +207,7 @@ class GuestPageController extends Controller
     }
 
     public function display_job($id){
-        $job = OpenPosition::findOrFail($id);
+        $job = OpenPosition::publicVacancies()->findOrFail($id);
 
         $applicantEmail = session('applicant_email');
         $appliedPositionIds = $this->getBlockedPositionIds($applicantEmail);
@@ -236,7 +236,8 @@ class GuestPageController extends Controller
             }
         }
 
-        $other = OpenPosition::where('id', '!=', $job->id)
+        $other = OpenPosition::publicVacancies()
+            ->where('id', '!=', $job->id)
             ->when($appliedPositionIds->isNotEmpty(), function ($query) use ($appliedPositionIds) {
                 $query->whereNotIn('id', $appliedPositionIds);
             })
@@ -254,7 +255,7 @@ class GuestPageController extends Controller
 
     private function availablePositionsQuery($appliedPositionIds)
     {
-        return OpenPosition::query()
+        return OpenPosition::publicVacancies()
             ->when($appliedPositionIds->isNotEmpty(), function ($query) use ($appliedPositionIds) {
                 $query->whereNotIn('id', $appliedPositionIds);
             });
@@ -263,6 +264,7 @@ class GuestPageController extends Controller
     private function vacancySignature($appliedPositionIds): string
     {
         $query = OpenPosition::withTrashed()
+            ->publicVacancies()
             ->when($appliedPositionIds->isNotEmpty(), function ($query) use ($appliedPositionIds) {
                 $query->whereNotIn('id', $appliedPositionIds);
             });
@@ -330,7 +332,7 @@ class GuestPageController extends Controller
             return null;
         }
 
-        $openJobs = OpenPosition::query()->latest('id')->take(4)->get(['title', 'department']);
+        $openJobs = OpenPosition::publicVacancies()->latest('id')->take(4)->get(['title', 'department']);
         $jobSummary = $openJobs->isEmpty()
             ? 'No open positions currently.'
             : $openJobs->map(fn ($job) => "{$job->title} ({$job->department})")->implode(', ');
@@ -375,7 +377,7 @@ class GuestPageController extends Controller
     private function buildRuleBasedReply(string $message): string
     {
         $text = Str::lower(trim($message));
-        $jobsCount = OpenPosition::count();
+        $jobsCount = OpenPosition::publicVacancies()->count();
 
         if ($text === '' || Str::contains($text, ['hello', 'hi', 'good morning', 'good afternoon'])) {
             return "Hello. I can guide you across the full website: home, vacancies, application process, account/login, policies, and contact links. ".

@@ -1889,7 +1889,7 @@ class AdministratorPageController extends Controller
             ->groupBy(fn ($record) => (string) ($record['leave_type'] ?? 'Leave'))
             ->map(fn ($records) => (int) $records->sum('days'));
 
-        $pendingLeaveRequests = $monthApplications
+        $allPendingLeaveRequests = $monthApplications
             ->filter(function ($application) {
                 $status = trim((string) ($application->status ?? ''));
                 return $status === '' || strcasecmp($status, 'Pending') === 0;
@@ -1897,9 +1897,12 @@ class AdministratorPageController extends Controller
             ->sortByDesc('created_at')
             ->values();
 
-        $pendingLeaveDays = (float) $pendingLeaveRequests->sum(function ($row) {
+        $pendingRequestCount = $allPendingLeaveRequests->count();
+        $pendingLeaveDays = (float) $allPendingLeaveRequests->sum(function ($row) {
             return (float) ($row->number_of_working_days ?? 0);
         });
+        $pendingLeaveRequests = $allPendingLeaveRequests->take(5)->values();
+        $recentMonthRecords = $monthRecords->take(5)->values();
 
         return view('Admin.adminLeaveManagement', compact(
             'selectedMonth',
@@ -1908,7 +1911,9 @@ class AdministratorPageController extends Controller
             'monthRecords',
             'leaveTypeCounts',
             'pendingLeaveRequests',
-            'pendingLeaveDays'
+            'pendingLeaveDays',
+            'pendingRequestCount',
+            'recentMonthRecords'
         ));
     }
 

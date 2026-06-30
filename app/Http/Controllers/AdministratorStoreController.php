@@ -243,6 +243,15 @@ class AdministratorStoreController extends Controller
         $requestedInterviewType = (string) $attrs['interview_type'];
         $normalizedCurrentStatus = strtolower(trim((string) $applicant->application_status));
         $normalizedRequestedType = strtolower(trim($requestedInterviewType));
+
+        if (in_array($normalizedCurrentStatus, ['hired', 'rejected', 'completed', 'passing document'], true)) {
+            return redirect()
+                ->back()
+                ->with('error', 'A new interview cannot be scheduled because this applicant is already in the '.$applicant->application_status.' stage.')
+                ->with('interview_schedule_conflict', 'This applicant is already marked '.$applicant->application_status.'. No additional interview schedule can be created.')
+                ->with('scheduled_applicant_id', $attrs['applicants_id']);
+        }
+
         $requiresProceedConfirmation = in_array($normalizedRequestedType, ['final interview', 'demo teaching'], true)
             && $normalizedCurrentStatus !== $normalizedRequestedType;
 
@@ -263,24 +272,36 @@ class AdministratorStoreController extends Controller
                 ->with('scheduled_applicant_id', $attrs['applicants_id']);
         }
 
-        $store = Interviewer::create([
-            'applicant_id' => $attrs['applicants_id'],
-            'interview_type' => $attrs['interview_type'],
-            'date' => $attrs['date'],
-            'time' => $attrs['time'],
-            'duration' => $attrs['duration'],
-            'ended_at' => null,
-            'interviewers' => $attrs['interviewers'],
-            'email_link' => $attrs['email_link'],
-            'url' => $attrs['url'],
-            'notes' => $attrs['notes'],
-        ]);
+        if ($this->findActiveInterviewSchedule((int) $attrs['applicants_id'], (string) $attrs['interview_type'])) {
+            return redirect()
+                ->back()
+                ->with('error', $attrs['interview_type'].' is already scheduled for this applicant. Please reschedule or cancel the existing interview instead.')
+                ->with('scheduled_applicant_id', $attrs['applicants_id']);
+        }
 
-        // === APPLICANT STATUS UPDATE #1 === Store Interview Method
-        // Updates applicant status based on interview type (Initial Interview or Final Interview)
-        Applicant::where('id', $attrs['applicants_id'])->update([
-            'application_status' => $this->resolveApplicantStatusFromInterviewType($attrs['interview_type']),
-        ]);
+            $store = Interviewer::create([
+                'applicant_id' => $attrs['applicants_id'],
+                'interview_type' => $attrs['interview_type'],
+                'date' => $attrs['date'],
+                'time' => $attrs['time'],
+                'duration' => $attrs['duration'],
+                'ended_at' => null,
+                'interviewers' => $attrs['interviewers'],
+                'email_link' => $attrs['email_link'],
+                'url' => $attrs['url'],
+                'notes' => $attrs['notes'],
+            ]);
+
+            // Updates applicant status based on the single active interview.
+            Applicant::where('id', $attrs['applicants_id'])->update([
+                'application_status' => $this->resolveApplicantStatusFromInterviewType($attrs['interview_type']),
+            ]);
+
+            DB::commit();
+        } catch (\Throwable $exception) {
+            DB::rollBack();
+            throw $exception;
+        }
 
         $successMessage = 'Success Added Interview';
 
@@ -2020,6 +2041,16 @@ class AdministratorStoreController extends Controller
                 ->with('updated_applicant_status', $this->resolveApplicantStatusFromInterviewType($newInterviewType));
         }
 
+        $conflictingInterview = $this->findActiveInterviewSchedule($newApplicantId, (int) $interview->id);
+        if ($conflictingInterview) {
+            return redirect()
+                ->back()
+                ->with('error', 'Only one interview schedule is allowed per applicant. Another interview is already active.')
+                ->with('interview_schedule_conflict', 'This applicant already has an active '.$conflictingInterview->interview_type.'. Reschedule, finish, or cancel it before moving this schedule.')
+                ->with('updated_applicant_id', $newApplicantId)
+                ->with('updated_applicant_status', $this->resolveApplicantStatusFromInterviewType($newInterviewType));
+        }
+
         $interview->update([
             'applicant_id' => $attrs['applicantId'],
             'interview_type' => $attrs['interview_type'],
@@ -2130,6 +2161,21 @@ class AdministratorStoreController extends Controller
         }
 
         return true;
+    }
+
+    private function findActiveInterviewSchedule(int $applicantId, string $interviewType): ?Interviewer
+    {
+        $normalizedType = strtolower(trim($interviewType));
+        if ($applicantId <= 0 || $normalizedType === '') {
+            return null;
+        }
+
+        return Interviewer::query()
+            ->where('applicant_id', $applicantId)
+            ->whereRaw('LOWER(TRIM(interview_type)) = ?', [$normalizedType])
+            ->orderByDesc('created_at')
+            ->get()
+            ->first(fn (Interviewer $interview) => !$this->interviewIsFinished($interview));
     }
 
     private function interviewIsFinished(Interviewer $interview): bool

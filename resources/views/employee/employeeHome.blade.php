@@ -115,7 +115,7 @@
                         <div>
                             <h1 class="max-w-2xl text-3xl font-black leading-tight md:text-5xl">Your workday at a glance.</h1>
                             <p class="mt-3 max-w-2xl text-sm leading-6 text-emerald-50 md:text-base">
-                                Track attendance, monitor leave balances, and jump into the tasks you use most without digging through menus.
+                                Track attendance and monitor leave balances without digging through menus.
                             </p>
                         </div>
                         <div class="flex flex-wrap gap-3 text-sm">
@@ -163,80 +163,12 @@
                                 </p>
                             </div>
                         </div>
-
-                        <div class="employee-dashboard-card-motion employee-dashboard-reveal rounded-[1.5rem] border border-white/15 bg-white/10 p-5 backdrop-blur-sm" style="--employee-dashboard-delay: 130ms;">
-                            <div class="flex flex-wrap items-center justify-between gap-2">
-                                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-100">Quick Actions</p>
-                                <span class="text-[11px] text-emerald-50/85">Most-used tools</span>
-                            </div>
-                            <div class="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-4">
-                                <a href="{{ route('employee.employeeLeave') }}" class="group flex min-h-[3rem] items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/20">
-                                    <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/10 text-emerald-50 transition group-hover:bg-white/20">
-                                        <i class="fa fa-calendar-check-o"></i>
-                                    </span>
-                                    <span class="truncate">Leave</span>
-                                </a>
-                                <a href="{{ route('employee.employeeDocument') }}" class="group flex min-h-[3rem] items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/20">
-                                    <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/10 text-emerald-50 transition group-hover:bg-white/20">
-                                        <i class="fa fa-folder-open"></i>
-                                    </span>
-                                    <span class="truncate">Documents</span>
-                                </a>
-                                <a href="{{ route('employee.employeePayslip') }}" class="group flex min-h-[3rem] items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/20">
-                                    <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/10 text-emerald-50 transition group-hover:bg-white/20">
-                                        <i class="fa fa-money"></i>
-                                    </span>
-                                    <span class="truncate">Payslip</span>
-                                </a>
-                                <a href="{{ route('employee.employeeCommunication') }}" class="group flex min-h-[3rem] items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/20">
-                                    <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/10 text-emerald-50 transition group-hover:bg-white/20">
-                                        <i class="fa fa-users"></i>
-                                    </span>
-                                    <span class="truncate">Directory</span>
-                                </a>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </section>
 
-            @if (!empty($accountAlerts ?? []))
-                <section class="employee-dashboard-reveal rounded-[1.75rem] border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-5 shadow-sm md:p-6" style="--employee-dashboard-delay: 150ms;">
-                    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">Account Alerts</p>
-                            <h3 class="mt-2 text-xl font-black text-slate-900">Action needed on your account</h3>
-                            <p class="mt-1 text-sm text-slate-600">Review these updates to keep your account records complete and up to date.</p>
-                        </div>
-                        <span class="inline-flex items-center gap-2 rounded-full bg-rose-100 px-3 py-1.5 text-xs font-semibold text-rose-700">
-                            <i class="fa fa-exclamation-circle"></i>
-                            {{ count($accountAlerts) }} item{{ count($accountAlerts) === 1 ? '' : 's' }}
-                        </span>
-                    </div>
-
-                    <div class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
-                        @foreach ($accountAlerts as $alert)
-                            @php
-                                $tone = strtolower(trim((string) ($alert['tone'] ?? 'slate')));
-                                $alertToneClass = match ($tone) {
-                                    'rose' => 'border-rose-200 bg-rose-50',
-                                    'amber' => 'border-amber-200 bg-amber-50',
-                                    'violet' => 'border-violet-200 bg-violet-50',
-                                    'sky' => 'border-sky-200 bg-sky-50',
-                                    default => 'border-slate-200 bg-slate-50',
-                                };
-                            @endphp
-                            <a href="{{ $alert['href'] ?? '#' }}" class="employee-dashboard-card-motion block rounded-2xl border px-4 py-3 {{ $alertToneClass }}">
-                                <p class="text-sm font-bold text-slate-900">{{ $alert['title'] ?? 'Account update' }}</p>
-                                <p class="mt-1 text-xs leading-5 text-slate-600">{{ $alert['desc'] ?? '' }}</p>
-                            </a>
-                        @endforeach
-                    </div>
-                </section>
-            @endif
-
             <section class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-                <article class="employee-dashboard-card-motion employee-dashboard-reveal rounded-[1.75rem] border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-6 shadow-sm" style="--employee-dashboard-delay: 170ms;">
+                <a href="{{ route('employee.employeeLeave') }}" class="employee-dashboard-card-motion employee-dashboard-reveal block rounded-[1.75rem] border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-6 text-inherit shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2" style="--employee-dashboard-delay: 170ms;" aria-label="Open leave balance">
                     <div class="flex items-start justify-between gap-4">
                         <div class="employee-dashboard-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-500 text-white shadow-lg shadow-blue-500/25" style="--employee-dashboard-delay: 200ms;">
                             <i class="fa fa-calendar fa-2x"></i>
@@ -252,21 +184,21 @@
                     <div class="mt-5 h-2.5 overflow-hidden rounded-full bg-blue-100">
                         <div class="employee-dashboard-progress-fill h-full rounded-full bg-blue-500" style="width: {{ (int) ($combinedLeavePercentUsed ?? 0) }}%; --employee-dashboard-delay: 230ms;"></div>
                     </div>
-                </article>
+                </a>
 
-                <article class="employee-dashboard-card-motion employee-dashboard-reveal rounded-[1.75rem] border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-6 shadow-sm" style="--employee-dashboard-delay: 200ms;">
+                <a href="{{ route('employee.employeeDocument') }}" class="employee-dashboard-card-motion employee-dashboard-reveal block rounded-[1.75rem] border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-6 text-inherit shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2" style="--employee-dashboard-delay: 200ms;" aria-label="Open employee documents">
                     <div class="flex items-start justify-between gap-4">
                         <div class="employee-dashboard-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/25" style="--employee-dashboard-delay: 230ms;">
-                            <i class="fa fa-clock-o fa-2x"></i>
+                            <i class="fa fa-folder-open fa-2x"></i>
                         </div>
-                        <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">{{ $attendanceStatusLabel ?? 'No Data' }}</span>
+                        <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Records</span>
                     </div>
-                    <h3 class="mt-8 text-4xl font-black text-slate-900">{{ number_format((float) ($attendanceRatePercent ?? 0), 1) }}%</h3>
-                    <p class="mt-1 text-sm font-medium text-slate-600">Attendance Rate</p>
-                    <p class="mt-5 text-xs leading-5 text-slate-500">{{ $attendanceMonthLabel ?? now()->format('F Y') }} • {{ (int) ($attendancePresentDays ?? 0) }}/{{ (int) ($attendanceTotalDays ?? 0) }} days present</p>
-                </article>
+                    <h3 class="mt-8 text-3xl font-black text-slate-900">Documents</h3>
+                    <p class="mt-1 text-sm font-medium text-slate-600">Employee records</p>
+                    <p class="mt-5 text-xs leading-5 text-slate-500">Upload and review your required employee documents.</p>
+                </a>
 
-                <article class="employee-dashboard-card-motion employee-dashboard-reveal rounded-[1.75rem] border border-violet-100 bg-gradient-to-br from-violet-50 to-white p-6 shadow-sm" style="--employee-dashboard-delay: 230ms;">
+                <a href="#upcoming-events-section" class="employee-dashboard-card-motion employee-dashboard-reveal block rounded-[1.75rem] border border-violet-100 bg-gradient-to-br from-violet-50 to-white p-6 text-inherit shadow-sm transition hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-violet-300 focus:ring-offset-2" style="--employee-dashboard-delay: 230ms;" aria-label="Jump to upcoming events">
                     <div class="flex items-start justify-between gap-4">
                         <div class="employee-dashboard-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-500 text-white shadow-lg shadow-violet-500/25" style="--employee-dashboard-delay: 260ms;">
                             <i class="fa fa-calendar-o fa-2x"></i>
@@ -276,9 +208,9 @@
                     <h3 class="mt-8 text-3xl font-black text-slate-900">Monthly Pulse</h3>
                     <p class="mt-1 text-sm font-medium text-slate-600">Upcoming Events</p>
                     <p id="month-events-caption" class="mt-5 text-xs leading-5 text-slate-500">{{ now()->format('F Y') }}</p>
-                </article>
+                </a>
 
-                <article class="employee-dashboard-card-motion employee-dashboard-reveal rounded-[1.75rem] border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-6 shadow-sm" style="--employee-dashboard-delay: 260ms;">
+                <a href="{{ route('employee.employeePayslip') }}" class="employee-dashboard-card-motion employee-dashboard-reveal block rounded-[1.75rem] border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-6 text-inherit shadow-sm transition hover:-translate-y-0.5 hover:border-amber-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2" style="--employee-dashboard-delay: 260ms;" aria-label="Open payslip and salary access">
                     <div class="flex items-start justify-between gap-4">
                         <div class="employee-dashboard-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-lg shadow-amber-500/25" style="--employee-dashboard-delay: 290ms;">
                             <i class="fa fa-credit-card fa-2x"></i>
@@ -288,7 +220,7 @@
                     <h3 class="mt-8 text-3xl font-black text-slate-900">Payment Hub</h3>
                     <p class="mt-1 text-sm font-medium text-slate-600">Payslip and salary access</p>
                     <p class="mt-5 text-xs leading-5 text-slate-500">Use the payslip section to review your latest payroll records.</p>
-                </article>
+                </a>
             </section>
 
             <section class="grid grid-cols-1 gap-6">
@@ -346,7 +278,7 @@
                 </div>
                 --}}
 
-                <div class="employee-dashboard-reveal rounded-[2rem] border border-slate-200 bg-white p-4 shadow-sm md:p-6" style="--employee-dashboard-delay: 340ms;">
+                <div id="upcoming-events-section" class="employee-dashboard-reveal scroll-mt-24 rounded-[2rem] border border-slate-200 bg-white p-4 shadow-sm md:p-6" style="--employee-dashboard-delay: 340ms;">
                     <div class="mb-4 flex items-center justify-between">
                         <div>
                             <p class="text-xs font-semibold uppercase tracking-[0.2em] text-violet-700">Events</p>

@@ -953,3 +953,5 @@
 
   })();
 </script>
+
+@include('components.idleSessionTimeout')

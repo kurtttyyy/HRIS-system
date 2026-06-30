@@ -747,3 +747,5 @@
         });
     })();
 </script>
+
+@include('components.idleSessionTimeout')
