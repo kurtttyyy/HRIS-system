@@ -1,7 +1,7 @@
 @php
     $selectedMonthValue = $selectedMonth ?? now()->format('Y-m');
     $selectedMonthLabel = \Carbon\Carbon::createFromFormat('Y-m', $selectedMonthValue)->format('F Y');
-    $pendingRequestCount = ($pendingLeaveRequests ?? collect())->count();
+    $pendingRequestCount = (int) ($pendingRequestCount ?? ($pendingLeaveRequests ?? collect())->count());
     $approvedRequestCount = ($monthRecords ?? collect())->count();
     $headerTitle = $headerTitle ?? "Leave Overview for {$selectedMonthLabel}";
     $headerSubtitle = $headerSubtitle ?? "Review pending requests, monitor approved leave usage, and keep this month's team availability visible at a glance.";

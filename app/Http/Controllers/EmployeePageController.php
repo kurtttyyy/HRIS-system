@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Applicant;
 use App\Models\ApplicantDocument;
 use App\Models\Conversation;
+use App\Models\ConversationMessage;
+use App\Models\ConversationMessageAttachment;
 use App\Models\PayslipRecord;
 use App\Models\Resignation;
 use App\Models\User;
@@ -594,12 +596,28 @@ class EmployeePageController extends Controller
             }
 
             return [
+                'id' => (int) $application->id,
                 'employee_name' => $application->employee_name ?: $employeeDisplayName,
+                'employee_id' => (string) ($application->employee_id ?: '-'),
+                'office_department' => (string) ($application->office_department ?: '-'),
+                'position' => (string) ($application->position ?: '-'),
                 'leave_type' => $leaveType,
+                'filing_date' => $baseDate->format('M d, Y'),
+                'inclusive_dates' => (string) ($application->inclusive_dates ?: '-'),
                 'start_date_carbon' => $baseDate->copy(),
                 'end_date_carbon' => $baseDate->copy()->addDays($rangeDays - 1),
                 'days' => $days,
                 'reason' => $reasonText,
+                'days_with_pay' => (float) ($application->days_with_pay ?? 0),
+                'days_without_pay' => (float) ($application->days_without_pay ?? 0),
+                'commutation' => (string) ($application->commutation ?: '-'),
+                'medical_receipt_name' => (string) ($application->medical_receipt_name ?: ''),
+                'medical_receipt_url' => $application->medical_receipt_path
+                    ? route('employee.leave.medicalReceipt', array_filter([
+                        'leave' => $application->id,
+                        'tab_session' => request()->query('tab_session'),
+                    ]))
+                    : '',
                 'status' => $statusText,
             ];
         };
@@ -707,6 +725,23 @@ class EmployeePageController extends Controller
             'formEarnedSick',
             'formEarnedTotal'
         ));
+    }
+
+    public function view_leave_medical_receipt(LeaveApplication $leave)
+    {
+        $user = Auth::user();
+        abort_unless($user && (int) $leave->user_id === (int) $user->id, 403);
+
+        $path = trim((string) ($leave->medical_receipt_path ?? ''));
+        abort_if($path === '' || !Storage::disk('public')->exists($path), 404);
+
+        $name = (string) ($leave->medical_receipt_name ?: basename($path));
+        $mime = (string) ($leave->medical_receipt_mime ?: Storage::disk('public')->mimeType($path) ?: 'application/octet-stream');
+
+        return Storage::disk('public')->response($path, $name, [
+            'Content-Type' => $mime,
+            'Content-Disposition' => 'inline; filename="'.str_replace('"', '', $name).'"',
+        ]);
     }
 
     public function display_profile(){
@@ -1181,6 +1216,7 @@ class EmployeePageController extends Controller
         }
 
         $resetChat = request()->boolean('reset_chat');
+        $backgroundPoll = request()->boolean('background_poll');
         $selectedParticipantId = $resetChat ? 0 : (int) request()->query('user', 0);
         $selectedConversationId = $resetChat ? 0 : (int) request()->query('conversation', 0);
         $conversations = Conversation::query()
@@ -1218,7 +1254,7 @@ class EmployeePageController extends Controller
             }
         }
 
-        if (!$resetChat && !$selectedConversation && !$selectedParticipant) {
+        if (!$resetChat && !$backgroundPoll && !$selectedConversation && !$selectedParticipant) {
             $selectedConversation = $conversations
                 ->first(fn (Conversation $conversation) => (int) ($conversation->unread_count ?? 0) > 0)
                 ?? $conversations->first();
@@ -1231,7 +1267,7 @@ class EmployeePageController extends Controller
         if ($selectedConversation) {
             $selectedConversation->load([
                 'messages' => function ($query) {
-                    $query->with('sender')->orderBy('created_at');
+                    $query->with(['sender', 'attachments'])->orderBy('created_at');
                 },
                 'userOne',
                 'userTwo',
@@ -1282,6 +1318,102 @@ class EmployeePageController extends Controller
             'selectedConversation',
             'selectedParticipant'
         ));
+    }
+
+    public function view_communication_attachment(Request $request, ConversationMessage $message)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login_display');
+        }
+
+        $message->loadMissing('conversation');
+        $conversation = $message->conversation;
+        $isParticipant = $conversation
+            && in_array((int) $user->id, [
+                (int) $conversation->user_one_id,
+                (int) $conversation->user_two_id,
+            ], true);
+
+        abort_unless($isParticipant, 403);
+
+        $path = trim((string) ($message->attachment_path ?? ''));
+        abort_if($path === '' || !Storage::disk('public')->exists($path), 404);
+
+        if ($request->boolean('preview')) {
+            $participantId = (int) $conversation->user_one_id === (int) $user->id
+                ? (int) $conversation->user_two_id
+                : (int) $conversation->user_one_id;
+
+            return view('employee.communicationAttachmentPreview', [
+                'imageUrl' => route('employee.communication.message.attachment', array_filter([
+                    'message' => $message->id,
+                    'tab_session' => $request->query('tab_session'),
+                ])),
+                'backUrl' => route('employee.employeeCommunication', array_filter([
+                    'conversation' => $conversation->id,
+                    'user' => $participantId,
+                    'tab_session' => $request->query('tab_session'),
+                ])),
+                'imageName' => (string) ($message->attachment_name ?: 'Chat image'),
+            ]);
+        }
+
+        return Storage::disk('public')->response(
+            $path,
+            (string) ($message->attachment_name ?: basename($path)),
+            [
+                'Content-Type' => (string) ($message->attachment_mime ?: 'application/octet-stream'),
+                'Content-Disposition' => 'inline; filename="'.str_replace('"', '', (string) ($message->attachment_name ?: basename($path))).'"',
+            ]
+        );
+    }
+
+    public function view_communication_image(Request $request, ConversationMessageAttachment $attachment)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login_display');
+        }
+
+        $attachment->loadMissing('message.conversation');
+        $conversation = $attachment->message?->conversation;
+        $isParticipant = $conversation
+            && in_array((int) $user->id, [
+                (int) $conversation->user_one_id,
+                (int) $conversation->user_two_id,
+            ], true);
+
+        abort_unless($isParticipant, 403);
+        abort_if(!Storage::disk('public')->exists($attachment->path), 404);
+
+        if ($request->boolean('preview')) {
+            $participantId = (int) $conversation->user_one_id === (int) $user->id
+                ? (int) $conversation->user_two_id
+                : (int) $conversation->user_one_id;
+
+            return view('employee.communicationAttachmentPreview', [
+                'imageUrl' => route('employee.communication.attachment.view', array_filter([
+                    'attachment' => $attachment->id,
+                    'tab_session' => $request->query('tab_session'),
+                ])),
+                'backUrl' => route('employee.employeeCommunication', array_filter([
+                    'conversation' => $conversation->id,
+                    'user' => $participantId,
+                    'tab_session' => $request->query('tab_session'),
+                ])),
+                'imageName' => (string) ($attachment->name ?: 'Chat image'),
+            ]);
+        }
+
+        return Storage::disk('public')->response(
+            $attachment->path,
+            $attachment->name,
+            [
+                'Content-Type' => $attachment->mime,
+                'Content-Disposition' => 'inline; filename="'.str_replace('"', '', $attachment->name).'"',
+            ]
+        );
     }
 
     public function display_resignation(Request $request){

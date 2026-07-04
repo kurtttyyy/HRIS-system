@@ -13,11 +13,16 @@ class ConversationMessage extends Model
         'conversation_id',
         'sender_user_id',
         'body',
+        'attachment_path',
+        'attachment_name',
+        'attachment_mime',
+        'attachment_size',
         'read_at',
     ];
 
     protected $casts = [
         'read_at' => 'datetime',
+        'attachment_size' => 'integer',
     ];
 
     public function conversation()
@@ -28,5 +33,10 @@ class ConversationMessage extends Model
     public function sender()
     {
         return $this->belongsTo(User::class, 'sender_user_id');
+    }
+
+    public function attachments()
+    {
+        return $this->hasMany(ConversationMessageAttachment::class, 'conversation_message_id');
     }
 }

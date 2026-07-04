@@ -62,8 +62,15 @@ Route::controller(EmployeePageController::class)->group(function () {
     Route::get('employee/hierarchy', 'display_hierarchy')->name('employee.employeeHierarchy');
     Route::get('employee/evaluation', 'display_evaluation')->name('employee.employeeEvaluation');
     Route::get('employee/leave', 'display_leave')->name('employee.employeeLeave');
+    Route::get('employee/leave/{leave}/medical-receipt', 'view_leave_medical_receipt')->name('employee.leave.medicalReceipt');
     Route::get('employee/profile', 'display_profile')->name('employee.employeeProfile');
     Route::get('employee/communication', 'display_communication')->name('employee.employeeCommunication');
+    Route::get('employee/communication/message/{message}/attachment', 'view_communication_attachment')->name('employee.communication.message.attachment');
+    Route::get('employee/communication/attachment/{attachment}', 'view_communication_image')->name('employee.communication.attachment.view');
+    Route::get('admin/communication/message/{message}/attachment', 'view_communication_attachment')->name('admin.communication.message.attachment');
+    Route::get('admin/communication/attachment/{attachment}', 'view_communication_image')->name('admin.communication.attachment.view');
+    Route::get('communication/message/{message}/attachment', 'view_communication_attachment')->name('communication.message.attachment');
+    Route::get('communication/attachment/{attachment}', 'view_communication_image')->name('communication.attachment.view');
     Route::get('employee/resignation', 'display_resignation')->name('employee.employeeResignation');
     Route::get('employee/resignation/snapshot', 'resignation_snapshot')->name('employee.resignation.snapshot');
     Route::get('employee/resignation/{resignation}/attachment', 'display_resignation_attachment')->name('employee.resignationAttachment.preview');
@@ -95,6 +102,7 @@ Route::controller(AdministratorPageController::class)->group(function () {
     Route::get('system/communication', 'display_communication')->name('admin.adminCommunication');
     Route::get('system/employee', 'display_employee')->name('admin.adminEmployee');
     Route::get('system/leave/management', 'display_leave')->name('admin.adminLeaveManagement');
+    Route::get('system/leave/management/snapshot', 'leave_management_snapshot')->name('admin.leaveManagement.snapshot');
     Route::get('system/payslip', 'display_payslip')->name('admin.adminPayslip');
     Route::get('system/payslip/view', 'display_payslip_view')->name('admin.adminPaySlipView');
     Route::get('system/resignations', 'display_resignations')->name('admin.adminResignations');

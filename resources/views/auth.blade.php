@@ -264,7 +264,7 @@
                             </div>
                         </div>
 
-                        <button class="w-full py-3 rounded-xl bg-gradient-to-r from-green-800 via-green-600 to-green-800 text-white font-semibold hover:opacity-95 transition">
+                        <button type="submit" data-login-submit class="w-full py-3 rounded-xl bg-gradient-to-r from-green-800 via-green-600 to-green-800 text-white font-semibold hover:opacity-95 transition disabled:cursor-wait disabled:opacity-70">
                             Sign In
                         </button>
                     </form>
@@ -386,10 +386,57 @@
 
         const loginUrl = withTabSession(root.getAttribute('data-login-url') || '/login', tabSession);
         const registerUrl = withTabSession(root.getAttribute('data-register-url') || '/register', tabSession);
+        const csrfTokenUrl = @json(route('csrf.token'));
 
         document.querySelectorAll('input[name="tab_session"]').forEach((input) => {
             input.value = tabSession;
         });
+
+        const loginForm = document.querySelector('[data-login-form]');
+        if (loginForm) {
+            let loginSubmitting = false;
+
+            loginForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                if (loginSubmitting) {
+                    return;
+                }
+
+                loginSubmitting = true;
+                const submitButton = loginForm.querySelector('[data-login-submit]');
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'Signing In...';
+                }
+
+                try {
+                    const response = await fetch(`${csrfTokenUrl}?_=${Date.now()}`, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        credentials: 'same-origin',
+                        cache: 'no-store',
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Unable to refresh the login session.');
+                    }
+
+                    const data = await response.json();
+                    const tokenInput = loginForm.querySelector('input[name="_token"]');
+                    if (!tokenInput || typeof data.token !== 'string' || data.token === '') {
+                        throw new Error('The refreshed CSRF token is unavailable.');
+                    }
+
+                    tokenInput.value = data.token;
+                    loginForm.submit();
+                } catch (error) {
+                    window.location.replace(loginUrl);
+                }
+            });
+        }
 
         document.querySelectorAll('[data-auth-target="login"]').forEach((link) => {
             link.setAttribute('href', loginUrl);

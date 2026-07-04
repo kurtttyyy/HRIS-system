@@ -241,6 +241,14 @@
             <h3 class="admin-display mt-5 text-lg text-slate-900">Open Positions</h3>
             <p class="mt-2 text-sm leading-6 text-slate-500">Maintain job openings and see how many applicants are attached to each role.</p>
           </a>
+
+          <a href="{{ route('admin.adminPayslip') }}" class="dashboard-card-motion dashboard-reveal group rounded-[1.5rem] border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-5" style="--dashboard-delay: 310ms;">
+            <div class="dashboard-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-lg shadow-amber-500/25" style="--dashboard-delay: 330ms;">
+              <i class="fa-solid fa-money-check-dollar text-2xl"></i>
+            </div>
+            <h3 class="admin-display mt-5 text-lg text-slate-900">Manage Payslips</h3>
+            <p class="mt-2 text-sm leading-6 text-slate-500">Upload, process, and review employee payslip records.</p>
+          </a>
         </div>
       </section>
 

@@ -168,7 +168,7 @@
             </section>
 
             <section class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-                <a href="{{ route('employee.employeeLeave') }}" class="employee-dashboard-card-motion employee-dashboard-reveal block rounded-[1.75rem] border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-6 text-inherit shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2" style="--employee-dashboard-delay: 170ms;" aria-label="Open leave balance">
+                <a href="{{ route('employee.employeeLeave') }}" data-employee-nav class="employee-dashboard-card-motion employee-dashboard-reveal block rounded-[1.75rem] border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-6 text-inherit shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2" style="--employee-dashboard-delay: 170ms;" aria-label="Open leave balance">
                     <div class="flex items-start justify-between gap-4">
                         <div class="employee-dashboard-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-500 text-white shadow-lg shadow-blue-500/25" style="--employee-dashboard-delay: 200ms;">
                             <i class="fa fa-calendar fa-2x"></i>
@@ -186,7 +186,7 @@
                     </div>
                 </a>
 
-                <a href="{{ route('employee.employeeDocument') }}" class="employee-dashboard-card-motion employee-dashboard-reveal block rounded-[1.75rem] border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-6 text-inherit shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2" style="--employee-dashboard-delay: 200ms;" aria-label="Open employee documents">
+                <a href="{{ route('employee.employeeDocument') }}" data-employee-nav class="employee-dashboard-card-motion employee-dashboard-reveal block rounded-[1.75rem] border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-6 text-inherit shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2" style="--employee-dashboard-delay: 200ms;" aria-label="Open employee documents">
                     <div class="flex items-start justify-between gap-4">
                         <div class="employee-dashboard-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/25" style="--employee-dashboard-delay: 230ms;">
                             <i class="fa fa-folder-open fa-2x"></i>
@@ -198,7 +198,7 @@
                     <p class="mt-5 text-xs leading-5 text-slate-500">Upload and review your required employee documents.</p>
                 </a>
 
-                <a href="#upcoming-events-section" class="employee-dashboard-card-motion employee-dashboard-reveal block rounded-[1.75rem] border border-violet-100 bg-gradient-to-br from-violet-50 to-white p-6 text-inherit shadow-sm transition hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-violet-300 focus:ring-offset-2" style="--employee-dashboard-delay: 230ms;" aria-label="Jump to upcoming events">
+                <a href="#upcoming-events-section" data-employee-nav class="employee-dashboard-card-motion employee-dashboard-reveal block rounded-[1.75rem] border border-violet-100 bg-gradient-to-br from-violet-50 to-white p-6 text-inherit shadow-sm transition hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-violet-300 focus:ring-offset-2" style="--employee-dashboard-delay: 230ms;" aria-label="Jump to upcoming events">
                     <div class="flex items-start justify-between gap-4">
                         <div class="employee-dashboard-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-500 text-white shadow-lg shadow-violet-500/25" style="--employee-dashboard-delay: 260ms;">
                             <i class="fa fa-calendar-o fa-2x"></i>
@@ -210,7 +210,7 @@
                     <p id="month-events-caption" class="mt-5 text-xs leading-5 text-slate-500">{{ now()->format('F Y') }}</p>
                 </a>
 
-                <a href="{{ route('employee.employeePayslip') }}" class="employee-dashboard-card-motion employee-dashboard-reveal block rounded-[1.75rem] border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-6 text-inherit shadow-sm transition hover:-translate-y-0.5 hover:border-amber-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2" style="--employee-dashboard-delay: 260ms;" aria-label="Open payslip and salary access">
+                <a href="{{ route('employee.employeePayslip') }}" data-employee-nav class="employee-dashboard-card-motion employee-dashboard-reveal block rounded-[1.75rem] border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-6 text-inherit shadow-sm transition hover:-translate-y-0.5 hover:border-amber-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2" style="--employee-dashboard-delay: 260ms;" aria-label="Open payslip and salary access">
                     <div class="flex items-start justify-between gap-4">
                         <div class="employee-dashboard-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-lg shadow-amber-500/25" style="--employee-dashboard-delay: 290ms;">
                             <i class="fa fa-credit-card fa-2x"></i>
@@ -223,7 +223,7 @@
                 </a>
             </section>
 
-            <section class="grid grid-cols-1 gap-6">
+            <section class="grid grid-cols-1 gap-6 xl:grid-cols-2">
                 {{--
                 <div id="weekly-attendance-section" class="employee-dashboard-reveal bg-white rounded-2xl border border-gray-200 p-4 md:p-6" style="--employee-dashboard-delay: 300ms;">
                     <div class="flex items-center justify-between mb-4">
@@ -277,6 +277,67 @@
                     </div>
                 </div>
                 --}}
+
+                <div
+                    aria-labelledby="company-announcements-title"
+                    class="employee-dashboard-card-motion employee-dashboard-reveal overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm"
+                    style="--employee-dashboard-delay: 320ms;"
+                >
+                    <div class="flex items-center justify-between gap-4 border-b border-slate-100 px-5 py-5 md:px-6">
+                        <div class="flex items-center gap-4">
+                            <div class="employee-dashboard-icon-pop flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-600" style="--employee-dashboard-delay: 350ms;">
+                                <i class="fa fa-bullhorn fa-lg" aria-hidden="true"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-600">Notice board</p>
+                                <h2 id="company-announcements-title" class="mt-1 text-xl font-black text-slate-900">Company Announcements</h2>
+                            </div>
+                        </div>
+                        <span class="shrink-0 rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">3 updates</span>
+                    </div>
+
+                    <ul class="divide-y divide-slate-100 px-5 md:px-6">
+                        <li class="group flex items-center gap-4 py-4">
+                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-500">
+                                <i class="fa fa-calendar-times-o" aria-hidden="true"></i>
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <p class="font-bold text-slate-800">Independence Day Holiday</p>
+                                    <span class="rounded-full bg-rose-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-rose-600">Holiday</span>
+                                </div>
+                                <p class="mt-1 text-xs font-semibold text-slate-500">Friday, June 12, 2026</p>
+                                <p class="mt-1 text-xs text-slate-400">Company holiday advisory</p>
+                            </div>
+                        </li>
+                        <li class="group flex items-center gap-4 py-4">
+                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                                <i class="fa fa-money" aria-hidden="true"></i>
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <p class="font-bold text-slate-800">Payroll Release</p>
+                                    <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-700">Payroll</span>
+                                </div>
+                                <p class="mt-1 text-xs font-semibold text-slate-500">Wednesday, July 15, 2026</p>
+                            </div>
+                        </li>
+                        <li class="group flex items-center gap-4 py-4">
+                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                                <i class="fa fa-file-text-o" aria-hidden="true"></i>
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <p class="font-bold text-slate-800">New Leave Policy</p>
+                                    <span class="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-blue-700">Policy</span>
+                                    <span class="rounded-full bg-amber-500 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">New</span>
+                                </div>
+                                <p class="mt-1 text-xs font-semibold text-slate-500">Posted Thursday, July 2, 2026</p>
+                                <p class="mt-1 text-xs text-slate-400">Please review the updated leave guidance</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
 
                 <div id="upcoming-events-section" class="employee-dashboard-reveal scroll-mt-24 rounded-[2rem] border border-slate-200 bg-white p-4 shadow-sm md:p-6" style="--employee-dashboard-delay: 340ms;">
                     <div class="mb-4 flex items-center justify-between">

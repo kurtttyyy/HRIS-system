@@ -309,6 +309,7 @@
         <!-- Communication -->
         <a href="{{ route('employee.employeeCommunication') }}"
            data-employee-nav
+           data-employee-communication-nav
            class="relative flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium transition
                   {{ request()->routeIs('employee.employeeCommunication')
                         ? 'bg-green-600 text-white hover:bg-green-700'
@@ -643,7 +644,12 @@
             });
         };
 
-        links.forEach((link) => {
+        const bindNavigationLink = (link) => {
+            if (link.dataset.employeeNavBound === 'true') {
+                return;
+            }
+            link.dataset.employeeNavBound = 'true';
+
             const href = appendTabSession(link.getAttribute('href'));
             if (!href) {
                 return;
@@ -669,12 +675,30 @@
                 const latestUrl = new URL(window.location.href);
                 const nextUrl = new URL(href, window.location.origin);
                 if (latestUrl.pathname === nextUrl.pathname && latestUrl.search === nextUrl.search) {
+                    if (nextUrl.hash && nextUrl.hash !== latestUrl.hash) {
+                        const target = document.querySelector(nextUrl.hash);
+                        if (target) {
+                            event.preventDefault();
+                            const activeOverlay = ensureOverlay();
+                            activeOverlay.classList.add('is-visible');
+                            window.setTimeout(() => {
+                                activeOverlay.classList.remove('is-visible');
+                                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                history.pushState({}, '', nextUrl.hash);
+                            }, 220);
+                        }
+                    }
                     return;
                 }
 
                 ensureOverlay().classList.add('is-visible');
             });
-        });
+        };
+
+        links.forEach(bindNavigationLink);
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('[data-employee-nav]').forEach(bindNavigationLink);
+        }, { once: true });
 
         window.addEventListener('pageshow', () => {
             if (overlay) {

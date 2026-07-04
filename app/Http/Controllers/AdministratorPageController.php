@@ -431,7 +431,7 @@ class AdministratorPageController extends Controller
         if ($selectedConversation) {
             $selectedConversation->load([
                 'messages' => function ($query) {
-                    $query->with('sender')->orderBy('created_at');
+                    $query->with(['sender', 'attachments'])->orderBy('created_at');
                 },
                 'userOne',
                 'userTwo',
@@ -1889,6 +1889,45 @@ class AdministratorPageController extends Controller
             ->groupBy(fn ($record) => (string) ($record['leave_type'] ?? 'Leave'))
             ->map(fn ($records) => (int) $records->sum('days'));
 
+        $buildRequestTypeBreakdown = function ($applications) {
+            return collect($applications)
+                ->groupBy(fn ($application) => (string) ($application->leave_type ?: 'Leave'))
+                ->map(function ($applications, $leaveType) {
+                    $days = $applications->sum(function ($application) {
+                        $workingDays = (float) ($application->number_of_working_days ?? 0);
+
+                        return $workingDays > 0
+                            ? $workingDays
+                            : max(
+                                (float) ($application->days_with_pay ?? 0),
+                                (float) ($application->applied_total ?? 0)
+                            );
+                    });
+
+                    return [
+                        'type' => (string) $leaveType,
+                        'count' => $applications->count(),
+                        'days' => round((float) $days, 1),
+                    ];
+                })
+                ->sortByDesc('count')
+                ->values()
+                ->all();
+        };
+
+        $rejectedMonthApplications = $monthApplications
+            ->filter(fn ($application) => strcasecmp(trim((string) ($application->status ?? '')), 'Rejected') === 0)
+            ->values();
+        $approvedSickApplications = $approvedMonthApplications
+            ->filter(fn ($application) => str_contains(strtolower((string) ($application->leave_type ?? '')), 'sick'))
+            ->values();
+        $leaveSummaryBreakdowns = [
+            'leave_used' => $buildRequestTypeBreakdown($approvedMonthApplications),
+            'sick_used' => $buildRequestTypeBreakdown($approvedSickApplications),
+            'approved' => $buildRequestTypeBreakdown($approvedMonthApplications),
+            'rejected' => $buildRequestTypeBreakdown($rejectedMonthApplications),
+        ];
+
         $allPendingLeaveRequests = $monthApplications
             ->filter(function ($application) {
                 $status = trim((string) ($application->status ?? ''));
@@ -1898,11 +1937,13 @@ class AdministratorPageController extends Controller
             ->values();
 
         $pendingRequestCount = $allPendingLeaveRequests->count();
+        $rejectedRequestCount = $rejectedMonthApplications->count();
         $pendingLeaveDays = (float) $allPendingLeaveRequests->sum(function ($row) {
             return (float) ($row->number_of_working_days ?? 0);
         });
         $pendingLeaveRequests = $allPendingLeaveRequests->take(5)->values();
-        $recentMonthRecords = $monthRecords->take(5)->values();
+        $recentMonthRecords = $monthRecords->values();
+        $leaveSnapshotToken = $this->buildLeaveManagementSnapshotToken($monthApplications);
 
         return view('Admin.adminLeaveManagement', compact(
             'selectedMonth',
@@ -1913,8 +1954,68 @@ class AdministratorPageController extends Controller
             'pendingLeaveRequests',
             'pendingLeaveDays',
             'pendingRequestCount',
-            'recentMonthRecords'
+            'rejectedRequestCount',
+            'leaveSummaryBreakdowns',
+            'recentMonthRecords',
+            'leaveSnapshotToken'
         ));
+    }
+
+    public function leave_management_snapshot(Request $request)
+    {
+        $selectedMonth = trim((string) $request->query('month', now()->format('Y-m')));
+        try {
+            $monthCursor = Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
+        } catch (\Throwable $e) {
+            $monthCursor = now()->startOfMonth();
+            $selectedMonth = $monthCursor->format('Y-m');
+        }
+
+        $monthApplications = LeaveApplication::query()
+            ->where(function ($query) use ($monthCursor) {
+                $query
+                    ->where(function ($filingDateQuery) use ($monthCursor) {
+                        $filingDateQuery
+                            ->whereNotNull('filing_date')
+                            ->whereYear('filing_date', $monthCursor->year)
+                            ->whereMonth('filing_date', $monthCursor->month);
+                    })
+                    ->orWhere(function ($createdAtQuery) use ($monthCursor) {
+                        $createdAtQuery
+                            ->whereNull('filing_date')
+                            ->whereYear('created_at', $monthCursor->year)
+                            ->whereMonth('created_at', $monthCursor->month);
+                    });
+            })
+            ->orderByDesc('created_at')
+            ->get(['id', 'status', 'updated_at']);
+
+        $pendingCount = $monthApplications->filter(function ($application) {
+            $status = trim((string) ($application->status ?? ''));
+
+            return $status === '' || strcasecmp($status, 'Pending') === 0;
+        })->count();
+
+        return response()->json([
+            'month' => $selectedMonth,
+            'token' => $this->buildLeaveManagementSnapshotToken($monthApplications),
+            'total' => $monthApplications->count(),
+            'pending' => $pendingCount,
+        ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    }
+
+    private function buildLeaveManagementSnapshotToken($applications): string
+    {
+        $snapshot = collect($applications)
+            ->map(fn ($application) => [
+                'id' => (int) $application->id,
+                'status' => strtolower(trim((string) ($application->status ?? 'pending'))),
+                'updated_at' => optional($application->updated_at)?->format('Y-m-d H:i:s.u'),
+            ])
+            ->values()
+            ->all();
+
+        return hash('sha256', json_encode($snapshot));
     }
 
     public function display_payslip(){

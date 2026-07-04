@@ -57,24 +57,46 @@ class AdministratorStoreController extends Controller
     public function send_communication_message(Request $request)
     {
         if (!Schema::hasTable('conversations') || !Schema::hasTable('conversation_messages')) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Communication tables are not ready yet. Please run the latest migration.',
+                ], 503);
+            }
             return redirect()->back()->withErrors(['body' => 'Communication tables are not ready yet. Please run the latest migration.']);
         }
 
         $attrs = $request->validate([
             'participant_user_id' => 'required|integer|exists:users,id',
             'conversation_id' => 'nullable|integer|exists:conversations,id',
-            'body' => 'required|string|max:4000',
+            'body' => 'nullable|string|max:4000|required_without:attachments',
+            'attachments' => 'nullable|array|max:6|required_without:body',
+            'attachments.*' => 'file|image|mimes:jpg,jpeg,png,gif,webp|max:10240',
             'tab_session' => 'nullable|string|max:120',
+        ], [
+            'body.required_without' => 'Enter a message or choose an image.',
+            'attachments.required_without' => 'Enter a message or choose at least one image.',
+            'attachments.max' => 'You can attach up to 6 images per message.',
+            'attachments.*.image' => 'Every attachment must be an image.',
+            'attachments.*.mimes' => 'Use JPG, JPEG, PNG, GIF, or WEBP images.',
+            'attachments.*.max' => 'Each image must not be larger than 10 MB.',
         ]);
 
         $authUser = Auth::user();
         if (!$authUser) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Your session has expired. Please sign in again.'], 401);
+            }
             return redirect()->route('login_display', array_filter([
                 'tab_session' => $request->input('tab_session'),
             ]));
         }
 
         if (!in_array(strtolower(trim((string) ($authUser->role ?? ''))), ['admin', 'administrator'], true)) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'You must be logged in as an admin account to send messages from the admin communication page.',
+                ], 403);
+            }
             return redirect()->route('employee.employeeCommunication', array_filter([
                     'tab_session' => $request->input('tab_session'),
                 ]))
@@ -83,21 +105,64 @@ class AdministratorStoreController extends Controller
 
         $participant = User::query()->findOrFail((int) $attrs['participant_user_id']);
         if ((int) $participant->id === (int) $authUser->id) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'You cannot message yourself.'], 422);
+            }
             return redirect()->back()->withErrors(['body' => 'You cannot message yourself.']);
         }
 
         if (strcasecmp(trim((string) ($participant->role ?? '')), 'employee') !== 0) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Admins can only start chats with employee users here.'], 422);
+            }
             return redirect()->back()->withErrors(['body' => 'Admins can only start chats with employee users here.']);
         }
 
         $conversation = Conversation::findOrCreateBetweenUsers((int) $authUser->id, (int) $participant->id);
-        $conversation->messages()->create([
+        $message = $conversation->messages()->create([
             'sender_user_id' => (int) $authUser->id,
-            'body' => trim((string) $attrs['body']),
+            'body' => trim((string) ($attrs['body'] ?? '')),
         ]);
+        foreach ($request->file('attachments', []) as $attachment) {
+            $path = $attachment->store('chat-images', 'public');
+            $message->attachments()->create([
+                'path' => $path,
+                'name' => $attachment->getClientOriginalName(),
+                'mime' => $attachment->getClientMimeType(),
+                'size' => $attachment->getSize(),
+            ]);
+        }
+        $message->load('attachments');
         $conversation->forceFill([
             'last_message_at' => now(),
         ])->save();
+
+        $chatRouteParameters = array_filter([
+            'conversation' => $conversation->id,
+            'user' => $participant->id,
+            'tab_session' => $request->input('tab_session'),
+        ], fn ($value) => !is_null($value) && $value !== '');
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Message sent.',
+                'conversation_id' => (int) $conversation->id,
+                'participant_user_id' => (int) $participant->id,
+                'chat_url' => route('admin.adminCommunication', $chatRouteParameters),
+                'sent_message' => [
+                    'id' => (int) $message->id,
+                    'body' => (string) $message->body,
+                    'attachments' => $message->attachments->map(fn ($attachment) => [
+                        'id' => (int) $attachment->id,
+                        'name' => $attachment->name,
+                        'url' => route('admin.communication.attachment.view', array_filter([
+                            'attachment' => $attachment->id,
+                            'tab_session' => $request->input('tab_session'),
+                        ])),
+                    ])->values()->all(),
+                ],
+            ]);
+        }
 
         return redirect()->route('admin.adminCommunication', [
             'conversation' => $conversation->id,
@@ -279,6 +344,9 @@ class AdministratorStoreController extends Controller
                 ->with('scheduled_applicant_id', $attrs['applicants_id']);
         }
 
+        DB::beginTransaction();
+
+        try {
             $store = Interviewer::create([
                 'applicant_id' => $attrs['applicants_id'],
                 'interview_type' => $attrs['interview_type'],

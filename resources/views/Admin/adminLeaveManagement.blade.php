@@ -43,6 +43,16 @@
       transform: translateX(4px);
       box-shadow: inset 3px 0 0 rgba(16, 185, 129, 0.55), 0 10px 24px rgba(15, 23, 42, 0.08);
     }
+    #leave-summary-types-modal:not(.hidden) .leave-summary-panel {
+      animation: leave-summary-panel-in 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .leave-summary-orb {
+      animation: leave-summary-orb-float 6s ease-in-out infinite;
+    }
+    .leave-summary-progress {
+      transform-origin: left;
+      animation: leave-summary-progress-grow 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
     @keyframes leave-management-fade-up {
       to {
         opacity: 1;
@@ -58,6 +68,24 @@
         opacity: 1;
         transform: scale(1) rotate(0);
       }
+    }
+    @keyframes leave-summary-panel-in {
+      from {
+        opacity: 0;
+        transform: translateY(22px) scale(0.96);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    @keyframes leave-summary-orb-float {
+      0%, 100% { transform: translate3d(0, 0, 0); }
+      50% { transform: translate3d(-10px, 8px, 0); }
+    }
+    @keyframes leave-summary-progress-grow {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
     }
     @media (prefers-reduced-motion: reduce) {
       .leave-management-reveal,
@@ -88,11 +116,10 @@
       @php
         $selectedMonthValue = $selectedMonth ?? now()->format('Y-m');
         $selectedMonthLabel = \Carbon\Carbon::createFromFormat('Y-m', $selectedMonthValue)->format('F Y');
-        $topLeaveEntry = collect($leaveTypeCounts ?? [])->sortDesc()->first();
-        $topLeaveType = collect($leaveTypeCounts ?? [])->sortDesc()->keys()->first() ?? '-';
         $pendingRequestCount = (int) ($pendingRequestCount ?? ($pendingLeaveRequests ?? collect())->count());
         $visiblePendingRequestCount = ($pendingLeaveRequests ?? collect())->count();
         $approvedRequestCount = ($monthRecords ?? collect())->count();
+        $rejectedRequestCount = (int) ($rejectedRequestCount ?? 0);
         $visibleApprovedRequestCount = ($recentMonthRecords ?? $monthRecords ?? collect())->count();
         $pendingLeaveDaysLabel = rtrim(rtrim(number_format((float) ($pendingLeaveDays ?? 0), 1, '.', ''), '0'), '.');
       @endphp
@@ -104,41 +131,41 @@
       @endif
 
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div class="leave-management-card-motion leave-management-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--leave-management-delay: 30ms;">
+        <button type="button" data-leave-summary-open data-summary-title="Leave Used This Month" data-summary-subtitle="Approved leave types and total days used." data-summary-details="{{ json_encode($leaveSummaryBreakdowns['leave_used'] ?? []) }}" class="leave-management-card-motion leave-management-reveal cursor-pointer rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur focus:outline-none focus:ring-4 focus:ring-sky-200" style="--leave-management-delay: 30ms;">
           <span class="leave-management-icon-pop inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-100 text-sky-600" style="--leave-management-delay: 70ms;">
             <i class="fa-regular fa-calendar-check text-lg"></i>
           </span>
           <p class="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Leave Used This Month</p>
           <p class="mt-2 text-3xl font-black tracking-tight text-slate-900">{{ number_format((int) ($totalLeaveUsedDays ?? 0)) }}</p>
           <p class="mt-1 text-sm text-slate-500">Total approved leave days</p>
-        </div>
+        </button>
 
-        <div class="leave-management-card-motion leave-management-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--leave-management-delay: 60ms;">
+        <button type="button" data-leave-summary-open data-summary-title="Sick Leave Used" data-summary-subtitle="Approved sick leave request types and days used." data-summary-details="{{ json_encode($leaveSummaryBreakdowns['sick_used'] ?? []) }}" class="leave-management-card-motion leave-management-reveal cursor-pointer rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur focus:outline-none focus:ring-4 focus:ring-blue-200" style="--leave-management-delay: 60ms;">
           <span class="leave-management-icon-pop inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-600" style="--leave-management-delay: 100ms;">
             <i class="fa-solid fa-notes-medical text-lg"></i>
           </span>
           <p class="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Sick Leave Used</p>
           <p class="mt-2 text-3xl font-black tracking-tight text-blue-700">{{ number_format((int) ($sickLeaveUsedDays ?? 0)) }}</p>
           <p class="mt-1 text-sm text-slate-500">Approved sick leave days</p>
-        </div>
+        </button>
 
-        <div class="leave-management-card-motion leave-management-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--leave-management-delay: 90ms;">
+        <button type="button" data-leave-summary-open data-summary-title="Approved Requests" data-summary-subtitle="Approved requests grouped by leave type." data-summary-details="{{ json_encode($leaveSummaryBreakdowns['approved'] ?? []) }}" class="leave-management-card-motion leave-management-reveal cursor-pointer rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur focus:outline-none focus:ring-4 focus:ring-emerald-200" style="--leave-management-delay: 90ms;">
           <span class="leave-management-icon-pop inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600" style="--leave-management-delay: 130ms;">
             <i class="fa-solid fa-circle-check text-lg"></i>
           </span>
           <p class="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Approved Requests</p>
           <p class="mt-2 text-3xl font-black tracking-tight text-emerald-700">{{ number_format($approvedRequestCount) }}</p>
           <p class="mt-1 text-sm text-slate-500">Approved leave records in month</p>
-        </div>
+        </button>
 
-        <div class="leave-management-card-motion leave-management-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--leave-management-delay: 120ms;">
-          <span class="leave-management-icon-pop inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-100 text-violet-600" style="--leave-management-delay: 160ms;">
-            <i class="fa-solid fa-layer-group text-lg"></i>
+        <button type="button" data-leave-summary-open data-summary-title="Rejected Requests" data-summary-subtitle="Rejected requests grouped by leave type." data-summary-details="{{ json_encode($leaveSummaryBreakdowns['rejected'] ?? []) }}" class="leave-management-card-motion leave-management-reveal cursor-pointer rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur focus:outline-none focus:ring-4 focus:ring-rose-200" style="--leave-management-delay: 120ms;">
+          <span class="leave-management-icon-pop inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-100 text-rose-600" style="--leave-management-delay: 160ms;">
+            <i class="fa-solid fa-circle-xmark text-lg"></i>
           </span>
-          <p class="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Top Leave Type</p>
-          <p class="mt-2 text-2xl font-black tracking-tight text-violet-700">{{ $topLeaveType }}</p>
-          <p class="mt-1 text-sm text-slate-500">{{ (int) ($topLeaveEntry ?? 0) }} day(s)</p>
-        </div>
+          <p class="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Rejected Requests</p>
+          <p class="mt-2 text-3xl font-black tracking-tight text-rose-700">{{ number_format($rejectedRequestCount) }}</p>
+          <p class="mt-1 text-sm text-slate-500">Rejected leave records in month</p>
+        </button>
       </div>
 
       <div class="grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.15fr)]">
@@ -265,14 +292,8 @@
                       </section>
 
                       <section>
-                        <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
                           <h4 class="text-sm font-bold uppercase tracking-[0.14em] text-slate-500">Medical Certificate</h4>
-                          @if($medicalCertificateUrl)
-                            <a href="{{ $medicalCertificateUrl }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700">
-                              <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                              Open Full Size
-                            </a>
-                          @endif
                         </div>
 
                         @if($medicalCertificateUrl && $isMedicalCertificateImage)
@@ -344,19 +365,34 @@
           </div>
         </section>
 
-        <section class="leave-management-reveal overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/92 shadow-[0_22px_50px_rgba(15,23,42,0.07)] backdrop-blur" style="--leave-management-delay: 200ms;">
+        <section data-approved-history-section class="leave-management-reveal overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/92 shadow-[0_22px_50px_rgba(15,23,42,0.07)] backdrop-blur" style="--leave-management-delay: 200ms;">
           <div class="border-b border-slate-200 bg-[linear-gradient(180deg,rgba(239,246,255,0.7),rgba(255,255,255,0.92))] px-5 py-4">
-            <div class="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/85 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
-              Approved Timeline
+            <div class="flex flex-col gap-4">
+              <div>
+                <div class="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/85 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
+                  Approved Timeline
+                </div>
+                <h3 class="mt-3 text-xl font-black tracking-tight text-slate-900">Leave History</h3>
+                <p class="mt-1 text-sm text-slate-500">Approved records for {{ $selectedMonthLabel }}</p>
+              </div>
+              <div class="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+                <label class="text-[11px] font-bold uppercase tracking-wide text-slate-500">
+                  From
+                  <input data-approved-history-from type="date" class="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-700 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200">
+                </label>
+                <label class="text-[11px] font-bold uppercase tracking-wide text-slate-500">
+                  To
+                  <input data-approved-history-to type="date" class="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-700 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200">
+                </label>
+                <button type="button" data-approved-history-reset class="col-span-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700 sm:col-span-1">
+                  Reset
+                </button>
+              </div>
+              <p data-approved-history-count class="text-xs font-medium text-sky-700">Showing {{ $approvedRequestCount }} approved request(s)</p>
             </div>
-            <h3 class="mt-3 text-xl font-black tracking-tight text-slate-900">Leave History</h3>
-            <p class="mt-1 text-sm text-slate-500">Approved records for {{ $selectedMonthLabel }}</p>
-            @if ($approvedRequestCount > $visibleApprovedRequestCount)
-              <p class="mt-1 text-xs font-medium text-sky-700">Showing the {{ $visibleApprovedRequestCount }} newest approved records.</p>
-            @endif
           </div>
 
-          <div class="p-4 space-y-4">
+          <div data-approved-history-list class="max-h-[34rem] space-y-4 overflow-y-auto p-4">
             @forelse (($recentMonthRecords ?? $monthRecords ?? collect()) as $record)
               @php
                 $leaveType = (string) ($record['leave_type'] ?? 'Leave');
@@ -399,7 +435,11 @@
                   ? 'Business Trip'
                   : (str_contains(strtolower($leaveType), 'annual leave') ? 'Personal vacation' : (str_contains(strtolower($leaveType), 'sick leave') ? 'Not fit for work due to health reasons' : ($record['reason'] ?? '-')));
               @endphp
-              <div class="leave-management-row-motion rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-sm">
+              <div
+                data-approved-history-record
+                data-approved-start="{{ $startDate?->format('Y-m-d') }}"
+                data-approved-end="{{ $endDate?->format('Y-m-d') }}"
+                class="leave-management-row-motion rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-sm">
                 <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div class="flex items-start gap-4">
                     <div class="flex h-12 w-12 items-center justify-center rounded-2xl {{ $iconToneClass }}">
@@ -427,8 +467,104 @@
                 <p class="mt-1 text-sm text-slate-500">Approved leave history will appear here once requests are processed.</p>
               </div>
             @endforelse
+            <div data-approved-history-filter-empty class="hidden rounded-[1.5rem] border border-dashed border-sky-200 bg-sky-50/60 px-6 py-10 text-center">
+              <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-sky-500 shadow-sm">
+                <i class="fa-solid fa-filter-circle-xmark text-xl"></i>
+              </div>
+              <p class="mt-4 text-sm font-bold text-slate-800">No approved leave in this date range</p>
+              <p class="mt-1 text-sm text-slate-500">Choose another range or reset the date filter.</p>
+            </div>
           </div>
         </section>
+      </div>
+
+      <div id="leave-summary-types-modal" class="fixed inset-0 z-[120] hidden items-center justify-center bg-slate-950/75 p-4 backdrop-blur-md" role="dialog" aria-modal="true" aria-labelledby="leave-summary-types-title">
+        <div class="leave-summary-panel max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[2.25rem] border border-white/20 bg-[#f8fafc] shadow-[0_40px_110px_rgba(2,6,23,0.48)]">
+          <div class="relative overflow-hidden bg-[linear-gradient(135deg,#020617_0%,#0f172a_45%,#064e3b_100%)] px-6 pb-16 pt-7 text-white md:px-8">
+            <div class="leave-summary-orb absolute -right-10 -top-16 h-56 w-56 rounded-full bg-emerald-300/15 blur-3xl"></div>
+            <div class="absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-cyan-300/10 blur-3xl"></div>
+            <div class="absolute right-24 top-6 h-20 w-20 rounded-full border border-white/10 bg-white/5"></div>
+
+            <div class="relative flex items-start justify-between gap-5">
+              <div class="flex min-w-0 items-start gap-4">
+                <div class="hidden h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-white/15 bg-white/10 text-xl text-emerald-300 shadow-lg backdrop-blur sm:flex">
+                  <i class="fa-solid fa-chart-pie"></i>
+                </div>
+                <div class="min-w-0">
+                  <div class="inline-flex items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-emerald-200">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-300"></span>
+                    Live Request Insights
+                  </div>
+                  <h3 id="leave-summary-types-title" data-leave-summary-title class="mt-3 truncate text-2xl font-black tracking-tight md:text-3xl">Leave Requests</h3>
+                  <p data-leave-summary-subtitle class="mt-2 max-w-xl text-sm leading-6 text-slate-300">Requests grouped by leave type.</p>
+                </div>
+              </div>
+              <button type="button" data-leave-summary-close class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition hover:rotate-90 hover:bg-white/20" aria-label="Close request type breakdown">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="relative -mt-9 px-5 md:px-8">
+            <div class="grid grid-cols-3 gap-3">
+              <div class="rounded-2xl border border-white bg-white p-4 shadow-[0_14px_30px_rgba(15,23,42,0.1)]">
+                <div class="flex items-center gap-2 text-sky-600">
+                  <i class="fa-solid fa-layer-group text-xs"></i>
+                  <p class="text-[10px] font-bold uppercase tracking-wide">Types</p>
+                </div>
+                <p data-leave-summary-stat="types" class="mt-2 text-2xl font-black text-slate-900">0</p>
+              </div>
+              <div class="rounded-2xl border border-white bg-white p-4 shadow-[0_14px_30px_rgba(15,23,42,0.1)]">
+                <div class="flex items-center gap-2 text-emerald-600">
+                  <i class="fa-solid fa-file-circle-check text-xs"></i>
+                  <p class="text-[10px] font-bold uppercase tracking-wide">Requests</p>
+                </div>
+                <p data-leave-summary-stat="requests" class="mt-2 text-2xl font-black text-slate-900">0</p>
+              </div>
+              <div class="rounded-2xl border border-white bg-white p-4 shadow-[0_14px_30px_rgba(15,23,42,0.1)]">
+                <div class="flex items-center gap-2 text-violet-600">
+                  <i class="fa-solid fa-clock text-xs"></i>
+                  <p class="text-[10px] font-bold uppercase tracking-wide">Days</p>
+                </div>
+                <p data-leave-summary-stat="days" class="mt-2 text-2xl font-black text-slate-900">0</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-5 pb-6 pt-7 md:px-8">
+            <div data-leave-summary-content>
+              <div class="mb-4 flex items-end justify-between gap-4">
+                <div>
+                  <p class="text-xs font-bold uppercase tracking-[0.18em] text-emerald-600">Type Distribution</p>
+                  <h4 class="mt-1 text-lg font-black text-slate-900">How requests are distributed</h4>
+                </div>
+                <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">{{ $selectedMonthLabel }}</span>
+              </div>
+              <div data-leave-summary-list class="space-y-3"></div>
+            </div>
+
+            <div data-leave-summary-empty class="hidden overflow-hidden rounded-[1.75rem] border border-emerald-100 bg-[linear-gradient(145deg,#f0fdf4_0%,#f8fafc_55%,#ecfeff_100%)] px-6 py-10 text-center">
+              <div class="relative mx-auto h-24 w-24">
+                <div class="absolute inset-0 rounded-full bg-emerald-200/40 blur-xl"></div>
+                <div class="relative flex h-24 w-24 items-end justify-center gap-2 rounded-[2rem] border border-white bg-white/80 px-5 pb-5 shadow-xl backdrop-blur">
+                  <span class="h-6 w-3 rounded-full bg-emerald-300"></span>
+                  <span class="h-10 w-3 rounded-full bg-emerald-500"></span>
+                  <span class="h-4 w-3 rounded-full bg-cyan-300"></span>
+                </div>
+              </div>
+              <div class="mx-auto mt-6 max-w-md">
+                <span class="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-700">All clear</span>
+                <h4 class="mt-3 text-xl font-black text-slate-900">A wonderfully quiet category</h4>
+                <p class="mt-2 text-sm leading-6 text-slate-500">There are no request types here for {{ $selectedMonthLabel }}. New activity will appear automatically the moment it arrives.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-3 border-t border-slate-200 bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8">
+            <p class="text-xs text-slate-400"><i class="fa-solid fa-arrows-rotate mr-1 text-emerald-500"></i> Synced automatically with leave requests</p>
+            <button type="button" data-leave-summary-close class="rounded-xl bg-slate-950 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-slate-200 transition hover:-translate-y-0.5 hover:bg-emerald-700">Done</button>
+          </div>
+        </div>
       </div>
     </div>
   </main>
@@ -465,9 +601,11 @@
 
   const syncLeaveOverlayBodyState = () => {
     const reviewOpen = document.querySelector('[id^="leave-review-modal-"]:not(.hidden)');
+    const summaryModal = document.getElementById('leave-summary-types-modal');
+    const summaryOpen = summaryModal && !summaryModal.classList.contains('hidden');
     const zoomViewer = document.getElementById('medical-certificate-zoom-viewer');
     const zoomOpen = zoomViewer && !zoomViewer.classList.contains('hidden');
-    document.body.classList.toggle('overflow-hidden', Boolean(reviewOpen || zoomOpen));
+    document.body.classList.toggle('overflow-hidden', Boolean(reviewOpen || summaryOpen || zoomOpen));
   };
 
   const applyMedicalCertificateZoom = () => {
@@ -534,7 +672,202 @@
     syncLeaveOverlayBodyState();
   };
 
+  const closeLeaveSummaryModal = () => {
+    const modal = document.getElementById('leave-summary-types-modal');
+    if (!modal) return;
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    syncLeaveOverlayBodyState();
+  };
+
+  const openLeaveSummaryModal = (button) => {
+    const modal = document.getElementById('leave-summary-types-modal');
+    const list = modal?.querySelector('[data-leave-summary-list]');
+    const content = modal?.querySelector('[data-leave-summary-content]');
+    const emptyState = modal?.querySelector('[data-leave-summary-empty]');
+    if (!modal || !list || !content || !emptyState) return;
+
+    let details = [];
+    try {
+      details = JSON.parse(button.dataset.summaryDetails || '[]');
+    } catch (error) {
+      details = [];
+    }
+
+    const title = modal.querySelector('[data-leave-summary-title]');
+    const subtitle = modal.querySelector('[data-leave-summary-subtitle]');
+    if (title) title.textContent = button.dataset.summaryTitle || 'Leave Requests';
+    if (subtitle) subtitle.textContent = button.dataset.summarySubtitle || 'Requests grouped by leave type.';
+
+    const totalRequests = details.reduce((sum, item) => sum + Number(item.count || 0), 0);
+    const totalDays = details.reduce((sum, item) => sum + Number(item.days || 0), 0);
+    const summaryStats = {
+      types: details.length,
+      requests: totalRequests,
+      days: Number.isInteger(totalDays) ? totalDays : totalDays.toFixed(1),
+    };
+    modal.querySelectorAll('[data-leave-summary-stat]').forEach((stat) => {
+      stat.textContent = summaryStats[stat.dataset.leaveSummaryStat] ?? 0;
+    });
+
+    const palette = [
+      { color: '#10b981', soft: '#d1fae5', icon: 'fa-calendar-check' },
+      { color: '#3b82f6', soft: '#dbeafe', icon: 'fa-briefcase-medical' },
+      { color: '#8b5cf6', soft: '#ede9fe', icon: 'fa-calendar-days' },
+      { color: '#f59e0b', soft: '#fef3c7', icon: 'fa-clock' },
+      { color: '#f43f5e', soft: '#ffe4e6', icon: 'fa-heart-pulse' },
+    ];
+
+    list.replaceChildren();
+    details.forEach((item, index) => {
+      const tone = palette[index % palette.length];
+      const requestCount = Number(item.count || 0);
+      const percentage = totalRequests > 0 ? Math.round((requestCount / totalRequests) * 100) : 0;
+      const days = Number(item.days || 0);
+
+      const row = document.createElement('div');
+      row.className = 'group relative overflow-hidden rounded-[1.4rem] border border-slate-200 bg-white px-4 py-4 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-lg';
+
+      const accent = document.createElement('span');
+      accent.className = 'absolute bottom-0 left-0 top-0 w-1';
+      accent.style.backgroundColor = tone.color;
+
+      const layout = document.createElement('div');
+      layout.className = 'flex items-center gap-4';
+
+      const icon = document.createElement('span');
+      icon.className = 'flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-base';
+      icon.style.backgroundColor = tone.soft;
+      icon.style.color = tone.color;
+      const iconGlyph = document.createElement('i');
+      iconGlyph.className = `fa-solid ${tone.icon}`;
+      icon.appendChild(iconGlyph);
+
+      const text = document.createElement('div');
+      text.className = 'min-w-0 flex-1';
+
+      const type = document.createElement('p');
+      type.className = 'truncate text-sm font-black text-slate-900';
+      type.textContent = item.type || 'Leave';
+
+      const meta = document.createElement('p');
+      meta.className = 'mt-1 text-xs text-slate-500';
+      meta.textContent = `${Number.isInteger(days) ? days : days.toFixed(1)} day(s) across ${requestCount} request(s)`;
+
+      const progressTrack = document.createElement('div');
+      progressTrack.className = 'mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100';
+      const progress = document.createElement('div');
+      progress.className = 'leave-summary-progress h-full rounded-full';
+      progress.style.width = `${Math.max(percentage, requestCount > 0 ? 5 : 0)}%`;
+      progress.style.backgroundColor = tone.color;
+      progress.style.animationDelay = `${index * 70}ms`;
+      progressTrack.appendChild(progress);
+
+      const metric = document.createElement('div');
+      metric.className = 'shrink-0 text-right';
+
+      const count = document.createElement('span');
+      count.className = 'block text-xl font-black text-slate-900';
+      count.textContent = requestCount;
+
+      const share = document.createElement('span');
+      share.className = 'mt-0.5 block text-[10px] font-bold uppercase tracking-wide text-slate-400';
+      share.textContent = `${percentage}% share`;
+
+      text.append(type, meta, progressTrack);
+      metric.append(count, share);
+      layout.append(icon, text, metric);
+      row.append(accent, layout);
+      list.appendChild(row);
+    });
+
+    const hasDetails = details.length > 0;
+    content.classList.toggle('hidden', !hasDetails);
+    emptyState.classList.toggle('hidden', hasDetails);
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    syncLeaveOverlayBodyState();
+    modal.querySelector('[data-leave-summary-close]')?.focus();
+  };
+
+  const applyApprovedHistoryDateFilter = () => {
+    const section = document.querySelector('[data-approved-history-section]');
+    if (!section) return;
+
+    const records = Array.from(section.querySelectorAll('[data-approved-history-record]'));
+    if (!records.length) return;
+
+    const fromInput = section.querySelector('[data-approved-history-from]');
+    const toInput = section.querySelector('[data-approved-history-to]');
+    const fromDate = fromInput?.value || '';
+    const toDate = toInput?.value || '';
+    let visibleCount = 0;
+
+    records.forEach((record) => {
+      const recordStart = record.dataset.approvedStart || '';
+      const recordEnd = record.dataset.approvedEnd || recordStart;
+      const matchesFrom = !fromDate || (recordEnd !== '' && recordEnd >= fromDate);
+      const matchesTo = !toDate || (recordStart !== '' && recordStart <= toDate);
+      const isVisible = matchesFrom && matchesTo;
+
+      record.classList.toggle('hidden', !isVisible);
+      if (isVisible) visibleCount += 1;
+    });
+
+    const countLabel = section.querySelector('[data-approved-history-count]');
+    if (countLabel) {
+      countLabel.textContent = `Showing ${visibleCount} of ${records.length} approved request(s)`;
+    }
+
+    const emptyState = section.querySelector('[data-approved-history-filter-empty]');
+    if (emptyState) emptyState.classList.toggle('hidden', visibleCount > 0);
+
+    const historyList = section.querySelector('[data-approved-history-list]');
+    if (historyList) historyList.scrollTop = 0;
+  };
+
+  document.addEventListener('change', (event) => {
+    const fromInput = event.target.closest('[data-approved-history-from]');
+    const toInput = event.target.closest('[data-approved-history-to]');
+    if (!fromInput && !toInput) return;
+
+    const section = event.target.closest('[data-approved-history-section]');
+    const currentFrom = section?.querySelector('[data-approved-history-from]');
+    const currentTo = section?.querySelector('[data-approved-history-to]');
+    if (currentFrom?.value && currentTo?.value && currentFrom.value > currentTo.value) {
+      if (fromInput) {
+        currentTo.value = currentFrom.value;
+      } else {
+        currentFrom.value = currentTo.value;
+      }
+    }
+    applyApprovedHistoryDateFilter();
+  });
+
   document.addEventListener('click', (event) => {
+    const historyResetButton = event.target.closest('[data-approved-history-reset]');
+    if (historyResetButton) {
+      const section = historyResetButton.closest('[data-approved-history-section]');
+      const fromInput = section?.querySelector('[data-approved-history-from]');
+      const toInput = section?.querySelector('[data-approved-history-to]');
+      if (fromInput) fromInput.value = '';
+      if (toInput) toInput.value = '';
+      applyApprovedHistoryDateFilter();
+      return;
+    }
+
+    const summaryButton = event.target.closest('[data-leave-summary-open]');
+    if (summaryButton) {
+      openLeaveSummaryModal(summaryButton);
+      return;
+    }
+
+    const summaryModal = document.getElementById('leave-summary-types-modal');
+    if (event.target.closest('[data-leave-summary-close]') || event.target === summaryModal) {
+      closeLeaveSummaryModal();
+      return;
+    }
+
     const imageZoomButton = event.target.closest('[data-medical-image-zoom]');
     if (imageZoomButton) {
       openMedicalCertificateZoom(imageZoomButton);
@@ -584,6 +917,11 @@
 
   document.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape') return;
+    const summaryModal = document.getElementById('leave-summary-types-modal');
+    if (summaryModal && !summaryModal.classList.contains('hidden')) {
+      closeLeaveSummaryModal();
+      return;
+    }
     const zoomViewer = document.getElementById('medical-certificate-zoom-viewer');
     if (zoomViewer && !zoomViewer.classList.contains('hidden')) {
       closeMedicalCertificateZoom();
@@ -650,6 +988,96 @@
       main.classList.add('ml-16');
     });
   }
+
+  @php
+    $leaveManagementSnapshotUrl = route('admin.leaveManagement.snapshot', array_filter([
+      'month' => $selectedMonth ?? now()->format('Y-m'),
+      'tab_session' => request()->query('tab_session'),
+    ]));
+  @endphp
+  const leaveManagementSnapshotUrl = @json($leaveManagementSnapshotUrl);
+  let leaveManagementSnapshotToken = @json($leaveSnapshotToken ?? '');
+  let leaveManagementRefreshPending = false;
+
+  const silentlyRefreshLeaveManagement = async () => {
+    const response = await fetch(window.location.href, {
+      method: 'GET',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'text/html',
+      },
+      credentials: 'same-origin',
+      cache: 'no-store',
+    });
+    if (!response.ok) return false;
+
+    const html = await response.text();
+    const incomingDocument = new DOMParser().parseFromString(html, 'text/html');
+    const incomingPage = incomingDocument.getElementById('leave-management-page');
+    const currentPage = document.getElementById('leave-management-page');
+    if (!incomingPage || !currentPage) return false;
+
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    const nextPage = document.importNode(incomingPage, true);
+    nextPage.querySelectorAll('.leave-management-reveal').forEach((item) => {
+      item.classList.add('is-visible');
+    });
+    document.querySelectorAll('body > [id^="leave-review-modal-"]').forEach((modal) => modal.remove());
+    currentPage.replaceWith(nextPage);
+
+    const incomingHeader = incomingDocument.querySelector('[data-admin-scroll-header]');
+    const currentHeader = document.querySelector('[data-admin-scroll-header]');
+    if (incomingHeader && currentHeader) {
+      const nextHeader = document.importNode(incomingHeader, true);
+      nextHeader.classList.toggle('is-scrolled', window.scrollY > 24);
+      currentHeader.replaceWith(nextHeader);
+    }
+
+    requestAnimationFrame(() => window.scrollTo(scrollX, scrollY));
+    return true;
+  };
+
+  const refreshLeaveManagementWhenChanged = async () => {
+    if (leaveManagementRefreshPending || document.hidden) return;
+    if (document.querySelector('[id^="leave-review-modal-"]:not(.hidden)')) return;
+    const summaryModal = document.getElementById('leave-summary-types-modal');
+    if (summaryModal && !summaryModal.classList.contains('hidden')) return;
+
+    const zoomViewer = document.getElementById('medical-certificate-zoom-viewer');
+    if (zoomViewer && !zoomViewer.classList.contains('hidden')) return;
+
+    try {
+      const response = await fetch(leaveManagementSnapshotUrl, {
+        method: 'GET',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json',
+        },
+        credentials: 'same-origin',
+        cache: 'no-store',
+      });
+      if (!response.ok) return;
+
+      const snapshot = await response.json();
+      if (!snapshot.token || snapshot.token === leaveManagementSnapshotToken) return;
+
+      leaveManagementRefreshPending = true;
+      const refreshed = await silentlyRefreshLeaveManagement();
+      if (refreshed) {
+        leaveManagementSnapshotToken = snapshot.token;
+      }
+    } catch (error) {
+      // Keep the current page usable and retry on the next polling interval.
+    } finally {
+      leaveManagementRefreshPending = false;
+    }
+  };
+
+  window.setInterval(refreshLeaveManagementWhenChanged, 5000);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) refreshLeaveManagementWhenChanged();
+  });
 </script>
 </body>
 </html>

@@ -41,6 +41,7 @@
     $selectedConversation = $selectedConversation ?? null;
     $messages = collect(optional($selectedConversation)->messages ?? []);
     $availableCount = $directoryMembers->filter(fn ($member) => in_array(strtolower(trim((string) ($member->status ?? ''))), ['approved', 'available'], true))->count();
+    $unreadMessageCount = (int) $directoryMembers->sum(fn ($member) => (int) ($member->unread_message_count ?? 0));
 @endphp
 <div class="flex min-h-screen">
     @include('components.adminSideBar')
@@ -68,7 +69,36 @@
                         <h3 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Choose an employee to start or continue a chat.</h3>
                         <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Use the directory to jump straight into a message thread with any approved employee.</p>
                     </div>
-                    <div class="communication-card-motion communication-reveal inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-500" style="--communication-delay:70ms"><i class="fa-solid fa-user-group text-emerald-500"></i>{{ $availableCount }} available employee{{ $availableCount === 1 ? '' : 's' }}</div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <div class="communication-card-motion communication-reveal inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-500" style="--communication-delay:70ms">
+                            <i class="fa-solid fa-user-group text-emerald-500"></i>
+                            {{ $availableCount }} available employee{{ $availableCount === 1 ? '' : 's' }}
+                        </div>
+                        <button
+                            id="admin-all-filter"
+                            type="button"
+                            aria-pressed="true"
+                            class="communication-card-motion communication-reveal inline-flex items-center gap-2 rounded-full border border-slate-900 bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm"
+                            style="--communication-delay:80ms"
+                        >
+                            <i class="fa-solid fa-users" aria-hidden="true"></i>
+                            All
+                        </button>
+                        <button
+                            id="admin-unread-filter"
+                            type="button"
+                            aria-pressed="false"
+                            class="communication-card-motion communication-reveal inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 {{ $unreadMessageCount === 0 ? 'cursor-not-allowed opacity-60' : 'hover:border-rose-300 hover:bg-rose-100' }}"
+                            style="--communication-delay:90ms"
+                            @disabled($unreadMessageCount === 0)
+                        >
+                            <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+                            Unread
+                            <span id="admin-unread-count" data-unread-total="{{ $unreadMessageCount }}" class="inline-flex min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                                {{ $unreadMessageCount > 99 ? '99+' : $unreadMessageCount }}
+                            </span>
+                        </button>
+                    </div>
                 </div>
                 <div id="admin-communication-directory-grid" class="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
                     @foreach ($directoryMembers as $employee)
@@ -84,10 +114,13 @@
                         @endphp
                         <article
                             data-communication-directory-card
+                            data-employee-id="{{ (int) ($employee->id ?? 0) }}"
                             data-name="{{ strtolower($employeeName) }}"
                             data-email="{{ strtolower((string) ($employee->email ?? '')) }}"
                             data-position="{{ strtolower($position) }}"
                             data-department="{{ strtolower($department) }}"
+                            data-unread="{{ $employeeHasUnreadMessages ? 'true' : 'false' }}"
+                            data-unread-count="{{ $employeeUnreadCount }}"
                             class="communication-card-motion communication-reveal rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-5 shadow-sm"
                             style="--communication-delay: {{ 110 + (($loop->index % 6) * 35) }}ms;"
                         >
@@ -95,10 +128,10 @@
                                 <div class="flex items-center gap-4">
                                     <div class="communication-icon-pop flex h-14 w-14 items-center justify-center rounded-[1.2rem] bg-gradient-to-br from-slate-900 to-emerald-600 text-lg font-black text-white" style="--communication-delay: {{ 140 + (($loop->index % 6) * 35) }}ms;">{{ $employeeInitials !== '' ? $employeeInitials : 'EM' }}</div>
                                     <div class="min-w-0">
-                                        <div class="flex flex-wrap items-center gap-2">
+                                        <div data-admin-employee-name-row class="flex flex-wrap items-center gap-2">
                                             <p class="truncate text-lg font-black text-slate-900">{{ $employeeName }}</p>
                                             @if ($employeeHasUnreadMessages)
-                                                <span class="inline-flex items-center rounded-full bg-rose-500 px-2.5 py-1 text-[11px] font-bold text-white">{{ $employeeUnreadCount > 99 ? '99+' : $employeeUnreadCount }} unread</span>
+                                                <span data-admin-unread-badge data-admin-name-unread class="inline-flex items-center rounded-full bg-rose-500 px-2.5 py-1 text-[11px] font-bold text-white">{{ $employeeUnreadCount > 99 ? '99+' : $employeeUnreadCount }} unread</span>
                                             @endif
                                         </div>
                                         <p class="text-sm text-slate-500">{{ $position }}</p>
@@ -114,9 +147,9 @@
                                 @if ($isSelfEmployeeCard)
                                     <span class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-400"><i class="fa-solid fa-ban"></i>Current Account</span>
                                 @else
-                                    <a href="{{ route('admin.adminCommunication', array_filter(['user' => $employee->id, 'tab_session' => request()->query('tab_session')])) }}#admin-chat-panel" class="relative inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
+                                    <a href="{{ route('admin.adminCommunication', array_filter(['user' => $employee->id, 'tab_session' => request()->query('tab_session')])) }}#admin-chat-panel" data-admin-chat-connect class="relative inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
                                         @if ($employeeHasUnreadMessages)
-                                            <span class="absolute -right-2 -top-2 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
+                                            <span data-admin-unread-badge data-admin-connect-unread class="absolute -right-2 -top-2 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
                                                 {{ $employeeUnreadCount > 99 ? '99+' : $employeeUnreadCount }}
                                             </span>
                                         @endif
@@ -138,7 +171,7 @@
                                 $participantName = $participantName !== '' ? $participantName : (string) ($selectedParticipant->email ?? 'Employee');
                                 $participantInitials = strtoupper(substr(trim((string) ($selectedParticipant->first_name ?? 'E')), 0, 1).substr(trim((string) ($selectedParticipant->last_name ?? '')), 0, 1));
                             @endphp
-                            <div class="fixed bottom-5 right-5 z-50 w-[370px] max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-t-2xl rounded-b-[1.35rem] border border-slate-800 bg-[#1f1f1f] shadow-[0_30px_80px_rgba(0,0,0,0.45)]">
+                            <div id="admin-chat-panel" class="fixed bottom-5 right-5 z-50 w-[370px] max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-t-2xl rounded-b-[1.35rem] border border-slate-800 bg-[#1f1f1f] shadow-[0_30px_80px_rgba(0,0,0,0.45)]">
                             <div class="border-b border-slate-700 bg-[#242424] px-4 py-3">
                                 <div class="flex items-center justify-between gap-4">
                                     <div class="flex items-center gap-4">
@@ -151,7 +184,9 @@
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-3 text-violet-400">
-                                        <a href="{{ route('admin.adminCommunication', array_filter(['reset_chat' => 1, 'tab_session' => request()->query('tab_session')])) }}" class="text-violet-400"><i class="fa-solid fa-xmark"></i></a>
+                                        <button type="button" data-admin-chat-close class="text-violet-400 transition hover:text-violet-300" aria-label="Close chat">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -162,12 +197,47 @@
                                         $senderName = trim(implode(' ', array_filter([$message->sender->first_name ?? null, $message->sender->last_name ?? null])));
                                         $senderName = $senderName !== '' ? $senderName : ($isOwnMessage ? 'You' : $participantName);
                                     @endphp
-                                    <div class="flex items-end gap-2 {{ $isOwnMessage ? 'justify-end' : 'justify-start' }}">
+                                    <div data-message-id="{{ (int) ($message->id ?? 0) }}" class="flex items-end gap-2 {{ $isOwnMessage ? 'justify-end' : 'justify-start' }}">
                                         @unless ($isOwnMessage)
                                             <div class="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-slate-300 to-slate-500 text-[9px] font-bold text-slate-950">{{ $participantInitials !== '' ? $participantInitials : 'EM' }}</div>
                                         @endunless
                                         <div class="max-w-[78%] rounded-[1.45rem] px-4 py-2.5 shadow-sm {{ $isOwnMessage ? 'bg-gradient-to-r from-blue-600 to-violet-600 text-white' : 'bg-[#303030] text-slate-100' }}">
-                                            <p class="whitespace-pre-line text-sm leading-6">{{ $message->body }}</p>
+                                            @php
+                                                $messageAttachments = collect($message->attachments ?? []);
+                                                $messageImageCount = $messageAttachments->count() + (!empty($message->attachment_path) ? 1 : 0);
+                                                $singleAttachment = $messageImageCount === 1
+                                                    ? ($messageAttachments->first() ?? $message)
+                                                    : null;
+                                                $singleAttachmentMime = strtolower((string) ($singleAttachment->mime ?? $singleAttachment->attachment_mime ?? ''));
+                                                $singleAttachmentName = strtolower((string) ($singleAttachment->name ?? $singleAttachment->attachment_name ?? ''));
+                                                $singleAttachmentIsGif = $singleAttachment
+                                                    && ($singleAttachmentMime === 'image/gif' || str_ends_with($singleAttachmentName, '.gif'));
+                                            @endphp
+                                            @if ($messageImageCount > 0)
+                                                <div class="mb-2 grid {{ $messageImageCount === 1 ? ($singleAttachmentIsGif ? 'w-40 max-w-full grid-cols-1' : 'w-60 max-w-full grid-cols-1') : 'grid-cols-2' }} gap-1.5">
+                                                    @foreach ($messageAttachments as $attachment)
+                                                        @php
+                                                            $isGif = strtolower((string) ($attachment->mime ?? '')) === 'image/gif'
+                                                                || str_ends_with(strtolower((string) ($attachment->name ?? '')), '.gif');
+                                                        @endphp
+                                                        <a href="{{ route('admin.communication.attachment.view', array_filter(['attachment' => $attachment->id, 'tab_session' => request()->query('tab_session')])) }}" target="_blank" rel="noopener" class="block overflow-hidden rounded-xl bg-black/20">
+                                                            <img src="{{ route('admin.communication.attachment.view', array_filter(['attachment' => $attachment->id, 'tab_session' => request()->query('tab_session')])) }}" alt="{{ $attachment->name ?: 'Chat image' }}" class="{{ $isGif ? ($messageImageCount === 1 ? 'h-40 w-40 max-w-full object-contain' : 'h-24 w-full object-contain') : ($messageImageCount === 1 ? 'h-64 w-60 max-w-full object-contain' : 'h-32 w-full object-cover') }}">
+                                                        </a>
+                                                    @endforeach
+                                                    @if (!empty($message->attachment_path))
+                                                        @php
+                                                            $legacyAttachmentIsGif = strtolower((string) ($message->attachment_mime ?? '')) === 'image/gif'
+                                                                || str_ends_with(strtolower((string) ($message->attachment_name ?? '')), '.gif');
+                                                        @endphp
+                                                        <a href="{{ route('admin.communication.message.attachment', array_filter(['message' => $message->id, 'tab_session' => request()->query('tab_session')])) }}" target="_blank" rel="noopener" class="block overflow-hidden rounded-xl bg-black/20">
+                                                            <img src="{{ route('admin.communication.message.attachment', array_filter(['message' => $message->id, 'tab_session' => request()->query('tab_session')])) }}" alt="{{ $message->attachment_name ?: 'Chat image' }}" class="{{ $legacyAttachmentIsGif ? ($messageImageCount === 1 ? 'h-40 w-40 max-w-full object-contain' : 'h-24 w-full object-contain') : ($messageImageCount === 1 ? 'h-64 w-60 max-w-full object-contain' : 'h-32 w-full object-cover') }}">
+                                                        </a>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                            @if (trim((string) ($message->body ?? '')) !== '')
+                                                <p class="whitespace-pre-line text-sm leading-6">{{ $message->body }}</p>
+                                            @endif
                                         </div>
                                     </div>
                                 @empty
@@ -180,19 +250,40 @@
                                     </div>
                                 @endforelse
                             </div>
-                            <form method="POST" action="{{ route('admin.communication.send') }}" class="border-t border-slate-700 bg-[#1f1f1f] px-4 py-3">
+                            <form method="POST" action="{{ route('admin.communication.send') }}" data-admin-chat-message-form class="border-t border-slate-700 bg-[#1f1f1f] px-4 py-3">
                                 @csrf
                                 @if (request()->filled('tab_session'))
                                     <input type="hidden" name="tab_session" value="{{ request()->query('tab_session') }}">
                                 @endif
                                 <input type="hidden" name="participant_user_id" value="{{ $selectedParticipant->id }}">
                                 @if ($selectedConversation)<input type="hidden" name="conversation_id" value="{{ $selectedConversation->id }}">@endif
-                                <div class="flex items-end gap-3">
-                                    <div class="flex items-center pb-2 text-blue-500">
-                                        <i class="fa-regular fa-image"></i>
+                                <div data-chat-image-preview class="mb-3 hidden rounded-2xl bg-[#3a3a3a] p-2">
+                                    <div class="flex items-center gap-2 overflow-x-auto pb-1">
+                                        <button type="button" data-chat-image-trigger class="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#202020] text-xl text-white transition hover:bg-[#171717]" aria-label="Add more images">
+                                            <i class="fa-regular fa-square-plus"></i>
+                                        </button>
+                                        <div data-chat-image-preview-list class="flex items-center gap-2"></div>
                                     </div>
-                                    <div class="flex-1 rounded-full bg-[#3a3a3a] px-4 py-2">
-                                        <textarea name="body" rows="1" class="w-full resize-none bg-transparent text-sm text-white outline-none placeholder:text-slate-500" placeholder="Aa">{{ old('body') }}</textarea>
+                                </div>
+                                <div class="flex items-end gap-3">
+                                    <button type="button" data-chat-image-trigger class="flex items-center pb-2 text-blue-500 transition hover:text-blue-400" aria-label="Choose an image">
+                                        <i class="fa-regular fa-image"></i>
+                                    </button>
+                                    <input data-chat-image-input name="attachments[]" type="file" accept="image/jpeg,image/png,image/gif,image/webp" multiple class="hidden">
+                                    <div class="relative flex-1 rounded-full bg-[#3a3a3a] py-2 pl-4 pr-2">
+                                        <div class="flex items-center gap-2">
+                                            <textarea name="body" rows="1" maxlength="4000" class="min-w-0 flex-1 resize-none bg-transparent text-sm text-white outline-none placeholder:text-slate-500" placeholder="Aa">{{ old('body') }}</textarea>
+                                            <button type="button" data-chat-emoji-trigger class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-fuchsia-500 transition hover:bg-fuchsia-500/15 hover:text-fuchsia-400" aria-label="Choose an emoji" aria-expanded="false">
+                                                <i class="fa-solid fa-face-smile text-lg"></i>
+                                            </button>
+                                        </div>
+                                        <div data-chat-emoji-picker class="absolute bottom-full right-0 z-20 mb-2 hidden w-56 rounded-2xl border border-slate-600 bg-[#292929] p-2 shadow-2xl">
+                                            <div class="grid grid-cols-6 gap-1" aria-label="Emoji picker">
+                                                @foreach (['😀','😂','😊','😍','🥰','😎','🤗','🤔','😢','😭','😅','😴','👍','👏','🙏','💪','❤️','🎉'] as $emoji)
+                                                    <button type="button" data-chat-emoji="{{ $emoji }}" class="flex h-8 w-8 items-center justify-center rounded-lg text-xl transition hover:bg-slate-600">{{ $emoji }}</button>
+                                                @endforeach
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="flex items-center pb-2 text-blue-500">
                                         <button type="submit" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-violet-600 text-white"><i class="fa-solid fa-paper-plane text-xs"></i></button>
@@ -253,13 +344,228 @@
     }
 })();
 
-(function(){const thread=document.getElementById('admin-message-thread');if(thread){thread.scrollTop=thread.scrollHeight}})();
+function initializeAdminChatPanel() {
+    const thread = document.getElementById('admin-message-thread');
+    if (thread) {
+        thread.scrollTop = thread.scrollHeight;
+    }
+}
+
+async function loadAdminChatPanel(url, historyMode = 'push') {
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'text/html',
+        },
+        credentials: 'same-origin',
+    });
+
+    if (!response.ok) {
+        throw new Error('Chat request failed.');
+    }
+
+    const html = await response.text();
+    const parsedDocument = new DOMParser().parseFromString(html, 'text/html');
+    const incomingPanel = parsedDocument.getElementById('admin-chat-panel');
+    if (!incomingPanel) {
+        throw new Error('Chat panel was not returned.');
+    }
+
+    const panel = document.importNode(incomingPanel, true);
+    const currentPanel = document.getElementById('admin-chat-panel');
+    if (currentPanel) {
+        currentPanel.replaceWith(panel);
+    } else {
+        document.body.appendChild(panel);
+    }
+
+    initializeAdminChatPanel();
+
+    const nextUrl = new URL(url, window.location.href);
+    nextUrl.hash = 'admin-chat-panel';
+    if (historyMode === 'replace') {
+        history.replaceState({}, '', nextUrl);
+    } else {
+        history.pushState({}, '', nextUrl);
+    }
+}
+
+initializeAdminChatPanel();
+
+const adminChatCsrfUrl = @json(route('csrf.token'));
+async function refreshAdminChatCsrfToken(form) {
+    const response = await fetch(adminChatCsrfUrl, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+        },
+        credentials: 'same-origin',
+        cache: 'no-store',
+    });
+    const data = await response.json().catch(() => ({}));
+    const token = response.ok && typeof data.token === 'string' ? data.token : '';
+    if (token) {
+        const tokenInput = form.querySelector('input[name="_token"]');
+        if (tokenInput) tokenInput.value = token;
+        document.querySelector('meta[name="csrf-token"]')?.setAttribute('content', token);
+    }
+    return token;
+}
+
+document.addEventListener('click', async function (event) {
+    const closeButton = event.target.closest('[data-admin-chat-close]');
+    if (closeButton) {
+        event.preventDefault();
+        closeButton.closest('#admin-chat-panel')?.remove();
+
+        const cleanUrl = new URL(window.location.href);
+        cleanUrl.searchParams.delete('user');
+        cleanUrl.searchParams.delete('conversation');
+        cleanUrl.searchParams.delete('reset_chat');
+        cleanUrl.hash = '';
+        history.replaceState({}, '', cleanUrl);
+        return;
+    }
+
+    const link = event.target.closest('a[data-admin-chat-connect]');
+    if (!link || event.defaultPrevented || event.button !== 0) return;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+    event.preventDefault();
+    if (link.dataset.loading === 'true') return;
+
+    const originalContent = link.innerHTML;
+    link.dataset.loading = 'true';
+    link.setAttribute('aria-busy', 'true');
+    link.classList.add('pointer-events-none', 'opacity-70');
+    link.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>Opening...';
+    let chatLoaded = false;
+
+    try {
+        await loadAdminChatPanel(link.href);
+        chatLoaded = true;
+    } catch (error) {
+        window.location.assign(link.href);
+        return;
+    } finally {
+        link.dataset.loading = 'false';
+        link.removeAttribute('aria-busy');
+        link.classList.remove('pointer-events-none', 'opacity-70');
+        link.innerHTML = originalContent;
+        if (chatLoaded) {
+            const card = link.closest('[data-communication-directory-card]');
+            const readCount = Number(card?.dataset.unreadCount || 0);
+            card?.querySelectorAll('[data-admin-unread-badge]').forEach((badge) => badge.remove());
+            if (card) {
+                card.dataset.unread = 'false';
+                card.dataset.unreadCount = '0';
+            }
+
+            const unreadCount = document.getElementById('admin-unread-count');
+            const unreadFilter = document.getElementById('admin-unread-filter');
+            if (unreadCount && readCount > 0) {
+                const nextTotal = Math.max(Number(unreadCount.dataset.unreadTotal || 0) - readCount, 0);
+                unreadCount.dataset.unreadTotal = String(nextTotal);
+                unreadCount.textContent = nextTotal > 99 ? '99+' : String(nextTotal);
+                if (nextTotal === 0 && unreadFilter) {
+                    unreadFilter.disabled = true;
+                    unreadFilter.classList.add('cursor-not-allowed', 'opacity-60');
+                }
+            }
+
+            document.getElementById('admin-communication-search')?.dispatchEvent(new Event('input'));
+        }
+    }
+});
+
+document.addEventListener('submit', async function (event) {
+    const form = event.target.closest('form[data-admin-chat-message-form]');
+    if (!form) return;
+
+    event.preventDefault();
+
+    const textarea = form.querySelector('textarea[name="body"]');
+    const attachmentInput = form.querySelector('[data-chat-image-input]');
+    const submitButton = form.querySelector('button[type="submit"]');
+    const messageBody = (textarea?.value || '').trim();
+    const hasAttachment = Boolean(attachmentInput?.files?.length);
+    if (!messageBody && !hasAttachment) {
+        textarea?.focus();
+        return;
+    }
+
+    if (form.dataset.sending === 'true') return;
+    form.dataset.sending = 'true';
+
+    const originalButtonContent = submitButton?.innerHTML || '';
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i>';
+        submitButton.classList.add('cursor-not-allowed', 'opacity-70');
+    }
+
+    form.querySelector('[data-admin-chat-send-error]')?.remove();
+    let messageSaved = false;
+
+    try {
+        const freshToken = await refreshAdminChatCsrfToken(form);
+        const formData = new FormData(form);
+        if (freshToken) formData.set('_token', freshToken);
+        const response = await fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                ...(freshToken ? { 'X-CSRF-TOKEN': freshToken } : {}),
+            },
+            credentials: 'same-origin',
+            body: formData,
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            const firstError = data.errors && typeof data.errors === 'object'
+                ? Object.values(data.errors).flat().find(Boolean)
+                : '';
+            throw new Error(firstError || data.message || 'The message could not be sent.');
+        }
+
+        if (!data.chat_url) {
+            throw new Error('The message was sent, but the chat could not be refreshed.');
+        }
+
+        messageSaved = true;
+        await loadAdminChatPanel(data.chat_url, 'replace');
+    } catch (error) {
+        const errorMessage = messageSaved
+            ? 'Message sent. Reopen the chat to refresh the conversation.'
+            : (error.message || 'The message could not be sent. Please try again.');
+        const errorNotice = document.createElement('p');
+        errorNotice.dataset.adminChatSendError = 'true';
+        errorNotice.className = 'mb-2 rounded-lg bg-rose-500/15 px-3 py-2 text-xs font-medium text-rose-300';
+        errorNotice.textContent = errorMessage;
+        form.prepend(errorNotice);
+    } finally {
+        form.dataset.sending = 'false';
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalButtonContent;
+            submitButton.classList.remove('cursor-not-allowed', 'opacity-70');
+        }
+    }
+});
+
 (function(){
     const searchInput = document.getElementById('admin-communication-search');
     const cards = Array.from(document.querySelectorAll('[data-communication-directory-card]'));
     const emptyMessage = document.getElementById('admin-communication-empty');
     const directoryGrid = document.getElementById('admin-communication-directory-grid');
+    const allFilter = document.getElementById('admin-all-filter');
+    const unreadFilter = document.getElementById('admin-unread-filter');
     if (!searchInput || !cards.length || !directoryGrid) return;
+    let unreadOnly = false;
 
     const applyDirectorySearch = () => {
         const query = (searchInput.value || '').toLowerCase().trim();
@@ -273,7 +579,9 @@
                 card.dataset.department || '',
             ].join(' ');
 
-            const matches = query === '' || searchableText.includes(query);
+            const matchesSearch = query === '' || searchableText.includes(query);
+            const matchesUnread = !unreadOnly || card.dataset.unread === 'true';
+            const matches = matchesSearch && matchesUnread;
             card.classList.toggle('hidden', !matches);
             if (matches) visibleCount += 1;
         });
@@ -282,12 +590,155 @@
         directoryGrid.classList.toggle('hidden', !hasVisibleCards);
         if (emptyMessage) {
             emptyMessage.classList.toggle('hidden', hasVisibleCards);
+            emptyMessage.textContent = unreadOnly
+                ? 'No employees with unread messages matched your search.'
+                : 'No employee matched your search.';
         }
     };
 
     searchInput.addEventListener('input', applyDirectorySearch);
+    const updateFilterButtons = () => {
+        allFilter?.setAttribute('aria-pressed', unreadOnly ? 'false' : 'true');
+        unreadFilter?.setAttribute('aria-pressed', unreadOnly ? 'true' : 'false');
+
+        allFilter?.classList.toggle('border-slate-900', !unreadOnly);
+        allFilter?.classList.toggle('bg-slate-900', !unreadOnly);
+        allFilter?.classList.toggle('text-white', !unreadOnly);
+        allFilter?.classList.toggle('shadow-sm', !unreadOnly);
+        allFilter?.classList.toggle('border-slate-200', unreadOnly);
+        allFilter?.classList.toggle('bg-slate-50', unreadOnly);
+        allFilter?.classList.toggle('text-slate-600', unreadOnly);
+
+        unreadFilter.classList.toggle('border-rose-600', unreadOnly);
+        unreadFilter.classList.toggle('bg-rose-600', unreadOnly);
+        unreadFilter.classList.toggle('text-white', unreadOnly);
+        unreadFilter.classList.toggle('shadow-md', unreadOnly);
+        unreadFilter.classList.toggle('border-rose-200', !unreadOnly);
+        unreadFilter.classList.toggle('bg-rose-50', !unreadOnly);
+        unreadFilter.classList.toggle('text-rose-700', !unreadOnly);
+    };
+
+    allFilter?.addEventListener('click', () => {
+        unreadOnly = false;
+        updateFilterButtons();
+        applyDirectorySearch();
+    });
+
+    unreadFilter?.addEventListener('click', () => {
+        unreadOnly = true;
+        updateFilterButtons();
+        applyDirectorySearch();
+    });
+    updateFilterButtons();
     applyDirectorySearch();
 })();
+
+(function () {
+    let pollInFlight = false;
+
+    const synchronizeUnreadButton = (incomingDocument) => {
+        const currentCount = document.getElementById('admin-unread-count');
+        const incomingCount = incomingDocument.getElementById('admin-unread-count');
+        const unreadFilter = document.getElementById('admin-unread-filter');
+        if (!currentCount || !incomingCount || !unreadFilter) return;
+
+        const previousTotal = Number(currentCount.dataset.unreadTotal || 0);
+        const nextTotal = Number(incomingCount.dataset.unreadTotal || 0);
+        currentCount.dataset.unreadTotal = String(nextTotal);
+        currentCount.textContent = nextTotal > 99 ? '99+' : String(nextTotal);
+
+        unreadFilter.disabled = nextTotal === 0;
+        unreadFilter.classList.toggle('cursor-not-allowed', nextTotal === 0);
+        unreadFilter.classList.toggle('opacity-60', nextTotal === 0);
+        unreadFilter.classList.toggle('hover:border-rose-300', nextTotal > 0);
+        unreadFilter.classList.toggle('hover:bg-rose-100', nextTotal > 0);
+
+        if (nextTotal > previousTotal) {
+            unreadFilter.classList.add('ring-4', 'ring-rose-200');
+            window.setTimeout(() => unreadFilter.classList.remove('ring-4', 'ring-rose-200'), 900);
+        }
+    };
+
+    const synchronizeDirectoryCards = (incomingDocument) => {
+        document.querySelectorAll('[data-communication-directory-card]').forEach((card) => {
+            const employeeId = card.dataset.employeeId || '';
+            if (!employeeId) return;
+
+            const incomingCard = incomingDocument.querySelector(
+                `[data-communication-directory-card][data-employee-id="${employeeId}"]`
+            );
+            if (!incomingCard) return;
+
+            card.dataset.unread = incomingCard.dataset.unread || 'false';
+            card.dataset.unreadCount = incomingCard.dataset.unreadCount || '0';
+
+            const currentNameRow = card.querySelector('[data-admin-employee-name-row]');
+            const incomingNameBadge = incomingCard.querySelector('[data-admin-name-unread]');
+            currentNameRow?.querySelector('[data-admin-name-unread]')?.remove();
+            if (currentNameRow && incomingNameBadge) {
+                currentNameRow.appendChild(document.importNode(incomingNameBadge, true));
+            }
+
+            const currentConnect = card.querySelector('[data-admin-chat-connect]');
+            const incomingConnectBadge = incomingCard.querySelector('[data-admin-connect-unread]');
+            currentConnect?.querySelector('[data-admin-connect-unread]')?.remove();
+            if (currentConnect && incomingConnectBadge) {
+                currentConnect.prepend(document.importNode(incomingConnectBadge, true));
+            }
+        });
+
+        document.getElementById('admin-communication-search')?.dispatchEvent(new Event('input'));
+    };
+
+    const synchronizeOpenThread = (incomingDocument) => {
+        const currentThread = document.getElementById('admin-message-thread');
+        const incomingThread = incomingDocument.getElementById('admin-message-thread');
+        if (!currentThread || !incomingThread || currentThread.innerHTML === incomingThread.innerHTML) return;
+
+        const wasNearBottom = currentThread.scrollHeight - currentThread.scrollTop - currentThread.clientHeight < 80;
+        currentThread.innerHTML = incomingThread.innerHTML;
+        if (wasNearBottom) {
+            currentThread.scrollTop = currentThread.scrollHeight;
+        }
+    };
+
+    const pollAdminCommunication = async () => {
+        if (pollInFlight || document.hidden) return;
+        if (document.querySelector('[data-admin-chat-connect][data-loading="true"]')) return;
+        if (document.querySelector('[data-admin-chat-message-form][data-sending="true"]')) return;
+
+        pollInFlight = true;
+        try {
+            const response = await fetch(window.location.href, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'text/html',
+                },
+                credentials: 'same-origin',
+                cache: 'no-store',
+            });
+            if (!response.ok) return;
+
+            const html = await response.text();
+            const incomingDocument = new DOMParser().parseFromString(html, 'text/html');
+            synchronizeUnreadButton(incomingDocument);
+            synchronizeDirectoryCards(incomingDocument);
+            synchronizeOpenThread(incomingDocument);
+        } catch (error) {
+            // Keep the current page usable and try again on the next interval.
+        } finally {
+            pollInFlight = false;
+        }
+    };
+
+    window.setInterval(pollAdminCommunication, 4000);
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) pollAdminCommunication();
+    });
+})();
 </script>
+@include('components.chatImageUploadScript')
+@include('components.chatEmojiPickerScript')
 </body>
 </html>

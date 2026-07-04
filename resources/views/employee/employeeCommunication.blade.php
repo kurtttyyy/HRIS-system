@@ -99,17 +99,17 @@
                             $adminUnreadCount = (int) ($admin->unread_message_count ?? 0);
                             $adminHasUnreadMessages = (bool) ($admin->has_unread_messages ?? false);
                         @endphp
-                        <article class="directory-card employee-communication-card-motion employee-communication-reveal rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.08)]" style="--employee-communication-delay: {{ 160 + (($loop->index % 6) * 40) }}ms;" data-name="{{ strtolower($fullName) }}" data-role="{{ strtolower($jobRole.' '.$role) }}" data-status="{{ $isAvailable ? 'available' : 'other' }}">
+                        <article class="directory-card employee-communication-card-motion employee-communication-reveal rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.08)]" style="--employee-communication-delay: {{ 160 + (($loop->index % 6) * 40) }}ms;" data-admin-id="{{ (int) ($admin->id ?? 0) }}" data-name="{{ strtolower($fullName) }}" data-role="{{ strtolower($jobRole.' '.$role) }}" data-status="{{ $isAvailable ? 'available' : 'other' }}" data-unread="{{ $adminHasUnreadMessages ? 'true' : 'false' }}" data-unread-count="{{ $adminUnreadCount }}">
                             <div class="flex items-start justify-between gap-4">
                                 <div class="flex items-center gap-4">
                                     <div class="employee-communication-icon-pop flex h-20 w-20 items-center justify-center rounded-[1.6rem] bg-gradient-to-br from-emerald-500 via-teal-500 to-sky-500 text-2xl font-black text-white">{{ $initials !== '' ? $initials : 'AD' }}</div>
                                     <div class="min-w-0">
                                         <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">{{ $role !== '' ? $role : 'Admin' }}</p>
-                                        <div class="mt-1 flex flex-wrap items-center gap-2">
+                                        <div data-employee-admin-name-row class="mt-1 flex flex-wrap items-center gap-2">
                                             <h4 class="text-xl font-black leading-tight text-slate-900">{{ $fullName !== '' ? $fullName : 'Admin User' }}</h4>
                                             @if ($adminHasUnreadMessages)
-                                                <span class="inline-flex items-center rounded-full bg-rose-500 px-2.5 py-1 text-[11px] font-bold text-white">{{ $adminUnreadCount > 99 ? '99+' : $adminUnreadCount }} unread</span>
-                                            @endif
+                                                 <span data-unread-badge data-employee-name-unread class="inline-flex items-center rounded-full bg-rose-500 px-2.5 py-1 text-[11px] font-bold text-white">{{ $adminUnreadCount > 99 ? '99+' : $adminUnreadCount }} unread</span>
+                                             @endif
                                         </div>
                                         <p class="mt-1 text-sm font-medium text-slate-500">{{ $jobRole }}</p>
                                     </div>
@@ -124,10 +124,10 @@
                             </div>
                             <div class="mt-6 flex flex-wrap gap-3">
                                 <a href="mailto:{{ $email }}" class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white"><i class="fa fa-user"></i>View Profile</a>
-                                <a href="{{ route('employee.employeeCommunication', array_filter(['user' => $admin->id, 'tab_session' => request()->query('tab_session')])) }}#chat-panel" class="relative inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
-                                    @if ($adminHasUnreadMessages)
-                                        <span class="absolute -right-2 -top-2 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">{{ $adminUnreadCount > 99 ? '99+' : $adminUnreadCount }}</span>
-                                    @endif
+                                 <a href="{{ route('employee.employeeCommunication', array_filter(['user' => $admin->id, 'tab_session' => request()->query('tab_session')])) }}#chat-panel" data-chat-connect class="relative inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
+                                     @if ($adminHasUnreadMessages)
+                                         <span data-unread-badge data-employee-connect-unread class="absolute -right-2 -top-2 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">{{ $adminUnreadCount > 99 ? '99+' : $adminUnreadCount }}</span>
+                                     @endif
                                     <i class="fa fa-comment"></i>Connect
                                 </a>
                             </div>
@@ -166,16 +166,51 @@
                                         $senderName = trim(implode(' ', array_filter([$message->sender->first_name ?? null, $message->sender->last_name ?? null])));
                                         $senderName = $senderName !== '' ? $senderName : ($isOwnMessage ? 'You' : $participantName);
                                     @endphp
-                                    <div class="flex items-end gap-2 {{ $isOwnMessage ? 'justify-end' : 'justify-start' }}">
+                                    <div data-message-id="{{ (int) ($message->id ?? 0) }}" class="flex items-end gap-2 {{ $isOwnMessage ? 'justify-end' : 'justify-start' }}">
                                         @unless ($isOwnMessage)
                                             <div class="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-slate-300 to-slate-500 text-[9px] font-bold text-slate-950">{{ $participantInitials !== '' ? $participantInitials : 'AD' }}</div>
-                                        @endunless
-                                        <div class="max-w-[78%] rounded-[1.45rem] px-4 py-2.5 shadow-sm {{ $isOwnMessage ? 'bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white' : 'bg-[#303030] text-slate-100' }}">
-                                            <p class="whitespace-pre-line text-sm leading-6">{{ $message->body }}</p>
-                                        </div>
+                                         @endunless
+                                         <div class="max-w-[78%] rounded-[1.45rem] px-4 py-2.5 shadow-sm {{ $isOwnMessage ? 'bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white' : 'bg-[#303030] text-slate-100' }}">
+                                             @php
+                                                 $messageAttachments = collect($message->attachments ?? []);
+                                                 $messageImageCount = $messageAttachments->count() + (!empty($message->attachment_path) ? 1 : 0);
+                                                 $singleAttachment = $messageImageCount === 1
+                                                     ? ($messageAttachments->first() ?? $message)
+                                                     : null;
+                                                 $singleAttachmentMime = strtolower((string) ($singleAttachment->mime ?? $singleAttachment->attachment_mime ?? ''));
+                                                 $singleAttachmentName = strtolower((string) ($singleAttachment->name ?? $singleAttachment->attachment_name ?? ''));
+                                                 $singleAttachmentIsGif = $singleAttachment
+                                                     && ($singleAttachmentMime === 'image/gif' || str_ends_with($singleAttachmentName, '.gif'));
+                                             @endphp
+                                             @if ($messageImageCount > 0)
+                                                 <div class="mb-2 grid {{ $messageImageCount === 1 ? ($singleAttachmentIsGif ? 'w-40 max-w-full grid-cols-1' : 'w-60 max-w-full grid-cols-1') : 'grid-cols-2' }} gap-1.5">
+                                                     @foreach ($messageAttachments as $attachment)
+                                                         @php
+                                                             $isGif = strtolower((string) ($attachment->mime ?? '')) === 'image/gif'
+                                                                 || str_ends_with(strtolower((string) ($attachment->name ?? '')), '.gif');
+                                                         @endphp
+                                                         <a href="{{ route('employee.communication.attachment.view', array_filter(['attachment' => $attachment->id, 'preview' => 1, 'tab_session' => request()->query('tab_session')])) }}" class="block overflow-hidden rounded-xl bg-black/20">
+                                                             <img src="{{ route('employee.communication.attachment.view', array_filter(['attachment' => $attachment->id, 'tab_session' => request()->query('tab_session')])) }}" alt="{{ $attachment->name ?: 'Chat image' }}" class="{{ $isGif ? ($messageImageCount === 1 ? 'h-40 w-40 max-w-full object-contain' : 'h-24 w-full object-contain') : ($messageImageCount === 1 ? 'h-64 w-60 max-w-full object-contain' : 'h-32 w-full object-cover') }}">
+                                                         </a>
+                                                     @endforeach
+                                                     @if (!empty($message->attachment_path))
+                                                         @php
+                                                             $legacyAttachmentIsGif = strtolower((string) ($message->attachment_mime ?? '')) === 'image/gif'
+                                                                 || str_ends_with(strtolower((string) ($message->attachment_name ?? '')), '.gif');
+                                                         @endphp
+                                                         <a href="{{ route('employee.communication.message.attachment', array_filter(['message' => $message->id, 'preview' => 1, 'tab_session' => request()->query('tab_session')])) }}" class="block overflow-hidden rounded-xl bg-black/20">
+                                                             <img src="{{ route('employee.communication.message.attachment', array_filter(['message' => $message->id, 'tab_session' => request()->query('tab_session')])) }}" alt="{{ $message->attachment_name ?: 'Chat image' }}" class="{{ $legacyAttachmentIsGif ? ($messageImageCount === 1 ? 'h-40 w-40 max-w-full object-contain' : 'h-24 w-full object-contain') : ($messageImageCount === 1 ? 'h-64 w-60 max-w-full object-contain' : 'h-32 w-full object-cover') }}">
+                                                         </a>
+                                                     @endif
+                                                 </div>
+                                             @endif
+                                             @if (trim((string) ($message->body ?? '')) !== '')
+                                                 <p class="whitespace-pre-line text-sm leading-6">{{ $message->body }}</p>
+                                             @endif
+                                         </div>
                                     </div>
                                 @empty
-                                    <div class="flex min-h-[16rem] items-center justify-center">
+                                    <div data-chat-empty-state class="flex min-h-[16rem] items-center justify-center">
                                         <div class="max-w-sm text-center">
                                             <div class="employee-communication-icon-pop is-visible mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-800 text-violet-400"><i class="fa-solid fa-comment-dots text-xl"></i></div>
                                             <h4 class="mt-4 text-lg font-black text-white">Start the conversation.</h4>
@@ -184,24 +219,45 @@
                                     </div>
                                 @endforelse
                             </div>
-                            <form method="POST" action="{{ route('employee.communication.send') }}" class="border-t border-slate-700 bg-[#1f1f1f] px-4 py-3">
+                             <form method="POST" action="{{ route('employee.communication.send') }}" data-chat-message-form class="border-t border-slate-700 bg-[#1f1f1f] px-4 py-3">
                                 @csrf
                                 @if (request()->filled('tab_session'))
                                     <input type="hidden" name="tab_session" value="{{ request()->query('tab_session') }}">
                                 @endif
-                                <input type="hidden" name="participant_user_id" value="{{ $selectedParticipant->id }}">
-                                @if ($selectedConversation)<input type="hidden" name="conversation_id" value="{{ $selectedConversation->id }}">@endif
-                                <div class="flex items-end gap-3">
-                                    <div class="flex items-center pb-2 text-blue-500">
-                                        <i class="fa-regular fa-image"></i>
-                                    </div>
-                                    <div class="flex-1 rounded-full bg-[#3a3a3a] px-4 py-2">
-                                        <textarea name="body" rows="1" class="w-full resize-none bg-transparent text-sm text-white outline-none placeholder:text-slate-500" placeholder="Aa">{{ old('body') }}</textarea>
-                                    </div>
-                                    <div class="flex items-center pb-2 text-blue-500">
-                                        <button type="submit" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-violet-600 text-white"><i class="fa-solid fa-paper-plane text-xs"></i></button>
-                                    </div>
-                                </div>
+                                 <input type="hidden" name="participant_user_id" value="{{ $selectedParticipant->id }}">
+                                 @if ($selectedConversation)<input type="hidden" name="conversation_id" value="{{ $selectedConversation->id }}">@endif
+                                 <div data-chat-image-preview class="mb-3 hidden rounded-2xl bg-[#3a3a3a] p-2">
+                                     <div class="flex items-center gap-2 overflow-x-auto pb-1">
+                                         <button type="button" data-chat-image-trigger class="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#202020] text-xl text-white transition hover:bg-[#171717]" aria-label="Add more images">
+                                             <i class="fa-regular fa-square-plus"></i>
+                                         </button>
+                                         <div data-chat-image-preview-list class="flex items-center gap-2"></div>
+                                     </div>
+                                 </div>
+                                 <div class="flex items-end gap-3">
+                                     <button type="button" data-chat-image-trigger class="flex items-center pb-2 text-blue-500 transition hover:text-blue-400" aria-label="Choose an image">
+                                         <i class="fa-regular fa-image"></i>
+                                     </button>
+                                     <input data-chat-image-input name="attachments[]" type="file" accept="image/jpeg,image/png,image/gif,image/webp" multiple class="hidden">
+                                     <div class="relative flex-1 rounded-full bg-[#3a3a3a] py-2 pl-4 pr-2">
+                                         <div class="flex items-center gap-2">
+                                             <textarea name="body" rows="1" maxlength="4000" class="min-w-0 flex-1 resize-none bg-transparent text-sm text-white outline-none placeholder:text-slate-500" placeholder="Aa">{{ old('body') }}</textarea>
+                                             <button type="button" data-chat-emoji-trigger class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-fuchsia-500 transition hover:bg-fuchsia-500/15 hover:text-fuchsia-400" aria-label="Choose an emoji" aria-expanded="false">
+                                                 <i class="fa-solid fa-face-smile text-lg"></i>
+                                             </button>
+                                         </div>
+                                         <div data-chat-emoji-picker class="absolute bottom-full right-0 z-20 mb-2 hidden w-56 rounded-2xl border border-slate-600 bg-[#292929] p-2 shadow-2xl">
+                                             <div class="grid grid-cols-6 gap-1" aria-label="Emoji picker">
+                                                 @foreach (['😀','😂','😊','😍','🥰','😎','🤗','🤔','😢','😭','😅','😴','👍','👏','🙏','💪','❤️','🎉'] as $emoji)
+                                                     <button type="button" data-chat-emoji="{{ $emoji }}" class="flex h-8 w-8 items-center justify-center rounded-lg text-xl transition hover:bg-slate-600">{{ $emoji }}</button>
+                                                 @endforeach
+                                             </div>
+                                         </div>
+                                     </div>
+                                     <div class="flex items-center pb-2 text-blue-500">
+                                         <button type="submit" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-violet-600 text-white"><i class="fa-solid fa-paper-plane text-xs"></i></button>
+                                     </div>
+                                 </div>
                             </form>
                             </div>
             @endif
@@ -214,8 +270,393 @@ const sidebar=document.querySelector('aside');const main=document.querySelector(
 const searchInput=document.getElementById('directory-search');const filterButtons=Array.from(document.querySelectorAll('.directory-filter'));const directoryCards=Array.from(document.querySelectorAll('.directory-card'));const resultsCount=document.getElementById('directory-results-count');const resultsPlural=document.getElementById('directory-results-plural');let activeFilter='all';
 function applyDirectoryFilters(){const query=(searchInput?.value||'').trim().toLowerCase();let visibleCount=0;directoryCards.forEach((card)=>{const name=card.dataset.name||'';const role=card.dataset.role||'';const status=card.dataset.status||'';const matchesQuery=query===''||name.includes(query)||role.includes(query);const matchesStatus=activeFilter==='all'||status===activeFilter;const isVisible=matchesQuery&&matchesStatus;card.classList.toggle('hidden',!isVisible);if(isVisible){visibleCount+=1}});if(resultsCount){resultsCount.textContent=String(visibleCount)}if(resultsPlural){resultsPlural.textContent=visibleCount===1?'':'s'}}
 filterButtons.forEach((button)=>{button.addEventListener('click',function(){activeFilter=button.dataset.filter||'all';filterButtons.forEach((item)=>{item.classList.remove('bg-slate-900','text-white','bg-emerald-600');item.classList.add('bg-slate-100','text-slate-600')});if(activeFilter==='available'){button.classList.remove('bg-slate-100','text-slate-600','bg-emerald-50','text-emerald-700');button.classList.add('bg-emerald-600','text-white')}else{button.classList.remove('bg-slate-100','text-slate-600');button.classList.add('bg-slate-900','text-white')}filterButtons.forEach((item)=>{if(item!==button&&item.dataset.filter==='available'){item.classList.remove('bg-emerald-600','text-white');item.classList.add('bg-emerald-50','text-emerald-700')}});applyDirectoryFilters()})});if(searchInput){searchInput.addEventListener('input',applyDirectoryFilters)}applyDirectoryFilters();
- (function(){const thread=document.getElementById('message-thread');if(thread){thread.scrollTop=thread.scrollHeight}})();
- (function(){const closeBtn=document.getElementById('chat-panel-close');const panel=document.getElementById('chat-panel');if(closeBtn&&panel){closeBtn.addEventListener('click',function(){panel.classList.add('hidden')})}})();
+ function initializeEmployeeChatPanel() {
+     const thread = document.getElementById('message-thread');
+     if (thread) {
+         thread.scrollTop = thread.scrollHeight;
+     }
+
+     const closeBtn = document.getElementById('chat-panel-close');
+     const panel = document.getElementById('chat-panel');
+     if (closeBtn && panel) {
+         closeBtn.addEventListener('click', function () {
+             panel.remove();
+
+             const cleanUrl = new URL(window.location.href);
+             cleanUrl.searchParams.delete('user');
+             cleanUrl.searchParams.delete('conversation');
+             cleanUrl.searchParams.delete('reset_chat');
+             cleanUrl.hash = '';
+             history.replaceState({}, '', cleanUrl);
+         }, { once: true });
+     }
+ }
+
+ async function loadEmployeeChatPanel(url, historyMode = 'push') {
+     const response = await fetch(url, {
+         method: 'GET',
+         headers: {
+             'X-Requested-With': 'XMLHttpRequest',
+             'Accept': 'text/html',
+         },
+         credentials: 'same-origin',
+     });
+
+     if (!response.ok) {
+         throw new Error('Chat request failed.');
+     }
+
+     const html = await response.text();
+     const parsedDocument = new DOMParser().parseFromString(html, 'text/html');
+     const incomingPanel = parsedDocument.getElementById('chat-panel');
+     if (!incomingPanel) {
+         throw new Error('Chat panel was not returned.');
+     }
+
+     const panel = document.importNode(incomingPanel, true);
+     const currentPanel = document.getElementById('chat-panel');
+     if (currentPanel) {
+         currentPanel.replaceWith(panel);
+     } else {
+         document.body.appendChild(panel);
+     }
+
+     initializeEmployeeChatPanel();
+
+     const nextUrl = new URL(url, window.location.href);
+     nextUrl.hash = 'chat-panel';
+     if (historyMode === 'replace') {
+         history.replaceState({}, '', nextUrl);
+     } else {
+         history.pushState({}, '', nextUrl);
+     }
+ }
+
+ function appendSentEmployeeMessage(message) {
+     const thread = document.getElementById('message-thread');
+     if (!thread || !message?.id) return;
+     if (thread.querySelector(`[data-message-id="${message.id}"]`)) return;
+
+     thread.querySelector('[data-chat-empty-state]')?.remove();
+
+     const row = document.createElement('div');
+     row.dataset.messageId = String(message.id);
+     row.className = 'flex items-end gap-2 justify-end';
+
+     const bubble = document.createElement('div');
+     bubble.className = 'max-w-[78%] rounded-[1.45rem] bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 py-2.5 text-white shadow-sm';
+
+     const attachments = Array.isArray(message.attachments) ? message.attachments : [];
+     if (attachments.length > 0) {
+         const isGifAttachment = (attachment) => {
+             const mime = String(attachment?.mime || '').toLowerCase();
+             const name = String(attachment?.name || '').toLowerCase();
+             return mime === 'image/gif' || name.endsWith('.gif');
+         };
+         const singleAttachmentIsGif = attachments.length === 1 && isGifAttachment(attachments[0]);
+         const imageGrid = document.createElement('div');
+         imageGrid.className = `mb-2 grid gap-1.5 ${attachments.length === 1 ? (singleAttachmentIsGif ? 'w-40 max-w-full grid-cols-1' : 'w-60 max-w-full grid-cols-1') : 'grid-cols-2'}`;
+
+         attachments.forEach((attachment) => {
+             const imageLink = document.createElement('a');
+             imageLink.href = attachment.preview_url || attachment.url;
+             imageLink.className = 'block overflow-hidden rounded-xl bg-black/20';
+
+             const image = document.createElement('img');
+             image.src = attachment.url;
+             image.alt = attachment.name || 'Chat image';
+             image.className = isGifAttachment(attachment)
+                 ? (attachments.length === 1 ? 'h-40 w-40 max-w-full object-contain' : 'h-24 w-full object-contain')
+                 : (attachments.length === 1 ? 'h-64 w-60 max-w-full object-contain' : 'h-32 w-full object-cover');
+             imageLink.appendChild(image);
+             imageGrid.appendChild(imageLink);
+         });
+
+         bubble.appendChild(imageGrid);
+     }
+
+     if ((message.body || '').trim() !== '') {
+         const text = document.createElement('p');
+         text.className = 'whitespace-pre-line text-sm leading-6';
+         text.textContent = message.body;
+         bubble.appendChild(text);
+     }
+
+     row.appendChild(bubble);
+     thread.appendChild(row);
+     thread.scrollTop = thread.scrollHeight;
+ }
+
+ initializeEmployeeChatPanel();
+
+ const employeeChatCsrfUrl = @json(route('csrf.token'));
+ async function refreshEmployeeChatCsrfToken(form) {
+     const response = await fetch(employeeChatCsrfUrl, {
+         method: 'GET',
+         headers: {
+             'X-Requested-With': 'XMLHttpRequest',
+             'Accept': 'application/json',
+         },
+         credentials: 'same-origin',
+         cache: 'no-store',
+     });
+     const data = await response.json().catch(() => ({}));
+     const token = response.ok && typeof data.token === 'string' ? data.token : '';
+     if (token) {
+         const tokenInput = form.querySelector('input[name="_token"]');
+         if (tokenInput) tokenInput.value = token;
+         document.querySelector('meta[name="csrf-token"]')?.setAttribute('content', token);
+     }
+     return token;
+ }
+
+ document.addEventListener('click', async function (event) {
+     const link = event.target.closest('a[data-chat-connect]');
+     if (!link || event.defaultPrevented || event.button !== 0) return;
+     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+     event.preventDefault();
+     if (link.dataset.loading === 'true') return;
+
+     const originalContent = link.innerHTML;
+     link.dataset.loading = 'true';
+     link.setAttribute('aria-busy', 'true');
+     link.classList.add('pointer-events-none', 'opacity-70');
+     link.innerHTML = '<i class="fa fa-spinner fa-spin"></i>Opening...';
+     let chatLoaded = false;
+
+     try {
+         await loadEmployeeChatPanel(link.href);
+         chatLoaded = true;
+     } catch (error) {
+         window.location.assign(link.href);
+         return;
+     } finally {
+         link.dataset.loading = 'false';
+         link.removeAttribute('aria-busy');
+         link.classList.remove('pointer-events-none', 'opacity-70');
+         link.innerHTML = originalContent;
+         if (chatLoaded) {
+             const card = link.closest('.directory-card');
+             card?.querySelectorAll('[data-unread-badge]').forEach((badge) => badge.remove());
+             if (card) {
+                 card.dataset.unread = 'false';
+                 card.dataset.unreadCount = '0';
+             }
+         }
+     }
+ });
+
+ document.addEventListener('submit', async function (event) {
+     const form = event.target.closest('form[data-chat-message-form]');
+     if (!form) return;
+
+     event.preventDefault();
+
+     const textarea = form.querySelector('textarea[name="body"]');
+     const attachmentInput = form.querySelector('[data-chat-image-input]');
+     const submitButton = form.querySelector('button[type="submit"]');
+     const messageBody = (textarea?.value || '').trim();
+     const hasAttachment = Boolean(attachmentInput?.files?.length);
+     if (!messageBody && !hasAttachment) {
+         textarea?.focus();
+         return;
+     }
+
+     if (form.dataset.sending === 'true') return;
+     form.dataset.sending = 'true';
+
+     const originalButtonContent = submitButton?.innerHTML || '';
+     if (submitButton) {
+         submitButton.disabled = true;
+         submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i>';
+         submitButton.classList.add('cursor-not-allowed', 'opacity-70');
+     }
+
+     form.querySelector('[data-chat-send-error]')?.remove();
+
+     try {
+         const freshToken = await refreshEmployeeChatCsrfToken(form);
+         const formData = new FormData(form);
+         if (freshToken) formData.set('_token', freshToken);
+         const response = await fetch(form.action, {
+             method: 'POST',
+             headers: {
+                 'X-Requested-With': 'XMLHttpRequest',
+                 'Accept': 'application/json',
+                 ...(freshToken ? { 'X-CSRF-TOKEN': freshToken } : {}),
+             },
+             credentials: 'same-origin',
+             body: formData,
+         });
+
+         const data = await response.json().catch(() => ({}));
+         if (!response.ok) {
+             const firstError = data.errors && typeof data.errors === 'object'
+                 ? Object.values(data.errors).flat().find(Boolean)
+                 : '';
+             throw new Error(firstError || data.message || 'The message could not be sent.');
+         }
+
+         if (!data.chat_url || !data.sent_message) {
+             throw new Error('The message was sent, but its confirmation was incomplete.');
+         }
+
+         appendSentEmployeeMessage(data.sent_message);
+         if (textarea) {
+             textarea.value = '';
+         }
+         window.resetChatImagePreview?.(form);
+
+         let conversationInput = form.querySelector('input[name="conversation_id"]');
+         if (!conversationInput) {
+             conversationInput = document.createElement('input');
+             conversationInput.type = 'hidden';
+             conversationInput.name = 'conversation_id';
+             form.appendChild(conversationInput);
+         }
+         conversationInput.value = String(data.conversation_id || '');
+
+         const nextUrl = new URL(data.chat_url, window.location.href);
+         nextUrl.hash = 'chat-panel';
+         history.replaceState({}, '', nextUrl);
+     } catch (error) {
+         const errorNotice = document.createElement('p');
+         errorNotice.dataset.chatSendError = 'true';
+         errorNotice.className = 'mb-2 rounded-lg bg-rose-500/15 px-3 py-2 text-xs font-medium text-rose-300';
+         errorNotice.textContent = error.message || 'The message could not be sent. Please try again.';
+         form.prepend(errorNotice);
+     } finally {
+         form.dataset.sending = 'false';
+         if (submitButton) {
+             submitButton.disabled = false;
+             submitButton.innerHTML = originalButtonContent;
+             submitButton.classList.remove('cursor-not-allowed', 'opacity-70');
+         }
+     }
+ });
+
+ (function () {
+     let pollInFlight = false;
+
+     const synchronizeEmployeeSidebar = (incomingDocument) => {
+         const currentNav = document.querySelector('[data-employee-communication-nav]');
+         const incomingNav = incomingDocument.querySelector('[data-employee-communication-nav]');
+         if (currentNav && incomingNav && currentNav.innerHTML !== incomingNav.innerHTML) {
+             currentNav.innerHTML = incomingNav.innerHTML;
+         }
+     };
+
+     const synchronizeAdminCards = (incomingDocument) => {
+         document.querySelectorAll('.directory-card[data-admin-id]').forEach((card) => {
+             const adminId = card.dataset.adminId || '';
+             if (!adminId) return;
+
+             const incomingCard = incomingDocument.querySelector(
+                 `.directory-card[data-admin-id="${adminId}"]`
+             );
+             if (!incomingCard) return;
+
+             const previousUnreadCount = Number(card.dataset.unreadCount || 0);
+             const nextUnreadCount = Number(incomingCard.dataset.unreadCount || 0);
+             card.dataset.unread = incomingCard.dataset.unread || 'false';
+             card.dataset.unreadCount = String(nextUnreadCount);
+
+             const currentNameRow = card.querySelector('[data-employee-admin-name-row]');
+             const incomingNameBadge = incomingCard.querySelector('[data-employee-name-unread]');
+             currentNameRow?.querySelector('[data-employee-name-unread]')?.remove();
+             if (currentNameRow && incomingNameBadge) {
+                 currentNameRow.appendChild(document.importNode(incomingNameBadge, true));
+             }
+
+             const currentConnect = card.querySelector('[data-chat-connect]');
+             const incomingConnectBadge = incomingCard.querySelector('[data-employee-connect-unread]');
+             currentConnect?.querySelector('[data-employee-connect-unread]')?.remove();
+             if (currentConnect && incomingConnectBadge) {
+                 currentConnect.prepend(document.importNode(incomingConnectBadge, true));
+             }
+
+             if (nextUnreadCount > previousUnreadCount) {
+                 card.classList.add('ring-4', 'ring-rose-200');
+                 window.setTimeout(() => card.classList.remove('ring-4', 'ring-rose-200'), 900);
+             }
+         });
+     };
+
+     const synchronizeEmployeeThread = (incomingDocument) => {
+         const currentThread = document.getElementById('message-thread');
+         const incomingThread = incomingDocument.getElementById('message-thread');
+         if (!currentThread || !incomingThread) return;
+
+         const currentMessageIds = Array.from(currentThread.querySelectorAll('[data-message-id]'))
+             .map((message) => message.dataset.messageId || '')
+             .join(',');
+         const incomingMessageIds = Array.from(incomingThread.querySelectorAll('[data-message-id]'))
+             .map((message) => message.dataset.messageId || '')
+             .join(',');
+         const currentImageSources = Array.from(currentThread.querySelectorAll('img[src]'))
+             .map((image) => image.getAttribute('src') || '')
+             .join(',');
+         const incomingImageSources = Array.from(incomingThread.querySelectorAll('img[src]'))
+             .map((image) => image.getAttribute('src') || '')
+             .join(',');
+         if (
+             (currentMessageIds !== ''
+                 && currentMessageIds === incomingMessageIds
+                 && currentImageSources === incomingImageSources)
+             || currentThread.innerHTML === incomingThread.innerHTML
+         ) {
+             return;
+         }
+
+         const wasNearBottom = currentThread.scrollHeight - currentThread.scrollTop - currentThread.clientHeight < 80;
+         currentThread.innerHTML = incomingThread.innerHTML;
+         if (wasNearBottom) {
+             currentThread.scrollTop = currentThread.scrollHeight;
+         }
+     };
+
+     const pollEmployeeCommunication = async () => {
+         if (pollInFlight || document.hidden) return;
+         if (document.querySelector('[data-chat-connect][data-loading="true"]')) return;
+         if (document.querySelector('[data-chat-message-form][data-sending="true"]')) return;
+
+         pollInFlight = true;
+         try {
+             const pollUrl = new URL(window.location.href);
+             pollUrl.searchParams.set('background_poll', '1');
+             pollUrl.hash = '';
+
+             const response = await fetch(pollUrl, {
+                 method: 'GET',
+                 headers: {
+                     'X-Requested-With': 'XMLHttpRequest',
+                     'Accept': 'text/html',
+                 },
+                 credentials: 'same-origin',
+                 cache: 'no-store',
+             });
+             if (!response.ok) return;
+
+             const html = await response.text();
+             const incomingDocument = new DOMParser().parseFromString(html, 'text/html');
+             synchronizeEmployeeSidebar(incomingDocument);
+             synchronizeAdminCards(incomingDocument);
+             synchronizeEmployeeThread(incomingDocument);
+         } catch (error) {
+             // Keep the page usable and try again on the next interval.
+         } finally {
+             pollInFlight = false;
+         }
+     };
+
+     window.setInterval(pollEmployeeCommunication, 4000);
+     document.addEventListener('visibilitychange', () => {
+         if (!document.hidden) pollEmployeeCommunication();
+     });
+ })();
 </script>
+@include('components.chatImageUploadScript')
+@include('components.chatEmojiPickerScript')
 </body>
 </html>
