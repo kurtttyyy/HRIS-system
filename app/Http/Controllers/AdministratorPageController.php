@@ -2132,7 +2132,7 @@ class AdministratorPageController extends Controller
             'Approved' => (int) $excludeCancelled(Resignation::query())->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['approved'])->count(),
             'Completed' => (int) $excludeCancelled(Resignation::query())->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['completed'])->count(),
             'Rejected' => (int) $excludeCancelled(Resignation::query())->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['rejected'])->count(),
-            'Cancelled' => (int) $excludeCancelled(Resignation::query())->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['cancelled'])->count(),
+            'Cancelled' => (int) Resignation::query()->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['cancelled'])->count(),
         ];
 
         return view('Admin.adminResignations', compact(
@@ -2205,7 +2205,7 @@ class AdministratorPageController extends Controller
             'Approved' => (int) Resignation::query()->whereRaw("LOWER(TRIM(COALESCE(status, ''))) <> ?", ['cancelled'])->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['approved'])->count(),
             'Completed' => (int) Resignation::query()->whereRaw("LOWER(TRIM(COALESCE(status, ''))) <> ?", ['cancelled'])->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['completed'])->count(),
             'Rejected' => (int) Resignation::query()->whereRaw("LOWER(TRIM(COALESCE(status, ''))) <> ?", ['cancelled'])->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['rejected'])->count(),
-            'Cancelled' => 0,
+            'Cancelled' => (int) Resignation::query()->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['cancelled'])->count(),
         ];
 
         $payload = [

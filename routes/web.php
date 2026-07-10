@@ -79,6 +79,7 @@ Route::controller(EmployeePageController::class)->group(function () {
     Route::get('employee/document/preview/{id}', 'display_document_preview')->name('employee.employeeDocument.preview');
     Route::get('employee/document/view/{id}', 'view_document')->name('employee.employeeDocument.view');
     Route::get('employee/payslip', 'display_payslip')->name('employee.employeePayslip');
+    Route::get('employee/payslip/snapshot', 'payslip_snapshot')->name('employee.payslip.snapshot');
 });
 
 Route::controller(EmployeeStoreController::class)->group(function () {

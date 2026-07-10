@@ -971,6 +971,43 @@ class EmployeePageController extends Controller
         ));
     }
 
+    public function payslip_snapshot()
+    {
+        $user = Auth::user();
+        if (!$user) {
+            abort(401);
+        }
+
+        $user->loadMissing('employee');
+        $employeeId = trim((string) ($user->employee?->employee_id ?? ''));
+
+        $records = PayslipRecord::query()
+            ->where(function ($query) use ($user, $employeeId) {
+                $query->where('user_id', (int) $user->id);
+                if ($employeeId !== '') {
+                    $query->orWhere('employee_id', $employeeId);
+                }
+            })
+            ->orderByDesc('pay_date')
+            ->orderByDesc('scanned_at')
+            ->orderByDesc('id')
+            ->limit(10)
+            ->get(['id', 'pay_date', 'scanned_at', 'updated_at'])
+            ->map(fn ($record): array => [
+                'id' => (int) $record->id,
+                'pay_date' => optional($record->pay_date)->toDateString(),
+                'scanned_at' => optional($record->scanned_at)->toDateTimeString(),
+                'updated_at' => optional($record->updated_at)->toDateTimeString(),
+            ])
+            ->values();
+
+        return response()->json([
+            'signature' => md5(json_encode($records)),
+            'recordCount' => $records->count(),
+            'latestId' => (int) ($records->first()['id'] ?? 0),
+        ]);
+    }
+
     public function display_document(){
         $user_id = Auth::id();
         $applicant = Applicant::where('user_id', $user_id)
@@ -1428,7 +1465,7 @@ class EmployeePageController extends Controller
             ->orderByDesc('id')
             ->get();
 
-        $resignationFilter = strtolower(trim((string) $request->query('status', 'active')));
+        $resignationFilter = strtolower(trim((string) $request->query('status', 'all')));
         $resignations = $allResignations->filter(function ($row) use ($resignationFilter) {
             $status = strtolower(trim((string) ($row->status ?? 'pending')));
 
@@ -1451,7 +1488,7 @@ class EmployeePageController extends Controller
             abort(401);
         }
 
-        $resignationFilter = strtolower(trim((string) $request->query('status', 'active')));
+        $resignationFilter = strtolower(trim((string) $request->query('status', 'all')));
         $allResignations = Resignation::query()
             ->where('user_id', $user->id)
             ->orderByDesc('submitted_at')

@@ -131,13 +131,37 @@ class RegisterLoginController extends Controller
     public function login_store(Request $request)
     {
         $attrs = $request->validate([
-            'email'    => 'required|email|exists:users,email',
+            'email'    => 'required|string|max:255',
             'password' => 'required|string',
             'tab_session' => 'nullable|string|max:120',
         ]);
 
+        $loginIdentifier = trim((string) $attrs['email']);
+        $normalizedLoginIdentifier = strtolower($loginIdentifier);
+
         $user = User::query()
-            ->where('email', $attrs['email'])
+            ->whereRaw('LOWER(TRIM(email)) = ?', [$normalizedLoginIdentifier])
+            ->first();
+
+        if (!$user) {
+            $user = User::query()
+                ->whereHas('employee', function ($query) use ($loginIdentifier) {
+                    $query->whereRaw('LOWER(TRIM(employee_id)) = ?', [strtolower($loginIdentifier)]);
+                })
+                ->first();
+        }
+
+        if (!$user) {
+            return back()
+                ->withErrors([
+                    'email' => 'The provided credentials do not match our records.',
+                ])
+                ->withInput();
+        }
+
+        $user = User::query()
+            ->with('employee')
+            ->whereKey($user->id)
             ->first();
 
         if ($user && strtolower(trim((string) ($user->account_status ?? ''))) === 'inactive') {

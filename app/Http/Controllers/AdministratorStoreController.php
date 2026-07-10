@@ -552,6 +552,13 @@ class AdministratorStoreController extends Controller
 
         $file = $request->file('payslip_file');
         if (!$file || !$file->isValid()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Invalid file upload.',
+                    'errors' => ['payslip_file' => ['Invalid file upload.']],
+                ], 422);
+            }
+
             return back()->withErrors(['payslip_file' => 'Invalid file upload.']);
         }
 
@@ -559,7 +566,7 @@ class AdministratorStoreController extends Controller
         $fileName = time().'_'.$originalName;
         $filePath = $file->storeAs('payslip_uploads', $fileName, 'public');
 
-        PayslipUpload::create([
+        $upload = PayslipUpload::create([
             'original_name' => $originalName,
             'file_path' => $filePath,
             'file_size' => $file->getSize(),
@@ -567,6 +574,17 @@ class AdministratorStoreController extends Controller
             'processed_rows' => 0,
             'uploaded_at' => Carbon::now('Asia/Manila'),
         ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Payslip file uploaded successfully.',
+                'upload' => [
+                    'id' => (int) $upload->id,
+                    'original_name' => (string) $upload->original_name,
+                    'status' => (string) $upload->status,
+                ],
+            ], 201);
+        }
 
         return back()->with('success', 'Payslip file uploaded successfully.');
     }
@@ -3059,7 +3077,7 @@ class AdministratorStoreController extends Controller
                     'Pending' => (int) $excludeCancelled(Resignation::query())->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['pending'])->count(),
                     'Approved' => (int) $excludeCancelled(Resignation::query())->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['approved'])->count(),
                     'Rejected' => (int) $excludeCancelled(Resignation::query())->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['rejected'])->count(),
-                    'Cancelled' => (int) $excludeCancelled(Resignation::query())->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['cancelled'])->count(),
+                    'Cancelled' => (int) Resignation::query()->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['cancelled'])->count(),
                 ],
             ]);
         }

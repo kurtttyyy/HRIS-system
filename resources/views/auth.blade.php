@@ -237,8 +237,8 @@
                         @csrf
                         <input type="hidden" name="tab_session" value="{{ $tabSession }}">
                         <div>
-                            <label class="text-sm font-medium text-gray-700">Email Address</label>
-                            <input type="email" name="email" value="{{ old('email') }}" placeholder="john@example.com" class="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-600 focus:outline-none" data-login-email>
+                            <label class="text-sm font-medium text-gray-700">Email Address or Employee ID</label>
+                            <input type="text" name="email" value="{{ old('email') }}" placeholder="john@example.com or EMP-00001" class="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-600 focus:outline-none" data-login-email>
                         </div>
 
                         <div>

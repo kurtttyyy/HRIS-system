@@ -105,7 +105,7 @@
             </div>
             <div class="resignation-card-motion rounded-[1.5rem] border border-white/10 bg-white/8 px-5 py-4 backdrop-blur">
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-50/75">Pending Queue</p>
-              <p class="mt-2 text-2xl font-black">{{ $pendingResignations->count() }}</p>
+              <p id="resignation-header-pending-count" class="mt-2 text-2xl font-black">{{ $pendingResignations->count() }}</p>
               <p class="text-sm text-emerald-50/80">Requests waiting for review</p>
             </div>
           </div>
@@ -127,6 +127,7 @@
           {{ $errors->first() }}
         </div>
       @endif
+      <div id="resignation-live-message" class="fixed right-5 top-5 z-[100] hidden max-w-sm rounded-[1.5rem] border px-5 py-4 text-sm font-medium shadow-xl" role="status" aria-live="polite"></div>
 
       <section class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
         <article class="resignation-card-motion resignation-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--resignation-delay: 120ms;">
@@ -360,7 +361,7 @@
                   <th class="px-5 py-4 font-semibold">Action</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-200">
+              <tbody id="resignation-records-body" class="divide-y divide-slate-200">
                 @forelse ($resignations as $row)
                   @php
                     $statusText = trim((string) ($row->status ?? 'Pending'));
@@ -489,9 +490,9 @@
     });
   }
 
-  const pendingActionForms = Array.from(document.querySelectorAll('.js-pending-action-form'));
   const pendingBadge = document.getElementById('pending-requests-badge');
   const pendingList = document.getElementById('pending-requests-list');
+  const headerPendingCount = document.getElementById('resignation-header-pending-count');
   const pendingCardCount = document.getElementById('resignation-count-pending');
   const approvedCardCount = document.getElementById('resignation-count-approved');
   const rejectedCardCount = document.getElementById('resignation-count-rejected');
@@ -501,6 +502,31 @@
   const resignationSnapshotUrl = @json(route('admin.resignations.snapshot', request()->only(['status', 'search'])));
   let resignationSnapshotSignature = null;
   let resignationSnapshotInFlight = false;
+  let resignationLiveMessageTimer = null;
+
+  function showResignationLiveMessage(message, type = 'success') {
+    const element = document.getElementById('resignation-live-message');
+    if (!element) return;
+
+    element.textContent = message;
+    element.classList.remove(
+      'hidden',
+      'border-emerald-200',
+      'bg-emerald-50',
+      'text-emerald-800',
+      'border-rose-200',
+      'bg-rose-50',
+      'text-rose-800'
+    );
+    element.classList.add(...(type === 'error'
+      ? ['border-rose-200', 'bg-rose-50', 'text-rose-800']
+      : ['border-emerald-200', 'bg-emerald-50', 'text-emerald-800']));
+
+    window.clearTimeout(resignationLiveMessageTimer);
+    resignationLiveMessageTimer = window.setTimeout(() => {
+      element.classList.add('hidden');
+    }, 4500);
+  }
 
   function applyStatusCounts(counts) {
     if (!counts || typeof counts !== 'object') return;
@@ -509,6 +535,7 @@
     if (rejectedCardCount && counts.Rejected !== undefined) rejectedCardCount.textContent = String(counts.Rejected);
     if (cancelledCardCount && counts.Cancelled !== undefined) cancelledCardCount.textContent = String(counts.Cancelled);
     if (pendingBadge && counts.Pending !== undefined) pendingBadge.textContent = String(counts.Pending);
+    if (headerPendingCount && counts.Pending !== undefined) headerPendingCount.textContent = String(counts.Pending);
   }
 
   function resignationStatusClass(status) {
@@ -583,84 +610,118 @@
     }
   }
 
-  pendingActionForms.forEach((form) => {
-    form.addEventListener('submit', async function (event) {
-      event.preventDefault();
-      const submitBtn = form.querySelector('button[type="submit"]');
-      if (submitBtn) submitBtn.disabled = true;
+  document.addEventListener('submit', async (event) => {
+    const form = event.target.closest('.js-pending-action-form, .js-resignation-record-form');
+    if (!form) return;
 
-      try {
-        const response = await fetch(form.action, {
-          method: 'POST',
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json',
-          },
-          body: new FormData(form),
-        });
+    event.preventDefault();
+    const isPendingAction = form.classList.contains('js-pending-action-form');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const statusSelect = form.querySelector('select[name="status"]');
 
-        if (!response.ok) {
-          throw new Error('Failed to update resignation status.');
-        }
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+    }
 
-        const payload = await response.json();
-        applyStatusCounts(payload.statusCounts || null);
-        applyResignationRecordUpdate(payload.id, payload.status);
+    try {
+      const response = await fetch(form.action, {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json',
+        },
+        body: new FormData(form),
+      });
+      const payload = await response.json().catch(() => ({}));
 
+      if (!response.ok) {
+        const validationMessage = payload.errors
+          ? Object.values(payload.errors).flat()[0]
+          : null;
+        throw new Error(validationMessage || payload.message || 'Failed to update resignation status.');
+      }
+
+      const status = payload.status || statusSelect?.value || form.querySelector('[name="status"]')?.value || 'Pending';
+      applyStatusCounts(payload.statusCounts || null);
+      applyResignationRecordUpdate(payload.id, status);
+
+      if (isPendingAction) {
         const pendingItem = form.closest('[data-pending-item]');
         if (pendingItem) {
           pendingItem.remove();
           ensurePendingEmptyState();
         }
-      } catch (error) {
-        window.location.reload();
-      } finally {
-        if (submitBtn) submitBtn.disabled = false;
       }
-    });
-  });
 
-  document.querySelectorAll('.js-resignation-record-form').forEach((form) => {
-    form.addEventListener('submit', async function (event) {
-      event.preventDefault();
-
-      const submitBtn = form.querySelector('button[type="submit"]');
-      const statusSelect = form.querySelector('select[name="status"]');
-
+      showResignationLiveMessage(payload.message || 'Resignation status updated.');
+    } catch (error) {
+      showResignationLiveMessage(error.message || 'Failed to update resignation status.', 'error');
+    } finally {
       if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
       }
-
-      try {
-        const response = await fetch(form.action, {
-          method: 'POST',
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json',
-          },
-          body: new FormData(form),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to update resignation status.');
-        }
-
-        const payload = await response.json();
-        const status = payload.status || statusSelect?.value || 'Pending';
-
-        applyStatusCounts(payload.statusCounts || null);
-        applyResignationRecordUpdate(payload.id, status);
-      } catch (error) {
-        window.location.reload();
-      } finally {
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
-        }
-      }
-    });
+    }
   });
+
+  async function refreshResignationContent(snapshot) {
+    const currentPendingIds = new Set(
+      Array.from(document.querySelectorAll('[data-pending-item]'))
+        .map((item) => item.dataset.pendingItem)
+    );
+    const pendingScrollTop = pendingList?.scrollTop || 0;
+
+    const response = await fetch(window.location.href, {
+      headers: {
+        'Accept': 'text/html',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    });
+    if (!response.ok) {
+      throw new Error('Unable to refresh resignation records.');
+    }
+
+    const documentCopy = new DOMParser().parseFromString(await response.text(), 'text/html');
+    const nextPendingList = documentCopy.getElementById('pending-requests-list');
+    const currentRecordsBody = document.getElementById('resignation-records-body');
+    const nextRecordsBody = documentCopy.getElementById('resignation-records-body');
+
+    if (pendingList && nextPendingList) {
+      pendingList.innerHTML = nextPendingList.innerHTML;
+      pendingList.scrollTop = pendingScrollTop;
+    }
+    if (currentRecordsBody && nextRecordsBody) {
+      currentRecordsBody.innerHTML = nextRecordsBody.innerHTML;
+    }
+
+    applyStatusCounts(snapshot.statusCounts || null);
+    refreshRecordsShownCount();
+
+    const hasNewPendingRequest = Array.from(document.querySelectorAll('[data-pending-item]'))
+      .some((item) => !currentPendingIds.has(item.dataset.pendingItem));
+    if (hasNewPendingRequest) {
+      showResignationLiveMessage('A new resignation request was received and added to the queue.');
+    }
+  }
+
+  function resignationSnapshotDiffersFromPage(snapshot) {
+    const displayedRecordCount = document.querySelectorAll('[data-resignation-record-row]').length;
+    const displayedPendingCount = document.querySelectorAll('[data-pending-item]').length;
+    const counts = snapshot.statusCounts || {};
+    const displayedCounts = {
+      Pending: Number(pendingCardCount?.textContent || 0),
+      Approved: Number(approvedCardCount?.textContent || 0),
+      Rejected: Number(rejectedCardCount?.textContent || 0),
+      Cancelled: Number(cancelledCardCount?.textContent || 0),
+    };
+
+    return Number(snapshot.recordCount) !== displayedRecordCount
+      || Number(snapshot.pendingCount) !== displayedPendingCount
+      || Object.keys(displayedCounts).some((status) => (
+        counts[status] !== undefined && Number(counts[status]) !== displayedCounts[status]
+      ));
+  }
 
   async function checkResignationSnapshot() {
     if (resignationSnapshotInFlight || document.hidden) return;
@@ -681,11 +742,15 @@
 
       if (resignationSnapshotSignature === null) {
         resignationSnapshotSignature = payload.signature;
+        if (resignationSnapshotDiffersFromPage(payload)) {
+          await refreshResignationContent(payload);
+        }
         return;
       }
 
       if (payload.signature !== resignationSnapshotSignature) {
-        window.location.reload();
+        await refreshResignationContent(payload);
+        resignationSnapshotSignature = payload.signature;
       }
     } catch (error) {
       // Keep the current page usable if the background check fails.
@@ -695,7 +760,7 @@
   }
 
   checkResignationSnapshot();
-  setInterval(checkResignationSnapshot, 7000);
+  setInterval(checkResignationSnapshot, 5000);
 </script>
 </body>
 </html>

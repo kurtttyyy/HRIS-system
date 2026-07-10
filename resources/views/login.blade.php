@@ -231,9 +231,9 @@
 <form class="space-y-6" method="POST" action = "{{ route('login') }}" >
     @csrf
     <div>
-        <label class="text-sm font-medium text-gray-700">Email Address</label>
-        <input type="email" name = "email"
-               placeholder="john@example.com"
+        <label class="text-sm font-medium text-gray-700">Email Address or Employee ID</label>
+        <input type="text" name = "email"
+               placeholder="john@example.com or EMP-00001"
                class="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
     </div>
 

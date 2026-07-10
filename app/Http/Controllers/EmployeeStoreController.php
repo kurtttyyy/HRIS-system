@@ -537,6 +537,12 @@ class EmployeeStoreController extends Controller
 
         $authUser = Auth::user();
         if (!$authUser) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Your session has expired. Please sign in again.',
+                ], 401);
+            }
+
             return redirect()->route('login_display');
         }
 
@@ -551,7 +557,7 @@ class EmployeeStoreController extends Controller
         $attachment = $request->file('resignation_file');
         $attachmentPath = $attachment->store('resignation-attachments', 'public');
 
-        Resignation::create([
+        $resignation = Resignation::create([
             'user_id' => $authUser->id,
             'employee_id' => (string) ($authUser->employee?->employee_id ?? ''),
             'employee_name' => $employeeName !== '' ? $employeeName : (string) ($authUser->email ?? 'Unknown Employee'),
@@ -565,6 +571,38 @@ class EmployeeStoreController extends Controller
             'attachment_mime' => $attachment->getClientMimeType(),
             'status' => 'Pending',
         ]);
+
+        if ($request->expectsJson()) {
+            $allResignations = Resignation::query()
+                ->where('user_id', $authUser->id)
+                ->get(['status']);
+
+            return response()->json([
+                'message' => 'Resignation request submitted.',
+                'resignation' => [
+                    'id' => (int) $resignation->id,
+                    'status' => (string) $resignation->status,
+                    'submitted_at' => optional($resignation->submitted_at)->format('M d, Y'),
+                    'effective_date' => optional($resignation->effective_date)->format('M d, Y'),
+                    'effective_date_long' => optional($resignation->effective_date)->format('F d, Y'),
+                    'attachment_name' => (string) $resignation->attachment_name,
+                    'preview_url' => route('employee.resignationAttachment.preview', $resignation->id),
+                    'cancel_url' => route('employee.cancelResignation', $resignation->id),
+                ],
+                'counts' => [
+                    'all' => $allResignations->count(),
+                    'pending' => $allResignations
+                        ->filter(fn ($row) => strcasecmp((string) $row->status, 'Pending') === 0)
+                        ->count(),
+                    'processed' => $allResignations
+                        ->filter(fn ($row) => in_array(strtolower(trim((string) $row->status)), ['approved', 'completed'], true))
+                        ->count(),
+                    'closed' => $allResignations
+                        ->filter(fn ($row) => in_array(strtolower(trim((string) $row->status)), ['rejected', 'cancelled'], true))
+                        ->count(),
+                ],
+            ], 201);
+        }
 
         return redirect()->route('employee.employeeResignation')
             ->with('success', 'Resignation request submitted.');

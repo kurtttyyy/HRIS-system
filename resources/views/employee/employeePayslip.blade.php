@@ -111,6 +111,7 @@
 
     <!-- MAIN CONTENT -->
     <main class="flex-1 ml-16 transition-all duration-300">
+<div data-payslip-live-message class="fixed right-5 top-5 z-[100] hidden max-w-sm rounded-[1.25rem] border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-800 shadow-xl" role="status" aria-live="polite"></div>
 <div id="employee-payslip-page" class="p-4 md:p-8 space-y-8 pt-4">
 
         <section class="employee-payslip-reveal relative overflow-hidden rounded-[2rem] border border-emerald-950/40 bg-gradient-to-br from-slate-950 via-emerald-950 to-emerald-800 p-6 text-white shadow-2xl md:p-8" style="--employee-payslip-delay: 0ms;">
@@ -286,7 +287,7 @@
                             + (float) ($payslip->philhealth_premium ?? 0)
                             + (float) ($payslip->other_deduction ?? 0);
                     @endphp
-                    <div class="employee-payslip-card-motion rounded-[1.5rem] border border-emerald-100 bg-gradient-to-r from-white to-emerald-50/70 p-5 shadow-sm">
+                    <div data-payslip-record="{{ $payslip->id }}" class="employee-payslip-card-motion rounded-[1.5rem] border border-emerald-100 bg-gradient-to-r from-white to-emerald-50/70 p-5 shadow-sm">
                         <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                             <div class="flex items-start gap-4">
                                 <div class="employee-payslip-icon-pop is-visible flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/20">
@@ -523,22 +524,22 @@
         document.body.classList.remove('overflow-hidden');
     };
 
-    const modalOpenButtons = document.querySelectorAll('[data-open-modal]');
-    modalOpenButtons.forEach((button) => {
-        button.addEventListener('click', function () {
-            const modalId = this.getAttribute('data-open-modal');
-            const modal = modalId ? document.getElementById(modalId) : null;
-            if (!modal) return;
+    document.addEventListener('click', function (event) {
+        const openTrigger = event.target.closest('[data-open-modal]');
+        if (!openTrigger) return;
 
-            document.body.appendChild(modal);
-            modal.classList.remove('hidden');
-            document.body.classList.add('overflow-hidden');
+        const modalId = openTrigger.getAttribute('data-open-modal');
+        const modal = modalId ? document.getElementById(modalId) : null;
+        if (!modal) return;
 
-            const scrollPanel = modal.querySelector('[data-payslip-scroll-panel]');
-            if (scrollPanel) {
-                scrollPanel.scrollTop = 0;
-            }
-        });
+        document.body.appendChild(modal);
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+
+        const scrollPanel = modal.querySelector('[data-payslip-scroll-panel]');
+        if (scrollPanel) {
+            scrollPanel.scrollTop = 0;
+        }
     });
 
     document.addEventListener('click', function (event) {
@@ -555,6 +556,105 @@
             .querySelectorAll('[id^="payslip-modal-"]:not(.hidden)')
             .forEach(closePayslipModal);
     });
+
+    const employeePayslipSnapshotUrl = @json(route('employee.payslip.snapshot'));
+    let employeePayslipSnapshotSignature = null;
+    let employeePayslipSnapshotInFlight = false;
+    let employeePayslipLiveMessageTimer = null;
+
+    function showEmployeePayslipLiveMessage(message) {
+        const element = document.querySelector('[data-payslip-live-message]');
+        if (!element) return;
+
+        element.textContent = message;
+        element.classList.remove('hidden');
+        window.clearTimeout(employeePayslipLiveMessageTimer);
+        employeePayslipLiveMessageTimer = window.setTimeout(() => {
+            element.classList.add('hidden');
+        }, 4500);
+    }
+
+    async function refreshEmployeePayslipContent(message = 'Your payslip information has been updated.') {
+        const currentPage = document.getElementById('employee-payslip-page');
+        if (!currentPage) return;
+
+        const scrollPosition = window.scrollY;
+        const response = await fetch(window.location.href, {
+            headers: {
+                'Accept': 'text/html',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
+        if (!response.ok) {
+            throw new Error('Unable to refresh payslip records.');
+        }
+
+        const documentCopy = new DOMParser().parseFromString(await response.text(), 'text/html');
+        const nextPage = documentCopy.getElementById('employee-payslip-page');
+        if (!nextPage) {
+            throw new Error('Unable to read the updated payslip records.');
+        }
+
+        document.querySelectorAll('body > [id^="payslip-modal-"].hidden').forEach((modal) => modal.remove());
+        currentPage.innerHTML = nextPage.innerHTML;
+        currentPage.querySelectorAll('.employee-payslip-reveal').forEach((element) => {
+            element.classList.add('is-visible');
+        });
+        window.scrollTo({ top: scrollPosition, behavior: 'auto' });
+        showEmployeePayslipLiveMessage(message);
+    }
+
+    function employeePayslipSnapshotDiffersFromPage(snapshot) {
+        const records = Array.from(document.querySelectorAll('[data-payslip-record]'));
+        const latestId = Number(records[0]?.dataset.payslipRecord || 0);
+
+        return Number(snapshot.recordCount) !== records.length
+            || Number(snapshot.latestId) !== latestId;
+    }
+
+    async function checkEmployeePayslipSnapshot() {
+        const hasOpenPayslip = document.querySelector('[id^="payslip-modal-"]:not(.hidden)');
+        if (employeePayslipSnapshotInFlight || document.hidden || hasOpenPayslip) return;
+        employeePayslipSnapshotInFlight = true;
+
+        try {
+            const response = await fetch(employeePayslipSnapshotUrl, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+            if (!response.ok) return;
+
+            const payload = await response.json();
+            if (!payload.signature) return;
+
+            if (employeePayslipSnapshotSignature === null) {
+                employeePayslipSnapshotSignature = payload.signature;
+                if (employeePayslipSnapshotDiffersFromPage(payload)) {
+                    await refreshEmployeePayslipContent('A new payslip is now available.');
+                }
+                return;
+            }
+
+            if (payload.signature !== employeePayslipSnapshotSignature) {
+                const hasNewPayslip = employeePayslipSnapshotDiffersFromPage(payload);
+                await refreshEmployeePayslipContent(
+                    hasNewPayslip
+                        ? 'A new payslip is now available.'
+                        : 'Your payslip information has been updated.'
+                );
+                employeePayslipSnapshotSignature = payload.signature;
+            }
+        } catch (error) {
+            // Keep the current payslip page usable and retry on the next check.
+        } finally {
+            employeePayslipSnapshotInFlight = false;
+        }
+    }
+
+    checkEmployeePayslipSnapshot();
+    setInterval(checkEmployeePayslipSnapshot, 5000);
 </script>
 
 </body>

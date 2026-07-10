@@ -119,20 +119,20 @@
             </p>
             <div class="mt-4 flex flex-wrap gap-3 text-xs font-medium text-emerald-50/80">
               <span class="rounded-full border border-white/10 bg-white/8 px-3 py-1.5">{{ now()->format('l, F j, Y') }}</span>
-              <span class="rounded-full border border-white/10 bg-white/8 px-3 py-1.5">{{ $uploadedCount }} uploaded file(s)</span>
-              <span class="rounded-full border border-white/10 bg-white/8 px-3 py-1.5">{{ $scannedCount }} scanned</span>
+              <span id="payslip-header-uploaded-count" class="rounded-full border border-white/10 bg-white/8 px-3 py-1.5">{{ $uploadedCount }} uploaded file(s)</span>
+              <span id="payslip-header-scanned-count" class="rounded-full border border-white/10 bg-white/8 px-3 py-1.5">{{ $scannedCount }} scanned</span>
             </div>
           </div>
 
           <div class="grid gap-3 sm:grid-cols-2 xl:min-w-[420px]">
             <div class="payslip-card-motion payslip-reveal rounded-2xl border border-white/10 bg-white/8 px-4 py-4 shadow-sm backdrop-blur" style="--payslip-delay: 70ms;">
               <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-50/70">Latest Upload</p>
-              <p class="mt-2 text-sm font-semibold text-white">{{ $latestUpload?->original_name ?? 'No file yet' }}</p>
-              <p class="mt-1 text-xs text-emerald-50/75">{{ optional($latestUpload?->uploaded_at)->format('M d, Y h:i A') ?? 'Waiting for first upload' }}</p>
+              <p id="payslip-latest-upload-name" class="mt-2 text-sm font-semibold text-white">{{ $latestUpload?->original_name ?? 'No file yet' }}</p>
+              <p id="payslip-latest-upload-date" class="mt-1 text-xs text-emerald-50/75">{{ optional($latestUpload?->uploaded_at)->format('M d, Y h:i A') ?? 'Waiting for first upload' }}</p>
             </div>
             <div class="payslip-card-motion payslip-reveal rounded-2xl border border-white/10 bg-white/8 px-4 py-4 shadow-sm backdrop-blur" style="--payslip-delay: 100ms;">
               <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-50/70">Queue Status</p>
-              <p class="mt-2 text-sm font-semibold text-white">{{ $pendingCount }} pending scan</p>
+              <p id="payslip-header-pending-count" class="mt-2 text-sm font-semibold text-white">{{ $pendingCount }} pending scan</p>
               <p class="mt-1 text-xs text-emerald-50/75">Scan reads and saves file data for payslip view.</p>
             </div>
           </div>
@@ -145,7 +145,7 @@
             <i class="fa-solid fa-folder-tree text-lg"></i>
           </span>
           <p class="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Uploaded Files</p>
-          <p class="mt-2 text-3xl font-black tracking-tight text-slate-900">{{ $uploadedCount }}</p>
+          <p id="payslip-count-uploaded" class="mt-2 text-3xl font-black tracking-tight text-slate-900">{{ $uploadedCount }}</p>
           <p class="mt-1 text-sm text-slate-500">Stored payroll source files</p>
         </div>
 
@@ -154,7 +154,7 @@
             <i class="fa-solid fa-circle-check text-lg"></i>
           </span>
           <p class="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Scanned Files</p>
-          <p class="mt-2 text-3xl font-black tracking-tight text-emerald-700">{{ $scannedCount }}</p>
+          <p id="payslip-count-scanned" class="mt-2 text-3xl font-black tracking-tight text-emerald-700">{{ $scannedCount }}</p>
           <p class="mt-1 text-sm text-slate-500">Preview-ready payslip data</p>
         </div>
 
@@ -163,7 +163,7 @@
             <i class="fa-solid fa-hourglass-half text-lg"></i>
           </span>
           <p class="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Pending Scan</p>
-          <p class="mt-2 text-3xl font-black tracking-tight text-amber-600">{{ $pendingCount }}</p>
+          <p id="payslip-count-pending" class="mt-2 text-3xl font-black tracking-tight text-amber-600">{{ $pendingCount }}</p>
           <p class="mt-1 text-sm text-slate-500">Files waiting for processing</p>
         </div>
 
@@ -172,7 +172,7 @@
             <i class="fa-solid fa-eye text-lg"></i>
           </span>
           <p class="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">View Ready</p>
-          <p class="mt-2 text-3xl font-black tracking-tight text-indigo-700">{{ $scannedCount }}</p>
+          <p id="payslip-count-ready" class="mt-2 text-3xl font-black tracking-tight text-indigo-700">{{ $scannedCount }}</p>
           <p class="mt-1 text-sm text-slate-500">Files with available preview</p>
         </div>
       </div>
@@ -420,6 +420,46 @@
     payslipMessage.textContent = text;
   };
 
+  const refreshAdminPayslipContent = async () => {
+    const refreshUrl = new URL(window.location.href);
+    refreshUrl.searchParams.delete('page');
+    const response = await fetch(refreshUrl.toString(), {
+      headers: {
+        'Accept': 'text/html',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    });
+    if (!response.ok) {
+      throw new Error('The file was uploaded, but the queue could not be refreshed.');
+    }
+
+    const documentCopy = new DOMParser().parseFromString(await response.text(), 'text/html');
+    const nextFileList = documentCopy.getElementById('payslip_file_list');
+    if (!nextFileList || !payslipFileList) {
+      throw new Error('The file was uploaded, but the queue could not be refreshed.');
+    }
+
+    [
+      'payslip-header-uploaded-count',
+      'payslip-header-scanned-count',
+      'payslip-latest-upload-name',
+      'payslip-latest-upload-date',
+      'payslip-header-pending-count',
+      'payslip-count-uploaded',
+      'payslip-count-scanned',
+      'payslip-count-pending',
+      'payslip-count-ready',
+    ].forEach((id) => {
+      const currentElement = document.getElementById(id);
+      const nextElement = documentCopy.getElementById(id);
+      if (currentElement && nextElement) {
+        currentElement.textContent = nextElement.textContent;
+      }
+    });
+
+    payslipFileList.innerHTML = nextFileList.innerHTML;
+  };
+
   if (payslipInput && payslipName && uploadPayslipBtn && scanPayslipBtn) {
     payslipInput.addEventListener('change', function () {
       const hasFile = this.files && this.files.length > 0;
@@ -427,14 +467,47 @@
       uploadPayslipBtn.disabled = !hasFile;
     });
 
-    payslipUploadForm?.addEventListener('submit', function (event) {
+    payslipUploadForm?.addEventListener('submit', async function (event) {
+      event.preventDefault();
       if (!payslipInput.files || !payslipInput.files.length) {
-        event.preventDefault();
         showPayslipMessage('Please choose a file first.', 'error');
         return;
       }
+
+      const originalButtonHtml = uploadPayslipBtn.innerHTML;
       uploadPayslipBtn.disabled = true;
       uploadPayslipBtn.classList.add('opacity-60', 'cursor-not-allowed');
+      uploadPayslipBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
+
+      try {
+        const response = await fetch(payslipUploadForm.action, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: new FormData(payslipUploadForm),
+        });
+        const payload = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          const validationMessage = payload.errors
+            ? Object.values(payload.errors).flat()[0]
+            : null;
+          throw new Error(validationMessage || payload.message || 'Unable to upload the payslip file.');
+        }
+
+        payslipUploadForm.reset();
+        payslipName.textContent = 'No file selected';
+        await refreshAdminPayslipContent();
+        showPayslipMessage(payload.message || 'Payslip file uploaded successfully.');
+      } catch (error) {
+        showPayslipMessage(error.message || 'Unable to upload the payslip file.', 'error');
+      } finally {
+        uploadPayslipBtn.disabled = !(payslipInput.files && payslipInput.files.length);
+        uploadPayslipBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+        uploadPayslipBtn.innerHTML = originalButtonHtml;
+      }
     });
 
     scanPayslipBtn.addEventListener('click', function () {
@@ -530,26 +603,25 @@
     });
   }
 
-  const payslipFileItems = document.querySelectorAll('.payslip-file-item');
-
   const setActivePayslipItem = (activeItem) => {
-    payslipFileItems.forEach((row) => row.classList.remove('payslip-file-active'));
+    document.querySelectorAll('.payslip-file-item').forEach((row) => row.classList.remove('payslip-file-active'));
     if (activeItem) {
       activeItem.classList.add('payslip-file-active');
     }
   };
 
-  payslipFileItems.forEach((item) => {
-    item.addEventListener('click', function (event) {
-      if (event.target.tagName.toLowerCase() === 'a') return;
+  payslipFileList?.addEventListener('click', function (event) {
+    if (event.target.closest('a')) return;
 
-      const radio = this.querySelector('.payslip-file-radio');
-      if (radio) {
-        radio.checked = true;
-      }
+    const item = event.target.closest('.payslip-file-item');
+    if (!item) return;
 
-      setActivePayslipItem(this);
-    });
+    const radio = item.querySelector('.payslip-file-radio');
+    if (radio) {
+      radio.checked = true;
+    }
+
+    setActivePayslipItem(item);
   });
 
   if (sidebar && main) {

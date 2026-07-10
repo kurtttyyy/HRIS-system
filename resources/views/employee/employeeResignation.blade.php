@@ -80,7 +80,7 @@
 @php
     $resignationCollection = collect($resignations ?? []);
     $allResignationCollection = collect($allResignations ?? $resignations ?? []);
-    $resignationFilter = strtolower(trim((string) ($resignationFilter ?? request()->query('status', 'active'))));
+    $resignationFilter = strtolower(trim((string) ($resignationFilter ?? request()->query('status', 'all'))));
     $pendingCount = $allResignationCollection->filter(fn ($row) => strtolower(trim((string) ($row->status ?? 'pending'))) === 'pending')->count();
     $approvedCount = $allResignationCollection->filter(fn ($row) => in_array(strtolower(trim((string) ($row->status ?? ''))), ['approved', 'completed'], true))->count();
     $rejectedCount = $allResignationCollection->filter(fn ($row) => in_array(strtolower(trim((string) ($row->status ?? ''))), ['rejected', 'cancelled'], true))->count();
@@ -102,6 +102,8 @@
 
     <main class="flex-1 ml-16 transition-all duration-300">
         <div id="employee-resignation-page" class="space-y-8 p-4 pt-4 md:p-8">
+            <div data-resignation-live-message class="fixed right-5 top-5 z-[100] hidden max-w-sm rounded-[1.25rem] border border-sky-200 bg-sky-50 px-5 py-4 text-sm font-medium text-sky-800 shadow-xl" role="status" aria-live="polite"></div>
+
             <section class="employee-resignation-reveal relative overflow-hidden rounded-[2rem] border border-emerald-950/40 bg-gradient-to-br from-slate-950 via-emerald-950 to-emerald-800 p-6 text-white shadow-2xl md:p-8" style="--employee-resignation-delay: 0ms;">
                 <div class="absolute -right-10 -top-12 h-40 w-40 rounded-full bg-white/10 blur-2xl"></div>
                 <div class="absolute bottom-0 right-20 h-24 w-24 rounded-full bg-emerald-300/10 blur-2xl"></div>
@@ -121,19 +123,19 @@
                         <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
                             <div class="employee-resignation-card-motion employee-resignation-reveal rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm" style="--employee-resignation-delay: 80ms;">
                                 <p class="text-xs uppercase tracking-wide text-emerald-100">Requests</p>
-                                <p class="mt-2 text-2xl font-black">{{ $resignationCollection->count() }}</p>
+                                <p data-resignation-count="visible" class="mt-2 text-2xl font-black">{{ $resignationCollection->count() }}</p>
                             </div>
                             <div class="employee-resignation-card-motion employee-resignation-reveal rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm" style="--employee-resignation-delay: 120ms;">
                                 <p class="text-xs uppercase tracking-wide text-amber-100">Pending</p>
-                                <p class="mt-2 text-2xl font-black">{{ $pendingCount }}</p>
+                                <p data-resignation-count="pending" class="mt-2 text-2xl font-black">{{ $pendingCount }}</p>
                             </div>
                             <div class="employee-resignation-card-motion employee-resignation-reveal rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm" style="--employee-resignation-delay: 160ms;">
                                 <p class="text-xs uppercase tracking-wide text-lime-100">Approved</p>
-                                <p class="mt-2 text-2xl font-black">{{ $approvedCount }}</p>
+                                <p data-resignation-count="processed" class="mt-2 text-2xl font-black">{{ $approvedCount }}</p>
                             </div>
                             <div class="employee-resignation-card-motion employee-resignation-reveal rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm" style="--employee-resignation-delay: 200ms;">
                                 <p class="text-xs uppercase tracking-wide text-rose-100">Closed</p>
-                                <p class="mt-2 text-2xl font-black">{{ $rejectedCount }}</p>
+                                <p data-resignation-count="closed" class="mt-2 text-2xl font-black">{{ $rejectedCount }}</p>
                             </div>
                         </div>
                     </div>
@@ -170,21 +172,21 @@
                             <div>
                                 <div class="flex items-center justify-between text-sm">
                                     <span class="text-emerald-50">Request progress</span>
-                                    <span class="font-semibold">{{ $latestStatus !== '' ? $latestStatus : 'No Request Yet' }}</span>
+                                    <span data-resignation-latest-status class="font-semibold">{{ $latestStatus !== '' ? $latestStatus : 'No Request Yet' }}</span>
                                 </div>
                                 <div class="mt-2 h-2.5 overflow-hidden rounded-full bg-white/15">
-                                    <div class="employee-resignation-progress-fill h-full rounded-full bg-emerald-300" style="width: {{ $resignationCollection->isEmpty() ? 0 : ($approvedCount > 0 ? 100 : ($pendingCount > 0 ? 55 : 30)) }}%; --employee-resignation-delay: 220ms;"></div>
+                                    <div data-resignation-progress class="employee-resignation-progress-fill h-full rounded-full bg-emerald-300" style="width: {{ $resignationCollection->isEmpty() ? 0 : ($approvedCount > 0 ? 100 : ($pendingCount > 0 ? 55 : 30)) }}%; --employee-resignation-delay: 220ms;"></div>
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-2 gap-3">
                                 <div class="employee-resignation-card-motion rounded-2xl bg-white/10 p-4">
                                     <p class="text-xs uppercase tracking-wide text-emerald-100">Current Status</p>
-                                    <p class="mt-2 text-sm font-bold text-white">{{ $latestStatus !== '' ? $latestStatus : 'No Request Yet' }}</p>
+                                    <p data-resignation-latest-status class="mt-2 text-sm font-bold text-white">{{ $latestStatus !== '' ? $latestStatus : 'No Request Yet' }}</p>
                                 </div>
                                 <div class="employee-resignation-card-motion rounded-2xl bg-white/10 p-4">
                                     <p class="text-xs uppercase tracking-wide text-emerald-100">Effective Date</p>
-                                    <p class="mt-2 text-sm font-bold text-white">{{ $latestEffectiveDate }}</p>
+                                    <p data-resignation-latest-effective class="mt-2 text-sm font-bold text-white">{{ $latestEffectiveDate }}</p>
                                 </div>
                             </div>
 
@@ -228,7 +230,7 @@
                         </div>
                         <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Requests</span>
                     </div>
-                    <h3 class="mt-8 text-4xl font-black text-slate-900">{{ $allResignationCollection->count() }}</h3>
+                    <h3 data-resignation-count="all" class="mt-8 text-4xl font-black text-slate-900">{{ $allResignationCollection->count() }}</h3>
                     <p class="mt-1 text-sm font-medium text-slate-600">Filed Resignations</p>
                     <p class="mt-4 text-xs leading-5 text-slate-500">All requests you have submitted, including pending, approved, completed, rejected, or cancelled records.</p>
                 </a>
@@ -240,7 +242,7 @@
                         </div>
                         <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">In Review</span>
                     </div>
-                    <h3 class="mt-8 text-4xl font-black text-slate-900">{{ $pendingCount }}</h3>
+                    <h3 data-resignation-count="pending" class="mt-8 text-4xl font-black text-slate-900">{{ $pendingCount }}</h3>
                     <p class="mt-1 text-sm font-medium text-slate-600">Pending Requests</p>
                     <p class="mt-4 text-xs leading-5 text-slate-500">Requests that are still waiting for final HR or admin action.</p>
                 </a>
@@ -252,7 +254,7 @@
                         </div>
                         <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">Processed</span>
                     </div>
-                    <h3 class="mt-8 text-4xl font-black text-slate-900">{{ $approvedCount }}</h3>
+                    <h3 data-resignation-count="processed" class="mt-8 text-4xl font-black text-slate-900">{{ $approvedCount }}</h3>
                     <p class="mt-1 text-sm font-medium text-slate-600">Approved / Completed</p>
                     <p class="mt-4 text-xs leading-5 text-slate-500">Requests that have already moved forward or reached final processing status.</p>
                 </a>
@@ -264,7 +266,7 @@
                         </div>
                         <span class="rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700">Closed</span>
                     </div>
-                    <h3 class="mt-8 text-4xl font-black text-slate-900">{{ $rejectedCount }}</h3>
+                    <h3 data-resignation-count="closed" class="mt-8 text-4xl font-black text-slate-900">{{ $rejectedCount }}</h3>
                     <p class="mt-1 text-sm font-medium text-slate-600">Rejected / Cancelled</p>
                     <p class="mt-4 text-xs leading-5 text-slate-500">Requests that were not approved or were withdrawn before completion.</p>
                 </a>
@@ -295,7 +297,9 @@
                         </div>
                     </div>
 
-                    <form method="POST" action="{{ route('employee.storeResignation') }}" enctype="multipart/form-data" class="mt-6 space-y-5">
+                    <div data-resignation-form-message class="mt-5 hidden rounded-xl border px-4 py-3 text-sm font-medium" role="status" aria-live="polite"></div>
+
+                    <form id="employee-resignation-form" method="POST" action="{{ route('employee.storeResignation') }}" enctype="multipart/form-data" class="mt-6 space-y-5">
                         @csrf
                         <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
                             <div>
@@ -342,7 +346,7 @@
                             @enderror
                         </div>
 
-                        <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700">
+                        <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-70">
                             <i class="fa fa-paper-plane-o"></i>
                             Submit Resignation
                         </button>
@@ -359,11 +363,11 @@
                         </div>
                         <div class="employee-resignation-card-motion rounded-2xl bg-slate-50 px-4 py-3 text-sm">
                             <p class="text-xs uppercase tracking-wide text-slate-500">Latest Status</p>
-                            <p class="mt-1 font-semibold text-slate-900">{{ $latestStatus !== '' ? $latestStatus : 'No Request Yet' }}</p>
+                            <p data-resignation-latest-status class="mt-1 font-semibold text-slate-900">{{ $latestStatus !== '' ? $latestStatus : 'No Request Yet' }}</p>
                         </div>
                     </div>
 
-                    <div class="max-h-[42rem] space-y-4 overflow-y-auto p-6">
+                    <div data-resignation-timeline class="max-h-[42rem] space-y-4 overflow-y-auto p-6">
                         @forelse ($resignations as $row)
                             @php
                                 $statusText = trim((string) ($row->status ?? 'Pending'));
@@ -435,7 +439,7 @@
                                 </div>
                             </article>
                         @empty
-                            <div class="employee-resignation-card-motion flex flex-col items-center justify-center rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-14 text-center">
+                            <div data-resignation-empty class="employee-resignation-card-motion flex flex-col items-center justify-center rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-14 text-center">
                                 <div class="employee-resignation-icon-pop is-visible flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-200 text-slate-500">
                                     <i class="fa fa-folder-open fa-2x"></i>
                                 </div>
@@ -512,11 +516,81 @@
     }
 
     const employeeResignationSnapshotUrl = @json(route('employee.resignation.snapshot', request()->only(['status'])));
+    const employeeResignationFilter = @json($resignationFilter);
     let employeeResignationSnapshotSignature = null;
     let employeeResignationSnapshotInFlight = false;
+    let employeeResignationSubmitInFlight = false;
+    let employeeResignationIgnoreNextSnapshotChange = false;
+    let employeeResignationLiveMessageTimer = null;
+
+    function showEmployeeResignationLiveMessage(message) {
+        const element = document.querySelector('[data-resignation-live-message]');
+        if (!element) return;
+
+        element.textContent = message;
+        element.classList.remove('hidden');
+        window.clearTimeout(employeeResignationLiveMessageTimer);
+        employeeResignationLiveMessageTimer = window.setTimeout(() => {
+            element.classList.add('hidden');
+        }, 4500);
+    }
+
+    async function refreshEmployeeResignationContent() {
+        const timeline = document.querySelector('[data-resignation-timeline]');
+        const timelineScrollTop = timeline?.scrollTop || 0;
+        const previousLatestStatus = document.querySelector('[data-resignation-latest-status]')?.textContent?.trim() || '';
+
+        const response = await fetch(window.location.href, {
+            headers: {
+                'Accept': 'text/html',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
+        if (!response.ok) {
+            throw new Error('Unable to refresh resignation details.');
+        }
+
+        const documentCopy = new DOMParser().parseFromString(await response.text(), 'text/html');
+        const nextTimeline = documentCopy.querySelector('[data-resignation-timeline]');
+        if (!timeline || !nextTimeline) {
+            throw new Error('Unable to read the updated resignation details.');
+        }
+
+        ['visible', 'all', 'pending', 'processed', 'closed'].forEach((type) => {
+            const currentElements = document.querySelectorAll(`[data-resignation-count="${type}"]`);
+            const nextElements = documentCopy.querySelectorAll(`[data-resignation-count="${type}"]`);
+            currentElements.forEach((element, index) => {
+                if (nextElements[index]) element.textContent = nextElements[index].textContent;
+            });
+        });
+
+        const copyTextContent = (selector) => {
+            const currentElements = document.querySelectorAll(selector);
+            const nextElements = documentCopy.querySelectorAll(selector);
+            currentElements.forEach((element, index) => {
+                if (nextElements[index]) element.textContent = nextElements[index].textContent;
+            });
+        };
+        copyTextContent('[data-resignation-latest-status]');
+        copyTextContent('[data-resignation-latest-effective]');
+
+        const progress = document.querySelector('[data-resignation-progress]');
+        const nextProgress = documentCopy.querySelector('[data-resignation-progress]');
+        if (progress && nextProgress) {
+            progress.style.width = nextProgress.style.width;
+        }
+
+        timeline.innerHTML = nextTimeline.innerHTML;
+        timeline.scrollTop = timelineScrollTop;
+
+        const latestStatus = document.querySelector('[data-resignation-latest-status]')?.textContent?.trim() || '';
+        if (latestStatus && latestStatus !== previousLatestStatus) {
+            showEmployeeResignationLiveMessage(`Your resignation status was updated to ${latestStatus}.`);
+        }
+    }
 
     async function checkEmployeeResignationSnapshot() {
-        if (employeeResignationSnapshotInFlight || document.hidden) return;
+        if (employeeResignationSnapshotInFlight || employeeResignationSubmitInFlight || document.hidden) return;
         employeeResignationSnapshotInFlight = true;
 
         try {
@@ -538,7 +612,14 @@
             }
 
             if (payload.signature !== employeeResignationSnapshotSignature) {
-                window.location.reload();
+                if (employeeResignationIgnoreNextSnapshotChange) {
+                    employeeResignationSnapshotSignature = payload.signature;
+                    employeeResignationIgnoreNextSnapshotChange = false;
+                    return;
+                }
+
+                await refreshEmployeeResignationContent();
+                employeeResignationSnapshotSignature = payload.signature;
             }
         } catch (error) {
             // Background checks should not interrupt the resignation form.
@@ -548,7 +629,206 @@
     }
 
     checkEmployeeResignationSnapshot();
-    setInterval(checkEmployeeResignationSnapshot, 7000);
+    setInterval(checkEmployeeResignationSnapshot, 5000);
+
+    const resignationForm = document.getElementById('employee-resignation-form');
+
+    function setResignationFormMessage(message, type = 'success') {
+        const element = document.querySelector('[data-resignation-form-message]');
+        if (!element) return;
+
+        element.textContent = message;
+        element.classList.remove(
+            'hidden',
+            'border-emerald-200',
+            'bg-emerald-50',
+            'text-emerald-700',
+            'border-rose-200',
+            'bg-rose-50',
+            'text-rose-700'
+        );
+        element.classList.add(...(type === 'error'
+            ? ['border-rose-200', 'bg-rose-50', 'text-rose-700']
+            : ['border-emerald-200', 'bg-emerald-50', 'text-emerald-700']));
+    }
+
+    function createResignationTimelineItem(resignation) {
+        const article = document.createElement('article');
+        article.className = 'employee-resignation-card-motion rounded-[1.5rem] border border-emerald-200 bg-gradient-to-r from-emerald-50 to-white p-5 shadow-sm';
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between';
+
+        const content = document.createElement('div');
+        content.className = 'flex min-w-0 flex-1 items-start gap-4';
+
+        const icon = document.createElement('div');
+        icon.className = 'employee-resignation-icon-pop is-visible flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-600';
+        icon.innerHTML = '<i class="fa fa-briefcase"></i>';
+
+        const details = document.createElement('div');
+        details.className = 'min-w-0 flex-1';
+
+        const headingRow = document.createElement('div');
+        headingRow.className = 'flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between';
+
+        const heading = document.createElement('div');
+        heading.className = 'flex min-w-0 flex-wrap items-center gap-3';
+        const title = document.createElement('p');
+        title.className = 'text-lg font-bold text-slate-900';
+        title.textContent = `Effective ${resignation.effective_date || '-'}`;
+        const status = document.createElement('span');
+        status.className = 'rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700';
+        status.textContent = resignation.status;
+        heading.append(title, status);
+
+        const cancelForm = document.createElement('form');
+        cancelForm.method = 'POST';
+        cancelForm.action = resignation.cancel_url;
+        cancelForm.addEventListener('submit', (event) => {
+            if (!window.confirm('Cancel this resignation request and remove the uploaded letter?')) {
+                event.preventDefault();
+            }
+        });
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = '_token';
+        csrf.value = resignationForm.querySelector('input[name="_token"]').value;
+        const cancelButton = document.createElement('button');
+        cancelButton.type = 'submit';
+        cancelButton.className = 'inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100';
+        cancelButton.innerHTML = '<i class="fa fa-times-circle"></i> Cancel';
+        cancelForm.append(csrf, cancelButton);
+        headingRow.append(heading, cancelForm);
+
+        const submitted = document.createElement('p');
+        submitted.className = 'mt-1 text-sm text-slate-500';
+        submitted.textContent = `Submitted ${resignation.submitted_at || '-'}`;
+
+        const cards = document.createElement('div');
+        cards.className = 'mt-4 grid min-w-0 gap-3 md:grid-cols-2';
+
+        const fileCard = document.createElement('div');
+        fileCard.className = 'employee-resignation-card-motion min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3';
+        const fileLabel = document.createElement('p');
+        fileLabel.className = 'text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400';
+        fileLabel.textContent = 'Uploaded File';
+        const fileLink = document.createElement('a');
+        fileLink.href = resignation.preview_url;
+        fileLink.target = '_blank';
+        fileLink.rel = 'noopener';
+        fileLink.className = 'mt-2 flex max-w-full items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100';
+        const fileIcon = document.createElement('i');
+        fileIcon.className = 'fa fa-file-text-o shrink-0';
+        const fileName = document.createElement('span');
+        fileName.className = 'min-w-0 flex-1 truncate';
+        fileName.textContent = resignation.attachment_name || 'Open resignation file';
+        fileLink.append(fileIcon, fileName);
+        fileCard.append(fileLabel, fileLink);
+
+        const noteCard = document.createElement('div');
+        noteCard.className = 'employee-resignation-card-motion min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3';
+        const noteLabel = document.createElement('p');
+        noteLabel.className = 'text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400';
+        noteLabel.textContent = 'Admin Note';
+        const note = document.createElement('p');
+        note.className = 'mt-2 text-sm leading-6 text-slate-600';
+        note.textContent = 'No admin note yet.';
+        noteCard.append(noteLabel, note);
+
+        cards.append(fileCard, noteCard);
+        details.append(headingRow, submitted, cards);
+        content.append(icon, details);
+        wrapper.append(content);
+        article.append(wrapper);
+        return article;
+    }
+
+    function updateResignationPage(payload) {
+        const counts = payload.counts || {};
+        const isVisible = !['processed', 'closed'].includes(employeeResignationFilter);
+
+        document.querySelectorAll('[data-resignation-count]').forEach((element) => {
+            const type = element.dataset.resignationCount;
+            if (type === 'visible') {
+                if (isVisible) element.textContent = Number(element.textContent || 0) + 1;
+                return;
+            }
+            if (Object.prototype.hasOwnProperty.call(counts, type)) {
+                element.textContent = counts[type];
+            }
+        });
+
+        document.querySelectorAll('[data-resignation-latest-status]').forEach((element) => {
+            element.textContent = payload.resignation.status;
+        });
+        document.querySelectorAll('[data-resignation-latest-effective]').forEach((element) => {
+            element.textContent = payload.resignation.effective_date_long || 'Not scheduled';
+        });
+        const progress = document.querySelector('[data-resignation-progress]');
+        if (progress) progress.style.width = '55%';
+
+        if (isVisible) {
+            const timeline = document.querySelector('[data-resignation-timeline]');
+            timeline?.querySelector('[data-resignation-empty]')?.remove();
+            timeline?.prepend(createResignationTimelineItem(payload.resignation));
+        }
+    }
+
+    resignationForm?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (employeeResignationSubmitInFlight) return;
+
+        const submitButton = resignationForm.querySelector('button[type="submit"]');
+        const originalButtonHtml = submitButton.innerHTML;
+        employeeResignationSubmitInFlight = true;
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Submitting...';
+
+        try {
+            const response = await fetch(resignationForm.action, {
+                method: 'POST',
+                body: new FormData(resignationForm),
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                const validationMessage = payload.errors
+                    ? Object.values(payload.errors).flat()[0]
+                    : null;
+                throw new Error(validationMessage || payload.message || 'Unable to submit the resignation request.');
+            }
+
+            updateResignationPage(payload);
+            setResignationFormMessage(payload.message || 'Resignation request submitted.');
+            resignationForm.reset();
+            const fileName = resignationForm.querySelector('[data-resignation-file-name]');
+            if (fileName) fileName.textContent = 'No file selected';
+
+            employeeResignationIgnoreNextSnapshotChange = true;
+            const snapshotResponse = await fetch(employeeResignationSnapshotUrl, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+            if (snapshotResponse.ok) {
+                const snapshot = await snapshotResponse.json();
+                employeeResignationSnapshotSignature = snapshot.signature || employeeResignationSnapshotSignature;
+                employeeResignationIgnoreNextSnapshotChange = false;
+            }
+        } catch (error) {
+            setResignationFormMessage(error.message || 'Unable to submit the resignation request.', 'error');
+        } finally {
+            employeeResignationSubmitInFlight = false;
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalButtonHtml;
+        }
+    });
 </script>
 </body>
 </html>
