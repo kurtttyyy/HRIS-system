@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="{{ csrf_token() }}" />
   <title>PeopleHub - HR Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
@@ -61,6 +62,41 @@
       transform: translateX(4px);
       box-shadow: inset 3px 0 0 rgba(16, 185, 129, 0.55);
     }
+    .home-leave-approve-out {
+      animation: home-leave-approve-out 0.48s cubic-bezier(0.2, 0.9, 0.2, 1) forwards;
+      pointer-events: none;
+    }
+    .home-leave-decline-out {
+      animation: home-leave-decline-out 0.5s cubic-bezier(0.22, 0.8, 0.24, 1) forwards;
+      pointer-events: none;
+    }
+    .home-leave-approve-out::after,
+    .home-leave-decline-out::after {
+      border-radius: inherit;
+      content: "";
+      inset: 0;
+      pointer-events: none;
+      position: absolute;
+    }
+    .home-leave-approve-out::after {
+      animation: home-leave-approve-glow 0.48s ease-out forwards;
+      box-shadow: inset 0 0 0 2px rgba(16, 185, 129, 0.45);
+    }
+    .home-leave-decline-out::after {
+      animation: home-leave-decline-glow 0.5s ease-out forwards;
+      box-shadow: inset 0 0 0 2px rgba(244, 63, 94, 0.34);
+    }
+    .home-leave-enter {
+      animation: home-leave-enter-up 0.36s cubic-bezier(0.2, 0.85, 0.22, 1) both;
+    }
+    [data-recent-employees-card].is-loading {
+      opacity: 0.62;
+      transform: translateY(4px);
+      pointer-events: none;
+    }
+    .recent-employees-swap-in {
+      animation: recent-employees-swap-in 0.32s cubic-bezier(0.2, 0.85, 0.22, 1) both;
+    }
     @keyframes dashboard-fade-up {
       to {
         opacity: 1;
@@ -89,11 +125,82 @@
       from { transform: scaleX(0); }
       to { transform: scaleX(1); }
     }
+    @keyframes home-leave-approve-out {
+      0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        background-color: rgba(248, 250, 252, 0.7);
+      }
+      45% {
+        opacity: 1;
+        transform: translateY(-8px) scale(1.01);
+        background-color: rgba(236, 253, 245, 0.96);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-18px) scale(0.96);
+        background-color: rgba(236, 253, 245, 0.7);
+      }
+    }
+    @keyframes home-leave-decline-out {
+      0% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+        background-color: rgba(248, 250, 252, 0.7);
+      }
+      24% {
+        transform: translateX(-7px) rotate(-0.45deg);
+        background-color: rgba(255, 241, 242, 0.95);
+      }
+      48% {
+        opacity: 1;
+        transform: translateX(5px) rotate(0.35deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translateX(24px) scale(0.96);
+        background-color: rgba(255, 241, 242, 0.7);
+      }
+    }
+    @keyframes home-leave-approve-glow {
+      from { opacity: 0.95; }
+      to { opacity: 0; }
+    }
+    @keyframes home-leave-decline-glow {
+      from { opacity: 0.9; }
+      to { opacity: 0; }
+    }
+    @keyframes home-leave-enter-up {
+      0% {
+        opacity: 0;
+        transform: translateY(18px) scale(0.98);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    @keyframes recent-employees-swap-in {
+      0% {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
     @media (prefers-reduced-motion: reduce) {
       .dashboard-reveal,
       .dashboard-icon-pop,
       .dashboard-focus-pulse,
-      .dashboard-progress-fill {
+      .dashboard-progress-fill,
+      .home-leave-approve-out,
+      .home-leave-decline-out,
+      .home-leave-enter,
+      .recent-employees-swap-in,
+      .home-leave-approve-out::after,
+      .home-leave-decline-out::after {
         animation: none;
         opacity: 1;
         transform: none;
@@ -254,7 +361,7 @@
 
       <section class="grid grid-cols-1 gap-6 xl:grid-cols-[1.5fr_0.85fr]">
         <div class="space-y-6">
-          <div class="dashboard-reveal rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm" style="--dashboard-delay: 180ms;">
+          <div data-recent-employees-card class="dashboard-reveal rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm transition duration-200" style="--dashboard-delay: 180ms;">
             <div class="mb-5">
               <div>
                 <p class="admin-kicker text-xs font-semibold uppercase text-emerald-700">Workforce</p>
@@ -335,7 +442,7 @@
                       <i class="fa-solid fa-chevron-left text-xs"></i>
                     </span>
                   @else
-                    <a href="{{ $accept->previousPageUrl() }}" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
+                    <a data-recent-employees-page href="{{ $accept->previousPageUrl() }}" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
                       <i class="fa-solid fa-chevron-left text-xs"></i>
                     </a>
                   @endif
@@ -345,7 +452,7 @@
                   </span>
 
                   @if ($accept->hasMorePages())
-                    <a href="{{ $accept->nextPageUrl() }}" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
+                    <a data-recent-employees-page href="{{ $accept->nextPageUrl() }}" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
                       <i class="fa-solid fa-chevron-right text-xs"></i>
                     </a>
                   @else
@@ -367,10 +474,10 @@
                 <p class="text-xs font-semibold uppercase tracking-[0.2em] text-rose-700">Urgent Queue</p>
                 <h3 class="mt-2 text-2xl font-black text-slate-900">Leave Requests</h3>
               </div>
-              <span class="flex h-9 min-w-[2.25rem] items-center justify-center rounded-full bg-rose-500 px-2 text-sm font-bold text-white">{{ (int) ($pendingLeaveRequestCount ?? 0) }}</span>
+              <span data-home-leave-count class="flex h-9 min-w-[2.25rem] items-center justify-center rounded-full bg-rose-500 px-2 text-sm font-bold text-white">{{ (int) ($pendingLeaveRequestCount ?? 0) }}</span>
             </div>
 
-            <div class="space-y-4">
+            <div data-home-leave-list class="space-y-4">
               @forelse (($pendingLeaveRequestsForHome ?? collect()) as $request)
                 @php
                   $requestName = trim((string) ($request->employee_name ?? ''));
@@ -400,7 +507,7 @@
                     ? $startDate->format('M d, Y')
                     : $startDate->format('M d').' - '.$endDate->format('M d, Y');
                 @endphp
-                <div class="dashboard-card-motion rounded-[1.5rem] border border-slate-200 bg-slate-50/70 p-4">
+                <div data-home-leave-card data-leave-request-id="{{ $request->id }}" class="dashboard-card-motion relative overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-50/70 p-4 transition duration-200">
                   <div class="flex items-start justify-between gap-3">
                     <div class="flex items-center gap-3">
                       <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 text-sm font-bold text-white">{{ $initials }}</div>
@@ -412,13 +519,13 @@
                     <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">Pending</span>
                   </div>
                   <div class="mt-4 flex gap-2">
-                    <form class="flex-1" method="POST" action="{{ route('admin.updateLeaveRequestStatus', $request->id) }}">
+                    <form data-home-leave-status-form class="flex-1" method="POST" action="{{ route('admin.updateLeaveRequestStatus', $request->id) }}">
                       @csrf
                       <input type="hidden" name="status" value="Approved">
                       <input type="hidden" name="redirect_back" value="1">
                       <button type="submit" class="w-full rounded-xl bg-emerald-500 py-2 text-sm font-semibold text-white transition hover:bg-emerald-600">Approve</button>
                     </form>
-                    <form class="flex-1" method="POST" action="{{ route('admin.updateLeaveRequestStatus', $request->id) }}">
+                    <form data-home-leave-status-form class="flex-1" method="POST" action="{{ route('admin.updateLeaveRequestStatus', $request->id) }}">
                       @csrf
                       <input type="hidden" name="status" value="Rejected">
                       <input type="hidden" name="redirect_back" value="1">
@@ -427,7 +534,7 @@
                   </div>
                 </div>
               @empty
-                <div class="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-500">
+                <div data-home-leave-empty class="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-500">
                   No pending leave requests.
                 </div>
               @endforelse
@@ -492,7 +599,6 @@
 
   const lightbox = document.getElementById('photo-lightbox');
   const lightboxImg = document.getElementById('photo-lightbox-img');
-  const zoomablePhotos = document.querySelectorAll('.zoomable-profile-photo');
 
   const closeLightbox = () => {
     if (!lightbox || !lightboxImg) return;
@@ -501,14 +607,15 @@
     lightboxImg.src = '';
   };
 
-  zoomablePhotos.forEach((photo) => {
-    photo.addEventListener('click', () => {
-      const src = photo.getAttribute('src') || '';
-      if (!src) return;
-      lightboxImg.src = src;
-      lightbox.classList.remove('hidden');
-      lightbox.classList.add('flex');
-    });
+  document.addEventListener('click', (event) => {
+    const photo = event.target.closest('.zoomable-profile-photo');
+    if (!photo || !lightbox || !lightboxImg) return;
+
+    const src = photo.getAttribute('src') || '';
+    if (!src) return;
+    lightboxImg.src = src;
+    lightbox.classList.remove('hidden');
+    lightbox.classList.add('flex');
   });
 
   lightbox?.addEventListener('click', (event) => {
@@ -517,6 +624,242 @@
 
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') closeLightbox();
+  });
+
+  const replaceRecentEmployeesCard = async (url, shouldPushState = true) => {
+    const currentCard = document.querySelector('[data-recent-employees-card]');
+    if (!currentCard) return;
+
+    currentCard.classList.add('is-loading');
+
+    try {
+      const response = await fetch(url, {
+        headers: {
+          Accept: 'text/html',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Unable to load recent employees.');
+      }
+
+      const html = await response.text();
+      const documentFragment = new DOMParser().parseFromString(html, 'text/html');
+      const nextCard = documentFragment.querySelector('[data-recent-employees-card]');
+      if (!nextCard) {
+        throw new Error('Recent employees content was not found.');
+      }
+
+      nextCard.classList.add('is-visible', 'recent-employees-swap-in');
+      currentCard.replaceWith(nextCard);
+
+      window.setTimeout(() => {
+        nextCard.classList.remove('recent-employees-swap-in');
+      }, 420);
+
+      if (shouldPushState) {
+        window.history.pushState({ recentEmployeesUrl: url }, '', url);
+      }
+    } catch (error) {
+      currentCard.classList.remove('is-loading');
+      window.location.href = url;
+    }
+  };
+
+  document.addEventListener('click', (event) => {
+    const pageLink = event.target.closest('[data-recent-employees-page]');
+    if (!pageLink) return;
+
+    event.preventDefault();
+    replaceRecentEmployeesCard(pageLink.href);
+  });
+
+  window.addEventListener('popstate', () => {
+    replaceRecentEmployeesCard(window.location.href, false);
+  });
+
+  const leaveList = document.querySelector('[data-home-leave-list]');
+  const leaveCountBadge = document.querySelector('[data-home-leave-count]');
+  const leaveCsrfToken = leaveList?.querySelector('input[name="_token"]')?.value
+    || document.querySelector('meta[name="csrf-token"]')?.content
+    || '';
+
+  const setLeaveCount = (count) => {
+    const safeCount = Math.max(count, 0);
+    if (leaveCountBadge) leaveCountBadge.textContent = String(safeCount);
+    window.updateAdminPendingLeaveCount?.(safeCount);
+  };
+
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;',
+  }[character]));
+
+  const renderLeaveEmptyState = (pendingCount) => {
+    if (!leaveList) return;
+    leaveList.innerHTML = `
+      <div data-home-leave-empty class="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-500">
+        ${pendingCount > 0 ? 'More pending leave requests are available in Leave Management.' : 'No pending leave requests.'}
+      </div>
+    `;
+  };
+
+  const renderLeaveCard = (request) => {
+    const actionUrl = escapeHtml(request.action_url || '');
+    return `
+      <div data-home-leave-card data-leave-request-id="${escapeHtml(request.id)}" class="dashboard-card-motion relative overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-50/70 p-4 transition duration-200">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 text-sm font-bold text-white">${escapeHtml(request.initials || 'NA')}</div>
+            <div>
+              <p class="font-semibold text-slate-900">${escapeHtml(request.employee_name || 'Unknown Employee')}</p>
+              <p class="text-xs text-slate-500">${escapeHtml(request.leave_type || 'Leave Request')} - ${escapeHtml(request.date_label || '')}</p>
+            </div>
+          </div>
+          <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">Pending</span>
+        </div>
+        <div class="mt-4 flex gap-2">
+          <form data-home-leave-status-form class="flex-1" method="POST" action="${actionUrl}">
+            <input type="hidden" name="_token" value="${escapeHtml(leaveCsrfToken)}">
+            <input type="hidden" name="status" value="Approved">
+            <input type="hidden" name="redirect_back" value="1">
+            <button type="submit" class="w-full rounded-xl bg-emerald-500 py-2 text-sm font-semibold text-white transition hover:bg-emerald-600">Approve</button>
+          </form>
+          <form data-home-leave-status-form class="flex-1" method="POST" action="${actionUrl}">
+            <input type="hidden" name="_token" value="${escapeHtml(leaveCsrfToken)}">
+            <input type="hidden" name="status" value="Rejected">
+            <input type="hidden" name="redirect_back" value="1">
+            <button type="submit" class="w-full rounded-xl bg-slate-200 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-300">Decline</button>
+          </form>
+        </div>
+      </div>
+    `;
+  };
+
+  const captureLeaveCardPositions = () => {
+    if (!leaveList || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return new Map();
+    }
+
+    return new Map(Array.from(leaveList.querySelectorAll('[data-home-leave-card]')).map((card) => [
+      card.dataset.leaveRequestId,
+      card.getBoundingClientRect(),
+    ]));
+  };
+
+  const animateLeaveQueueMoveUp = (previousPositions) => {
+    if (!leaveList || !previousPositions.size || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
+    leaveList.querySelectorAll('[data-home-leave-card]').forEach((card, index) => {
+      const previousPosition = previousPositions.get(card.dataset.leaveRequestId);
+      const currentPosition = card.getBoundingClientRect();
+
+      if (previousPosition) {
+        const deltaY = previousPosition.top - currentPosition.top;
+        if (Math.abs(deltaY) < 1) return;
+
+        card.animate([
+          { transform: `translateY(${deltaY}px)` },
+          { transform: 'translateY(0)' },
+        ], {
+          duration: 360,
+          easing: 'cubic-bezier(0.2, 0.85, 0.22, 1)',
+        });
+        return;
+      }
+
+      card.classList.add('home-leave-enter');
+      card.style.animationDelay = `${Math.min(index * 45, 120)}ms`;
+      window.setTimeout(() => {
+        card.classList.remove('home-leave-enter');
+        card.style.animationDelay = '';
+      }, 520);
+    });
+  };
+
+  const renderLeaveQueue = (requests, pendingCount, previousPositions = new Map()) => {
+    if (!leaveList) return;
+    setLeaveCount(pendingCount);
+    if (!Array.isArray(requests) || requests.length === 0) {
+      renderLeaveEmptyState(pendingCount);
+      return;
+    }
+    leaveList.innerHTML = requests.map(renderLeaveCard).join('');
+    requestAnimationFrame(() => animateLeaveQueueMoveUp(previousPositions));
+  };
+
+  const playLeaveDecisionAnimation = (card, decision) => new Promise((resolve) => {
+    if (!card || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      resolve();
+      return;
+    }
+
+    const animationClass = decision === 'approved'
+      ? 'home-leave-approve-out'
+      : 'home-leave-decline-out';
+
+    card.classList.add(animationClass);
+    window.setTimeout(resolve, decision === 'approved' ? 480 : 500);
+  });
+
+  leaveList?.addEventListener('submit', async (event) => {
+    const form = event.target.closest('[data-home-leave-status-form]');
+    if (!form) return;
+
+    event.preventDefault();
+
+    const card = form.closest('[data-home-leave-card]');
+    const buttons = Array.from(card?.querySelectorAll('button[type="submit"]') || []);
+    const submitButton = event.submitter || form.querySelector('button[type="submit"]');
+    const originalLabel = submitButton?.textContent || '';
+    const formData = new FormData(form);
+    const decision = String(formData.get('status') || '').toLowerCase();
+
+    buttons.forEach((button) => {
+      button.disabled = true;
+      button.classList.add('cursor-wait', 'opacity-70');
+    });
+    if (submitButton) {
+      submitButton.textContent = decision === 'approved' ? 'Approving...' : 'Declining...';
+    }
+
+    try {
+      const response = await fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          Accept: 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Unable to update leave request.');
+      }
+
+      const data = await response.json();
+      if (submitButton) {
+        submitButton.textContent = decision === 'approved' ? 'Approved' : 'Declined';
+      }
+      const previousPositions = captureLeaveCardPositions();
+      await playLeaveDecisionAnimation(card, decision);
+      renderLeaveQueue(data.pending_requests || [], Number.parseInt(data.pending_count ?? '0', 10) || 0, previousPositions);
+    } catch (error) {
+      buttons.forEach((button) => {
+        button.disabled = false;
+        button.classList.remove('cursor-wait', 'opacity-70');
+      });
+      if (submitButton) {
+        submitButton.textContent = originalLabel;
+      }
+      alert(error.message || 'Unable to update leave request. Please try again.');
+    }
   });
 
   const revealOnScroll = () => {

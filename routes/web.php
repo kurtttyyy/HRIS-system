@@ -62,6 +62,7 @@ Route::controller(EmployeePageController::class)->group(function () {
     Route::get('employee/hierarchy', 'display_hierarchy')->name('employee.employeeHierarchy');
     Route::get('employee/evaluation', 'display_evaluation')->name('employee.employeeEvaluation');
     Route::get('employee/leave', 'display_leave')->name('employee.employeeLeave');
+    Route::get('employee/leave/snapshot', 'leave_snapshot')->name('employee.leave.snapshot');
     Route::get('employee/leave/{leave}/medical-receipt', 'view_leave_medical_receipt')->name('employee.leave.medicalReceipt');
     Route::get('employee/profile', 'display_profile')->name('employee.employeeProfile');
     Route::get('employee/communication', 'display_communication')->name('employee.employeeCommunication');
@@ -102,6 +103,7 @@ Route::controller(AdministratorPageController::class)->group(function () {
     Route::get('system/notifications/summary', 'notification_summary')->name('admin.adminNotifications.summary');
     Route::get('system/communication', 'display_communication')->name('admin.adminCommunication');
     Route::get('system/employee', 'display_employee')->name('admin.adminEmployee');
+    Route::get('system/employee/insert', 'display_employee_import')->name('admin.employeeImport');
     Route::get('system/leave/management', 'display_leave')->name('admin.adminLeaveManagement');
     Route::get('system/leave/management/snapshot', 'leave_management_snapshot')->name('admin.leaveManagement.snapshot');
     Route::get('system/payslip', 'display_payslip')->name('admin.adminPayslip');
@@ -154,6 +156,7 @@ Route::controller(AdministratorStoreController::class)->group(function () {
     Route::post('system/interview/{interview}/extend', 'extend_interview')->name('admin.interview.extend');
     Route::post('system/communication/send', 'send_communication_message')->name('admin.communication.send');
     Route::post('system/employee/document', 'store_document')->name('admin.addDocument');
+    Route::post('system/employee/insert/upload', 'store_employee_import_file')->name('admin.employeeImport.upload');
     Route::post('system/applicant/document/{document}/reviewed', 'mark_applicant_document_reviewed')->name('admin.applicantDocument.reviewed');
     Route::post('system/payslip/upload', 'store_payslip_file')->name('admin.uploadPayslipFile');
     Route::post('system/loads/upload', 'store_loads_file')->name('admin.uploadLoadsFile');

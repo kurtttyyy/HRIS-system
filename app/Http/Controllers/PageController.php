@@ -39,21 +39,9 @@ class PageController extends Controller
                     'password' => env('DEFAULT_ADMIN_PASSWORD', 'Kurt12345'),
                 ],
                 [
-                    'label' => 'Demo Admin',
-                    'role' => 'Admin',
-                    'email' => env('DEMO_ADMIN_EMAIL', 'demo.admin@example.com'),
-                    'password' => env('DEMO_ADMIN_PASSWORD', 'Demo12345'),
-                ],
-                [
-                    'label' => 'Employee One',
+                    'label' => 'Maria Santos Demo',
                     'role' => 'Employee',
-                    'email' => 'employee.one@example.com',
-                    'password' => 'Employee12345',
-                ],
-                [
-                    'label' => 'Employee Two',
-                    'role' => 'Employee',
-                    'email' => 'employee.two@example.com',
+                    'email' => 'demo.employee1@example.com',
                     'password' => 'Employee12345',
                 ],
             ],

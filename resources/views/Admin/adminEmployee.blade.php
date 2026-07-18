@@ -15,6 +15,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
   <style>
+    [x-cloak] {
+      display: none !important;
+    }
     body {
       font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif; transition: margin-left 0.3s ease;
     }
@@ -99,6 +102,19 @@
     .employee-card-motion:hover {
       transform: translate3d(0, -3px, 0);
       filter: none;
+    }
+    .employee-card-name,
+    .employee-card-role {
+      display: -webkit-box;
+      overflow: hidden;
+      -webkit-box-orient: vertical;
+      overflow-wrap: anywhere;
+    }
+    .employee-card-name {
+      -webkit-line-clamp: 2;
+    }
+    .employee-card-role {
+      -webkit-line-clamp: 1;
     }
     .employee-table-row-motion {
       transition: transform 220ms cubic-bezier(0.22, 0.9, 0.2, 1), background-color 220ms ease;
@@ -340,12 +356,15 @@
         showDepartmentSummary:false,
         department:@js($employeeFilters['department'] ?? 'All'),
         statusFilter:@js($employeeFilters['status'] ?? 'All'),
+        searchInput:@js($employeeFilters['search'] ?? ''),
         search:@js($employeeFilters['search'] ?? ''),
         openImageZoom: false,
         zoomImageUrl: '',
         employeeIndex: [],
         employeeRecords: [],
         employeeById: {},
+        employeeFilterSequence: 0,
+        employeeFilterLoading: false,
         normalize(value) {
           return (value ?? '').toString().trim().toLowerCase();
         },
@@ -557,6 +576,11 @@
         },
         tabMissingCount(tabName) {
           const tab = this.normalize(tabName);
+          const email = this.firstMeaningfulValue(
+            this.selectedEmployee?.email,
+            this.selectedEmployee?.employee?.email,
+            this.selectedEmployee?.applicant?.email
+          );
           const contactNumber = this.firstMeaningfulValue(
             this.selectedEmployee?.employee?.contact_number,
             this.selectedEmployee?.applicant?.phone
@@ -574,6 +598,7 @@
 
           if (tab === 'overview') {
             return this.countMissingValues([
+              email,
               contactNumber,
               this.selectedEmployee?.employee?.birthday,
               address,
@@ -666,9 +691,15 @@
             this.matchesStatus(emp.status, emp.has_missing_info)
           );
         },
+        beginEmployeeSearch() {
+          // Invalidate an older response immediately while the debounced search
+          // waits to run, and show feedback from the first typed character.
+          this.employeeFilterSequence += 1;
+          this.employeeFilterLoading = true;
+        },
         applyEmployeeDirectoryFilters() {
           const params = new URLSearchParams(window.location.search);
-          const search = (this.search ?? '').toString().trim();
+          const search = (this.searchInput ?? '').toString().trim();
           const department = (this.department ?? 'All').toString().trim();
           const status = (this.statusFilter ?? 'All').toString().trim();
 
@@ -678,7 +709,109 @@
           params.delete('page');
 
           const query = params.toString();
-          window.location.href = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+          const url = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+          this.loadEmployeeDirectoryResults(url);
+        },
+        async loadEmployeeDirectoryResults(url) {
+          const targetUrl = new URL(url, window.location.origin);
+          const sequence = ++this.employeeFilterSequence;
+
+          this.employeeFilterLoading = true;
+
+          try {
+            const response = await fetch(targetUrl.toString(), {
+              headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'text/html',
+              },
+              cache: 'no-store',
+            });
+
+            if (!response.ok) {
+              throw new Error(`Employee directory request failed (${response.status}).`);
+            }
+
+            const documentHtml = new DOMParser().parseFromString(await response.text(), 'text/html');
+            const nextResults = documentHtml.querySelector('[data-employee-directory-results]');
+            const currentResults = document.querySelector('[data-employee-directory-results]');
+            const requestedSearch = targetUrl.searchParams.get('search') ?? '';
+            const currentSearchInput = (this.searchInput ?? '').toString().trim();
+            if (
+              !nextResults ||
+              !currentResults ||
+              sequence !== this.employeeFilterSequence ||
+              requestedSearch !== currentSearchInput
+            ) {
+              return;
+            }
+
+            const alpine = window.Alpine;
+            const parentDataStack = alpine?.closestDataStack?.(currentResults) ?? [];
+
+            const replaceResults = () => {
+              Array.from(currentResults.children).forEach((child) => {
+                alpine?.destroyTree?.(child);
+              });
+              currentResults.innerHTML = nextResults.innerHTML;
+
+              const recordsJson = currentResults.querySelector('[data-employee-page-records]')?.textContent ?? '[]';
+              const records = JSON.parse(recordsJson);
+              this.employeeRecords = Array.isArray(records) ? records : [];
+              this.employeeById = Object.fromEntries(this.employeeRecords
+                .map((row) => {
+                  const userId = Number.parseInt((row?.id ?? '').toString(), 10);
+                  return Number.isFinite(userId) && userId > 0 ? [userId, row] : null;
+                })
+                .filter((entry) => Array.isArray(entry))
+              );
+
+              this.search = requestedSearch;
+              this.department = targetUrl.searchParams.get('department') ?? 'All';
+              this.statusFilter = targetUrl.searchParams.get('status') ?? 'All';
+
+              Array.from(currentResults.children).forEach((child) => {
+                // innerHTML does not inherit Alpine's component scope. Attach the
+                // existing page scope before initializing the new cards/controls.
+                if (parentDataStack.length > 0) {
+                  child._x_dataStack = parentDataStack;
+                }
+                alpine?.initTree?.(child);
+              });
+
+              const newEmployeeCards = Array.from(
+                currentResults.querySelectorAll('.employee-directory-card')
+              );
+              const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+
+              // The page-load IntersectionObserver only tracks the original cards.
+              // Explicitly reveal cards inserted by search/pagination so they do
+              // not remain at opacity: 0 until a full browser refresh.
+              window.requestAnimationFrame(() => {
+                newEmployeeCards.forEach((card, index) => {
+                  const reveal = () => card.classList.add('employee-reveal-visible');
+                  if (reduceMotion) {
+                    reveal();
+                  } else {
+                    window.setTimeout(reveal, Math.min(index, 9) * 55);
+                  }
+                });
+              });
+            };
+
+            if (alpine?.mutateDom) {
+              alpine.mutateDom(replaceResults);
+            } else {
+              replaceResults();
+            }
+
+            window.history.replaceState({}, '', `${targetUrl.pathname}${targetUrl.search}${targetUrl.hash}`);
+          } catch (error) {
+            console.error(error);
+          } finally {
+            if (sequence === this.employeeFilterSequence) {
+              this.employeeFilterLoading = false;
+            }
+          }
         },
         degreeRows(level) {
           const rows = Array.isArray(this.selectedEmployee?.applicant?.degrees)
@@ -2280,6 +2413,32 @@
     @endphp
     @include('components.adminHeader.employeeHeader', ['departmentOptions' => $departmentOptions])
 
+    <div
+      x-cloak
+      x-show="employeeFilterLoading"
+      x-transition:enter="transition ease-out duration-200"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-150"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      class="pointer-events-none fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/5 backdrop-blur-[1px]"
+      role="status"
+      aria-live="polite"
+      aria-label="Searching employees"
+    >
+      <div class="flex min-w-[15rem] flex-col items-center rounded-[1.75rem] border border-white/80 bg-white/95 px-8 py-7 shadow-[0_24px_70px_rgba(15,23,42,0.22)]">
+        <img
+          src="{{ asset('images/animation_searching.gif') }}"
+          alt=""
+          aria-hidden="true"
+          class="h-28 w-28 object-contain"
+        >
+        <p class="mt-4 text-sm font-black tracking-wide text-slate-800">AI Search</p>
+        <p class="mt-1 text-xs font-medium text-slate-500">Finding matching employees...</p>
+      </div>
+    </div>
+
     <!-- ================= DASHBOARD CONTENT ================= -->
 <div id="admin-employee-page" class="min-w-0 p-4 md:p-8 space-y-6 pt-20">
 
@@ -2451,6 +2610,7 @@
       </div>
     </div>
 
+    <div class="space-y-6" data-employee-directory-results :aria-busy="employeeFilterLoading ? 'true' : 'false'">
     <!-- Employee Cards Grid -->
     <div class="employee-card-grid flex flex-wrap gap-6" x-show="!showDepartmentSummary && viewMode === 'cards'">
 
@@ -2570,10 +2730,14 @@
           $missingCardTitle = $missingCardCount > 0
             ? 'Missing: '.$missingCardParts->implode(' | ')
             : '';
+          $employeeCardName = trim(($emp->last_name ?? '').', '.trim(($emp->first_name ?? '').' '.($emp->middle_name ?? '')), ', ');
+          $employeeCardRole = trim((string) ($emp->job_role ?? '')) !== ''
+            ? trim((string) $emp->job_role)
+            : trim((string) (data_get($emp, 'employee.position') ?? $emp->position ?? data_get($emp, 'applicant.position.title') ?? ''));
         @endphp
         <!-- Employee Card -->
         <div
-            class="employee-directory-card employee-page-reveal employee-card-motion relative bg-white rounded-xl shadow-md overflow-hidden w-72"
+            class="employee-directory-card employee-page-reveal employee-card-motion relative flex min-h-[365px] w-72 flex-col overflow-hidden rounded-xl bg-white shadow-md"
             style="--employee-reveal-delay: 0ms;"
             x-show="matchesDepartment(@js($resolveDepartment($emp))) &&
                     matchesSearch(@js(trim(($emp->last_name ?? '').', '.trim(($emp->first_name ?? '').' '.($emp->middle_name ?? '')), ', '))) &&
@@ -2599,9 +2763,13 @@
                 </div>
             </div>
 
-            <div class="p-4 mt-7">
-                <h3 class="font-bold text-gray-800 text-lg text-center">{{ trim(($emp->last_name ?? '').', '.trim(($emp->first_name ?? '').' '.($emp->middle_name ?? '')), ', ') }}</h3>
-                <p class="text-gray-500 text-sm text-center">{{ trim((string) ($emp->job_role ?? '')) !== '' ? $emp->job_role : ($emp->employee->position ?? $emp->position ?? $emp->applicant->position->title ?? '') }}</p>
+            <div class="mt-7 flex flex-1 flex-col p-4">
+                <div class="flex min-h-[3.5rem] items-center justify-center">
+                  <h3 class="employee-card-name text-center text-lg font-bold leading-6 text-gray-800" title="{{ $employeeCardName }}">{{ $employeeCardName }}</h3>
+                </div>
+                <div class="flex min-h-[1.5rem] items-center justify-center">
+                  <p class="employee-card-role max-w-full text-center text-sm text-gray-500" title="{{ $employeeCardRole }}">{{ $employeeCardRole }}</p>
+                </div>
 
                 <div class="mt-4 space-y-1 text-gray-500 text-sm">
                     <div class="flex items-center gap-2">
@@ -2618,7 +2786,7 @@
                     </div>
                 </div>
 
-                <hr class="my-3">
+                <hr class="mb-3 mt-auto">
 
                 <div class="flex justify-between items-center">
                     <div class="flex items-center -space-x-">
@@ -2677,7 +2845,7 @@
                 const params = new URLSearchParams(window.location.search);
                 params.set('per_page', $event.target.value);
                 params.delete('page');
-                window.location.href = `${window.location.pathname}?${params.toString()}`;
+                loadEmployeeDirectoryResults(`${window.location.pathname}?${params.toString()}`);
               "
             >
               @foreach ([5, 10, 15, 25] as $pageSize)
@@ -2692,7 +2860,7 @@
                 <i class="fa-solid fa-chevron-left text-xs"></i>
               </span>
             @else
-              <a href="{{ $employeePaginator->previousPageUrl() }}" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
+              <a href="{{ $employeePaginator->previousPageUrl() }}" @click.prevent="loadEmployeeDirectoryResults($event.currentTarget.href)" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
                 <i class="fa-solid fa-chevron-left text-xs"></i>
               </a>
             @endif
@@ -2703,7 +2871,7 @@
             @endphp
 
             @if ($paginationStart > 1)
-              <a href="{{ $employeePaginator->url(1) }}" class="inline-flex h-10 min-w-10 items-center justify-center rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">1</a>
+              <a href="{{ $employeePaginator->url(1) }}" @click.prevent="loadEmployeeDirectoryResults($event.currentTarget.href)" class="inline-flex h-10 min-w-10 items-center justify-center rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">1</a>
               @if ($paginationStart > 2)
                 <span class="inline-flex h-10 min-w-10 items-center justify-center px-2 text-sm font-bold text-slate-400">...</span>
               @endif
@@ -2713,7 +2881,7 @@
               @if ($page === $employeePaginator->currentPage())
                 <span class="inline-flex h-10 min-w-10 items-center justify-center rounded-xl bg-emerald-600 px-3 text-sm font-bold text-white">{{ $page }}</span>
               @else
-                <a href="{{ $employeePaginator->url($page) }}" class="inline-flex h-10 min-w-10 items-center justify-center rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">{{ $page }}</a>
+                <a href="{{ $employeePaginator->url($page) }}" @click.prevent="loadEmployeeDirectoryResults($event.currentTarget.href)" class="inline-flex h-10 min-w-10 items-center justify-center rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">{{ $page }}</a>
               @endif
             @endforeach
 
@@ -2721,11 +2889,11 @@
               @if ($paginationEnd < $employeePaginator->lastPage() - 1)
                 <span class="inline-flex h-10 min-w-10 items-center justify-center px-2 text-sm font-bold text-slate-400">...</span>
               @endif
-              <a href="{{ $employeePaginator->url($employeePaginator->lastPage()) }}" class="inline-flex h-10 min-w-10 items-center justify-center rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">{{ $employeePaginator->lastPage() }}</a>
+              <a href="{{ $employeePaginator->url($employeePaginator->lastPage()) }}" @click.prevent="loadEmployeeDirectoryResults($event.currentTarget.href)" class="inline-flex h-10 min-w-10 items-center justify-center rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">{{ $employeePaginator->lastPage() }}</a>
             @endif
 
             @if ($employeePaginator->hasMorePages())
-              <a href="{{ $employeePaginator->nextPageUrl() }}" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
+              <a href="{{ $employeePaginator->nextPageUrl() }}" @click.prevent="loadEmployeeDirectoryResults($event.currentTarget.href)" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
                 <i class="fa-solid fa-chevron-right text-xs"></i>
               </a>
             @else
@@ -2932,6 +3100,8 @@
       </div>
     </div>
 
+    <script type="application/json" data-employee-page-records>@json($employee->values())</script>
+    </div>
 
 </div>
 
@@ -3000,27 +3170,27 @@
         <div class="flex gap-6 px-6 pt-4 border-b text-sm">
           <button @click="tab='overview'" :class="tab==='overview' ? 'text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-2' : 'text-gray-500'" class="inline-flex items-center gap-1.5">
             <span>Overview</span>
-            <span x-show="tabMissingCount('overview') > 0" class="inline-flex min-w-[1.2rem] items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold leading-none text-white">!</span>
+            <span x-show="tabMissingCount('overview') > 0" class="inline-flex min-w-[1.2rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">!</span>
           </button>
           <button @click="tab='personal'" :class="tab==='personal' ? 'text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-2' : 'text-gray-500'" class="inline-flex items-center gap-1.5">
             <span>Personal Details</span>
-            <span x-show="tabMissingCount('personal') > 0" class="inline-flex min-w-[1.2rem] items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold leading-none text-white">!</span>
+            <span x-show="tabMissingCount('personal') > 0" class="inline-flex min-w-[1.2rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">!</span>
           </button>
           <button @click="tab='performance'" :class="tab==='performance' ? 'text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-2' : 'text-gray-500'" class="inline-flex items-center gap-1.5">
             <span>Performance</span>
-            <span x-show="tabMissingCount('performance') > 0" class="inline-flex min-w-[1.2rem] items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold leading-none text-white">!</span>
+            <span x-show="tabMissingCount('performance') > 0" class="inline-flex min-w-[1.2rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">!</span>
           </button>
           <button @click="tab='documents'" :class="tab==='documents' ? 'text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-2' : 'text-gray-500'" class="inline-flex items-center gap-1.5">
             <span>Documents</span>
-            <span x-show="tabMissingCount('documents') > 0" class="inline-flex min-w-[1.2rem] items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold leading-none text-white">!</span>
+            <span x-show="tabMissingCount('documents') > 0" class="inline-flex min-w-[1.2rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">!</span>
           </button>
           <button @click="tab='record'" :class="tab==='record' ? 'text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-2' : 'text-gray-500'" class="inline-flex items-center gap-1.5">
             <span>Service Record</span>
-            <span x-show="tabMissingCount('record') > 0" class="inline-flex min-w-[1.2rem] items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold leading-none text-white">!</span>
+            <span x-show="tabMissingCount('record') > 0" class="inline-flex min-w-[1.2rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">!</span>
           </button>
           <button @click="tab='biometric'" :class="tab==='biometric' ? 'text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-2' : 'text-gray-500'" class="inline-flex items-center gap-1.5">
             <span>Biometric</span>
-            <span x-show="tabMissingCount('biometric') > 0" class="inline-flex min-w-[1.2rem] items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold leading-none text-white">!</span>
+            <span x-show="tabMissingCount('biometric') > 0" class="inline-flex min-w-[1.2rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">!</span>
           </button>
         </div>
 

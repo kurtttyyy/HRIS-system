@@ -283,6 +283,10 @@
   .admin-sidebar.is-open .admin-sidebar-count-badge {
     display: inline-flex;
   }
+  .admin-sidebar-count-badge[hidden],
+  .admin-sidebar-alert-dot[hidden] {
+    display: none !important;
+  }
 
   .admin-sidebar-overlay {
     position: fixed;
@@ -411,16 +415,12 @@
           : 'text-white hover:bg-green-600/30' }}">
       <span class="relative inline-flex w-5 items-center justify-center">
         <i class="fa-solid fa-clipboard"></i>
-        @if ($adminPendingLeaveCount > 0)
-          <span class="admin-sidebar-alert-dot group-hover:hidden" aria-hidden="true">!</span>
-        @endif
+        <span data-admin-pending-leave-dot class="admin-sidebar-alert-dot group-hover:hidden" aria-hidden="true" {{ $adminPendingLeaveCount > 0 ? '' : 'hidden' }}>!</span>
       </span>
       <span class="admin-sidebar-text whitespace-nowrap inline-block max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300">Leave Management</span>
-      @if ($adminPendingLeaveCount > 0)
-        <span class="admin-sidebar-count-badge ml-auto min-w-[1.4rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white">
-          {{ $adminPendingLeaveCount > 99 ? '99+' : $adminPendingLeaveCount }}
-        </span>
-      @endif
+      <span data-admin-pending-leave-count class="admin-sidebar-count-badge ml-auto min-w-[1.4rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white" {{ $adminPendingLeaveCount > 0 ? '' : 'hidden' }}>
+        {{ $adminPendingLeaveCount > 99 ? '99+' : $adminPendingLeaveCount }}
+      </span>
     </a>
 
     <!-- ✅ Hiring Dropdown (FIXED) -->
@@ -950,6 +950,17 @@
         }
       });
     });
+
+    window.updateAdminPendingLeaveCount = (value) => {
+      const count = Math.max(Number.parseInt(value ?? '0', 10) || 0, 0);
+      document.querySelectorAll('[data-admin-pending-leave-count]').forEach((badge) => {
+        badge.textContent = count > 99 ? '99+' : String(count);
+        badge.hidden = count === 0;
+      });
+      document.querySelectorAll('[data-admin-pending-leave-dot]').forEach((dot) => {
+        dot.hidden = count === 0;
+      });
+    };
 
   })();
 </script>

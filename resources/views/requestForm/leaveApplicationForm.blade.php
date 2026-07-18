@@ -186,12 +186,12 @@
                     <div>
                         <p class="mb-2 font-medium">Type of Leave</p>
                         <div>
-                            <label class="block"><input id="leave-type-vacation" type="checkbox" class="mr-2">Vacation</label>
-                            <label class="block"><input id="leave-type-sick" type="checkbox" class="mr-2">Sick</label>
-                            <label class="block"><input type="checkbox" class="mr-2">Maternity</label>
-                            <label class="block"><input type="checkbox" class="mr-2">Paternity</label>
-                            <label class="block"><input type="checkbox" class="mr-2">Others (please specify)</label>
-                            <input type="text" class="mt-1 w-full rounded border border-black px-3 py-1 text-base leading-tight" placeholder="Specify other type of leave">
+                            <label class="block"><input id="leave-type-vacation" name="leave_type_choice" type="radio" value="Annual Leave" class="mr-2">Vacation</label>
+                            <label class="block"><input id="leave-type-sick" name="leave_type_choice" type="radio" value="Sick Leave" class="mr-2">Sick</label>
+                            <label class="block"><input id="leave-type-maternity" name="leave_type_choice" type="radio" value="Maternity Leave" class="mr-2">Maternity</label>
+                            <label class="block"><input id="leave-type-paternity" name="leave_type_choice" type="radio" value="Paternity Leave" class="mr-2">Paternity</label>
+                            <label class="block"><input id="leave-type-other" name="leave_type_choice" type="radio" value="Other Leave" class="mr-2">Others (please specify)</label>
+                            <input id="leave-type-other-text" type="text" class="mt-1 w-full rounded border border-black px-3 py-1 text-base leading-tight" placeholder="Specify other type of leave">
                         </div>
                     </div>
 
@@ -429,6 +429,13 @@
 
     function validateLeaveRequestBalance() {
         const requestedDaysInput = document.getElementById('leave-days-requested');
+        const selectedType = document.querySelector('input[name="leave_type_choice"]:checked');
+
+        if (!selectedType) {
+            document.getElementById('leave-type-vacation')?.focus();
+            alert('Please select the type of leave.');
+            return false;
+        }
 
         if (!requestedDaysInput) {
             return true;
@@ -442,20 +449,14 @@
     }
 
     function deriveLeaveTypeValue() {
-        const vacationCheckbox = document.getElementById('leave-type-vacation');
-        const sickCheckbox = document.getElementById('leave-type-sick');
+        const selectedType = document.querySelector('input[name="leave_type_choice"]:checked');
+        if (!selectedType) return '';
 
-        if (vacationCheckbox?.checked && sickCheckbox?.checked) {
-            return 'Vacation/Sick';
-        }
-        if (vacationCheckbox?.checked) {
-            return 'Annual Leave';
-        }
-        if (sickCheckbox?.checked) {
-            return 'Sick Leave';
+        if (selectedType.id === 'leave-type-other') {
+            return document.getElementById('leave-type-other-text')?.value.trim() || 'Other Leave';
         }
 
-        return '';
+        return selectedType.value;
     }
 
     function updateLeaveMedicalCertificateField() {
@@ -639,9 +640,11 @@
 
     document.getElementById('leave-type-vacation')?.addEventListener('change', validateLeaveRequestBalance);
     document.getElementById('leave-type-sick')?.addEventListener('change', validateLeaveRequestBalance);
-    document.getElementById('leave-type-vacation')?.addEventListener('change', updateLeaveSummaryTable);
-    document.getElementById('leave-type-sick')?.addEventListener('change', updateLeaveSummaryTable);
-    document.getElementById('leave-type-sick')?.addEventListener('change', updateLeaveMedicalCertificateField);
+    document.querySelectorAll('input[name="leave_type_choice"]').forEach((input) => {
+        input.addEventListener('change', updateLeaveSummaryTable);
+        input.addEventListener('change', updateLeaveMedicalCertificateField);
+    });
+    document.getElementById('leave-type-other-text')?.addEventListener('input', updateLeaveSummaryTable);
     document.getElementById('leave-medical-certificate')?.addEventListener('change', updateLeaveMedicalCertificateName);
     document.getElementById('leave-days-requested')?.addEventListener('input', function () {
         validateLeaveRequestBalance();

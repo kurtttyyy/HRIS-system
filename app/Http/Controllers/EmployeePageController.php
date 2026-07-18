@@ -553,6 +553,7 @@ class EmployeePageController extends Controller
             })
             ->orderByDesc('created_at')
             ->get();
+        $leaveSnapshotToken = $this->buildEmployeeLeaveSnapshotToken($monthApplications);
 
         $approvedMonthApplications = $monthApplications
             ->filter(function ($application) {
@@ -723,8 +724,59 @@ class EmployeePageController extends Controller
             'totalEarnedDays',
             'formEarnedVacation',
             'formEarnedSick',
-            'formEarnedTotal'
+            'formEarnedTotal',
+            'leaveSnapshotToken'
         ));
+    }
+
+    public function leave_snapshot(Request $request)
+    {
+        $user = Auth::user();
+        abort_unless($user, 401);
+
+        $selectedMonth = trim((string) $request->query('month', now()->format('Y-m')));
+        try {
+            $monthCursor = Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
+        } catch (\Throwable $e) {
+            $monthCursor = now()->startOfMonth();
+            $selectedMonth = $monthCursor->format('Y-m');
+        }
+
+        $applications = LeaveApplication::query()
+            ->where('user_id', $user->id)
+            ->where(function ($query) use ($monthCursor) {
+                $query
+                    ->where(function ($filingDateQuery) use ($monthCursor) {
+                        $filingDateQuery
+                            ->whereNotNull('filing_date')
+                            ->whereYear('filing_date', $monthCursor->year)
+                            ->whereMonth('filing_date', $monthCursor->month);
+                    })
+                    ->orWhere(function ($createdAtQuery) use ($monthCursor) {
+                        $createdAtQuery
+                            ->whereNull('filing_date')
+                            ->whereYear('created_at', $monthCursor->year)
+                            ->whereMonth('created_at', $monthCursor->month);
+                    });
+            })
+            ->orderByDesc('created_at')
+            ->get(['id', 'status', 'leave_type', 'number_of_working_days', 'updated_at']);
+
+        return response()->json([
+            'month' => $selectedMonth,
+            'token' => $this->buildEmployeeLeaveSnapshotToken($applications),
+        ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    }
+
+    private function buildEmployeeLeaveSnapshotToken($applications): string
+    {
+        return hash('sha256', json_encode(collect($applications)->map(fn ($application) => [
+            'id' => (int) $application->id,
+            'status' => strtolower(trim((string) ($application->status ?? 'pending'))),
+            'leave_type' => trim((string) ($application->leave_type ?? '')),
+            'days' => (float) ($application->number_of_working_days ?? 0),
+            'updated_at' => optional($application->updated_at)?->format('Y-m-d H:i:s.u'),
+        ])->values()->all()));
     }
 
     public function view_leave_medical_receipt(LeaveApplication $leave)
@@ -2557,6 +2609,10 @@ class EmployeePageController extends Controller
 
             $notice = (string) optional($metaDocuments->firstWhere('type', $noticeType))->filename;
 
+            if ($requiredDocuments === []) {
+                $requiredDocuments = $this->defaultRequiredDocumentConfig()['required_documents'];
+            }
+
             return [
                 'required_documents' => $requiredDocuments,
                 'document_notice' => $notice,
@@ -2580,6 +2636,10 @@ class EmployeePageController extends Controller
             return $this->defaultRequiredDocumentConfig();
         }
 
+        if (empty(array_filter((array) ($entry['required_documents'] ?? []), fn ($item) => trim((string) $item) !== ''))) {
+            $entry['required_documents'] = $this->defaultRequiredDocumentConfig()['required_documents'];
+        }
+
         return $entry;
     }
 
@@ -2589,7 +2649,7 @@ class EmployeePageController extends Controller
             'required_documents' => [
                 'Resume/CV',
                 'Cover Letter',
-                'Personal Data Sheet',
+                'Personal Data Sheet (PDS)',
                 'Transcript Of Records',
                 'Diploma',
                 'PRC License/Board Rating',

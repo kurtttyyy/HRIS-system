@@ -114,7 +114,7 @@
                 $requiredDocuments = collect([
                     'Resume/CV',
                     'Cover Letter',
-                    'Personal Data Sheet',
+                    'Personal Data Sheet (PDS)',
                     'Transcript Of Records',
                     'Diploma',
                     'PRC License/Board Rating',

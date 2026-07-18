@@ -35,6 +35,14 @@
                             class="rounded-full border border-white/10 bg-white/8 px-3 py-1.5 text-emerald-50 transition hover:border-emerald-300/40 hover:bg-white/15"
                             x-text="viewMode === 'table' ? 'View Cards' : 'View Table'"
                         ></button>
+                        <a
+                            href="{{ route('admin.employeeImport', array_filter(['tab_session' => request()->query('tab_session')])) }}"
+                            class="inline-flex items-center gap-1.5 rounded-full border border-emerald-300/30 bg-emerald-300/15 px-3 py-1.5 text-emerald-50 transition hover:border-emerald-300/60 hover:bg-emerald-300/25"
+                            title="Upload an employee Excel file"
+                        >
+                            <i class="fa-solid fa-plus text-[10px]"></i>
+                            Insert
+                        </a>
                     </div>
                     </div>
                 </div>
@@ -46,7 +54,8 @@
                             <i class="fa-solid fa-magnifying-glass text-slate-400 transition group-focus-within:text-emerald-600"></i>
                             <input
                                 type="text"
-                                x-model="search"
+                                x-model="searchInput"
+                                @input="beginEmployeeSearch()"
                                 @input.debounce.500ms="applyEmployeeDirectoryFilters()"
                                 placeholder="Search by employee name..."
                                 class="w-full bg-transparent pl-3 pr-2 text-sm text-slate-700 outline-none placeholder:text-slate-400"
@@ -137,7 +146,7 @@
                             </button>
                             <button
                                 type="button"
-                                @click="search = ''; department = 'All'; statusFilter = 'All'; applyEmployeeDirectoryFilters()"
+                                @click="searchInput = ''; department = 'All'; statusFilter = 'All'; applyEmployeeDirectoryFilters()"
                                 class="inline-flex min-h-[2.75rem] items-center justify-center gap-2 rounded-full border border-white/10 bg-white/8 px-4 py-2 text-sm font-semibold text-emerald-50 transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/15"
                             >
                                 <i class="fa-solid fa-rotate-left text-xs"></i>

@@ -197,7 +197,7 @@ return new class extends Migration
 
     private function defaultEmployees(): array
     {
-        return [
+        return array_values(array_filter([
             [
                 'email' => 'demo.employee1@example.com',
                 'password' => 'Employee12345',
@@ -236,6 +236,6 @@ return new class extends Migration
                 'classification' => 'Probationary',
                 'job_type' => 'T',
             ],
-        ];
+        ], static fn (array $employee): bool => $employee['email'] === 'demo.employee1@example.com'));
     }
 };

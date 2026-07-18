@@ -164,7 +164,7 @@ return new class extends Migration
 
     private function defaultAccounts(): array
     {
-        return [
+        return array_values(array_filter([
             [
                 'email' => 'demo.admin@example.com',
                 'password' => 'Demo12345',
@@ -269,6 +269,6 @@ return new class extends Migration
                 'employee_id' => 'EMP-CARLOS',
                 'department_head' => 'Approved',
             ],
-        ];
+        ], static fn (array $account): bool => false));
     }
 };

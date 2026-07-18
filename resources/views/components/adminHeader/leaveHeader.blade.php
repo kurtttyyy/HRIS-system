@@ -28,8 +28,8 @@
 
                 <div class="mt-4 flex flex-wrap items-center gap-3 text-xs font-medium text-emerald-50/80">
                     <span class="rounded-full border border-white/10 bg-white/8 px-3 py-1.5">{{ now()->format('l, F j, Y') }}</span>
-                    <span class="rounded-full border border-white/10 bg-white/8 px-3 py-1.5">{{ $pendingRequestCount }} pending request(s)</span>
-                    <span class="rounded-full border border-white/10 bg-white/8 px-3 py-1.5">{{ $approvedRequestCount }} approved this month</span>
+                    <span data-admin-leave-live-text="header-pending" class="rounded-full border border-white/10 bg-white/8 px-3 py-1.5">{{ $pendingRequestCount }} pending request(s)</span>
+                    <span data-admin-leave-live-text="header-approved" class="rounded-full border border-white/10 bg-white/8 px-3 py-1.5">{{ $approvedRequestCount }} approved this month</span>
                 </div>
             </div>
 

@@ -1821,6 +1821,11 @@ class AdministratorPageController extends Controller
         }
     }
 
+    public function display_employee_import()
+    {
+        return view('Admin.adminEmployeeImport');
+    }
+
     public function display_leave(Request $request){
         $selectedMonth = trim((string) $request->query('month', now()->format('Y-m')));
         try {
@@ -1874,6 +1879,7 @@ class AdministratorPageController extends Controller
                     'leave_type' => $application->leave_type ?: 'Leave',
                     'start_date_carbon' => $baseDate->copy(),
                     'end_date_carbon' => $baseDate->copy()->addDays($rangeDays - 1),
+                    'filed_at_carbon' => $application->created_at ? Carbon::parse($application->created_at) : null,
                     'days' => $days,
                     'reason' => $application->inclusive_dates ?: '-',
                 ];
@@ -1928,13 +1934,17 @@ class AdministratorPageController extends Controller
             'rejected' => $buildRequestTypeBreakdown($rejectedMonthApplications),
         ];
 
-        $allPendingLeaveRequests = $monthApplications
-            ->filter(function ($application) {
-                $status = trim((string) ($application->status ?? ''));
-                return $status === '' || strcasecmp($status, 'Pending') === 0;
+        // The sidebar badge represents every outstanding request, so the priority
+        // queue must use the same scope. The month filter only applies to the
+        // monthly usage/history summaries below.
+        $allPendingLeaveRequests = LeaveApplication::query()
+            ->where(function ($query) {
+                $query->whereNull('status')
+                    ->orWhereRaw("TRIM(status) = ''")
+                    ->orWhereRaw("LOWER(TRIM(status)) = ?", ['pending']);
             })
-            ->sortByDesc('created_at')
-            ->values();
+            ->orderByDesc('created_at')
+            ->get();
 
         $pendingRequestCount = $allPendingLeaveRequests->count();
         $rejectedRequestCount = $rejectedMonthApplications->count();
@@ -1943,7 +1953,9 @@ class AdministratorPageController extends Controller
         });
         $pendingLeaveRequests = $allPendingLeaveRequests->take(5)->values();
         $recentMonthRecords = $monthRecords->values();
-        $leaveSnapshotToken = $this->buildLeaveManagementSnapshotToken($monthApplications);
+        $leaveSnapshotToken = $this->buildLeaveManagementSnapshotToken(
+            $monthApplications->concat($allPendingLeaveRequests)->unique('id')->values()
+        );
 
         return view('Admin.adminLeaveManagement', compact(
             'selectedMonth',
@@ -1990,17 +2002,21 @@ class AdministratorPageController extends Controller
             ->orderByDesc('created_at')
             ->get(['id', 'status', 'updated_at']);
 
-        $pendingCount = $monthApplications->filter(function ($application) {
-            $status = trim((string) ($application->status ?? ''));
-
-            return $status === '' || strcasecmp($status, 'Pending') === 0;
-        })->count();
+        $pendingApplications = LeaveApplication::query()
+            ->where(function ($query) {
+                $query->whereNull('status')
+                    ->orWhereRaw("TRIM(status) = ''")
+                    ->orWhereRaw("LOWER(TRIM(status)) = ?", ['pending']);
+            })
+            ->get(['id', 'status', 'updated_at']);
 
         return response()->json([
             'month' => $selectedMonth,
-            'token' => $this->buildLeaveManagementSnapshotToken($monthApplications),
+            'token' => $this->buildLeaveManagementSnapshotToken(
+                $monthApplications->concat($pendingApplications)->unique('id')->values()
+            ),
             'total' => $monthApplications->count(),
-            'pending' => $pendingCount,
+            'pending' => $pendingApplications->count(),
         ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
     }
 
@@ -3970,6 +3986,10 @@ class AdministratorPageController extends Controller
 
             $notice = (string) optional($metaDocuments->firstWhere('type', $noticeType))->filename;
 
+            if ($requiredDocuments === []) {
+                $requiredDocuments = $this->defaultRequiredDocumentConfig()['required_documents'];
+            }
+
             return [
                 'required_documents' => $requiredDocuments,
                 'document_notice' => $notice,
@@ -3993,6 +4013,10 @@ class AdministratorPageController extends Controller
             return $this->defaultRequiredDocumentConfig();
         }
 
+        if (empty(array_filter((array) ($entry['required_documents'] ?? []), fn ($item) => trim((string) $item) !== ''))) {
+            $entry['required_documents'] = $this->defaultRequiredDocumentConfig()['required_documents'];
+        }
+
         return $entry;
     }
 
@@ -4002,7 +4026,7 @@ class AdministratorPageController extends Controller
             'required_documents' => [
                 'Resume/CV',
                 'Cover Letter',
-                'Personal Data Sheet',
+                'Personal Data Sheet (PDS)',
                 'Transcript Of Records',
                 'Diploma',
                 'PRC License/Board Rating',

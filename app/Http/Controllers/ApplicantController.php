@@ -436,6 +436,7 @@ class ApplicantController extends Controller
             'documents.*.file' => 'nullable',
             'documents.0.file' => ($hasDraftDocument(0) ? 'nullable' : 'required').'|file|mimes:pdf,doc,docx|max:5120',
             'documents.1.file' => ($hasDraftDocument(1) ? 'nullable' : 'required').'|file|mimes:pdf,doc,docx|max:5120',
+            'documents.2.file' => ($hasDraftDocument(2) ? 'nullable' : 'required').'|file|mimes:pdf,doc,docx|max:5120',
             'documents.3.file' => ($hasDraftDocument(3) ? 'nullable' : 'required').'|file|mimes:pdf,doc,docx|max:5120',
             'documents.4.file' => 'nullable|array',
             'documents.4.file.*' => 'file|mimes:pdf,doc,docx|max:5120',

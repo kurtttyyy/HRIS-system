@@ -26,6 +26,7 @@ use App\Support\ActivityChangeLogger;
 use App\Support\EmployeeAccountStatusManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -587,6 +588,495 @@ class AdministratorStoreController extends Controller
         }
 
         return back()->with('success', 'Payslip file uploaded successfully.');
+    }
+
+    public function store_employee_import_file(Request $request)
+    {
+        $attrs = $request->validate([
+            'employee_file' => 'required|file|mimes:xlsx,csv|max:10240',
+        ]);
+
+        $file = $attrs['employee_file'];
+        if (!$file->isValid()) {
+            return back()->withErrors(['employee_file' => 'Invalid employee spreadsheet upload.']);
+        }
+
+        $originalName = $file->getClientOriginalName();
+        $expectedBaseName = '201-file-'.Carbon::now('Asia/Manila')->format('M-Y');
+        $uploadedBaseName = pathinfo($originalName, PATHINFO_FILENAME);
+        if (strcasecmp($uploadedBaseName, $expectedBaseName) !== 0) {
+            return back()->withErrors([
+                'employee_file' => "Invalid filename. Rename the file to {$expectedBaseName}.xlsx or {$expectedBaseName}.csv.",
+            ]);
+        }
+
+        try {
+            $extension = strtolower((string) $file->getClientOriginalExtension());
+            $rawRows = $extension === 'xlsx'
+                ? $this->extractRawRowsFromXlsx($file->getRealPath(), '201 file', true)
+                : $this->extractRawRowsFromCsv($file->getRealPath());
+            $rows = $this->mapEmployeeImportRows($rawRows);
+        } catch (\Throwable $exception) {
+            return back()->withErrors([
+                'employee_file' => $exception->getMessage(),
+            ]);
+        }
+
+        if (empty($rows)) {
+            return back()->withErrors([
+                'employee_file' => 'No employee rows were found. Put the column headers on the first populated row of the 201 file worksheet.',
+            ]);
+        }
+
+        $created = 0;
+        $skipped = 0;
+        $warnings = [];
+        $originalBcryptRounds = (int) config('hashing.bcrypt.rounds', 12);
+
+        // A 201 file can contain hundreds of employees. Imported passwords are
+        // temporary, so use a still-secure but faster bcrypt cost for this batch.
+        config(['hashing.bcrypt.rounds' => min($originalBcryptRounds, 10)]);
+        set_time_limit(300);
+
+        try {
+            foreach ($rows as $index => $row) {
+                $sheetRow = $index + 2;
+
+                try {
+                    $result = DB::transaction(fn () => $this->createEmployeeAccountFromImportRow($row));
+                    if ($result === null) {
+                        continue;
+                    }
+                    $created++;
+                } catch (\Throwable $exception) {
+                    $skipped++;
+                    if (count($warnings) < 50) {
+                        $warnings[] = [
+                            'row' => $sheetRow,
+                            'name' => $this->employeeImportWarningValue($row, [
+                                'name', 'employee_name', 'full_name', 'first_name', 'firstname',
+                            ]),
+                            'employee_id' => $this->employeeImportWarningValue($row, [
+                                'employee_id', 'employee_number', 'employee_no', 'id_number',
+                            ]),
+                            'reason' => $exception->getMessage(),
+                        ];
+                    }
+                }
+            }
+        } finally {
+            config(['hashing.bcrypt.rounds' => $originalBcryptRounds]);
+        }
+
+        $storedName = now()->format('Ymd_His').'_'.preg_replace('/[^A-Za-z0-9._-]/', '_', $originalName);
+        $file->storeAs('employee_imports', $storedName, 'local');
+
+        if ($created === 0) {
+            return back()
+                ->withErrors(['employee_file' => 'No accounts were created. Review the row details below.'])
+                ->with('import_warnings', $warnings)
+                ->with('import_skipped_count', $skipped);
+        }
+
+        $message = "{$created} employee account".($created === 1 ? '' : 's')." created successfully from '{$originalName}'.";
+        if ($skipped > 0) {
+            $message .= " {$skipped} row(s) were skipped.";
+        }
+
+        return back()
+            ->with('success', $message)
+            ->with('import_warnings', $warnings)
+            ->with('import_skipped_count', $skipped);
+    }
+
+    private function employeeImportWarningValue(array $row, array $keys): string
+    {
+        foreach ($keys as $key) {
+            $value = trim((string) ($row[$key] ?? ''));
+            if ($value !== '') {
+                return $value;
+            }
+        }
+
+        return '—';
+    }
+
+    private function createEmployeeAccountFromImportRow(array $row): ?User
+    {
+        $pick = static function (array $keys) use ($row): ?string {
+            foreach ($keys as $key) {
+                $value = trim((string) ($row[$key] ?? ''));
+                if ($value !== '') {
+                    return $value;
+                }
+            }
+
+            return null;
+        };
+
+        $firstName = $pick(['first_name', 'firstname', 'given_name']);
+        $lastName = $pick(['last_name', 'lastname', 'surname', 'family_name']);
+        $middleName = $pick([
+            'middle_name', 'middlename', 'middle', 'middle_initial',
+            'middle_initial_name', 'mi', 'm_i', 'middle_name_m_i',
+        ]);
+        $fullName = $pick(['name', 'employee_name', 'full_name']);
+        $employeeId = $this->normalizeEmployeeImportId($pick(['employee_id', 'employee_number', 'employee_no', 'id_number']));
+
+        if ((!$firstName || !$lastName) && $fullName) {
+            [$parsedFirstName, $parsedMiddleName, $parsedLastName] = $this->parseEmployeeImportName($fullName);
+            $firstName = $firstName ?: $parsedFirstName;
+            $middleName = $middleName ?: $parsedMiddleName;
+            $lastName = $lastName ?: $parsedLastName;
+        }
+
+        $password = $pick(['password', 'temporary_password', 'temp_password']) ?: Str::random(64);
+
+        if (!$firstName && !$lastName && !$employeeId) {
+            return null;
+        }
+        if (!$firstName || !$lastName) {
+            throw new \RuntimeException('First Name and Last Name are required.');
+        }
+        if (!$employeeId) {
+            throw new \RuntimeException('ID number is required.');
+        }
+        if (!$password || strlen($password) < 8) {
+            throw new \RuntimeException('Password must contain at least 8 characters.');
+        }
+        if ($employeeId && Employee::query()->where('employee_id', $employeeId)->exists()) {
+            throw new \RuntimeException("Employee ID {$employeeId} already exists.");
+        }
+
+        $department = $pick(['department', 'office_department', 'office', 'unit']);
+        $position = $pick(['position', 'job_position', 'job_title', 'designation']);
+        $resignedDate = $this->normalizeDate($pick(['date_resigned', 'resignation_date']));
+
+        $user = User::withoutEvents(fn () => User::create([
+            'first_name' => $firstName,
+            'middle_name' => $middleName ?: '',
+            'last_name' => $lastName,
+            'email' => null,
+            'password' => $password,
+            'role' => 'Employee',
+            'job_role' => $position ?: 'Employee',
+            'position' => $position ?: 'Employee',
+            'department' => $department ?: 'Unassigned',
+            'department_head' => $pick(['department_head', 'head_of_department']),
+            'status' => 'Approved',
+            'account_status' => $resignedDate ? 'Inactive' : 'Active',
+        ]));
+
+        $employeeValues = [
+            'employee_id' => $employeeId,
+            'email' => null,
+            'employement_date' => $this->normalizeDate($pick(['employment_date', 'employement_date', 'date_hired', 'hire_date'])),
+            'birthday' => $this->normalizeDate($pick(['birthday', 'birth_date', 'date_of_birth'])),
+            'account_number' => $pick(['account_number', 'account_no', 'bank_account_number']),
+            'sex' => $pick(['sex', 'gender']),
+            'civil_status' => $pick(['civil_status', 'marital_status']),
+            'contact_number' => $pick(['contact_number', 'contact_no', 'phone', 'phone_number', 'mobile_number']),
+            'address' => $pick(['address', 'home_address', 'residential_address']),
+            'department' => $department,
+            'position' => $position,
+            'classification' => $pick(['classification', 'employment_status', 'rank']),
+            'classification_salary' => $pick(['classification_salary', 'salary_classification', 'grade']),
+            'job_type' => $this->normalizeEmployeeJobType($pick(['job_type', 'employee_type', 'class'])),
+            'emergency_contact_name' => $pick(['emergency_contact_name']),
+            'emergency_contact_relationship' => $pick(['emergency_contact_relationship', 'emergency_contact_relation']),
+            'emergency_contact_number' => $pick(['emergency_contact_number', 'emergency_phone']),
+        ];
+
+        $employmentHistory = $pick(['employment_history', 'employement_history']);
+        if ($employmentHistory && Schema::hasColumn('employees', 'service_record_rows')) {
+            $employeeValues['service_record_rows'] = [[
+                'from_date' => $employeeValues['employement_date'] ?? '',
+                'to_date' => $resignedDate ?: '',
+                'designation' => $position ?: '',
+                'status' => $employeeValues['classification'] ?? '',
+                'salary' => $pick(['salary', 'monthly_salary', 'basic_salary']) ?: '',
+                'office' => $department ?: '',
+                'separation_date' => $resignedDate ?: '',
+                'separation_cause' => $resignedDate ? 'Resigned' : '',
+                'remarks' => $employmentHistory,
+            ]];
+        }
+
+        $employee = Employee::query()->firstOrNew(['user_id' => $user->id]);
+        if (!$employee->exists) {
+            $employee->fill([
+                'employee_id' => $employeeId,
+                'employement_date' => $employeeValues['employement_date'] ?? now()->toDateString(),
+                'birthday' => $employeeValues['birthday'] ?? now()->subYears(18)->toDateString(),
+                'account_number' => $employeeValues['account_number'] ?? 'N/A',
+                'sex' => $employeeValues['sex'] ?? 'Unspecified',
+                'civil_status' => $employeeValues['civil_status'] ?? 'Single',
+                'contact_number' => $employeeValues['contact_number'] ?? 'N/A',
+                'address' => $employeeValues['address'] ?? 'N/A',
+                'department' => $department ?: 'Unassigned',
+                'position' => $position ?: 'Employee',
+                'classification' => $employeeValues['classification'] ?? 'Probationary',
+            ]);
+        }
+        $employee->fill($this->nonNullImportValues($employeeValues));
+        Employee::withoutEvents(fn () => $employee->save());
+
+        $this->ensureImportedEmployeeApplicantRecord(
+            $user,
+            $firstName,
+            $middleName,
+            $lastName,
+            $position,
+            $employeeValues['employement_date'] ?? null
+        );
+
+        $this->saveEmployeeImportRelatedRecords($user, $pick);
+
+        if ($resignedDate) {
+            Resignation::query()->create([
+                'user_id' => $user->id,
+                'employee_id' => $employeeId,
+                'employee_name' => trim($firstName.' '.($middleName ? $middleName.' ' : '').$lastName),
+                'department' => $department,
+                'position' => $position,
+                'submitted_at' => $resignedDate,
+                'effective_date' => $resignedDate,
+                'reason' => 'Imported from the employee 201 file.',
+                'status' => 'Approved',
+                'processed_at' => now(),
+            ]);
+        }
+
+        return $user;
+    }
+
+    private function ensureImportedEmployeeApplicantRecord(
+        User $user,
+        string $firstName,
+        ?string $middleName,
+        string $lastName,
+        ?string $position,
+        ?string $dateHired
+    ): void {
+        if (Applicant::query()->where('user_id', $user->id)->exists()) {
+            return;
+        }
+
+        $openPositionId = $this->resolveFallbackOpenPositionId();
+        if (!$openPositionId) {
+            return;
+        }
+
+        Applicant::withoutEvents(fn () => Applicant::create([
+            'user_id' => $user->id,
+            'open_position_id' => $openPositionId,
+            'first_name' => $firstName,
+            'middle_name' => $middleName,
+            'last_name' => $lastName,
+            'email' => '',
+            'field_study' => '-',
+            'work_position' => $position ?: 'Employee',
+            'work_employer' => 'Northeastern College',
+            'work_location' => '-',
+            'work_duration' => '-',
+            'experience_years' => '0',
+            'skills_n_expertise' => '-',
+            'application_status' => 'Hired',
+            'fresh_graduate' => false,
+            'date_hired' => $dateHired,
+        ]));
+    }
+
+    private function saveEmployeeImportRelatedRecords(User $user, callable $pick): void
+    {
+        $governmentValues = [
+            'SSS' => $pick(['sss', 'sss_number']),
+            'TIN' => $pick(['tin', 'tin_number']),
+            'PhilHealth' => $pick(['philhealth', 'philhealth_number']),
+            'RTN' => $pick(['rtn', 'rtn_number', 'pag_ibig_rtn']),
+            'MID' => $pick(['mid', 'pag_ibig', 'pagibig', 'pag_ibig_number', 'pag_ibig_mid']),
+        ];
+        if ($this->nonNullImportValues($governmentValues)) {
+            Government::query()->updateOrCreate(
+                ['user_id' => $user->id],
+                array_map(static fn ($value) => $value ?: '-', $governmentValues)
+            );
+        }
+
+        $salaryValues = [
+            'salary' => $pick(['salary', 'monthly_salary', 'basic_salary']),
+            'rate_per_hour' => $pick(['rate_per_hour', 'hourly_rate']),
+            'cola' => $pick(['cola', 'allowance']),
+        ];
+        if ($this->nonNullImportValues($salaryValues)) {
+            Salary::query()->updateOrCreate(
+                ['user_id' => $user->id],
+                array_map(static fn ($value) => $value ?: '0', $salaryValues)
+            );
+        }
+
+        $licenseValues = [
+            'license' => $pick(['license', 'license_name', 'professional_license', 'eligibility', 'with_without_license']),
+            'registration_number' => $pick(['registration_number', 'registration_no', 'license_number']),
+            'registration_date' => $this->normalizeDate($pick(['registration_date', 'license_registration_date'])),
+            'valid_until' => $this->normalizeDate($pick(['valid_until', 'license_valid_until', 'expiration_date'])),
+        ];
+        if (count($this->nonNullImportValues($licenseValues)) === count($licenseValues)) {
+            License::query()->updateOrCreate(['user_id' => $user->id], $licenseValues);
+        }
+
+        $educationValues = [
+            'elementary_school_name' => $pick(['elementary_school_name', 'elementary_school']),
+            'elementary_year_finished' => $pick(['elementary_year_finished']),
+            'secondary_school_name' => $pick(['secondary_school_name', 'secondary_school']),
+            'secondary_year_finished' => $pick(['secondary_year_finished']),
+            'vocational_trade_school_name' => $pick(['vocational_trade_school_name', 'vocational_school']),
+            'vocational_trade_year_finished' => $pick(['vocational_trade_year_finished']),
+            'college_school_name' => $pick(['college_school_name', 'college_school']),
+            'college_year_finished' => $pick(['college_year_finished']),
+            'bachelor' => $pick(['bachelor', 'bachelors_degree']),
+            'master' => $pick(['master', 'masters_degree', 'master_s_degree']),
+            'doctorate' => $pick(['doctorate', 'doctorate_degree']),
+        ];
+        if ($this->nonNullImportValues($educationValues)) {
+            $educationValues['bachelor'] ??= '';
+            $educationValues['master'] ??= '';
+            $educationValues['doctorate'] ??= '';
+            Education::query()->updateOrCreate(
+                ['user_id' => $user->id],
+                $this->nonNullImportValues($educationValues) + [
+                    'bachelor' => '',
+                    'master' => '',
+                    'doctorate' => '',
+                ]
+            );
+        }
+    }
+
+    private function nonNullImportValues(array $values): array
+    {
+        return array_filter($values, static fn ($value) => $value !== null && $value !== '');
+    }
+
+    private function mapEmployeeImportRows(array $rows): array
+    {
+        $headerIndex = null;
+        $bestScore = 0;
+        $knownHeaders = [
+            'name', 'first_name', 'last_name', 'id_number', 'employee_id',
+            'account_no', 'sex', 'civil_status', 'address', 'contact_no',
+            'date_of_birth', 'employment_date', 'position', 'department',
+            'sss', 'tin', 'philhealth', 'pag_ibig_mid', 'basic_salary',
+        ];
+
+        foreach (array_slice($rows, 0, 20, true) as $index => $row) {
+            $headers = array_map(fn ($value) => $this->normalizeHeader((string) $value), $row);
+            $score = count(array_intersect($headers, $knownHeaders));
+            if ($score > $bestScore) {
+                $bestScore = $score;
+                $headerIndex = $index;
+            }
+        }
+
+        if ($headerIndex === null || $bestScore < 2) {
+            throw new \RuntimeException('The 201 file column header row could not be recognized. Include Name and ID number columns.');
+        }
+
+        return $this->mapRowsUsingGenericHeader(array_slice($rows, $headerIndex));
+    }
+
+    private function parseEmployeeImportName(string $fullName): array
+    {
+        $fullName = trim((string) preg_replace('/\s+/', ' ', $fullName));
+        if ($fullName === '') {
+            return [null, null, null];
+        }
+
+        if (str_contains($fullName, ',')) {
+            [$lastName, $givenNames] = array_map('trim', explode(',', $fullName, 2));
+            $givenNames = trim($givenNames, " \t\n\r\0\x0B,");
+            $givenParts = preg_split('/\s+/', $givenNames) ?: [];
+
+            if ($givenParts && $this->isEmployeeNameSuffix((string) end($givenParts))) {
+                $suffix = array_pop($givenParts);
+                $lastName = trim($lastName.' '.$suffix);
+            }
+
+            if (count($givenParts) === 1) {
+                return [$givenParts[0] ?: null, null, $lastName ?: null];
+            }
+
+            $middleNameStart = $this->employeeMiddleNameStartIndex($givenParts);
+            $firstNameParts = array_slice($givenParts, 0, $middleNameStart);
+            $middleNameParts = array_slice($givenParts, $middleNameStart);
+
+            return [
+                $firstNameParts ? implode(' ', $firstNameParts) : null,
+                $middleNameParts ? implode(' ', $middleNameParts) : null,
+                $lastName ?: null,
+            ];
+        }
+
+        $parts = preg_split('/\s+/', $fullName) ?: [];
+        if (count($parts) === 1) {
+            return [$parts[0], null, 'Employee'];
+        }
+
+        $firstName = array_shift($parts);
+        $suffix = $parts && $this->isEmployeeNameSuffix((string) end($parts))
+            ? array_pop($parts)
+            : null;
+        $lastName = array_pop($parts);
+        if ($suffix) {
+            $lastName = trim($lastName.' '.$suffix);
+        }
+
+        return [$firstName ?: null, $parts ? implode(' ', $parts) : null, $lastName ?: null];
+    }
+
+    private function isEmployeeNameSuffix(string $value): bool
+    {
+        $suffix = strtolower((string) preg_replace('/[^a-z0-9]/i', '', $value));
+
+        return in_array($suffix, ['jr', 'sr', 'ii', 'iii', 'iv', 'v'], true);
+    }
+
+    private function employeeMiddleNameStartIndex(array $parts): int
+    {
+        $count = count($parts);
+        $normalized = array_map(
+            static fn ($part) => strtolower((string) preg_replace('/[^a-z]/i', '', (string) $part)),
+            $parts
+        );
+
+        $compoundPrefixes = [
+            ['de', 'la'], ['de', 'los'], ['de', 'las'],
+            ['dela'], ['delos'], ['delas'], ['de'], ['del'],
+            ['van'], ['von'], ['san'], ['santa'],
+        ];
+
+        foreach ($compoundPrefixes as $prefix) {
+            $start = $count - count($prefix) - 1;
+            if ($start >= 1 && array_slice($normalized, $start, count($prefix)) === $prefix) {
+                return $start;
+            }
+        }
+
+        return $count - 1;
+    }
+
+    private function normalizeEmployeeImportId(?string $employeeId): ?string
+    {
+        $employeeId = trim((string) $employeeId);
+        if ($employeeId === '') {
+            return null;
+        }
+
+        if (preg_match('/^[+-]?\d+(?:\.\d+)?e[+-]?\d+$/i', $employeeId) === 1) {
+            return number_format((float) $employeeId, 0, '.', '');
+        }
+
+        return $employeeId;
     }
 
     public function store_loads_file(Request $request)
@@ -2924,6 +3414,7 @@ class AdministratorStoreController extends Controller
     {
         $attrs = $request->validate([
             'status' => 'required|string|in:Approved,Rejected',
+            'leave_type' => 'nullable|string|max:50',
             'month' => 'nullable|string',
             'redirect_back' => 'nullable|boolean',
         ]);
@@ -2932,10 +3423,12 @@ class AdministratorStoreController extends Controller
         $previousStatus = strtolower(trim((string) ($leaveApplication->status ?? '')));
         $newStatus = trim((string) $attrs['status']);
 
-        DB::transaction(function () use ($leaveApplication, $newStatus, $previousStatus) {
-            $leaveApplication->update([
-                'status' => $newStatus,
-            ]);
+        DB::transaction(function () use ($leaveApplication, $newStatus, $previousStatus, $attrs) {
+            $updates = ['status' => $newStatus];
+            if (!empty($attrs['leave_type'])) {
+                $updates['leave_type'] = trim((string) $attrs['leave_type']);
+            }
+            $leaveApplication->update($updates);
 
             if (!empty($leaveApplication->user_id)) {
                 $resolvedAccountStatus = app(EmployeeAccountStatusManager::class)
@@ -2953,11 +3446,93 @@ class AdministratorStoreController extends Controller
         }
 
         if ((bool) ($attrs['redirect_back'] ?? false)) {
+            if ($request->expectsJson()) {
+                return response()->json(array_merge([
+                    'message' => 'Leave request status updated.',
+                    'id' => (int) $leaveApplication->id,
+                    'status' => $newStatus,
+                ], $this->homeLeaveQueuePayload()));
+            }
+
             return redirect()->back()->with('success', 'Leave request status updated.');
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json(array_merge([
+                'message' => 'Leave request status updated.',
+                'id' => (int) $leaveApplication->id,
+                'status' => $newStatus,
+            ], $this->homeLeaveQueuePayload()));
         }
 
         return redirect()->route('admin.adminLeaveManagement', $query)
             ->with('success', 'Leave request status updated.');
+    }
+
+    private function homeLeaveQueuePayload(): array
+    {
+        $pendingQuery = $this->pendingLeaveRequestQuery();
+
+        $pendingRequests = (clone $pendingQuery)
+            ->orderByDesc('created_at')
+            ->take(3)
+            ->get()
+            ->map(fn (LeaveApplication $request) => $this->formatHomeLeaveRequest($request))
+            ->values()
+            ->all();
+
+        return [
+            'pending_count' => (clone $pendingQuery)->count(),
+            'pending_requests' => $pendingRequests,
+        ];
+    }
+
+    private function pendingLeaveRequestQuery()
+    {
+        return LeaveApplication::query()
+            ->where(function ($query) {
+                $query->whereNull('status')
+                    ->orWhereRaw("TRIM(status) = ''")
+                    ->orWhereRaw("LOWER(TRIM(status)) = ?", ['pending']);
+            });
+    }
+
+    private function formatHomeLeaveRequest(LeaveApplication $request): array
+    {
+        $requestName = trim((string) ($request->employee_name ?? ''));
+        if ($requestName === '') {
+            $requestName = 'Unknown Employee';
+        }
+
+        $initials = '';
+        foreach (array_slice(preg_split('/\s+/', $requestName) ?: [], 0, 2) as $part) {
+            $initials .= strtoupper(substr($part, 0, 1));
+        }
+
+        $startDate = $request->filing_date
+            ? Carbon::parse($request->filing_date)->startOfDay()
+            : Carbon::parse($request->created_at)->startOfDay();
+
+        $days = (float) ($request->number_of_working_days ?? 0);
+        if ($days <= 0) {
+            $days = max(
+                (float) ($request->days_with_pay ?? 0),
+                (float) ($request->applied_total ?? 0)
+            );
+        }
+
+        $endDate = $startDate->copy()->addDays(max((int) ceil($days), 1) - 1);
+
+        return [
+            'id' => (int) $request->id,
+            'employee_name' => $requestName,
+            'initials' => $initials !== '' ? $initials : 'NA',
+            'leave_type' => (string) ($request->leave_type ?: 'Leave Request'),
+            'date_label' => $startDate->isSameDay($endDate)
+                ? $startDate->format('M d, Y')
+                : $startDate->format('M d').' - '.$endDate->format('M d, Y'),
+            'action_url' => route('admin.updateLeaveRequestStatus', $request->id),
+        ];
     }
 
     public function store_resignation(Request $request)
@@ -3578,6 +4153,10 @@ class AdministratorStoreController extends Controller
             return 'Teaching';
         }
 
+        if (preg_match('/^t\s*\//', $normalized) === 1) {
+            return 'Teaching';
+        }
+
         if (in_array($normalized, [
             'non-teaching',
             'non teaching',
@@ -3590,6 +4169,10 @@ class AdministratorStoreController extends Controller
             'part time',
             'parttime',
         ], true)) {
+            return 'Non-Teaching';
+        }
+
+        if (preg_match('/^nt(?:\s*\/|$)/', $normalized) === 1) {
             return 'Non-Teaching';
         }
 

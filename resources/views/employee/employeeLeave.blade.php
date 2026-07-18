@@ -238,19 +238,19 @@
                 <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
                     <div class="employee-leave-card-motion employee-leave-reveal rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm" style="--employee-leave-delay: 80ms;">
                         <p class="text-xs uppercase tracking-wide text-emerald-100">Total Requests</p>
-                        <p class="mt-2 text-2xl font-black">{{ $totalRequestCount }}</p>
+                        <p data-leave-live="header-total" class="mt-2 text-2xl font-black">{{ $totalRequestCount }}</p>
                     </div>
                     <div class="employee-leave-card-motion employee-leave-reveal rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm" style="--employee-leave-delay: 120ms;">
                         <p class="text-xs uppercase tracking-wide text-lime-100">Approved</p>
-                        <p class="mt-2 text-2xl font-black">{{ $approvedCount }}</p>
+                        <p data-leave-live="header-approved" class="mt-2 text-2xl font-black">{{ $approvedCount }}</p>
                     </div>
                     <div class="employee-leave-card-motion employee-leave-reveal rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm" style="--employee-leave-delay: 160ms;">
                         <p class="text-xs uppercase tracking-wide text-emerald-100">Pending</p>
-                        <p class="mt-2 text-2xl font-black">{{ $pendingCount }}</p>
+                        <p data-leave-live="header-pending" class="mt-2 text-2xl font-black">{{ $pendingCount }}</p>
                     </div>
                     <div class="employee-leave-card-motion employee-leave-reveal rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm" style="--employee-leave-delay: 200ms;">
                         <p class="text-xs uppercase tracking-wide text-emerald-100">Rejected</p>
-                        <p class="mt-2 text-2xl font-black">{{ $rejectedCount }}</p>
+                        <p data-leave-live="header-rejected" class="mt-2 text-2xl font-black">{{ $rejectedCount }}</p>
                     </div>
                 </div>
             </div>
@@ -311,7 +311,7 @@
         </div>
     </section>
 
-    <section class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+    <section data-leave-live-region="summary-cards" class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
         <article class="employee-leave-card-motion employee-leave-reveal rounded-[1.75rem] border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-6 shadow-sm" style="--employee-leave-delay: 120ms;">
             <div class="flex items-start justify-between gap-4">
                 <div class="employee-leave-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-500 text-white shadow-lg shadow-blue-500/20" style="--employee-leave-delay: 180ms;">
@@ -383,19 +383,19 @@
             <div class="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
                 <button type="button" data-leave-status-filter="all" aria-pressed="true" class="rounded-2xl bg-slate-50 px-4 py-3 text-left focus:outline-none focus:ring-2 focus:ring-emerald-300">
                     <p class="text-xs uppercase tracking-wide text-slate-500">Total</p>
-                    <p class="mt-1 text-xl font-bold text-slate-900">{{ $totalRequestCount }}</p>
+                    <p data-leave-live="history-total" class="mt-1 text-xl font-bold text-slate-900">{{ $totalRequestCount }}</p>
                 </button>
                 <button type="button" data-leave-status-filter="approved" aria-pressed="false" class="rounded-2xl bg-emerald-50 px-4 py-3 text-left focus:outline-none focus:ring-2 focus:ring-emerald-300">
                     <p class="text-xs uppercase tracking-wide text-emerald-600">Approved</p>
-                    <p class="mt-1 text-xl font-bold text-emerald-700">{{ $approvedCount }}</p>
+                    <p data-leave-live="history-approved" class="mt-1 text-xl font-bold text-emerald-700">{{ $approvedCount }}</p>
                 </button>
                 <button type="button" data-leave-status-filter="pending" aria-pressed="false" class="rounded-2xl bg-amber-50 px-4 py-3 text-left focus:outline-none focus:ring-2 focus:ring-amber-300">
                     <p class="text-xs uppercase tracking-wide text-amber-600">Pending</p>
-                    <p class="mt-1 text-xl font-bold text-amber-700">{{ $pendingCount }}</p>
+                    <p data-leave-live="history-pending" class="mt-1 text-xl font-bold text-amber-700">{{ $pendingCount }}</p>
                 </button>
                 <button type="button" data-leave-status-filter="rejected" aria-pressed="false" class="rounded-2xl bg-rose-50 px-4 py-3 text-left focus:outline-none focus:ring-2 focus:ring-rose-300">
                     <p class="text-xs uppercase tracking-wide text-rose-600">Rejected</p>
-                    <p class="mt-1 text-xl font-bold text-rose-700">{{ $rejectedCount }}</p>
+                    <p data-leave-live="history-rejected" class="mt-1 text-xl font-bold text-rose-700">{{ $rejectedCount }}</p>
                 </button>
             </div>
         </div>
@@ -460,6 +460,7 @@
             @endphp
             <div
                 data-leave-history-record
+                data-leave-live-record="{{ $record['id'] ?? '' }}"
                 data-leave-status="{{ strtolower($statusLabel) }}"
                 data-leave-start="{{ $startDate?->format('Y-m-d') }}"
                 data-leave-end="{{ $endDate?->format('Y-m-d') }}"
@@ -474,10 +475,11 @@
                     <p class="mt-3 text-sm leading-6 text-slate-500">{{ $record['reason'] ?? '-' }}</p>
                 </div>
                 <div class="flex shrink-0 items-center gap-2 md:contents">
-                    <span class="inline-flex h-fit rounded-full px-3 py-1 text-xs font-semibold md:absolute md:right-5 md:top-5 {{ $statusClass }}">{{ $statusLabel }}</span>
+                    <span data-leave-live-status="{{ $record['id'] ?? '' }}" class="inline-flex h-fit rounded-full px-3 py-1 text-xs font-semibold md:absolute md:right-5 md:top-5 {{ $statusClass }}">{{ $statusLabel }}</span>
                     <button
                         type="button"
                         data-leave-view
+                        data-leave-live-details="{{ $record['id'] ?? '' }}"
                         data-leave-details="{{ json_encode($leaveDetails) }}"
                         class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-300 md:absolute md:right-5 md:top-1/2 md:-translate-y-1/2"
                         aria-label="View {{ $record['leave_type'] ?? 'leave' }} application"
@@ -946,6 +948,116 @@
                 closeModal();
             }
         });
+    })();
+
+    @php
+        $employeeLeaveSnapshotUrl = route('employee.leave.snapshot', array_filter([
+            'month' => $selectedMonth,
+            'tab_session' => request()->query('tab_session'),
+        ]));
+    @endphp
+    (() => {
+        const snapshotUrl = @json($employeeLeaveSnapshotUrl);
+        let snapshotToken = @json($leaveSnapshotToken ?? '');
+        let snapshotRequestRunning = false;
+
+        const syncLeavePageWithoutReload = async () => {
+            const pageUrl = new URL(window.location.href);
+            pageUrl.hash = '';
+            pageUrl.searchParams.set('_leave_sync', Date.now().toString());
+
+            const response = await fetch(pageUrl.toString(), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin',
+                cache: 'no-store',
+            });
+            if (!response.ok) return false;
+
+            const nextDocument = new DOMParser().parseFromString(await response.text(), 'text/html');
+
+            document.querySelectorAll('[data-leave-live]').forEach((current) => {
+                const key = current.dataset.leaveLive;
+                const next = nextDocument.querySelector(`[data-leave-live="${CSS.escape(key)}"]`);
+                if (next) current.textContent = next.textContent;
+            });
+
+            const currentCards = document.querySelector('[data-leave-live-region="summary-cards"]');
+            const nextCards = nextDocument.querySelector('[data-leave-live-region="summary-cards"]');
+            if (currentCards && nextCards) {
+                const currentArticles = currentCards.querySelectorAll(':scope > article');
+                const nextArticles = nextCards.querySelectorAll(':scope > article');
+                currentArticles.forEach((article, articleIndex) => {
+                    const nextArticle = nextArticles[articleIndex];
+                    if (!nextArticle) return;
+
+                    const currentText = article.querySelectorAll('span, h3, p');
+                    const nextText = nextArticle.querySelectorAll('span, h3, p');
+                    currentText.forEach((element, textIndex) => {
+                        if (nextText[textIndex]) element.textContent = nextText[textIndex].textContent;
+                    });
+
+                    const progress = article.querySelector('.employee-leave-progress-fill');
+                    const nextProgress = nextArticle.querySelector('.employee-leave-progress-fill');
+                    if (progress && nextProgress) progress.style.width = nextProgress.style.width;
+                });
+            }
+
+            document.querySelectorAll('[data-leave-live-record]').forEach((record) => {
+                const id = record.dataset.leaveLiveRecord;
+                const nextRecord = nextDocument.querySelector(`[data-leave-live-record="${CSS.escape(id)}"]`);
+                if (nextRecord) record.dataset.leaveStatus = nextRecord.dataset.leaveStatus || 'pending';
+
+                const status = record.querySelector(`[data-leave-live-status="${CSS.escape(id)}"]`);
+                const nextStatus = nextDocument.querySelector(`[data-leave-live-status="${CSS.escape(id)}"]`);
+                if (status && nextStatus) {
+                    status.textContent = nextStatus.textContent;
+                    status.className = nextStatus.className;
+                }
+
+                const details = record.querySelector(`[data-leave-live-details="${CSS.escape(id)}"]`);
+                const nextDetails = nextDocument.querySelector(`[data-leave-live-details="${CSS.escape(id)}"]`);
+                if (details && nextDetails) details.dataset.leaveDetails = nextDetails.dataset.leaveDetails || '{}';
+            });
+
+            const activeFilter = document.querySelector('[data-leave-status-filter][aria-pressed="true"]');
+            activeFilter?.click();
+            return true;
+        };
+
+        const checkForLeaveDecision = async () => {
+            if (snapshotRequestRunning || document.hidden) return;
+            snapshotRequestRunning = true;
+
+            try {
+                const separator = snapshotUrl.includes('?') ? '&' : '?';
+                const response = await fetch(`${snapshotUrl}${separator}_=${Date.now()}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    credentials: 'same-origin',
+                    cache: 'no-store',
+                });
+                if (!response.ok) return;
+
+                const data = await response.json();
+                if (snapshotToken && data.token && data.token !== snapshotToken) {
+                    if (await syncLeavePageWithoutReload()) snapshotToken = data.token;
+                    return;
+                }
+                snapshotToken = data.token || snapshotToken;
+            } catch (error) {
+                // A temporary connection failure should not interrupt the employee.
+            } finally {
+                snapshotRequestRunning = false;
+            }
+        };
+
+        window.setInterval(checkForLeaveDecision, 5000);
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) checkForLeaveDecision();
+        });
+        window.addEventListener('focus', checkForLeaveDecision);
     })();
 </script>
 

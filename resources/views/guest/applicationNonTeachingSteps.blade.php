@@ -1365,6 +1365,18 @@
         </label>
     </div>
 
+    <!-- Personal Data Sheet -->
+    <div class="mb-4">
+        <label class="form-label fw-semibold">Personal Data Sheet (PDS) <span class="required-asterisk"> *</span></label>
+        <label class="upload-area">
+            <i class="bi bi-file-earmark-arrow-up upload-icon"></i>
+            <div class="upload-main-text">Click to upload your PDS</div>
+            <div class="upload-sub-text">PDF, DOC, DOCX (up to 5MB)</div>
+            <input type="file" id="pds" data-document-index="2" accept=".pdf,.doc,.docx" required>
+            <input type="hidden" name="documents[2][type]" value="Personal Data Sheet (PDS)">
+        </label>
+    </div>
+
     <!-- Cover Letter -->
     <div class="mb-4">
         <label class="form-label fw-semibold">Cover Letter <span class="required-asterisk"> *</span></label>
@@ -1618,6 +1630,10 @@
                         <div class="review-item">
                             <span class="review-label">Resume/CV</span>
                             <span id="review-resume-file" class="review-value"></span>
+                        </div>
+                        <div class="review-item">
+                            <span class="review-label">Personal Data Sheet (PDS)</span>
+                            <span id="review-pds-file" class="review-value"></span>
                         </div>
                         <div class="review-item">
                             <span class="review-label">Cover Letter</span>
@@ -2936,6 +2952,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('work_lo').textContent = document.getElementById('work_location').value;
 
         const resumeInput = document.getElementById('resume');
+        const pdsInput = document.getElementById('pds');
         const coverInput  = document.getElementById('cover_letter');
         const certsInput  = document.getElementById('certifications');
         const torInput  = document.getElementById('TOR');
@@ -2996,6 +3013,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         renderFileNames('review-resume-file', resumeInput);
+        renderFileNames('review-pds-file', pdsInput);
         renderFileNames('review-cover-file', coverInput);
         renderFileNames('review-certs-file', certsInput);
         renderFileNames('tor', torInput);

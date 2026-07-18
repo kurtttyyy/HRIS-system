@@ -259,7 +259,7 @@
                             </div>
                             <div class="mt-3 text-right">
                                 <a href="{{ route('password.request') }}" class="text-sm font-semibold text-green-700 hover:underline">
-                                    Forgot password?
+                                    Forgot password or pin?
                                 </a>
                             </div>
                         </div>

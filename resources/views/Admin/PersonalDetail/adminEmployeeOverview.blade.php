@@ -43,7 +43,8 @@
 
         <span
           x-show="!selectedEmployee?.email"
-          class="text-gray-400"
+          x-html="'No information <span class=&quot;inline-flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-xs font-black text-white shadow-sm&quot; aria-hidden=&quot;true&quot;>!</span>'"
+          class="inline-flex items-center gap-1.5 font-medium text-rose-500"
         >Ã¢â‚¬â€</span>
       </div>
     </div>

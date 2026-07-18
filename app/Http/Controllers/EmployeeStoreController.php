@@ -410,7 +410,7 @@ class EmployeeStoreController extends Controller
             'filing_date' => 'nullable|date',
             'position' => 'nullable|string|max:255',
             'salary' => 'nullable|string|max:255',
-            'leave_type' => 'nullable|string|max:50',
+            'leave_type' => 'required|string|max:50',
             'number_of_working_days' => 'nullable|numeric|min:0',
             'inclusive_dates' => 'nullable|string|max:255',
             'as_of_label' => 'nullable|string|max:255',

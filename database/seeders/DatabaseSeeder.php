@@ -37,20 +37,5 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make(env('DEFAULT_ADMIN_PASSWORD', 'Kurt12345')),
         ]);
 
-        User::updateOrCreate([
-            'email' => env('DEMO_ADMIN_EMAIL', 'demo.admin@example.com'),
-        ], [
-            'first_name' => env('DEMO_ADMIN_FIRST_NAME', 'Demo'),
-            'last_name' => env('DEMO_ADMIN_LAST_NAME', 'Admin'),
-            'middle_name' => env('DEMO_ADMIN_MIDDLE_NAME', 'Account'),
-            'role' => 'Admin',
-            'job_role' => 'Administrator',
-            'position' => 'Administrator',
-            'department' => 'Human Resources',
-            'department_head' => null,
-            'status' => 'Approved',
-            'account_status' => 'Active',
-            'password' => Hash::make(env('DEMO_ADMIN_PASSWORD', 'Demo12345')),
-        ]);
     }
 }
