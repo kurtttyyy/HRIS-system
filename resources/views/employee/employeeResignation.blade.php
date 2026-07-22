@@ -223,7 +223,7 @@
             @endif
 
             <section class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-                <a href="{{ route('employee.employeeResignation', array_filter(['status' => 'all', 'tab_session' => request()->query('tab_session')])) }}" class="employee-resignation-card-motion employee-resignation-reveal block rounded-[1.75rem] border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-6 shadow-sm {{ $resignationFilter === 'all' ? 'ring-2 ring-emerald-400' : '' }}" style="--employee-resignation-delay: 120ms;">
+                <a href="{{ route('employee.employeeResignation', array_filter(['status' => 'all', 'tab_session' => request()->query('tab_session')])) }}" data-resignation-filter="all" class="employee-resignation-card-motion employee-resignation-reveal block rounded-[1.75rem] border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-6 shadow-sm {{ $resignationFilter === 'all' ? 'ring-2 ring-emerald-400' : '' }}" style="--employee-resignation-delay: 120ms;">
                     <div class="flex items-start justify-between gap-4">
                         <div class="employee-resignation-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/20" style="--employee-resignation-delay: 180ms;">
                             <i class="fa fa-file-text-o fa-2x"></i>
@@ -235,7 +235,7 @@
                     <p class="mt-4 text-xs leading-5 text-slate-500">All requests you have submitted, including pending, approved, completed, rejected, or cancelled records.</p>
                 </a>
 
-                <a href="{{ route('employee.employeeResignation', array_filter(['status' => 'pending', 'tab_session' => request()->query('tab_session')])) }}" class="employee-resignation-card-motion employee-resignation-reveal block rounded-[1.75rem] border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-6 shadow-sm {{ $resignationFilter === 'pending' ? 'ring-2 ring-amber-400' : '' }}" style="--employee-resignation-delay: 160ms;">
+                <a href="{{ route('employee.employeeResignation', array_filter(['status' => 'pending', 'tab_session' => request()->query('tab_session')])) }}" data-resignation-filter="pending" class="employee-resignation-card-motion employee-resignation-reveal block rounded-[1.75rem] border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-6 shadow-sm {{ $resignationFilter === 'pending' ? 'ring-2 ring-amber-400' : '' }}" style="--employee-resignation-delay: 160ms;">
                     <div class="flex items-start justify-between gap-4">
                         <div class="employee-resignation-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-lg shadow-amber-500/20" style="--employee-resignation-delay: 220ms;">
                             <i class="fa fa-hourglass-half fa-2x"></i>
@@ -247,7 +247,7 @@
                     <p class="mt-4 text-xs leading-5 text-slate-500">Requests that are still waiting for final HR or admin action.</p>
                 </a>
 
-                <a href="{{ route('employee.employeeResignation', array_filter(['status' => 'processed', 'tab_session' => request()->query('tab_session')])) }}" class="employee-resignation-card-motion employee-resignation-reveal block rounded-[1.75rem] border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-6 shadow-sm {{ $resignationFilter === 'processed' ? 'ring-2 ring-blue-400' : '' }}" style="--employee-resignation-delay: 200ms;">
+                <a href="{{ route('employee.employeeResignation', array_filter(['status' => 'processed', 'tab_session' => request()->query('tab_session')])) }}" data-resignation-filter="processed" class="employee-resignation-card-motion employee-resignation-reveal block rounded-[1.75rem] border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-6 shadow-sm {{ $resignationFilter === 'processed' ? 'ring-2 ring-blue-400' : '' }}" style="--employee-resignation-delay: 200ms;">
                     <div class="flex items-start justify-between gap-4">
                         <div class="employee-resignation-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-500 text-white shadow-lg shadow-blue-500/20" style="--employee-resignation-delay: 260ms;">
                             <i class="fa fa-check-circle-o fa-2x"></i>
@@ -259,7 +259,7 @@
                     <p class="mt-4 text-xs leading-5 text-slate-500">Requests that have already moved forward or reached final processing status.</p>
                 </a>
 
-                <a href="{{ route('employee.employeeResignation', array_filter(['status' => 'closed', 'tab_session' => request()->query('tab_session')])) }}" class="employee-resignation-card-motion employee-resignation-reveal block rounded-[1.75rem] border border-rose-100 bg-gradient-to-br from-rose-50 to-white p-6 shadow-sm {{ $resignationFilter === 'closed' ? 'ring-2 ring-rose-400' : '' }}" style="--employee-resignation-delay: 240ms;">
+                <a href="{{ route('employee.employeeResignation', array_filter(['status' => 'closed', 'tab_session' => request()->query('tab_session')])) }}" data-resignation-filter="closed" class="employee-resignation-card-motion employee-resignation-reveal block rounded-[1.75rem] border border-rose-100 bg-gradient-to-br from-rose-50 to-white p-6 shadow-sm {{ $resignationFilter === 'closed' ? 'ring-2 ring-rose-400' : '' }}" style="--employee-resignation-delay: 240ms;">
                     <div class="flex items-start justify-between gap-4">
                         <div class="employee-resignation-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-lg shadow-rose-500/20" style="--employee-resignation-delay: 300ms;">
                             <i class="fa fa-ban fa-2x"></i>
@@ -515,8 +515,8 @@
         });
     }
 
-    const employeeResignationSnapshotUrl = @json(route('employee.resignation.snapshot', request()->only(['status'])));
-    const employeeResignationFilter = @json($resignationFilter);
+    let employeeResignationSnapshotUrl = @json(route('employee.resignation.snapshot', request()->only(['status'])));
+    let employeeResignationFilter = @json($resignationFilter);
     let employeeResignationSnapshotSignature = null;
     let employeeResignationSnapshotInFlight = false;
     let employeeResignationSubmitInFlight = false;
@@ -534,6 +534,73 @@
             element.classList.add('hidden');
         }, 4500);
     }
+
+    document.addEventListener('click', async (event) => {
+        const filterCard = event.target.closest('a[data-resignation-filter]');
+        if (!filterCard) return;
+
+        event.preventDefault();
+        if (filterCard.dataset.loading === 'true') return;
+
+        const timeline = document.querySelector('[data-resignation-timeline]');
+        filterCard.dataset.loading = 'true';
+        filterCard.classList.add('cursor-wait');
+        timeline?.classList.add('opacity-50');
+
+        try {
+            const response = await fetch(filterCard.href, {
+                headers: {
+                    'Accept': 'text/html',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+            });
+            if (!response.ok) throw new Error('Unable to filter resignation requests.');
+
+            const documentCopy = new DOMParser().parseFromString(await response.text(), 'text/html');
+            const nextTimeline = documentCopy.querySelector('[data-resignation-timeline]');
+            if (!timeline || !nextTimeline) throw new Error('The filtered timeline was not returned.');
+
+            timeline.innerHTML = nextTimeline.innerHTML;
+            timeline.scrollTop = 0;
+
+            document.querySelectorAll('[data-resignation-filter]').forEach((card) => {
+                const nextCard = documentCopy.querySelector(`[data-resignation-filter="${card.dataset.resignationFilter}"]`);
+                if (nextCard) card.className = `${nextCard.className} is-visible`;
+            });
+
+            ['visible', 'all', 'pending', 'processed', 'closed'].forEach((type) => {
+                const currentElements = document.querySelectorAll(`[data-resignation-count="${type}"]`);
+                const nextElements = documentCopy.querySelectorAll(`[data-resignation-count="${type}"]`);
+                currentElements.forEach((element, index) => {
+                    if (nextElements[index]) element.textContent = nextElements[index].textContent;
+                });
+            });
+
+            ['[data-resignation-latest-status]', '[data-resignation-latest-effective]'].forEach((selector) => {
+                const current = document.querySelector(selector);
+                const next = documentCopy.querySelector(selector);
+                if (current && next) current.textContent = next.textContent;
+            });
+
+            const progress = document.querySelector('[data-resignation-progress]');
+            const nextProgress = documentCopy.querySelector('[data-resignation-progress]');
+            if (progress && nextProgress) progress.style.width = nextProgress.style.width;
+
+            employeeResignationFilter = filterCard.dataset.resignationFilter || 'all';
+            const snapshotUrl = new URL(employeeResignationSnapshotUrl, window.location.href);
+            snapshotUrl.searchParams.set('status', employeeResignationFilter);
+            employeeResignationSnapshotUrl = snapshotUrl.toString();
+            employeeResignationSnapshotSignature = null;
+            history.pushState({}, '', filterCard.href);
+        } catch (error) {
+            showEmployeeResignationLiveMessage(error.message || 'Unable to filter resignation requests.');
+        } finally {
+            filterCard.dataset.loading = 'false';
+            filterCard.classList.remove('cursor-wait');
+            timeline?.classList.remove('opacity-50');
+        }
+    });
 
     async function refreshEmployeeResignationContent() {
         const timeline = document.querySelector('[data-resignation-timeline]');

@@ -36,6 +36,7 @@
     $selectedParticipant = $selectedParticipant ?? null;
     $selectedConversation = $selectedConversation ?? null;
     $messages = collect(optional($selectedConversation)->messages ?? []);
+    $lastOwnMessageId = (int) optional($messages->filter(fn ($message) => (int) ($message->sender_user_id ?? 0) === (int) auth()->id())->last())->id;
     $availableCount = $directoryMembers->filter(fn ($member) => in_array(strtolower(trim((string) ($member->status ?? ''))), ['approved', 'available'], true))->count();
 @endphp
 <div class="flex min-h-screen">
@@ -165,7 +166,8 @@
                                         @unless ($isOwnMessage)
                                             <div class="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-slate-300 to-slate-500 text-[9px] font-bold text-slate-950">{{ $participantInitials !== '' ? $participantInitials : 'AD' }}</div>
                                          @endunless
-                                         <div class="max-w-[78%] rounded-[1.45rem] px-4 py-2.5 shadow-sm {{ $isOwnMessage ? 'bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white' : 'border border-slate-200 bg-white text-slate-800' }}">
+                                         <div class="flex max-w-[78%] flex-col {{ $isOwnMessage ? 'items-end' : 'items-start' }}">
+                                         <div class="w-fit max-w-full rounded-[1.45rem] px-4 py-2.5 shadow-sm {{ $isOwnMessage ? 'bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white' : 'border border-slate-200 bg-white text-slate-800' }}">
                                              @php
                                                  $messageAttachments = collect($message->attachments ?? []);
                                                  $messageImageCount = $messageAttachments->count() + (!empty($message->attachment_path) ? 1 : 0);
@@ -199,10 +201,14 @@
                                                      @endif
                                                  </div>
                                              @endif
-                                             @if (trim((string) ($message->body ?? '')) !== '')
-                                                 <p class="whitespace-pre-line text-sm leading-6">{{ $message->body }}</p>
-                                             @endif
-                                         </div>
+                                              @if (trim((string) ($message->body ?? '')) !== '')
+                                                  <p class="whitespace-pre-line text-sm leading-6">{{ $message->body }}</p>
+                                              @endif
+                                          </div>
+                                          @if ($isOwnMessage && (int) ($message->id ?? 0) === $lastOwnMessageId)
+                                              <p data-message-receipt class="mr-1 mt-1 text-right text-[10px] font-semibold text-slate-500" title="{{ $message->read_at ? 'Read '.$message->read_at->format('M j, Y g:i A') : 'Not read yet' }}">{{ $message->read_at ? 'Seen' : 'Sent' }}</p>
+                                          @endif
+                                          </div>
                                     </div>
                                 @empty
                                     <div data-chat-empty-state class="flex min-h-[16rem] items-center justify-center">
@@ -368,13 +374,17 @@ filterButtons.forEach((button)=>{button.addEventListener('click',function(){acti
      if (thread.querySelector(`[data-message-id="${message.id}"]`)) return;
 
      thread.querySelector('[data-chat-empty-state]')?.remove();
+     thread.querySelectorAll('[data-message-receipt]').forEach((existingReceipt) => existingReceipt.remove());
 
      const row = document.createElement('div');
      row.dataset.messageId = String(message.id);
      row.className = 'flex items-end gap-2 justify-end';
 
+     const messageStack = document.createElement('div');
+     messageStack.className = 'flex max-w-[78%] flex-col items-end';
+
      const bubble = document.createElement('div');
-     bubble.className = 'max-w-[78%] rounded-[1.45rem] bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 py-2.5 text-white shadow-sm';
+     bubble.className = 'w-fit max-w-full rounded-[1.45rem] bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 py-2.5 text-white shadow-sm';
 
      const attachments = Array.isArray(message.attachments) ? message.attachments : [];
      if (attachments.length > 0) {
@@ -414,7 +424,14 @@ filterButtons.forEach((button)=>{button.addEventListener('click',function(){acti
          bubble.appendChild(text);
      }
 
-     row.appendChild(bubble);
+     const receipt = document.createElement('p');
+     receipt.dataset.messageReceipt = 'true';
+     receipt.className = 'mr-1 mt-1 text-right text-[10px] font-semibold text-slate-500';
+     receipt.textContent = 'Sent';
+
+     messageStack.appendChild(bubble);
+     messageStack.appendChild(receipt);
+     row.appendChild(messageStack);
      thread.appendChild(row);
      thread.scrollTop = thread.scrollHeight;
  }
@@ -627,24 +644,7 @@ filterButtons.forEach((button)=>{button.addEventListener('click',function(){acti
          const incomingThread = incomingDocument.getElementById('message-thread');
          if (!currentThread || !incomingThread) return;
 
-         const currentMessageIds = Array.from(currentThread.querySelectorAll('[data-message-id]'))
-             .map((message) => message.dataset.messageId || '')
-             .join(',');
-         const incomingMessageIds = Array.from(incomingThread.querySelectorAll('[data-message-id]'))
-             .map((message) => message.dataset.messageId || '')
-             .join(',');
-         const currentImageSources = Array.from(currentThread.querySelectorAll('img[src]'))
-             .map((image) => image.getAttribute('src') || '')
-             .join(',');
-         const incomingImageSources = Array.from(incomingThread.querySelectorAll('img[src]'))
-             .map((image) => image.getAttribute('src') || '')
-             .join(',');
-         if (
-             (currentMessageIds !== ''
-                 && currentMessageIds === incomingMessageIds
-                 && currentImageSources === incomingImageSources)
-             || currentThread.innerHTML === incomingThread.innerHTML
-         ) {
+         if (currentThread.innerHTML === incomingThread.innerHTML) {
              return;
          }
 

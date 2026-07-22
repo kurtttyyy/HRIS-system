@@ -43,6 +43,7 @@
     $selectedParticipant = $selectedParticipant ?? null;
     $selectedConversation = $selectedConversation ?? null;
     $messages = collect(optional($selectedConversation)->messages ?? []);
+    $lastOwnMessageId = (int) optional($messages->filter(fn ($message) => (int) ($message->sender_user_id ?? 0) === (int) auth()->id())->last())->id;
     $availableCount = $directoryMembers->filter(fn ($member) => in_array(strtolower(trim((string) ($member->status ?? ''))), ['approved', 'available'], true))->count();
     $unreadMessageCount = (int) $directoryMembers->sum(fn ($member) => (int) ($member->unread_message_count ?? 0));
 @endphp
@@ -175,29 +176,29 @@
                                 $participantName = $participantName !== '' ? $participantName : (string) ($selectedParticipant->email ?? 'Employee');
                                 $participantInitials = strtoupper(substr(trim((string) ($selectedParticipant->first_name ?? 'E')), 0, 1).substr(trim((string) ($selectedParticipant->last_name ?? '')), 0, 1));
                             @endphp
-                            <div id="admin-chat-panel" class="flex h-full min-h-[38rem] w-full flex-col overflow-hidden rounded-[2rem] border border-slate-800 bg-[#1f1f1f] shadow-[0_24px_70px_rgba(15,23,42,0.2)]">
-                            <div class="border-b border-slate-700 bg-[#242424] px-4 py-3">
+                            <div id="admin-chat-panel" class="flex h-full min-h-[38rem] w-full flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.12)]">
+                            <div class="border-b border-slate-200 bg-white px-4 py-3">
                                 <div class="flex items-center justify-between gap-4">
                                     <div class="flex items-center gap-4">
                                         <div class="relative flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-slate-300 to-slate-500 text-sm font-black text-slate-950">{{ $participantInitials !== '' ? $participantInitials : 'EM' }}
-                                            <span class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[#242424] bg-emerald-400"></span>
+                                            <span class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-400"></span>
                                         </div>
                                         <div class="min-w-0">
-                                            <p class="truncate text-xl font-bold text-white">{{ $participantName }}</p>
-                                            <p class="text-sm text-slate-400">Active now</p>
+                                            <p class="truncate text-xl font-bold text-slate-900">{{ $participantName }}</p>
+                                            <p class="text-sm text-slate-500">Active now</p>
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-3 text-violet-400">
-                                        <button type="button" data-admin-chat-close class="text-violet-400 transition hover:text-violet-300" aria-label="Close chat">
+                                        <button type="button" data-admin-chat-close class="inline-flex h-9 w-9 items-center justify-center rounded-full text-violet-500 transition hover:bg-violet-50 hover:text-violet-700" aria-label="Close chat">
                                             <i class="fa-solid fa-xmark"></i>
                                         </button>
                                     </div>
                                 </div>
                             </div>
-                            <div id="admin-message-thread" class="messenger-scroll min-h-0 flex-1 space-y-4 overflow-y-auto bg-[#1f1f1f] px-4 py-4 md:px-6">
+                            <div id="admin-message-thread" class="messenger-scroll min-h-0 flex-1 space-y-4 overflow-y-auto bg-slate-50 px-4 py-4 md:px-6">
                                 @if ($selectedConversation?->has_older_messages)
                                     <div class="flex justify-center">
-                                        <a href="{{ request()->fullUrlWithQuery(['message_limit' => $selectedConversation->next_message_limit]) }}" data-admin-chat-connect class="rounded-full bg-slate-800 px-4 py-2 text-xs font-bold text-slate-300 transition hover:bg-slate-700 hover:text-white">Load older messages</a>
+                                        <a href="{{ request()->fullUrlWithQuery(['message_limit' => $selectedConversation->next_message_limit]) }}" data-admin-chat-connect class="rounded-full bg-white px-4 py-2 text-xs font-bold text-slate-600 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-100">Load older messages</a>
                                     </div>
                                 @endif
                                 @forelse ($messages as $message)
@@ -210,7 +211,8 @@
                                         @unless ($isOwnMessage)
                                             <div class="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-slate-300 to-slate-500 text-[9px] font-bold text-slate-950">{{ $participantInitials !== '' ? $participantInitials : 'EM' }}</div>
                                         @endunless
-                                        <div class="max-w-[78%] rounded-[1.45rem] px-4 py-2.5 shadow-sm {{ $isOwnMessage ? 'bg-gradient-to-r from-blue-600 to-violet-600 text-white' : 'bg-[#303030] text-slate-100' }}">
+                                        <div class="flex max-w-[78%] flex-col {{ $isOwnMessage ? 'items-end' : 'items-start' }}">
+                                        <div class="w-fit max-w-full rounded-[1.45rem] px-4 py-2.5 shadow-sm {{ $isOwnMessage ? 'bg-gradient-to-r from-blue-600 to-violet-600 text-white' : 'border border-slate-200 bg-white text-slate-800' }}">
                                             @php
                                                 $messageAttachments = collect($message->attachments ?? []);
                                                 $messageImageCount = $messageAttachments->count() + (!empty($message->attachment_path) ? 1 : 0);
@@ -248,27 +250,31 @@
                                                 <p class="whitespace-pre-line text-sm leading-6">{{ $message->body }}</p>
                                             @endif
                                         </div>
+                                        @if ($isOwnMessage && (int) ($message->id ?? 0) === $lastOwnMessageId)
+                                            <p data-message-receipt class="mr-1 mt-1 text-right text-[10px] font-semibold text-slate-500" title="{{ $message->read_at ? 'Read '.$message->read_at->format('M j, Y g:i A') : 'Not read yet' }}">{{ $message->read_at ? 'Seen' : 'Sent' }}</p>
+                                        @endif
+                                        </div>
                                     </div>
                                 @empty
                                     <div class="flex min-h-[16rem] items-center justify-center">
                                         <div class="max-w-sm text-center">
-                                            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-800 text-violet-400"><i class="fa-solid fa-comments text-xl"></i></div>
-                                            <h4 class="mt-4 text-lg font-black text-white">Start the conversation.</h4>
-                                            <p class="mt-2 text-sm leading-6 text-slate-400">Send the first message and the employee will be able to respond from their own communication page.</p>
+                                            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-100 text-violet-600"><i class="fa-solid fa-comments text-xl"></i></div>
+                                            <h4 class="mt-4 text-lg font-black text-slate-900">Start the conversation.</h4>
+                                            <p class="mt-2 text-sm leading-6 text-slate-500">Send the first message and the employee will be able to respond from their own communication page.</p>
                                         </div>
                                     </div>
                                 @endforelse
                             </div>
-                            <form method="POST" action="{{ route('admin.communication.send') }}" data-admin-chat-message-form class="border-t border-slate-700 bg-[#1f1f1f] px-4 py-3">
+                            <form method="POST" action="{{ route('admin.communication.send') }}" data-admin-chat-message-form class="border-t border-slate-200 bg-white px-4 py-3">
                                 @csrf
                                 @if (request()->filled('tab_session'))
                                     <input type="hidden" name="tab_session" value="{{ request()->query('tab_session') }}">
                                 @endif
                                 <input type="hidden" name="participant_user_id" value="{{ $selectedParticipant->id }}">
                                 @if ($selectedConversation)<input type="hidden" name="conversation_id" value="{{ $selectedConversation->id }}">@endif
-                                <div data-chat-image-preview class="mb-3 hidden rounded-2xl bg-[#3a3a3a] p-2">
+                                <div data-chat-image-preview class="mb-3 hidden rounded-2xl bg-slate-100 p-2">
                                     <div class="flex items-center gap-2 overflow-x-auto pb-1">
-                                        <button type="button" data-chat-image-trigger class="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#202020] text-xl text-white transition hover:bg-[#171717]" aria-label="Add more images">
+                                        <button type="button" data-chat-image-trigger class="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white text-xl text-slate-600 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50" aria-label="Add more images">
                                             <i class="fa-regular fa-square-plus"></i>
                                         </button>
                                         <div data-chat-image-preview-list class="flex items-center gap-2"></div>
@@ -279,17 +285,17 @@
                                         <i class="fa-regular fa-image"></i>
                                     </button>
                                     <input data-chat-image-input name="attachments[]" type="file" accept="image/jpeg,image/png,image/gif,image/webp" multiple class="hidden">
-                                    <div class="relative flex-1 rounded-full bg-[#3a3a3a] py-2 pl-4 pr-2">
+                                    <div class="relative flex-1 rounded-full bg-slate-100 py-2 pl-4 pr-2 ring-1 ring-slate-200">
                                         <div class="flex items-center gap-2">
-                                            <textarea name="body" rows="1" maxlength="4000" class="min-w-0 flex-1 resize-none bg-transparent text-sm text-white outline-none placeholder:text-slate-500" placeholder="Aa">{{ old('body') }}</textarea>
+                                            <textarea name="body" rows="1" maxlength="4000" class="min-w-0 flex-1 resize-none bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400" placeholder="Aa">{{ old('body') }}</textarea>
                                             <button type="button" data-chat-emoji-trigger class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-fuchsia-500 transition hover:bg-fuchsia-500/15 hover:text-fuchsia-400" aria-label="Choose an emoji" aria-expanded="false">
                                                 <i class="fa-solid fa-face-smile text-lg"></i>
                                             </button>
                                         </div>
-                                        <div data-chat-emoji-picker class="absolute bottom-full right-0 z-20 mb-2 hidden w-56 rounded-2xl border border-slate-600 bg-[#292929] p-2 shadow-2xl">
+                                        <div data-chat-emoji-picker class="absolute bottom-full right-0 z-20 mb-2 hidden w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl">
                                             <div class="grid grid-cols-6 gap-1" aria-label="Emoji picker">
                                                 @foreach (['😀','😂','😊','😍','🥰','😎','🤗','🤔','😢','😭','😅','😴','👍','👏','🙏','💪','❤️','🎉'] as $emoji)
-                                                    <button type="button" data-chat-emoji="{{ $emoji }}" class="flex h-8 w-8 items-center justify-center rounded-lg text-xl transition hover:bg-slate-600">{{ $emoji }}</button>
+                                                    <button type="button" data-chat-emoji="{{ $emoji }}" class="flex h-8 w-8 items-center justify-center rounded-lg text-xl transition hover:bg-slate-100">{{ $emoji }}</button>
                                                 @endforeach
                                             </div>
                                         </div>

@@ -2677,7 +2677,7 @@
 
     <div class="space-y-6" data-employee-directory-results :aria-busy="employeeFilterLoading ? 'true' : 'false'">
     <!-- Employee Cards Grid -->
-    <div class="employee-card-grid flex flex-wrap gap-6" x-show="!showDepartmentSummary && viewMode === 'cards'">
+    <div class="employee-card-grid grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5" x-show="!showDepartmentSummary && viewMode === 'cards'">
 
         @foreach ($employee as $emp)
         @php
@@ -2802,7 +2802,7 @@
         @endphp
         <!-- Employee Card -->
         <div
-            class="employee-directory-card employee-page-reveal employee-card-motion relative flex min-h-[365px] w-72 flex-col overflow-hidden rounded-xl bg-white shadow-md"
+            class="employee-directory-card employee-page-reveal employee-card-motion relative flex min-h-[365px] min-w-0 w-full flex-col overflow-hidden rounded-xl bg-white shadow-md"
             style="--employee-reveal-delay: 0ms;"
             x-show="matchesDepartment(@js($resolveDepartment($emp))) &&
                     matchesSearch(@js(trim(($emp->last_name ?? '').', '.trim(($emp->first_name ?? '').' '.($emp->middle_name ?? '')), ', '))) &&
