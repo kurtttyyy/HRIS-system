@@ -2913,7 +2913,7 @@
                 loadEmployeeDirectoryResults(`${window.location.pathname}?${params.toString()}`);
               "
             >
-              @foreach ([5, 10, 15, 25] as $pageSize)
+              @foreach ([5, 10, 15, 25, 50] as $pageSize)
                 <option value="{{ $pageSize }}" @selected((int) ($employeeFilterState['per_page'] ?? 10) === $pageSize)>{{ $pageSize }}</option>
               @endforeach
             </select>

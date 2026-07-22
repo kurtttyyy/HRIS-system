@@ -890,7 +890,7 @@ class AdministratorPageController extends Controller
         $employeeDepartment = trim((string) $request->query('department', 'All'));
         $employeeStatus = trim((string) $request->query('status', 'All'));
         $employeePerPage = (int) $request->query('per_page', 10);
-        if (!in_array($employeePerPage, [5, 10, 15, 25], true)) {
+        if (!in_array($employeePerPage, [5, 10, 15, 25, 50], true)) {
             $employeePerPage = 10;
         }
 
