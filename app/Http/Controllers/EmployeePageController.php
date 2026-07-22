@@ -1354,13 +1354,21 @@ class EmployeePageController extends Controller
         }
 
         if ($selectedConversation) {
+            $messageLimit = min(max((int) request()->query('message_limit', 50), 50), 500);
+            $messageTotal = $selectedConversation->messages()->count();
             $selectedConversation->load([
-                'messages' => function ($query) {
-                    $query->with(['sender', 'attachments'])->orderBy('created_at');
+                'messages' => function ($query) use ($messageLimit) {
+                    $query->with(['sender', 'attachments'])
+                        ->orderByDesc('created_at')
+                        ->orderByDesc('id')
+                        ->limit($messageLimit);
                 },
                 'userOne',
                 'userTwo',
             ]);
+            $selectedConversation->setRelation('messages', $selectedConversation->messages->sortBy('id')->values());
+            $selectedConversation->setAttribute('has_older_messages', $messageTotal > $messageLimit);
+            $selectedConversation->setAttribute('next_message_limit', min($messageLimit + 50, 500));
 
             $selectedConversation->messages()
                 ->whereNull('read_at')
@@ -1394,11 +1402,27 @@ class EmployeePageController extends Controller
                 (int) $item['participant']->id => (int) ($item['unread_count'] ?? 0),
             ]);
 
-        $admins = $admins->map(function ($admin) use ($unreadCountsByParticipant) {
+        $latestConversationByParticipant = $conversationSummaries
+            ->filter(fn ($item) => ($item['participant']->id ?? null) !== null)
+            ->keyBy(fn ($item) => (int) $item['participant']->id);
+
+        $admins = $admins->map(function ($admin) use ($unreadCountsByParticipant, $latestConversationByParticipant) {
+            $latestConversation = $latestConversationByParticipant->get((int) $admin->id);
             $admin->unread_message_count = (int) $unreadCountsByParticipant->get((int) $admin->id, 0);
             $admin->has_unread_messages = $admin->unread_message_count > 0;
+            $admin->latest_message_preview = trim((string) data_get($latestConversation, 'latest_message', ''));
+            $admin->latest_message_at = data_get($latestConversation, 'latest_at');
             return $admin;
-        });
+        })->sort(function ($left, $right) {
+            $unreadComparison = (int) ($right->unread_message_count ?? 0) <=> (int) ($left->unread_message_count ?? 0);
+            if ($unreadComparison !== 0) return $unreadComparison;
+
+            $leftTime = $left->latest_message_at ? Carbon::parse($left->latest_message_at)->timestamp : 0;
+            $rightTime = $right->latest_message_at ? Carbon::parse($right->latest_message_at)->timestamp : 0;
+            if ($leftTime !== $rightTime) return $rightTime <=> $leftTime;
+
+            return strcasecmp((string) $left->first_name, (string) $right->first_name);
+        })->values();
 
         return view('employee.employeeCommunication', compact(
             'admins',
@@ -1454,6 +1478,7 @@ class EmployeePageController extends Controller
             [
                 'Content-Type' => (string) ($message->attachment_mime ?: 'application/octet-stream'),
                 'Content-Disposition' => 'inline; filename="'.str_replace('"', '', (string) ($message->attachment_name ?: basename($path))).'"',
+                'Cache-Control' => 'private, max-age=86400',
             ]
         );
     }
@@ -1501,6 +1526,7 @@ class EmployeePageController extends Controller
             [
                 'Content-Type' => $attachment->mime,
                 'Content-Disposition' => 'inline; filename="'.str_replace('"', '', $attachment->name).'"',
+                'Cache-Control' => 'private, max-age=86400',
             ]
         );
     }

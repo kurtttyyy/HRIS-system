@@ -136,14 +136,40 @@
                         </div>
 
                         <div class="flex flex-wrap items-center gap-2 xl:justify-end">
-                            <button
-                                type="button"
-                                @click="window.exportAdminEmployeesExcel({ search, department, statusFilter })"
-                                class="inline-flex min-h-[2.75rem] items-center justify-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-300 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:-translate-y-0.5 hover:border-emerald-200 hover:bg-emerald-200"
-                            >
-                                <i class="fa-solid fa-file-excel text-xs"></i>
-                                Excel
-                            </button>
+                            <div class="relative" @click.outside="exportMenuOpen = false">
+                                <button
+                                    type="button"
+                                    @click="exportMenuOpen = !exportMenuOpen"
+                                    :aria-expanded="exportMenuOpen"
+                                    class="inline-flex min-h-[2.75rem] items-center justify-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-300 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:-translate-y-0.5 hover:border-emerald-200 hover:bg-emerald-200"
+                                >
+                                    <i class="fa-solid fa-file-excel text-xs"></i>
+                                    Excel
+                                    <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200" :class="exportMenuOpen ? 'rotate-180' : ''"></i>
+                                </button>
+
+                                <div
+                                    x-cloak
+                                    x-show="exportMenuOpen"
+                                    x-transition:enter="transition ease-out duration-200"
+                                    x-transition:enter-start="translate-y-2 scale-95 opacity-0"
+                                    x-transition:enter-end="translate-y-0 scale-100 opacity-100"
+                                    x-transition:leave="transition ease-in duration-150"
+                                    x-transition:leave-start="translate-y-0 scale-100 opacity-100"
+                                    x-transition:leave-end="translate-y-2 scale-95 opacity-0"
+                                    class="absolute right-0 z-[80] mt-3 w-72 origin-top-right overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 text-slate-800 shadow-[0_22px_55px_rgba(15,23,42,0.25)]"
+                                >
+                                    <p class="px-3 pb-2 pt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">Choose export</p>
+                                    <button type="button" @click="exportMenuOpen = false; window.exportAdminEmployeesExcel()" class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-emerald-50">
+                                        <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700"><i class="fa-solid fa-table-list"></i></span>
+                                        <span><strong class="block text-sm">Whole employee table</strong><small class="mt-0.5 block text-xs text-slate-500">Download all visible employee fields.</small></span>
+                                    </button>
+                                    <button type="button" @click="exportMenuOpen = false; window.exportAdminEmployeePinsExcel()" class="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-amber-50">
+                                        <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-700"><i class="fa-solid fa-key"></i></span>
+                                        <span><strong class="block text-sm">Temporary PIN list</strong><small class="mt-0.5 block text-xs text-slate-500">Name, Employee ID, and PIN only.</small></span>
+                                    </button>
+                                </div>
+                            </div>
                             <button
                                 type="button"
                                 @click="searchInput = ''; department = 'All'; statusFilter = 'All'; applyEmployeeDirectoryFilters()"

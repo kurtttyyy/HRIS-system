@@ -1,8 +1,8 @@
 <script>
     (function () {
         const allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        const maxImageSize = 10 * 1024 * 1024;
-        const maxImageCount = 6;
+        const maxImageSize = 5 * 1024 * 1024;
+        const maxImageCount = 4;
         const selectedFiles = new WeakMap();
 
         const assignFiles = (input, files) => {
@@ -105,7 +105,7 @@
                     continue;
                 }
                 if (file.size > maxImageSize) {
-                    alert(`${file.name} is larger than 10 MB.`);
+                    alert(`${file.name} is larger than 5 MB.`);
                     continue;
                 }
                 validFiles.push(file);

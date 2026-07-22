@@ -49,6 +49,7 @@ class User extends Authenticatable
         'account_status',
         'email',
         'password',
+        'temporary_pin',
     ];
 
     /**
@@ -71,6 +72,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'temporary_pin' => 'encrypted',
         ];
     }
 

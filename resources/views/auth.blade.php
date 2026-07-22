@@ -259,7 +259,7 @@
                             </div>
                             <div class="mt-3 text-right">
                                 <a href="{{ route('password.request') }}" class="text-sm font-semibold text-green-700 hover:underline">
-                                    Forgot password or pin?
+                                    Forgot password
                                 </a>
                             </div>
                         </div>
@@ -268,6 +268,11 @@
                             Sign In
                         </button>
                     </form>
+
+                    <p class="mt-5 text-center text-sm text-gray-500">
+                        Have a temporary PIN?
+                        <a href="{{ route('account.activation') }}" class="font-semibold text-green-700 hover:underline">Activate your account</a>
+                    </p>
 
                     <p class="text-center text-sm text-gray-500 mt-8">
                         Don't have an account?

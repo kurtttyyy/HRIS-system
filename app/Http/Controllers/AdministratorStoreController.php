@@ -70,16 +70,16 @@ class AdministratorStoreController extends Controller
             'participant_user_id' => 'required|integer|exists:users,id',
             'conversation_id' => 'nullable|integer|exists:conversations,id',
             'body' => 'nullable|string|max:4000|required_without:attachments',
-            'attachments' => 'nullable|array|max:6|required_without:body',
-            'attachments.*' => 'file|image|mimes:jpg,jpeg,png,gif,webp|max:10240',
+            'attachments' => 'nullable|array|max:4|required_without:body',
+            'attachments.*' => 'file|image|mimes:jpg,jpeg,png,gif,webp|max:5120',
             'tab_session' => 'nullable|string|max:120',
         ], [
             'body.required_without' => 'Enter a message or choose an image.',
             'attachments.required_without' => 'Enter a message or choose at least one image.',
-            'attachments.max' => 'You can attach up to 6 images per message.',
+            'attachments.max' => 'You can attach up to 4 images per message.',
             'attachments.*.image' => 'Every attachment must be an image.',
             'attachments.*.mimes' => 'Use JPG, JPEG, PNG, GIF, or WEBP images.',
-            'attachments.*.max' => 'Each image must not be larger than 10 MB.',
+            'attachments.*.max' => 'Each image must not be larger than 5 MB.',
         ]);
 
         $authUser = Auth::user();
@@ -731,6 +731,7 @@ class AdministratorStoreController extends Controller
         }
 
         $password = $pick(['password', 'temporary_password', 'temp_password']) ?: Str::random(64);
+        $temporaryPin = (string) random_int(100000, 999999);
 
         if (!$firstName && !$lastName && !$employeeId) {
             return null;
@@ -758,13 +759,14 @@ class AdministratorStoreController extends Controller
             'last_name' => $lastName,
             'email' => null,
             'password' => $password,
+            'temporary_pin' => $temporaryPin,
             'role' => 'Employee',
             'job_role' => $position ?: 'Employee',
             'position' => $position ?: 'Employee',
             'department' => $department ?: 'Unassigned',
             'department_head' => $pick(['department_head', 'head_of_department']),
-            'status' => 'Approved',
-            'account_status' => $resignedDate ? 'Inactive' : 'Active',
+            'status' => 'Not Approved',
+            'account_status' => 'Inactive',
         ]));
 
         $employeeValues = [

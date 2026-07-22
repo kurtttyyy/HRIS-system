@@ -192,6 +192,14 @@
       </div>
     </div>
 
+    <div x-show="selectedEmployee?.temporary_pin" class="flex items-start gap-3 mb-5">
+      <div class="flex h-5 w-5 items-center justify-center rounded-full bg-amber-100 text-xs font-black text-amber-700">#</div>
+      <div>
+        <span class="block font-semibold text-xs uppercase text-gray-400">Temporary PIN</span>
+        <span class="font-mono font-bold tracking-[0.18em] text-amber-700" x-text="selectedEmployee?.temporary_pin"></span>
+      </div>
+    </div>
+
     <!-- Join Date -->
     <div class="flex items-start gap-3 mb-5">
       <svg

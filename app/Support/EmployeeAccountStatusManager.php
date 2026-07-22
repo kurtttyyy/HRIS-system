@@ -21,7 +21,7 @@ class EmployeeAccountStatusManager
 
         User::query()
             ->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee'])
-            ->select(['id', 'first_name', 'middle_name', 'last_name', 'email', 'role', 'account_status'])
+            ->select(['id', 'first_name', 'middle_name', 'last_name', 'email', 'role', 'status', 'account_status'])
             ->chunkById(100, function ($users) use (&$synced, $date) {
                 foreach ($users as $user) {
                     $this->syncUserAccountStatus($user, $date);
@@ -74,6 +74,10 @@ class EmployeeAccountStatusManager
         $userId = (int) $model->id;
         if ($userId <= 0) {
             return 'Active';
+        }
+
+        if (strcasecmp(trim((string) ($model->status ?? '')), 'Not Approved') === 0) {
+            return 'Inactive';
         }
 
         $latestApprovedOrCompletedResignation = Resignation::query()

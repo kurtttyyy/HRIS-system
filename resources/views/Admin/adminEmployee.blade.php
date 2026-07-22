@@ -353,6 +353,7 @@
         modalTarget: '',
         tab:'overview',
         viewMode:'cards',
+        exportMenuOpen:false,
         showDepartmentSummary:false,
         department:@js($employeeFilters['department'] ?? 'All'),
         statusFilter:@js($employeeFilters['status'] ?? 'All'),
@@ -365,6 +366,69 @@
         employeeById: {},
         employeeFilterSequence: 0,
         employeeFilterLoading: false,
+        accountStatusVersion: '',
+        accountStatusPolling: false,
+        accountStatusPollTimer: null,
+        startAccountStatusPolling() {
+          this.refreshAccountStatuses();
+          this.accountStatusPollTimer = window.setInterval(() => this.refreshAccountStatuses(), 8000);
+        },
+        async refreshAccountStatuses() {
+          if (this.accountStatusPolling || document.hidden) return;
+          this.accountStatusPolling = true;
+
+          try {
+            const response = await fetch(@js(route('admin.employeeAccountStatuses')), {
+              headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+              cache: 'no-store',
+            });
+            if (!response.ok) return;
+
+            const payload = await response.json();
+            if (!Array.isArray(payload.employees) || payload.version === this.accountStatusVersion) return;
+            this.accountStatusVersion = payload.version ?? '';
+
+            payload.employees.forEach((employee) => {
+              const userId = Number.parseInt((employee?.id ?? '').toString(), 10);
+              if (!Number.isFinite(userId) || userId <= 0) return;
+
+              const status = (employee.account_status || 'Active').toString().trim();
+              const normalized = this.normalize(status);
+              const badge = document.querySelector(`[data-employee-account-status='${userId}']`);
+              if (badge && this.normalize(badge.textContent) !== normalized) {
+                badge.textContent = status;
+                badge.classList.remove('text-green-700', 'bg-green-100', 'text-orange-700', 'bg-orange-100/70', 'text-red-700', 'bg-red-100/70');
+                badge.classList.add(...(normalized === 'active'
+                  ? ['text-green-700', 'bg-green-100']
+                  : normalized === 'on leave'
+                    ? ['text-orange-700', 'bg-orange-100/70']
+                    : ['text-red-700', 'bg-red-100/70']));
+              }
+
+              if (this.employeeById[userId]) {
+                this.employeeById[userId].account_status = status;
+                this.employeeById[userId].status = employee.approval_status;
+                if (normalized === 'active' && this.normalize(employee.approval_status) === 'approved') {
+                  this.employeeById[userId].temporary_pin = null;
+                }
+              }
+
+              if (Number(this.selectedEmployee?.id) === userId) {
+                this.selectedEmployee.account_status = status;
+                this.selectedEmployee.status = employee.approval_status;
+                if (normalized === 'active' && this.normalize(employee.approval_status) === 'approved') {
+                  this.selectedEmployee.temporary_pin = null;
+                }
+              }
+              const indexEntry = this.employeeIndex.find((row) => Number(row.id) === userId);
+              if (indexEntry) indexEntry.status = status;
+            });
+          } catch (error) {
+            // A temporary network failure should not disturb the admin page.
+          } finally {
+            this.accountStatusPolling = false;
+          }
+        },
         normalize(value) {
           return (value ?? '').toString().trim().toLowerCase();
         },
@@ -1765,6 +1829,7 @@
       }"
       x-init="employeeIndex = @js(
         $employeeDirectory->map(fn($emp) => [
+          'id' => (int) ($emp->id ?? 0),
           'name' => trim(($emp->last_name ?? '').', '.trim(($emp->first_name ?? '').' '.($emp->middle_name ?? '')), ', '),
           'department' => trim((string) (data_get($emp, 'applicant.position.department') ?: data_get($emp, 'employee.department') ?: ($emp->department ?? ''))),
           'status' => $resolveDisplayAccountStatus($emp),
@@ -1790,7 +1855,7 @@
           return Number.isFinite(userId) && userId > 0 ? [userId, row] : null;
         })
         .filter((entry) => Array.isArray(entry))
-      ); openEmployeeFromQuery()"
+      ); openEmployeeFromQuery(); startAccountStatusPolling()"
 >
 
     <!-- Header -->
@@ -2429,7 +2494,7 @@
     >
       <div class="flex min-w-[15rem] flex-col items-center rounded-[1.75rem] border border-white/80 bg-white/95 px-8 py-7 shadow-[0_24px_70px_rgba(15,23,42,0.22)]">
         <img
-          src="{{ asset('images/animation_searching.gif') }}"
+          src="{{ asset('images/animation_searching.gif') }}?v={{ filemtime(public_path('images/animation_searching.gif')) }}"
           alt=""
           aria-hidden="true"
           class="h-28 w-28 object-contain"
@@ -2799,7 +2864,7 @@
                             default => 'text-red-700 bg-red-100/70',
                           };
                         @endphp
-                        <span class="px-2 py-1 rounded-full text-xs font-medium z-10 {{ $statusBadgeClass }}">
+                        <span data-employee-account-status="{{ (int) ($emp->id ?? 0) }}" class="px-2 py-1 rounded-full text-xs font-medium z-10 transition-colors duration-300 {{ $statusBadgeClass }}">
                             {{ $accountStatus }}
                         </span>
 
@@ -3387,6 +3452,7 @@
       'department' => $blankTableValue(trim((string) (data_get($emp, 'applicant.position.department') ?: data_get($emp, 'employee.department') ?: ($emp->department ?? '')))),
       'status' => $resolveDisplayAccountStatus($emp),
       'email' => $blankTableValue(trim((string) (data_get($emp, 'applicant.email_address') ?: ($emp->email_address ?? $emp->email ?? '')))),
+      'temporary_pin' => trim((string) ($emp->temporary_pin ?? '')),
     ];
   })->values();
 @endphp
@@ -3394,9 +3460,41 @@
 <script>
   window.adminEmployeeExcelRecords = @json($adminEmployeeExcelRecords);
 
+  window.exportAdminEmployeePinsExcel = function exportAdminEmployeePinsExcel(filters = {}) {
+    const rows = (window.adminEmployeeExcelRecords ?? []).filter((record) => record.temporary_pin);
+
+    if (!rows.length) {
+      window.alert('No employees with temporary PINs match the current filters.');
+      return;
+    }
+
+    const escapeHtml = (value) => (value ?? '').toString()
+      .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+    const bodyRows = rows.map((record, index) => `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${escapeHtml(record.name)}</td>
+        <td style="mso-number-format:'\\@';">${escapeHtml(record.employee_id)}</td>
+        <td style="mso-number-format:'000000';">${escapeHtml(record.temporary_pin)}</td>
+      </tr>`).join('');
+    const html = `<html><head><meta charset="utf-8"><style>
+      table{border-collapse:collapse;font-family:Arial,sans-serif;font-size:12pt}
+      th,td{border:1px solid #94a3b8;padding:9px 14px;text-align:left;white-space:nowrap}
+      th{background:#047857;color:#fff;font-weight:700}
+    </style></head><body><table><thead><tr><th>No.</th><th>Employee Name</th><th>Employee ID</th><th>Temporary PIN</th></tr></thead><tbody>${bodyRows}</tbody></table></body></html>`;
+    const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `employee-temporary-pins-${new Date().toISOString().slice(0, 10)}.xls`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
   window.exportAdminEmployeesExcel = function exportAdminEmployeesExcel(filters = {}) {
-    const department = (filters.department ?? 'All').toString().trim();
-    const statusFilter = (filters.statusFilter ?? 'All').toString().trim();
     const sourceTable = document.getElementById('employee-directory-table-export');
     if (!sourceTable) {
       window.alert('Table not found for export.');
@@ -3404,15 +3502,8 @@
     }
 
     const exportTable = sourceTable.cloneNode(true);
-    const sourceRows = Array.from(sourceTable.querySelectorAll('tbody tr'));
-    const exportRows = Array.from(exportTable.querySelectorAll('tbody tr'));
-    exportRows.forEach((row, index) => {
-      const sourceRow = sourceRows[index];
-      if (!sourceRow) return;
-      const isHidden = sourceRow.style.display === 'none';
-      if (isHidden) {
-        row.remove();
-      }
+    exportTable.querySelectorAll('tbody tr').forEach((row) => {
+      row.style.removeProperty('display');
     });
     exportTable.querySelectorAll('[contenteditable="true"]').forEach((cell) => {
       cell.removeAttribute('contenteditable');
@@ -3537,11 +3628,8 @@
     const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    const statusLabel = statusFilter === 'All' ? 'all' : statusFilter.toLowerCase().replace(/\s+/g, '-');
-    const departmentLabel = department === 'All' ? 'all-departments' : department.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-
     link.href = url;
-    link.download = `employees-${statusLabel}-${departmentLabel}.xls`;
+    link.download = `all-employees-${new Date().toISOString().slice(0, 10)}.xls`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

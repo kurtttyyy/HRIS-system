@@ -24,6 +24,113 @@ class RegisterLoginController extends Controller
     private const TAB_AUTH_MAP_ADMIN = 'tab_auth_users_admin';
     private const TAB_AUTH_MAP_EMPLOYEE = 'tab_auth_users_employee';
 
+    public function show_account_activation(Request $request)
+    {
+        return view('auth-activate-account', [
+            'pinVerified' => $request->session()->has('account_activation_user_id'),
+        ]);
+    }
+
+    public function submit_account_activation(Request $request)
+    {
+        return $request->input('activation_step') === 'complete'
+            ? $this->complete_account_activation($request)
+            : $this->verify_account_activation($request);
+    }
+
+    public function verify_account_activation(Request $request)
+    {
+        $attrs = $request->validate([
+            'employee_id' => 'required|string|max:255',
+            'temporary_pin' => 'required|digits:6',
+        ]);
+
+        $user = User::query()
+            ->whereHas('employee', fn ($query) => $query->where('employee_id', trim($attrs['employee_id'])))
+            ->first();
+
+        $storedPin = '';
+        if ($user) {
+            try {
+                $storedPin = trim((string) $user->temporary_pin);
+            } catch (\Throwable) {
+                $storedPin = '';
+            }
+        }
+
+        $alreadyActivated = $user
+            && strcasecmp(trim((string) ($user->account_status ?? '')), 'Active') === 0
+            && strcasecmp(trim((string) ($user->status ?? '')), 'Approved') === 0;
+
+        if ($alreadyActivated || ($user && $storedPin === '')) {
+            return redirect()->route('account.activation')->with('activation_already_completed', true);
+        }
+
+        if (!$user || $storedPin === '' || !hash_equals($storedPin, (string) $attrs['temporary_pin'])) {
+            return back()->withErrors([
+                'temporary_pin' => 'The Employee ID or temporary PIN is incorrect.',
+            ])->withInput($request->only('employee_id'));
+        }
+
+        $request->session()->put('account_activation_user_id', (int) $user->id);
+        $request->session()->put('account_activation_verified_at', now()->timestamp);
+
+        return redirect()->route('account.activation')->with('status', 'PIN verified. Create your password.');
+    }
+
+    public function complete_account_activation(Request $request)
+    {
+        $attrs = $request->validate([
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $userId = (int) $request->session()->get('account_activation_user_id', 0);
+        $verifiedAt = (int) $request->session()->get('account_activation_verified_at', 0);
+        if ($userId <= 0 || $verifiedAt <= 0 || now()->timestamp - $verifiedAt > 600) {
+            $request->session()->forget(['account_activation_user_id', 'account_activation_verified_at']);
+            return redirect()->route('account.activation')->withErrors([
+                'employee_id' => 'Your verification expired. Enter your Employee ID and temporary PIN again.',
+            ]);
+        }
+
+        $user = User::query()->find($userId);
+        if (!$user || trim((string) ($user->temporary_pin ?? '')) === '') {
+            $request->session()->forget(['account_activation_user_id', 'account_activation_verified_at']);
+            return redirect()->route('account.activation')->withErrors([
+                'employee_id' => 'This activation link is no longer available.',
+            ]);
+        }
+
+        // Clearing the PIN and changing the password happen in one conditional
+        // update. Even two simultaneous submissions can only activate once.
+        $activated = User::query()
+            ->whereKey($user->id)
+            ->whereNotNull('temporary_pin')
+            ->where(function ($query) {
+                $query->whereRaw("LOWER(TRIM(COALESCE(account_status, ''))) <> ?", ['active'])
+                    ->orWhereRaw("LOWER(TRIM(COALESCE(status, ''))) <> ?", ['approved']);
+            })
+            ->update([
+                'password' => Hash::make($attrs['password']),
+                'temporary_pin' => null,
+                'account_status' => 'Active',
+                'status' => 'Approved',
+                'updated_at' => now(),
+            ]);
+
+        if ($activated !== 1) {
+            $request->session()->forget(['account_activation_user_id', 'account_activation_verified_at']);
+
+            return redirect()->route('login_display')->withErrors([
+                'email' => 'This account has already been activated. Use Forgot Password if you need to change your password.',
+            ]);
+        }
+
+        $request->session()->forget(['account_activation_user_id', 'account_activation_verified_at']);
+
+        return redirect()->route('login_display')->with('status', 'Your account is active. You can now sign in with your Employee ID and password.');
+    }
+
     public function register_store(Request $request){
         $attrs = $request->validate([
             'first_name' => 'required|string|max:255',
@@ -194,7 +301,11 @@ class RegisterLoginController extends Controller
             }
 
             if ($isHiredEmployee && !$statusIsApproved) {
-                $user->forceFill(['status' => 'Approved'])->save();
+                return back()
+                    ->withErrors([
+                        'email' => 'Your account is not approved yet. Please contact HR.',
+                    ])
+                    ->withInput();
             }
 
             Auth::login($user);

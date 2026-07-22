@@ -67,7 +67,7 @@
     }
 </style>
 
-<header id="employee-communication-header" class="employee-communication-header sticky top-0 z-40 border-b border-slate-200/80 bg-white/80 px-4 py-4 backdrop-blur-xl md:px-8 md:py-5">
+<header id="employee-communication-header" class="employee-communication-header relative z-10 border-b border-slate-200/80 bg-white/80 px-4 py-4 backdrop-blur-xl md:px-8 md:py-5">
     <div class="employee-communication-header__card relative overflow-hidden rounded-[2rem] border border-slate-200 bg-gradient-to-br from-slate-950 via-emerald-950 to-teal-700 px-5 py-6 text-white shadow-[0_24px_80px_rgba(15,23,42,0.28)] md:px-8 md:py-8">
         <div class="employee-communication-header__orb absolute -left-8 top-4 h-24 w-24 rounded-full bg-white/10 blur-3xl"></div>
         <div class="employee-communication-header__orb absolute right-6 top-3 h-20 w-20 rounded-full bg-emerald-200/20 blur-3xl"></div>

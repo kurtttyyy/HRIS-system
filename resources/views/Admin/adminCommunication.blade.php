@@ -31,6 +31,9 @@
             .communication-card-motion{transition:none}
             .communication-card-motion:hover{transform:none}
         }
+        @media (max-width:1279px){
+            #admin-chat-panel{position:fixed;inset:1rem;z-index:80;height:calc(100vh - 2rem)!important;min-height:0!important}
+        }
     </style>
 </head>
 <body class="bg-[radial-gradient(circle_at_top,_#f8fafc,_#eef2ff_40%,_#f8fafc_100%)] text-slate-900">
@@ -62,15 +65,16 @@
             @if ($errors->any())
                 <div class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{{ $errors->first() }}</div>
             @endif
-            <section class="communication-reveal rounded-[2rem] border border-slate-200 bg-white/90 p-6 shadow-sm" style="--communication-delay:0ms">
-                <div class="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+            <div class="grid gap-5 xl:grid-cols-[23rem_minmax(0,1fr)]">
+            <section class="communication-reveal flex min-h-[38rem] flex-col rounded-[2rem] border border-slate-200 bg-white/95 p-5 shadow-sm xl:h-[calc(100vh-11rem)] xl:min-h-0" style="--communication-delay:0ms">
+                <div class="space-y-4">
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">Employee Directory</p>
-                        <h3 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Choose an employee to start or continue a chat.</h3>
-                        <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Use the directory to jump straight into a message thread with any approved employee.</p>
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">Conversations</p>
+                        <h3 class="mt-2 text-xl font-black tracking-tight text-slate-900">Messages</h3>
+                        <p class="mt-1 text-sm text-slate-500">Select an employee to open a conversation.</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
-                        <div class="communication-card-motion communication-reveal inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-500" style="--communication-delay:70ms">
+                        <div class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
                             <i class="fa-solid fa-user-group text-emerald-500"></i>
                             {{ $availableCount }} available employee{{ $availableCount === 1 ? '' : 's' }}
                         </div>
@@ -78,7 +82,7 @@
                             id="admin-all-filter"
                             type="button"
                             aria-pressed="true"
-                            class="communication-card-motion communication-reveal inline-flex items-center gap-2 rounded-full border border-slate-900 bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm"
+                            class="inline-flex items-center gap-2 rounded-full border border-slate-900 bg-slate-900 px-3 py-2 text-xs font-semibold text-white shadow-sm"
                             style="--communication-delay:80ms"
                         >
                             <i class="fa-solid fa-users" aria-hidden="true"></i>
@@ -88,7 +92,7 @@
                             id="admin-unread-filter"
                             type="button"
                             aria-pressed="false"
-                            class="communication-card-motion communication-reveal inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 {{ $unreadMessageCount === 0 ? 'cursor-not-allowed opacity-60' : 'hover:border-rose-300 hover:bg-rose-100' }}"
+                            class="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 {{ $unreadMessageCount === 0 ? 'cursor-not-allowed opacity-60' : 'hover:border-rose-300 hover:bg-rose-100' }}"
                             style="--communication-delay:90ms"
                             @disabled($unreadMessageCount === 0)
                         >
@@ -100,7 +104,7 @@
                         </button>
                     </div>
                 </div>
-                <div id="admin-communication-directory-grid" class="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
+                <div id="admin-communication-directory-grid" class="messenger-scroll mt-4 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1">
                     @foreach ($directoryMembers as $employee)
                         @php
                             $employeeName = trim(implode(' ', array_filter([$employee->first_name ?? null, $employee->middle_name ?? null, $employee->last_name ?? null])));
@@ -121,41 +125,40 @@
                             data-department="{{ strtolower($department) }}"
                             data-unread="{{ $employeeHasUnreadMessages ? 'true' : 'false' }}"
                             data-unread-count="{{ $employeeUnreadCount }}"
-                            class="communication-card-motion communication-reveal rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-5 shadow-sm"
+                            class="communication-card-motion communication-reveal rounded-2xl border p-3 shadow-sm {{ (int) ($selectedParticipant?->id ?? 0) === (int) ($employee->id ?? 0) ? 'border-emerald-300 bg-emerald-50 ring-2 ring-emerald-100' : 'border-slate-200 bg-slate-50/70' }}"
                             style="--communication-delay: {{ 110 + (($loop->index % 6) * 35) }}ms;"
                         >
-                            <div class="flex items-start justify-between gap-4">
-                                <div class="flex items-center gap-4">
-                                    <div class="communication-icon-pop flex h-14 w-14 items-center justify-center rounded-[1.2rem] bg-gradient-to-br from-slate-900 to-emerald-600 text-lg font-black text-white" style="--communication-delay: {{ 140 + (($loop->index % 6) * 35) }}ms;">{{ $employeeInitials !== '' ? $employeeInitials : 'EM' }}</div>
+                            <div class="flex items-center gap-3">
+                                <div class="communication-icon-pop flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-emerald-600 text-sm font-black text-white" style="--communication-delay: {{ 140 + (($loop->index % 6) * 35) }}ms;">{{ $employeeInitials !== '' ? $employeeInitials : 'EM' }}</div>
+                                <div class="min-w-0 flex-1">
+                                  <div class="flex items-start justify-between gap-2">
                                     <div class="min-w-0">
                                         <div data-admin-employee-name-row class="flex flex-wrap items-center gap-2">
-                                            <p class="truncate text-lg font-black text-slate-900">{{ $employeeName }}</p>
+                                            <p class="truncate text-sm font-black text-slate-900">{{ $employeeName }}</p>
                                             @if ($employeeHasUnreadMessages)
                                                 <span data-admin-unread-badge data-admin-name-unread class="inline-flex items-center rounded-full bg-rose-500 px-2.5 py-1 text-[11px] font-bold text-white">{{ $employeeUnreadCount > 99 ? '99+' : $employeeUnreadCount }} unread</span>
                                             @endif
                                         </div>
-                                        <p class="text-sm text-slate-500">{{ $position }}</p>
+                                        <p class="truncate text-xs text-slate-500">{{ $position }} - {{ $department !== '' ? $department : 'General' }}</p>
                                     </div>
-                                </div>
-                                <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">{{ $department !== '' ? $department : 'General' }}</span>
-                            </div>
-                            <div class="mt-5 flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                                <div class="min-w-0">
-                                    <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Email</p>
-                                    <p class="truncate text-sm text-slate-600">{{ $employee->email }}</p>
-                                </div>
+                                    <span class="mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-400 ring-2 ring-emerald-100" title="Available"></span>
+                                  </div>
+                                  <div class="mt-2 flex items-center justify-between gap-2">
+                                    <p data-admin-message-preview class="truncate text-xs {{ $employeeHasUnreadMessages ? 'font-semibold text-slate-700' : 'text-slate-400' }}">{{ $employee->latest_message_preview ?: ($employee->email ?: 'No messages yet') }}</p>
                                 @if ($isSelfEmployeeCard)
-                                    <span class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-400"><i class="fa-solid fa-ban"></i>Current Account</span>
+                                    <span class="text-[11px] font-semibold text-slate-400">Current account</span>
                                 @else
-                                    <a href="{{ route('admin.adminCommunication', array_filter(['user' => $employee->id, 'tab_session' => request()->query('tab_session')])) }}#admin-chat-panel" data-admin-chat-connect class="relative inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
+                                    <a href="{{ route('admin.adminCommunication', array_filter(['user' => $employee->id, 'tab_session' => request()->query('tab_session')])) }}#admin-chat-panel" data-admin-chat-connect class="relative inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700">
                                         @if ($employeeHasUnreadMessages)
                                             <span data-admin-unread-badge data-admin-connect-unread class="absolute -right-2 -top-2 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
                                                 {{ $employeeUnreadCount > 99 ? '99+' : $employeeUnreadCount }}
                                             </span>
                                         @endif
-                                        <i class="fa-solid fa-comment"></i>Connect
+                                        <i class="fa-solid fa-comment"></i>Open
                                     </a>
                                 @endif
+                                  </div>
+                                </div>
                             </div>
                         </article>
                     @endforeach
@@ -165,13 +168,14 @@
                 </div>
             </section>
 
+            <div id="admin-conversation-workspace" class="min-h-[38rem] xl:h-[calc(100vh-11rem)]">
             @if ($selectedParticipant)
                             @php
                                 $participantName = trim(implode(' ', array_filter([$selectedParticipant->first_name ?? null, $selectedParticipant->middle_name ?? null, $selectedParticipant->last_name ?? null])));
                                 $participantName = $participantName !== '' ? $participantName : (string) ($selectedParticipant->email ?? 'Employee');
                                 $participantInitials = strtoupper(substr(trim((string) ($selectedParticipant->first_name ?? 'E')), 0, 1).substr(trim((string) ($selectedParticipant->last_name ?? '')), 0, 1));
                             @endphp
-                            <div id="admin-chat-panel" class="fixed bottom-5 right-5 z-50 w-[370px] max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-t-2xl rounded-b-[1.35rem] border border-slate-800 bg-[#1f1f1f] shadow-[0_30px_80px_rgba(0,0,0,0.45)]">
+                            <div id="admin-chat-panel" class="flex h-full min-h-[38rem] w-full flex-col overflow-hidden rounded-[2rem] border border-slate-800 bg-[#1f1f1f] shadow-[0_24px_70px_rgba(15,23,42,0.2)]">
                             <div class="border-b border-slate-700 bg-[#242424] px-4 py-3">
                                 <div class="flex items-center justify-between gap-4">
                                     <div class="flex items-center gap-4">
@@ -190,7 +194,12 @@
                                     </div>
                                 </div>
                             </div>
-                            <div id="admin-message-thread" class="messenger-scroll h-[340px] space-y-4 overflow-y-auto bg-[#1f1f1f] px-4 py-4">
+                            <div id="admin-message-thread" class="messenger-scroll min-h-0 flex-1 space-y-4 overflow-y-auto bg-[#1f1f1f] px-4 py-4 md:px-6">
+                                @if ($selectedConversation?->has_older_messages)
+                                    <div class="flex justify-center">
+                                        <a href="{{ request()->fullUrlWithQuery(['message_limit' => $selectedConversation->next_message_limit]) }}" data-admin-chat-connect class="rounded-full bg-slate-800 px-4 py-2 text-xs font-bold text-slate-300 transition hover:bg-slate-700 hover:text-white">Load older messages</a>
+                                    </div>
+                                @endif
                                 @forelse ($messages as $message)
                                     @php
                                         $isOwnMessage = (int) ($message->sender_user_id ?? 0) === (int) auth()->id();
@@ -221,7 +230,7 @@
                                                                 || str_ends_with(strtolower((string) ($attachment->name ?? '')), '.gif');
                                                         @endphp
                                                         <a href="{{ route('admin.communication.attachment.view', array_filter(['attachment' => $attachment->id, 'tab_session' => request()->query('tab_session')])) }}" target="_blank" rel="noopener" class="block overflow-hidden rounded-xl bg-black/20">
-                                                            <img src="{{ route('admin.communication.attachment.view', array_filter(['attachment' => $attachment->id, 'tab_session' => request()->query('tab_session')])) }}" alt="{{ $attachment->name ?: 'Chat image' }}" class="{{ $isGif ? ($messageImageCount === 1 ? 'h-40 w-40 max-w-full object-contain' : 'h-24 w-full object-contain') : ($messageImageCount === 1 ? 'h-64 w-60 max-w-full object-contain' : 'h-32 w-full object-cover') }}">
+                                                            <img loading="lazy" decoding="async" src="{{ route('admin.communication.attachment.view', array_filter(['attachment' => $attachment->id, 'tab_session' => request()->query('tab_session')])) }}" alt="{{ $attachment->name ?: 'Chat image' }}" class="{{ $isGif ? ($messageImageCount === 1 ? 'h-40 w-40 max-w-full object-contain' : 'h-24 w-full object-contain') : ($messageImageCount === 1 ? 'h-64 w-60 max-w-full object-contain' : 'h-32 w-full object-cover') }}">
                                                         </a>
                                                     @endforeach
                                                     @if (!empty($message->attachment_path))
@@ -230,7 +239,7 @@
                                                                 || str_ends_with(strtolower((string) ($message->attachment_name ?? '')), '.gif');
                                                         @endphp
                                                         <a href="{{ route('admin.communication.message.attachment', array_filter(['message' => $message->id, 'tab_session' => request()->query('tab_session')])) }}" target="_blank" rel="noopener" class="block overflow-hidden rounded-xl bg-black/20">
-                                                            <img src="{{ route('admin.communication.message.attachment', array_filter(['message' => $message->id, 'tab_session' => request()->query('tab_session')])) }}" alt="{{ $message->attachment_name ?: 'Chat image' }}" class="{{ $legacyAttachmentIsGif ? ($messageImageCount === 1 ? 'h-40 w-40 max-w-full object-contain' : 'h-24 w-full object-contain') : ($messageImageCount === 1 ? 'h-64 w-60 max-w-full object-contain' : 'h-32 w-full object-cover') }}">
+                                                            <img loading="lazy" decoding="async" src="{{ route('admin.communication.message.attachment', array_filter(['message' => $message->id, 'tab_session' => request()->query('tab_session')])) }}" alt="{{ $message->attachment_name ?: 'Chat image' }}" class="{{ $legacyAttachmentIsGif ? ($messageImageCount === 1 ? 'h-40 w-40 max-w-full object-contain' : 'h-24 w-full object-contain') : ($messageImageCount === 1 ? 'h-64 w-60 max-w-full object-contain' : 'h-32 w-full object-cover') }}">
                                                         </a>
                                                     @endif
                                                 </div>
@@ -291,7 +300,17 @@
                                 </div>
                             </form>
                             </div>
+            @else
+                <div data-admin-chat-placeholder class="flex h-full min-h-[38rem] items-center justify-center rounded-[2rem] border border-dashed border-slate-300 bg-white/75 p-8 text-center shadow-sm">
+                    <div class="max-w-sm">
+                        <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-emerald-100 to-cyan-100 text-3xl text-emerald-700"><i class="fa-solid fa-comments"></i></div>
+                        <h3 class="mt-6 text-2xl font-black text-slate-900">Your conversations</h3>
+                        <p class="mt-3 text-sm leading-6 text-slate-500">Choose an employee from the list to read previous messages or start a new conversation.</p>
+                    </div>
+                </div>
             @endif
+            </div>
+            </div>
         </div>
     </main>
 </div>
@@ -374,13 +393,17 @@ async function loadAdminChatPanel(url, historyMode = 'push') {
 
     const panel = document.importNode(incomingPanel, true);
     const currentPanel = document.getElementById('admin-chat-panel');
+    const workspace = document.getElementById('admin-conversation-workspace');
     if (currentPanel) {
         currentPanel.replaceWith(panel);
+    } else if (workspace) {
+        workspace.replaceChildren(panel);
     } else {
-        document.body.appendChild(panel);
+        throw new Error('Conversation workspace was not found.');
     }
 
     initializeAdminChatPanel();
+    window.refreshAdminCommunicationUnreadCount?.();
 
     const nextUrl = new URL(url, window.location.href);
     nextUrl.hash = 'admin-chat-panel';
@@ -425,7 +448,7 @@ document.addEventListener('click', async function (event) {
         cleanUrl.searchParams.delete('conversation');
         cleanUrl.searchParams.delete('reset_chat');
         cleanUrl.hash = '';
-        history.replaceState({}, '', cleanUrl);
+        window.location.assign(cleanUrl.toString());
         return;
     }
 
@@ -469,6 +492,7 @@ document.addEventListener('click', async function (event) {
                 const nextTotal = Math.max(Number(unreadCount.dataset.unreadTotal || 0) - readCount, 0);
                 unreadCount.dataset.unreadTotal = String(nextTotal);
                 unreadCount.textContent = nextTotal > 99 ? '99+' : String(nextTotal);
+                window.updateAdminCommunicationUnreadCount?.(nextTotal);
                 if (nextTotal === 0 && unreadFilter) {
                     unreadFilter.disabled = true;
                     unreadFilter.classList.add('cursor-not-allowed', 'opacity-60');
@@ -646,6 +670,7 @@ document.addEventListener('submit', async function (event) {
         const nextTotal = Number(incomingCount.dataset.unreadTotal || 0);
         currentCount.dataset.unreadTotal = String(nextTotal);
         currentCount.textContent = nextTotal > 99 ? '99+' : String(nextTotal);
+        window.updateAdminCommunicationUnreadCount?.(nextTotal);
 
         unreadFilter.disabled = nextTotal === 0;
         unreadFilter.classList.toggle('cursor-not-allowed', nextTotal === 0);
@@ -684,6 +709,13 @@ document.addEventListener('submit', async function (event) {
             currentConnect?.querySelector('[data-admin-connect-unread]')?.remove();
             if (currentConnect && incomingConnectBadge) {
                 currentConnect.prepend(document.importNode(incomingConnectBadge, true));
+            }
+
+            const currentPreview = card.querySelector('[data-admin-message-preview]');
+            const incomingPreview = incomingCard.querySelector('[data-admin-message-preview]');
+            if (currentPreview && incomingPreview) {
+                currentPreview.textContent = incomingPreview.textContent;
+                currentPreview.className = incomingPreview.className;
             }
         });
 
@@ -725,6 +757,7 @@ document.addEventListener('submit', async function (event) {
             synchronizeUnreadButton(incomingDocument);
             synchronizeDirectoryCards(incomingDocument);
             synchronizeOpenThread(incomingDocument);
+            window.refreshAdminCommunicationUnreadCount?.();
         } catch (error) {
             // Keep the current page usable and try again on the next interval.
         } finally {
@@ -733,6 +766,12 @@ document.addEventListener('submit', async function (event) {
     };
 
     window.setInterval(pollAdminCommunication, 4000);
+    const visibleUnreadCount = document.getElementById('admin-unread-count');
+    if (visibleUnreadCount) {
+        window.updateAdminCommunicationUnreadCount?.(
+            Number(visibleUnreadCount.dataset.unreadTotal || visibleUnreadCount.textContent || 0)
+        );
+    }
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden) pollAdminCommunication();
     });

@@ -6,6 +6,7 @@ use App\Models\ActivityLog;
 use App\Models\Applicant;
 use App\Models\ApplicantDocument;
 use App\Models\Conversation;
+use App\Models\ConversationMessage;
 use App\Models\Employee;
 use App\Models\GuestLog;
 use App\Models\Interviewer;
@@ -93,7 +94,7 @@ class AdministratorPageController extends Controller
 
         $totalEmployeeCount = User::query()
             ->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee'])
-            ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['approved'])
+            ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) IN (?, ?)", ['approved', 'not approved'])
             ->count();
 
         $today = now();
@@ -429,13 +430,21 @@ class AdministratorPageController extends Controller
         }
 
         if ($selectedConversation) {
+            $messageLimit = min(max((int) request()->query('message_limit', 50), 50), 500);
+            $messageTotal = $selectedConversation->messages()->count();
             $selectedConversation->load([
-                'messages' => function ($query) {
-                    $query->with(['sender', 'attachments'])->orderBy('created_at');
+                'messages' => function ($query) use ($messageLimit) {
+                    $query->with(['sender', 'attachments'])
+                        ->orderByDesc('created_at')
+                        ->orderByDesc('id')
+                        ->limit($messageLimit);
                 },
                 'userOne',
                 'userTwo',
             ]);
+            $selectedConversation->setRelation('messages', $selectedConversation->messages->sortBy('id')->values());
+            $selectedConversation->setAttribute('has_older_messages', $messageTotal > $messageLimit);
+            $selectedConversation->setAttribute('next_message_limit', min($messageLimit + 50, 500));
 
             $selectedConversation->messages()
                 ->whereNull('read_at')
@@ -469,11 +478,31 @@ class AdministratorPageController extends Controller
                 (int) $item['participant']->id => (int) ($item['unread_count'] ?? 0),
             ]);
 
-        $employees = $employees->map(function ($employee) use ($unreadCountsByParticipant) {
+        $latestConversationByParticipant = $conversationSummaries
+            ->filter(fn ($item) => ($item['participant']->id ?? null) !== null)
+            ->keyBy(fn ($item) => (int) $item['participant']->id);
+
+        $employees = $employees->map(function ($employee) use ($unreadCountsByParticipant, $latestConversationByParticipant) {
+            $latestConversation = $latestConversationByParticipant->get((int) $employee->id);
             $employee->unread_message_count = (int) $unreadCountsByParticipant->get((int) $employee->id, 0);
             $employee->has_unread_messages = $employee->unread_message_count > 0;
+            $employee->latest_message_preview = trim((string) data_get($latestConversation, 'latest_message', ''));
+            $employee->latest_message_at = data_get($latestConversation, 'latest_at');
             return $employee;
-        });
+        })->sort(function ($left, $right) {
+            $unreadComparison = (int) ($right->unread_message_count ?? 0) <=> (int) ($left->unread_message_count ?? 0);
+            if ($unreadComparison !== 0) {
+                return $unreadComparison;
+            }
+
+            $leftTime = $left->latest_message_at ? Carbon::parse($left->latest_message_at)->timestamp : 0;
+            $rightTime = $right->latest_message_at ? Carbon::parse($right->latest_message_at)->timestamp : 0;
+            if ($leftTime !== $rightTime) {
+                return $rightTime <=> $leftTime;
+            }
+
+            return strcasecmp((string) $left->first_name, (string) $right->first_name);
+        })->values();
 
         return view('Admin.adminCommunication', compact(
             'employees',
@@ -482,6 +511,42 @@ class AdministratorPageController extends Controller
             'selectedConversation',
             'selectedParticipant'
         ));
+    }
+
+    public function communication_unread_count(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user || !in_array(strtolower(trim((string) ($user->role ?? ''))), ['admin', 'administrator'], true)) {
+            $adminId = (int) $request->query('admin_id', 0);
+            $providedToken = (string) $request->query('token', '');
+            $expectedToken = hash_hmac('sha256', 'admin-communication-unread:'.$adminId, (string) config('app.key'));
+
+            abort_unless($adminId > 0 && $providedToken !== '' && hash_equals($expectedToken, $providedToken), 403);
+
+            $user = User::query()->find($adminId);
+            abort_unless(
+                $user && in_array(strtolower(trim((string) ($user->role ?? ''))), ['admin', 'administrator'], true),
+                403
+            );
+        }
+
+        if (!Schema::hasTable('conversations') || !Schema::hasTable('conversation_messages')) {
+            return response()->json(['count' => 0]);
+        }
+
+        $count = ConversationMessage::query()
+            ->whereNull('read_at')
+            ->where('sender_user_id', '!=', (int) $user->id)
+            ->whereHas('conversation', function ($query) use ($user) {
+                $query->where(function ($innerQuery) use ($user) {
+                    $innerQuery->where('user_one_id', (int) $user->id)
+                        ->orWhere('user_two_id', (int) $user->id);
+                });
+            })
+            ->count();
+
+        return response()->json(['count' => $count])
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate');
     }
 
     private function buildAdminNotifications($pendingEmployees, $pendingLeaveRequests, int $openPositionApplicationsCount, $pendingResignations = null): array
@@ -764,7 +829,7 @@ class AdministratorPageController extends Controller
             },
             ])
             ->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee'])
-            ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['approved'])
+            ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) IN (?, ?)", ['approved', 'not approved'])
             ->get();
 
         $applicantIds = $employee
@@ -924,6 +989,26 @@ class AdministratorPageController extends Controller
         ];
 
         return view('Admin.adminEmployee', compact('employee', 'employeeDirectory', 'employeePaginator', 'employeeFilters'));
+    }
+
+    public function employee_account_statuses()
+    {
+        $employees = User::query()
+            ->select(['id', 'account_status', 'status', 'updated_at'])
+            ->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee'])
+            ->orderBy('id')
+            ->get()
+            ->map(fn (User $user) => [
+                'id' => (int) $user->id,
+                'account_status' => trim((string) ($user->account_status ?: 'Active')),
+                'approval_status' => trim((string) ($user->status ?? '')),
+                'updated_at' => optional($user->updated_at)->toISOString(),
+            ]);
+
+        return response()->json([
+            'employees' => $employees,
+            'version' => hash('sha256', $employees->toJson()),
+        ])->header('Cache-Control', 'no-store, no-cache, must-revalidate');
     }
 
     private function isSundayDate(?string $fromDate): bool

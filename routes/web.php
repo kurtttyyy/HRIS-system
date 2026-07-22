@@ -47,6 +47,10 @@ Route::controller(ApplicantController::class)->group(function () {
 Route::controller(RegisterLoginController::class)->group(function () {
     Route::post('register/store', 'register_store')->name('register.store');
     Route::post('login', 'login_store')->name('login');
+    Route::get('activate-account', 'show_account_activation')->name('account.activation');
+    Route::post('activate-account', 'submit_account_activation')->middleware('throttle:10,1')->name('account.activation.submit');
+    Route::post('activate-account/verify', 'verify_account_activation')->middleware('throttle:10,1')->name('account.activation.verify');
+    Route::post('activate-account/complete', 'complete_account_activation')->middleware('throttle:10,1')->name('account.activation.complete');
     Route::get('forgot-password', 'forgot_password')->name('password.request');
     Route::post('forgot-password', 'send_password_reset_link')->name('password.email');
     Route::get('reset-password/{token}', 'reset_password')->name('password.reset');
@@ -102,7 +106,9 @@ Route::controller(AdministratorPageController::class)->group(function () {
     Route::get('system/notifications', 'display_notifications')->name('admin.adminNotifications');
     Route::get('system/notifications/summary', 'notification_summary')->name('admin.adminNotifications.summary');
     Route::get('system/communication', 'display_communication')->name('admin.adminCommunication');
+    Route::get('system/communication/unread-count', 'communication_unread_count')->name('admin.communicationUnreadCount');
     Route::get('system/employee', 'display_employee')->name('admin.adminEmployee');
+    Route::get('system/employee/account-statuses', 'employee_account_statuses')->name('admin.employeeAccountStatuses');
     Route::get('system/employee/insert', 'display_employee_import')->name('admin.employeeImport');
     Route::get('system/leave/management', 'display_leave')->name('admin.adminLeaveManagement');
     Route::get('system/leave/management/snapshot', 'leave_management_snapshot')->name('admin.leaveManagement.snapshot');

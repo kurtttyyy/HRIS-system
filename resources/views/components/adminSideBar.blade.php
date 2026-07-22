@@ -17,6 +17,9 @@
   }
   $adminRoleLabel = trim((string) ($adminUser->role ?? 'Admin'));
   $tabSession = trim((string) request()->query('tab_session', ''));
+  $adminCommunicationUnreadToken = $adminUser
+    ? hash_hmac('sha256', 'admin-communication-unread:'.(int) $adminUser->id, (string) config('app.key'))
+    : '';
   $adminUnreadMessages = 0;
   $adminPendingLeaveCount = 0;
   $adminPendingApplicantCount = 0;
@@ -437,20 +440,22 @@
 
     <a href="{{ route('admin.adminCommunication', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}"
        data-admin-nav
+       data-admin-communication-nav
+       data-unread-endpoint="{{ route('admin.communicationUnreadCount', array_filter([
+          'tab_session' => $tabSession,
+          'admin_id' => (int) ($adminUser->id ?? 0),
+          'token' => $adminCommunicationUnreadToken,
+       ], fn ($value) => $value !== '' && $value !== 0), false) }}"
        class="relative flex items-center gap-0 group-hover:gap-3 px-4 py-2.5 rounded-lg font-medium transition justify-center group-hover:justify-start
        {{ request()->routeIs('admin.adminCommunication')
           ? 'bg-green-600 text-white'
           : 'text-white hover:bg-green-600/30' }}">
       <span class="relative inline-flex items-center justify-center">
         <i class="fa-solid fa-comments"></i>
-        @if ($adminUnreadMessages > 0)
-          <span class="absolute -right-2 -top-2 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-bold leading-none text-white group-hover:hidden">{{ $adminUnreadMessages > 9 ? '9+' : $adminUnreadMessages }}</span>
-        @endif
+        <span data-admin-communication-unread-dot class="absolute -right-2 -top-2 {{ $adminUnreadMessages > 0 ? 'inline-flex' : 'hidden' }} h-4 min-w-[1rem] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-bold leading-none text-white group-hover:hidden" {{ $adminUnreadMessages > 0 ? '' : 'hidden' }}>{{ $adminUnreadMessages > 9 ? '9+' : $adminUnreadMessages }}</span>
       </span>
       <span class="admin-sidebar-text whitespace-nowrap inline-block max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300">Communication</span>
-      @if ($adminUnreadMessages > 0)
-        <span class="admin-sidebar-count-badge ml-auto min-w-[1.4rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white">{{ $adminUnreadMessages > 99 ? '99+' : $adminUnreadMessages }}</span>
-      @endif
+      <span data-admin-communication-unread-count class="admin-sidebar-count-badge ml-auto min-w-[1.4rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white" {{ $adminUnreadMessages > 0 ? '' : 'hidden' }}>{{ $adminUnreadMessages > 99 ? '99+' : $adminUnreadMessages }}</span>
     </a>
 
     <!-- Reports -->
@@ -964,5 +969,7 @@
 
   })();
 </script>
+
+<script defer src="/js/admin-sidebar-messages.js?v={{ filemtime(public_path('js/admin-sidebar-messages.js')) }}"></script>
 
 @include('components.idleSessionTimeout')
