@@ -337,7 +337,7 @@ window.displayEmployeeId = function displayEmployeeId(employee, emptyValue = '-'
         </div>
         <div class="row row-split">
           <span class="label split-label">Department:</span>
-          <span class="value split-value" x-text="selectedEmployee?.employee?.department ?? '-'"></span>
+          <span class="value split-value" x-text="selectedEmployee?.department ?? selectedEmployee?.employee?.department ?? selectedEmployee?.applicant?.position?.department ?? '-'"></span>
         </div>
         <div class="row">
           <span class="label">Classification:</span>
@@ -451,7 +451,7 @@ window.displayEmployeeId = function displayEmployeeId(employee, emptyValue = '-'
 
   <div class="row">
     <span class="label">Department:</span>
-    <span class="value" x-text="selectedEmployee?.employee?.department ?? '-'"></span>
+    <span class="value" x-text="selectedEmployee?.department ?? selectedEmployee?.employee?.department ?? selectedEmployee?.applicant?.position?.department ?? '-'"></span>
   </div>
 
   <div class="row">

@@ -1,3 +1,4 @@
+@include('components.themeSystem')
 @php
   $isHiringRoute = request()->routeIs('admin.adminApplicant')
     || request()->routeIs('admin.adminPosition')
@@ -16,6 +17,10 @@
     $adminInitials = 'AD';
   }
   $adminRoleLabel = trim((string) ($adminUser->role ?? 'Admin'));
+  $adminPermissionList = $adminUser?->admin_permissions;
+  // Keep every module visible; limited accounts are disabled client-side below
+  // while the permission middleware remains the server-side authority.
+  $canAdmin = static fn (string $permission): bool => true;
   $tabSession = trim((string) request()->query('tab_session', ''));
   $adminCommunicationUnreadToken = $adminUser
     ? hash_hmac('sha256', 'admin-communication-unread:'.(int) $adminUser->id, (string) config('app.key'))
@@ -368,7 +373,9 @@
   <nav class="flex-1 px-2 group-hover:px-3 py-4 space-y-1.5">
 
     <!-- Dashboard -->
+    @if($canAdmin('dashboard'))
     <a href="{{ route('admin.adminHome', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}"
+       data-admin-module="dashboard"
        data-admin-nav
        class="flex items-center gap-0 group-hover:gap-3 px-4 py-2.5 rounded-lg font-medium transition justify-center group-hover:justify-start
        {{ request()->routeIs('admin.adminHome')
@@ -387,9 +394,12 @@
         </span>
       @endif
     </a>
+    @endif
 
     <!-- Employees -->
+    @if($canAdmin('employees'))
     <a href="{{ route('admin.adminEmployee', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}"
+       data-admin-module="employees"
        data-admin-nav
        class="flex items-center gap-0 group-hover:gap-3 px-4 py-2.5 rounded-lg font-medium transition justify-center group-hover:justify-start
        {{ request()->routeIs('admin.adminEmployee')
@@ -408,9 +418,12 @@
         </span>
       @endif
     </a>
+    @endif
 
     <!-- Leave -->
+    @if($canAdmin('leave'))
     <a href="{{ route('admin.adminLeaveManagement', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}"
+       data-admin-module="leave"
        data-admin-nav
        class="flex items-center gap-0 group-hover:gap-3 px-4 py-2.5 rounded-lg font-medium transition justify-center group-hover:justify-start
        {{ request()->routeIs('admin.adminLeaveManagement')
@@ -425,10 +438,13 @@
         {{ $adminPendingLeaveCount > 99 ? '99+' : $adminPendingLeaveCount }}
       </span>
     </a>
+    @endif
 
     <!-- ✅ Hiring Dropdown (FIXED) -->
     <!-- Payslip -->
+    @if($canAdmin('payslip'))
     <a href="{{ route('admin.adminPayslip', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}"
+       data-admin-module="payslip"
        data-admin-nav
        class="flex items-center gap-0 group-hover:gap-3 px-4 py-2.5 rounded-lg font-medium transition justify-center group-hover:justify-start
        {{ request()->routeIs('admin.adminPayslip')
@@ -437,8 +453,11 @@
       <i class="fa-solid fa-file-invoice-dollar"></i>
       <span class="admin-sidebar-text whitespace-nowrap inline-block max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300">Payslip</span>
     </a>
+    @endif
 
+    @if($canAdmin('communication'))
     <a href="{{ route('admin.adminCommunication', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}"
+       data-admin-module="communication"
        data-admin-nav
        data-admin-communication-nav
        data-unread-endpoint="{{ route('admin.communicationUnreadCount', array_filter([
@@ -457,9 +476,12 @@
       <span class="admin-sidebar-text whitespace-nowrap inline-block max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300">Communication</span>
       <span data-admin-communication-unread-count class="admin-sidebar-count-badge ml-auto min-w-[1.4rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white" {{ $adminUnreadMessages > 0 ? '' : 'hidden' }}>{{ $adminUnreadMessages > 99 ? '99+' : $adminUnreadMessages }}</span>
     </a>
+    @endif
 
     <!-- Reports -->
+    @if($canAdmin('reports'))
     <a href="{{ route('admin.adminReports', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}"
+       data-admin-module="reports"
        data-admin-nav
        class="flex items-center gap-0 group-hover:gap-3 px-4 py-2.5 rounded-lg font-medium transition justify-center group-hover:justify-start
        {{ request()->routeIs('admin.adminReports')
@@ -468,8 +490,10 @@
       <i class="fa-solid fa-chart-line"></i>
       <span class="admin-sidebar-text whitespace-nowrap inline-block max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300">Reports</span>
     </a>
+    @endif
 
-    <details class="space-y-1 hiring-menu" {{ $isHiringRoute ? 'open' : '' }}>
+    @if($canAdmin('hiring'))
+    <details data-admin-module="hiring" class="space-y-1 hiring-menu" {{ $isHiringRoute ? 'open' : '' }}>
       <summary
         class="w-full flex items-center justify-center group-hover:justify-between px-4 py-2.5 rounded-lg font-medium transition text-white hover:bg-green-600/30 cursor-pointer"
       >
@@ -536,6 +560,7 @@
 
       </div>
     </details>
+    @endif
 
     @if (false)
       <!-- Reports hidden temporarily -->
@@ -550,6 +575,7 @@
     @endif
 
     <!-- See More -->
+    @if($canAdmin('loads') || $canAdmin('matrix') || $canAdmin('resignations'))
     <details class="space-y-1 more-menu">
       <summary
         class="w-full flex items-center justify-center group-hover:justify-between px-4 py-2.5 rounded-lg font-medium transition text-white hover:bg-green-600/30 cursor-pointer"
@@ -562,7 +588,9 @@
       </summary>
 
       <div class="ml-0 group-hover:ml-8 space-y-1">
+        @if($canAdmin('loads'))
         <a href="{{ route('admin.adminLoads', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}"
+           data-admin-module="loads"
            data-admin-nav
            class="flex items-center gap-0 group-hover:gap-2 px-4 py-2 rounded-md text-sm justify-center group-hover:justify-start
            {{ request()->routeIs('admin.adminLoads')
@@ -571,8 +599,10 @@
           <i class="fa-solid fa-book-open-reader"></i>
           <span class="admin-sidebar-text whitespace-nowrap inline-block max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300">Loads</span>
         </a>
+        @endif
 
-        <details class="space-y-1 matrix-menu">
+        @if($canAdmin('matrix'))
+        <details data-admin-module="matrix" class="space-y-1 matrix-menu">
           <summary
             class="w-full flex items-center justify-center group-hover:justify-between px-4 py-2 rounded-md text-sm transition text-white hover:bg-green-600/30 cursor-pointer"
           >
@@ -615,8 +645,11 @@
             </a>
           </div>
         </details>
+        @endif
 
+        @if($canAdmin('resignations'))
         <a href="{{ route('admin.adminResignations', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}"
+           data-admin-module="resignations"
            data-admin-nav
            class="flex items-center gap-0 group-hover:gap-2 px-4 py-2 rounded-md text-sm justify-center group-hover:justify-start
            {{ request()->routeIs('admin.adminResignations')
@@ -625,9 +658,11 @@
           <i class="fa-solid fa-user-minus"></i>
           <span class="admin-sidebar-text whitespace-nowrap inline-block max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300">Resignations</span>
         </a>
+        @endif
 
       </div>
     </details>
+    @endif
 
   </nav>
 
@@ -641,8 +676,8 @@
           type="button"
           data-admin-profile-menu-toggle
           class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-700 text-slate-200 transition hover:border-emerald-400 hover:bg-slate-800 hover:text-white"
-          title="Settings"
-          aria-label="Open settings menu"
+          title="Account menu"
+          aria-label="Open account menu"
           aria-expanded="false"
         >
           <i class="fa-solid fa-gear"></i>
@@ -655,10 +690,10 @@
       data-admin-profile-menu
       class="absolute bottom-20 left-4 right-4 hidden overflow-hidden rounded-2xl border border-slate-700 bg-slate-950/95 p-2 text-sm shadow-2xl shadow-slate-950/40"
     >
-      <button type="button" class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-slate-200 transition hover:bg-slate-800 hover:text-white">
-        <i class="fa-solid fa-gear w-4 text-center text-emerald-300"></i>
-        <span>Settings</span>
-      </button>
+      <a href="{{ route('admin.myProfile', array_filter(['tab_session' => request()->query('tab_session')])) }}" class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-slate-200 transition hover:bg-emerald-600 hover:text-white">
+        <i class="fa-regular fa-user w-4 text-center text-emerald-300"></i>
+        <span>My Profile</span>
+      </a>
       <form method="POST" action="{{ route('logout') }}">
         @csrf
         @if($tabSession !== '')
@@ -967,6 +1002,42 @@
       });
     };
 
+  })();
+</script>
+
+<script>
+  (() => {
+    const permissions = @json($adminPermissionList);
+    if (!Array.isArray(permissions)) return;
+
+    document.querySelectorAll('[data-admin-module]').forEach((item) => {
+      const moduleName = item.dataset.adminModule || '';
+      if (permissions.includes(moduleName)) return;
+
+      item.dataset.adminDisabled = 'true';
+      item.setAttribute('aria-disabled', 'true');
+      item.setAttribute('title', 'Not assigned to your administrator account');
+      item.classList.add('cursor-not-allowed', 'grayscale');
+      item.style.opacity = '0.35';
+
+      if (item.tagName === 'A') {
+        item.removeAttribute('href');
+        item.setAttribute('tabindex', '-1');
+        item.addEventListener('click', (event) => event.preventDefault());
+      }
+
+      if (item.tagName === 'DETAILS') {
+        item.open = false;
+        const summary = item.querySelector(':scope > summary');
+        summary?.setAttribute('aria-disabled', 'true');
+        summary?.addEventListener('click', (event) => event.preventDefault());
+        item.querySelectorAll('a').forEach((link) => {
+          link.removeAttribute('href');
+          link.setAttribute('tabindex', '-1');
+          link.addEventListener('click', (event) => event.preventDefault());
+        });
+      }
+    });
   })();
 </script>
 

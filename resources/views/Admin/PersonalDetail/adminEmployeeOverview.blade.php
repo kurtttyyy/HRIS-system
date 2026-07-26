@@ -289,7 +289,7 @@
         </span>
         <span
           class="text-gray-700"
-          x-text="selectedEmployee?.employee?.department ?? selectedEmployee?.applicant?.position?.department ?? 'Ã¢â‚¬â€'"
+          x-text="selectedEmployee?.department ?? selectedEmployee?.employee?.department ?? selectedEmployee?.applicant?.position?.department ?? '—'"
         ></span>
       </div>
     </div>
@@ -316,7 +316,7 @@
         </span>
         <span
           class="text-gray-700"
-          x-text="selectedEmployee?.employee?.classification ?? selectedEmployee?.applicant?.position?.employment ?? 'Ã¢â‚¬â€'"
+          x-text="employmentClassificationLabel()"
         ></span>
       </div>
     </div>
@@ -342,27 +342,7 @@
         </span>
         <span
           class="text-gray-700"
-          x-text="(() => {
-            const jobTypeRaw = selectedEmployee?.employee?.job_type ?? selectedEmployee?.applicant?.position?.job_type ?? '';
-            const jobType = jobTypeRaw.toString().trim().toLowerCase();
-            const rawJoinDate = selectedEmployee?.applicant?.date_hired ?? selectedEmployee?.employee?.employement_date;
-            if (jobType !== 'non-teaching' && jobType !== 'teaching') return 'N/A';
-            if (!rawJoinDate) return 'Probationary';
-
-            const joinDate = new Date(rawJoinDate);
-            if (Number.isNaN(joinDate.getTime())) return 'Probationary';
-
-            const today = new Date();
-            if (jobType === 'non-teaching') {
-              const sixMonthsAfterJoin = new Date(joinDate);
-              sixMonthsAfterJoin.setMonth(sixMonthsAfterJoin.getMonth() + 6);
-              return today < sixMonthsAfterJoin ? 'Probationary' : 'Permanent';
-            }
-
-            const threeYearsAfterJoin = new Date(joinDate);
-            threeYearsAfterJoin.setFullYear(threeYearsAfterJoin.getFullYear() + 3);
-            return today < threeYearsAfterJoin ? 'Probationary' : 'Permanent';
-          })()"
+          x-text="isPermanentClassification(selectedEmployee?.employee?.classification) ? 'Permanent' : 'Probationary'"
         ></span>
       </div>
     </div>

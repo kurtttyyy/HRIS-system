@@ -17,7 +17,7 @@
 
       <div class="bg-white rounded-xl p-4 shadow">
         <p class="text-xs text-gray-400">DEPARTMENT</p>
-        <p class="font-semibold mt-1" x-text="selectedEmployee?.employee?.department ?? selectedEmployee?.applicant?.position?.department ?? '-'"></p>
+        <p class="font-semibold mt-1" x-text="selectedEmployee?.department ?? selectedEmployee?.employee?.department ?? selectedEmployee?.applicant?.position?.department ?? '-'"></p>
       </div>
 
       <div class="bg-white rounded-xl p-4 shadow">
@@ -94,7 +94,7 @@
       <div class="bg-purple-50 text-purple-600 rounded-xl p-6 text-center">
         <p
           class="text-2xl font-bold"
-          x-text="selectedEmployee?.employee?.classification ?? selectedEmployee?.employee?.job_type ?? selectedEmployee?.applicant?.position?.job_type ?? '-'"
+          x-text="employmentClassificationLabel()"
         ></p>
         <p class="text-sm">Classification</p>
       </div>

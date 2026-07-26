@@ -53,13 +53,11 @@
                 <input name="position" class="border rounded-md px-3 py-2" x-model="selectedEmployee.employee.position">
                 <input name="department" class="border rounded-md px-3 py-2" x-model="selectedEmployee.employee.department">
                 <input name="employee_id" class="border rounded-md px-3 py-2" x-model="selectedEmployee.employee.employee_id">
-                <select name="classification" class="border rounded-md px-3 py-2" x-model="selectedEmployee.employee.classification">
+                <select class="border rounded-md px-3 py-2 bg-gray-50" :value="employmentClassificationLabel()" disabled>
                   <option value="">Classification</option>
-                  <option value="Probationary">Probationary</option>
-                  <option value="Permanent">Permanent</option>
-                  <option value="Contractual">Contractual</option>
-                  <option value="Part-Time">Part-Time</option>
-                  <option value="Full-Time">Full-Time</option>
+                  <option value="Full-time">Full-time</option>
+                  <option value="Part-time">Part-time</option>
+                  <option value="Non-Teaching">Non-Teaching</option>
                 </select>
               </div>
             </section>
@@ -68,24 +66,42 @@
             <section>
               <h3 class="text-indigo-600 font-semibold mb-4 flex items-center gap-2">Address</h3>
               <div class="grid grid-cols-2 gap-4">
-                <input
-                  name="barangay"
-                  class="border rounded-md px-3 py-2"
-                  placeholder="Barangay"
-                  :value="(() => { const parts = (selectedEmployee?.employee?.address ?? '').split(',').map(p => p.trim()).filter(Boolean); return parts[0] ?? ''; })()"
-                >
-                <input
-                  name="municipality"
-                  class="border rounded-md px-3 py-2"
-                  placeholder="Municipality"
-                  :value="(() => { const parts = (selectedEmployee?.employee?.address ?? '').split(',').map(p => p.trim()).filter(Boolean); return parts[1] ?? ''; })()"
-                >
-                <input
-                  name="province"
-                  class="border rounded-md px-3 py-2"
-                  placeholder="Province"
-                  :value="(() => { const parts = (selectedEmployee?.employee?.address ?? '').split(',').map(p => p.trim()).filter(Boolean); return parts[2] ?? ''; })()"
-                >
+                <label class="col-span-2 space-y-1">
+                  <span class="text-xs font-medium text-gray-500">House No. / Street / Sitio / Subdivision</span>
+                  <input
+                    name="address_line"
+                    class="w-full border rounded-md px-3 py-2"
+                    placeholder="e.g. Maligaya"
+                    :value="addressFormParts().addressLine"
+                  >
+                </label>
+                <label class="space-y-1">
+                  <span class="text-xs font-medium text-gray-500">Barangay</span>
+                  <input
+                    name="barangay"
+                    class="w-full border rounded-md px-3 py-2"
+                    placeholder="e.g. San Fabian"
+                    :value="addressFormParts().barangay"
+                  >
+                </label>
+                <label class="space-y-1">
+                  <span class="text-xs font-medium text-gray-500">Municipality / City</span>
+                  <input
+                    name="municipality"
+                    class="w-full border rounded-md px-3 py-2"
+                    placeholder="e.g. Echague"
+                    :value="addressFormParts().municipality"
+                  >
+                </label>
+                <label class="space-y-1">
+                  <span class="text-xs font-medium text-gray-500">Province</span>
+                  <input
+                    name="province"
+                    class="w-full border rounded-md px-3 py-2"
+                    placeholder="e.g. Isabela"
+                    :value="addressFormParts().province"
+                  >
+                </label>
               </div>
             </section>
 

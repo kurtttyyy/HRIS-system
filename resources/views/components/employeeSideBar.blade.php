@@ -1,3 +1,4 @@
+@include('components.themeSystem')
 @php
     $employeeUser = auth()->user();
     $showDepartmentHeadMore = strtolower(trim((string) ($employeeUser->department_head ?? ''))) === 'approved';

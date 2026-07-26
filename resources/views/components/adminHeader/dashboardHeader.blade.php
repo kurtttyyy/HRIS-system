@@ -4,6 +4,7 @@
     $headerSearchPlaceholder = trim((string) ($headerSearchPlaceholder ?? ''));
     $headerSearchInputId = trim((string) ($headerSearchInputId ?? 'admin-header-search-input'));
     $showHeaderSearch = $headerSearchPlaceholder !== '';
+    $showThemeToggle = (bool) ($showThemeToggle ?? false);
     $adminUser = auth()->user();
     $adminName = trim(implode(' ', array_filter([
         $adminUser?->first_name ?? null,
@@ -206,7 +207,7 @@
             <p class="admin-header-meta mt-3 inline-flex rounded-full border border-white/10 bg-white/8 px-3 py-1.5 text-xs font-medium text-emerald-50/80">{{ now()->format('l, F j, Y') }}</p>
         </div>
 
-        <div class="relative flex w-full min-w-0 flex-col gap-4 {{ $showHeaderSearch ? 'lg:max-w-[720px]' : 'lg:max-w-[420px]' }} lg:self-end xl:flex-row xl:items-center xl:justify-end">
+        <div class="relative flex w-full min-w-0 flex-col gap-4 {{ $showHeaderSearch ? 'lg:max-w-[720px]' : 'lg:max-w-[660px]' }} lg:self-end xl:flex-row xl:items-center xl:justify-end">
             @if ($showHeaderSearch)
                 <label class="admin-header-search group relative flex min-w-0 flex-1 items-center rounded-2xl border border-white/10 bg-white px-4 py-3 focus-within:border-emerald-300 focus-within:shadow-sm">
                     <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
@@ -219,11 +220,10 @@
                 </label>
             @endif
 
-            <div class="flex flex-wrap items-center justify-end gap-3">
-                <div class="admin-header-meta hidden items-center gap-2 rounded-full border border-white/10 bg-white/8 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-50 sm:inline-flex">
-                    HR Online
-                </div>
-
+            <div class="flex flex-wrap items-center justify-end gap-3 xl:flex-nowrap">
+                @if ($showThemeToggle)
+                    @include('components.themeToggle')
+                @endif
                 <div class="relative group">
                     <a href="{{ route('admin.adminNotifications') }}" data-admin-notification-trigger class="admin-notification-trigger {{ $adminNotificationTotal > 0 ? 'has-notifications ' : '' }}relative flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/8 text-emerald-50 shadow-sm transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/15" aria-label="Open admin notifications">
                         <span data-admin-notification-badge data-fallback-count="{{ $adminNotificationTotal }}" class="{{ $adminNotificationTotal > 0 ? '' : 'hidden ' }}absolute right-0 top-0 flex h-5 min-w-[1.25rem] -translate-y-1/4 translate-x-1/4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
@@ -291,10 +291,10 @@
                     </button>
 
                     <div class="invisible absolute right-0 z-50 mt-3 w-56 overflow-hidden rounded-2xl border border-slate-200 bg-white opacity-0 shadow-xl transition-all duration-200 group-hover:visible group-hover:opacity-100">
-                        <button type="button" class="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-50">
+                        <a href="{{ route('admin.myProfile', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}" class="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-50">
                             <i class="fa-regular fa-user text-slate-400"></i>
                             My Profile
-                        </button>
+                        </a>
                         <a href="{{ route('admin.adminHome', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}" class="flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50">
                             <i class="fa-solid fa-house text-slate-400"></i>
                             Dashboard
@@ -307,10 +307,6 @@
                             <i class="fa-solid fa-calendar-days text-slate-400"></i>
                             Calendar
                         </a>
-                        <button type="button" class="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-50">
-                            <i class="fa-solid fa-gear text-slate-400"></i>
-                            Settings
-                        </button>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             @if($tabSession !== '')

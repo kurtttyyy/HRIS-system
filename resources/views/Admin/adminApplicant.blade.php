@@ -156,10 +156,10 @@
 <div class="flex min-h-screen">
   @include('components.adminSideBar')
 
-  <main class="flex-1 ml-16 transition-all duration-300">
+  <main class="ml-16 min-w-0 flex-1 transition-all duration-300">
     @include('components.adminHeader.applicantHeader')
 
-    <div id="admin-applicant-page" class="p-4 md:p-8 space-y-6 pt-20">
+    <div id="admin-applicant-page" class="min-w-0 space-y-6 p-4 pt-20 md:p-8">
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
         <div role="button" tabindex="0" data-applicant-dashboard-filter="all" class="applicant-stat-card applicant-card-motion applicant-reveal cursor-pointer rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-[0_24px_55px_rgba(15,23,42,0.1)] focus:outline-none focus:ring-2 focus:ring-sky-300" style="--applicant-delay: 30ms;">
           <div class="flex items-start justify-between gap-4">
@@ -282,7 +282,7 @@
           No applicants matched the current search or filters.
         </div>
 
-        <div class="mt-4 flex justify-end items-center gap-2" id="paginationControls"></div>
+        <div class="mt-4 flex flex-wrap items-center justify-end gap-2" id="paginationControls"></div>
       </div>
     </div>
   </main>
@@ -1029,18 +1029,48 @@
       return;
     }
 
-    for (let i = 1; i <= pageCount; i++) {
+    const appendPageButton = (page, label = String(page), disabled = false, active = false) => {
       const button = document.createElement('button');
       button.type = 'button';
-      button.textContent = i;
-      button.className = `flex h-10 w-10 items-center justify-center rounded-full border text-sm font-semibold transition ${
-        i === currentPage
+      button.textContent = label;
+      button.disabled = disabled;
+      button.className = `flex h-10 min-w-10 items-center justify-center rounded-full border px-3 text-sm font-semibold transition ${
+        active
           ? 'border-slate-900 bg-slate-900 text-white'
-          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900'
+          : disabled
+            ? 'cursor-not-allowed border-slate-200 bg-slate-50 text-slate-300'
+            : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900'
       }`;
-      button.addEventListener('click', () => renderTable(i));
+      if (!disabled) button.addEventListener('click', () => renderTable(page));
       pagination.appendChild(button);
-    }
+    };
+
+    appendPageButton(currentPage - 1, '‹', currentPage === 1);
+
+    const visiblePages = [...new Set([
+      1,
+      pageCount,
+      currentPage - 2,
+      currentPage - 1,
+      currentPage,
+      currentPage + 1,
+      currentPage + 2,
+    ])]
+      .filter(page => page >= 1 && page <= pageCount)
+      .sort((a, b) => a - b);
+
+    visiblePages.forEach((page, index) => {
+      const previousPage = visiblePages[index - 1];
+      if (previousPage && page - previousPage > 1) {
+        const ellipsis = document.createElement('span');
+        ellipsis.className = 'px-1 text-slate-400';
+        ellipsis.textContent = '…';
+        pagination.appendChild(ellipsis);
+      }
+      appendPageButton(page, String(page), false, page === currentPage);
+    });
+
+    appendPageButton(currentPage + 1, '›', currentPage === pageCount);
   }
 
   function showFlexModal(id) {

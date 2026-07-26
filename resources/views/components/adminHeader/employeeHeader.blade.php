@@ -166,8 +166,12 @@
                                     </button>
                                     <button type="button" @click="exportMenuOpen = false; window.exportAdminEmployeePinsExcel()" class="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-amber-50">
                                         <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-700"><i class="fa-solid fa-key"></i></span>
-                                        <span><strong class="block text-sm">Temporary PIN list</strong><small class="mt-0.5 block text-xs text-slate-500">Name, Employee ID, and PIN only.</small></span>
+                                        <span><strong class="block text-sm">Temporary PIN list</strong><small class="mt-0.5 block text-xs text-slate-500">All NC employees and teachers.</small></span>
                                     </button>
+                                    <a href="{{ route('admin.employeePins.docx') }}" @click="exportMenuOpen = false" class="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-sky-50">
+                                        <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-100 text-sky-700"><i class="fa-solid fa-file-word"></i></span>
+                                        <span><strong class="block text-sm">Download Word PIN list</strong><small class="mt-0.5 block text-xs text-slate-500">Open and print all NC employees in Word.</small></span>
+                                    </a>
                                 </div>
                             </div>
                             <button

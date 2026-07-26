@@ -20,12 +20,14 @@ use App\Models\Resignation;
 use App\Models\User;
 use App\Support\ActivityChangeLogger;
 use App\Support\EmployeeAccountStatusManager;
+use App\Support\EmployeePinDocx;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Schema;
@@ -38,6 +40,153 @@ class AdministratorPageController extends Controller
     private ?array $hiddenOfficialHolidayDatesCache = null;
     private ?array $calendarHolidayConfigCache = null;
     private array $holidayDateCheckCache = [];
+
+    private function normalizedDepartmentGroup(string $department): string
+    {
+        $normalized = strtoupper(trim((string) preg_replace('/[\s_]+/', '-', $department)));
+        $departmentGroups = [
+            'BEC' => ['BEC'],
+            'CABA' => ['CABA'],
+            'CIT' => ['CIT'],
+            'COC' => ['COC'],
+            'COED' => ['COED'],
+            'COGE' => ['COGE'],
+            'COHM' => ['COHM'],
+            'COLA' => ['COLA'],
+            'CON' => ['CON'],
+            'LAW' => ['LAW'],
+            'MID' => ['MID'],
+            'NSTP/OSAS' => ['NSTP/OSAS', 'NSTP-OSAS', 'NSTP', 'OSAS'],
+            'Human Resources' => ['HUMAN-RESOURCES', 'HR', 'HRD'],
+            'Accounting' => ['ACCOUNTING', 'ACCT', 'ACCOUNTING-OFFICE'],
+            'Community Extension Program' => ['COMMUNITY-EXTENSION-PROGRAM', 'CEP'],
+            'GAD / Research Office' => ['GAD', 'GENDER-AND-DEVELOPMENT', 'RESEARCH-OFFICE/GAD', 'RESEARCH/GAD'],
+            'General Services' => ['GENERAL-SERVICES', 'GS', 'GSO'],
+            'Guidance Office' => ['GUIDANCE-OFFICE', 'GUIDANCE'],
+            'Laboratory Custodian' => ['LABORATORY-CUSTODIAN', 'LAB-CUSTODIAN'],
+            'Maintenance' => ['MAINTENANCE', 'MAINTENANCE-&-CARPENTRY'],
+            'Office of the Chairman' => ['OFFICE-OF-THE-CHAIRMAN', 'CHAIRMAN\'S-OFFICE', 'CHAIRMAN-OFFICE'],
+            'President\'s Office' => ['PRESIDENT\'S-OFFICE', 'PRESIDENT-OFFICE', 'OFFICE-OF-THE-PRESIDENT'],
+            'Registrar\'s Office' => ['REGISTRAR\'S-OFFICE', 'REGISTRAR-OFFICE', 'REGISTRAR'],
+            'School Clinic' => ['SCHOOL-CLINIC', 'CLINIC'],
+            'Supply Office' => ['SUPPLY-OFFICE', 'SUPPLY'],
+            'Treasurer\'s Office' => ['TREASURER\'S-OFFICE', 'TREASURER-OFFICE', 'TREASURY'],
+        ];
+
+        foreach ($departmentGroups as $groupName => $aliases) {
+            foreach ($aliases as $alias) {
+                if (
+                    $normalized === $alias
+                    || str_starts_with($normalized, $alias.'-')
+                    || str_starts_with($normalized, $alias.'/')
+                ) {
+                    return $groupName;
+                }
+            }
+        }
+
+        return $department;
+    }
+
+    public function display_my_profile()
+    {
+        $admin = Auth::user();
+        abort_unless($admin && in_array(strtolower(trim((string) $admin->role)), ['admin', 'administrator'], true), 403);
+
+        $admin->loadMissing(['employee', 'government', 'license']);
+
+        $adminAccounts = User::query()
+            ->whereIn(DB::raw('LOWER(TRIM(role))'), ['admin', 'administrator'])
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get();
+
+        return view('Admin.adminMyProfile', compact('admin', 'adminAccounts'));
+    }
+
+    public function update_my_profile(Request $request)
+    {
+        $admin = Auth::user();
+        abort_unless($admin && in_array(strtolower(trim((string) $admin->role)), ['admin', 'administrator'], true), 403);
+
+        $validated = $request->validate([
+            'first_name' => ['required', 'string', 'max:100'],
+            'middle_name' => ['nullable', 'string', 'max:100'],
+            'last_name' => ['required', 'string', 'max:100'],
+            'email' => ['required', 'email', 'max:150', 'unique:users,email,'.$admin->id],
+            'job_role' => ['nullable', 'string', 'max:150'],
+            'department' => ['nullable', 'string', 'max:150'],
+            'contact_number' => ['nullable', 'string', 'max:30'],
+        ]);
+
+        DB::transaction(function () use ($admin, $validated) {
+            $admin->update([
+                'first_name' => trim($validated['first_name']),
+                'middle_name' => trim((string) ($validated['middle_name'] ?? '')) ?: null,
+                'last_name' => trim($validated['last_name']),
+                'email' => strtolower(trim($validated['email'])),
+                'job_role' => trim((string) ($validated['job_role'] ?? '')) ?: null,
+                'position' => trim((string) ($validated['job_role'] ?? '')) ?: null,
+                'department' => trim((string) ($validated['department'] ?? '')) ?: null,
+            ]);
+
+            if ($admin->employee) {
+                $admin->employee->update([
+                    'contact_number' => trim((string) ($validated['contact_number'] ?? '')) ?: 'N/A',
+                ]);
+            }
+        });
+
+        return redirect()->route('admin.myProfile', array_filter(['tab_session' => $request->query('tab_session') ?: $request->input('tab_session')]))
+            ->with('success', 'Your profile information was updated successfully.');
+    }
+
+    public function create_admin_account(Request $request)
+    {
+        $currentAdmin = Auth::user();
+        abort_unless($currentAdmin && in_array(strtolower(trim((string) $currentAdmin->role)), ['admin', 'administrator'], true), 403);
+
+        $validated = $request->validateWithBag('createAdmin', [
+            'admin_first_name' => ['required', 'string', 'max:100'],
+            'admin_middle_name' => ['nullable', 'string', 'max:100'],
+            'admin_last_name' => ['required', 'string', 'max:100'],
+            'admin_email' => ['required', 'email', 'max:150', 'unique:users,email'],
+            'admin_position' => ['required', 'string', 'max:150'],
+            'admin_department' => ['required', 'string', 'max:150'],
+            'admin_password' => ['required', 'string', 'min:8', 'confirmed'],
+            'admin_access_level' => ['required', 'in:full,limited'],
+            'admin_permissions' => ['nullable', 'array'],
+            'admin_permissions.*' => ['in:dashboard,employees,leave,payslip,communication,reports,logs,hiring,loads,matrix,resignations,calendar'],
+        ]);
+
+        $permissions = $validated['admin_access_level'] === 'full'
+            ? null
+            : array_values(array_unique($validated['admin_permissions'] ?? []));
+
+        if ($validated['admin_access_level'] === 'limited' && empty($permissions)) {
+            return back()->withErrors(['admin_permissions' => 'Select at least one module for a limited administrator.'], 'createAdmin')->withInput();
+        }
+
+        $newAdmin = User::query()->create([
+            'first_name' => trim($validated['admin_first_name']),
+            'middle_name' => trim((string) ($validated['admin_middle_name'] ?? '')) ?: 'N/A',
+            'last_name' => trim($validated['admin_last_name']),
+            'email' => strtolower(trim($validated['admin_email'])),
+            'password' => Hash::make($validated['admin_password']),
+            'role' => 'Admin',
+            'admin_permissions' => $permissions,
+            'job_role' => trim($validated['admin_position']),
+            'position' => trim($validated['admin_position']),
+            'department' => trim($validated['admin_department']),
+            'account_status' => 'Active',
+            'status' => 'Approved',
+        ]);
+
+        ActivityChangeLogger::created($newAdmin);
+
+        return redirect()->route('admin.myProfile', array_filter(['tab_session' => $request->query('tab_session') ?: $request->input('tab_session')]))
+            ->with('success', 'Admin account created successfully. The staff member can now sign in with the assigned email and password.');
+    }
 
     public function display_home(Request $request){
         $accept = User::with([
@@ -77,16 +226,25 @@ class AdministratorPageController extends Controller
             return $applicantDepartment !== '' ? $applicantDepartment : 'Unassigned';
         };
 
+        $dashboardDepartmentName = fn (string $department): string => $this->normalizedDepartmentGroup($department);
+
+        $accept->getCollection()->each(function (User $user) use ($resolveDepartmentName, $dashboardDepartmentName) {
+            $user->setAttribute(
+                'dashboard_department',
+                $dashboardDepartmentName($resolveDepartmentName($user))
+            );
+        });
+
         $departments = User::with(['employee', 'applicant.position:id,department'])
                         ->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee'])
                         ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['approved'])
                         ->get()
-                        ->groupBy(function ($user) use ($resolveDepartmentName) {
-                            return $resolveDepartmentName($user);
+                        ->groupBy(function ($user) use ($resolveDepartmentName, $dashboardDepartmentName) {
+                            return $dashboardDepartmentName($resolveDepartmentName($user));
                         })
-                        ->map(function ($group) use ($resolveDepartmentName) {
+                        ->map(function ($group, $departmentName) {
                             return [
-                                'name' => $resolveDepartmentName($group->first()),
+                                'name' => $departmentName,
                                 'count' => $group->count()
                             ];
                         })
@@ -895,7 +1053,7 @@ class AdministratorPageController extends Controller
         }
 
         $resolveEmployeeDepartment = static function ($emp): string {
-            return trim((string) (data_get($emp, 'applicant.position.department') ?: data_get($emp, 'employee.department') ?: ($emp->department ?? '')));
+            return trim((string) (($emp->department ?? '') ?: data_get($emp, 'employee.department') ?: data_get($emp, 'applicant.position.department')));
         };
 
         $isMissingEmployeeValue = static function ($value): bool {
@@ -989,6 +1147,36 @@ class AdministratorPageController extends Controller
         ];
 
         return view('Admin.adminEmployee', compact('employee', 'employeeDirectory', 'employeePaginator', 'employeeFilters'));
+    }
+
+    public function download_employee_pin_docx()
+    {
+        $records = User::query()
+            ->with('employee')
+            ->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee'])
+            ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) IN (?, ?)", ['approved', 'not approved'])
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->get()
+            ->map(fn (User $user) => [
+                'name' => trim(($user->last_name ?? '').', '.trim(($user->first_name ?? '').' '.($user->middle_name ?? '')), ', '),
+                'department' => trim((string) (($user->department ?? '') ?: ($user->employee?->department ?? ''))) ?: 'Unassigned',
+                'temporary_pin' => trim((string) ($user->temporary_pin ?? '')),
+            ]);
+
+        $filename = 'nc-employee-temporary-pin-list-'.now('Asia/Manila')->format('Y-m-d').'.docx';
+        $directory = storage_path('framework/cache/word');
+        if (!is_dir($directory)) {
+            mkdir($directory, 0775, true);
+        }
+        $path = $directory.DIRECTORY_SEPARATOR.uniqid('employee-pins-', true).'.docx';
+        EmployeePinDocx::build($records, $path);
+
+        return response()->download(
+            $path,
+            $filename,
+            ['Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+        )->deleteFileAfterSend(true);
     }
 
     public function employee_account_statuses()
@@ -2349,7 +2537,7 @@ class AdministratorPageController extends Controller
                     $department = trim((string) ($user->employee?->department ?? ''));
                 }
 
-                return $department !== '' ? $department : 'Unassigned';
+                return $this->normalizedDepartmentGroup($department !== '' ? $department : 'Unassigned');
             })
             ->map(fn ($rows) => $rows->count())
             ->sortDesc()
@@ -2485,7 +2673,6 @@ class AdministratorPageController extends Controller
 
         $recordVolume = collect([
             'Employees' => $totalEmployees,
-            'Attendance' => $attendanceTotal,
             'Leave' => $leaveApplications->count(),
             'Documents' => $monthlyDocumentCount,
             'Payslips' => $payslipRecordCount,

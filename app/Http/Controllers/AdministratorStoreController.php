@@ -25,6 +25,7 @@ use App\Models\User;
 use App\Support\ActivityChangeLogger;
 use App\Support\EmployeeAccountStatusManager;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -612,9 +613,16 @@ class AdministratorStoreController extends Controller
 
         try {
             $extension = strtolower((string) $file->getClientOriginalExtension());
-            $rawRows = $extension === 'xlsx'
-                ? $this->extractRawRowsFromXlsx($file->getRealPath(), '201 file', true)
-                : $this->extractRawRowsFromCsv($file->getRealPath());
+            if ($extension === 'xlsx') {
+                $preferredSheet = $this->findXlsxWorksheetEntryBySheetName($file->getRealPath(), '201 file')
+                    ? '201 file'
+                    : ($this->findXlsxWorksheetEntryBySheetName($file->getRealPath(), 'Employee Information')
+                        ? 'Employee Information'
+                        : null);
+                $rawRows = $this->extractRawRowsFromXlsx($file->getRealPath(), $preferredSheet, false);
+            } else {
+                $rawRows = $this->extractRawRowsFromCsv($file->getRealPath());
+            }
             $rows = $this->mapEmployeeImportRows($rawRows);
         } catch (\Throwable $exception) {
             return back()->withErrors([
@@ -678,7 +686,7 @@ class AdministratorStoreController extends Controller
                 ->with('import_skipped_count', $skipped);
         }
 
-        $message = "{$created} employee account".($created === 1 ? '' : 's')." created successfully from '{$originalName}'.";
+        $message = "{$created} employee record".($created === 1 ? '' : 's')." imported or updated successfully from '{$originalName}'.";
         if ($skipped > 0) {
             $message .= " {$skipped} row(s) were skipped.";
         }
@@ -745,21 +753,19 @@ class AdministratorStoreController extends Controller
         if (!$password || strlen($password) < 8) {
             throw new \RuntimeException('Password must contain at least 8 characters.');
         }
-        if ($employeeId && Employee::query()->where('employee_id', $employeeId)->exists()) {
-            throw new \RuntimeException("Employee ID {$employeeId} already exists.");
-        }
+        $existingImportedEmployee = Employee::query()
+            ->with('user')
+            ->where('employee_id', $employeeId)
+            ->first();
 
-        $department = $pick(['department', 'office_department', 'office', 'unit']);
+        $department = $pick(['department', 'office_department', 'office', 'unit', 'cit']);
         $position = $pick(['position', 'job_position', 'job_title', 'designation']);
         $resignedDate = $this->normalizeDate($pick(['date_resigned', 'resignation_date']));
 
-        $user = User::withoutEvents(fn () => User::create([
+        $userValues = [
             'first_name' => $firstName,
             'middle_name' => $middleName ?: '',
             'last_name' => $lastName,
-            'email' => null,
-            'password' => $password,
-            'temporary_pin' => $temporaryPin,
             'role' => 'Employee',
             'job_role' => $position ?: 'Employee',
             'position' => $position ?: 'Employee',
@@ -767,7 +773,23 @@ class AdministratorStoreController extends Controller
             'department_head' => $pick(['department_head', 'head_of_department']),
             'status' => 'Not Approved',
             'account_status' => 'Inactive',
-        ]));
+        ];
+
+        if ($existingImportedEmployee) {
+            $user = $existingImportedEmployee->user;
+            if (!$user) {
+                throw new \RuntimeException("Employee ID {$employeeId} has no linked user account.");
+            }
+            User::withoutEvents(function () use ($user, $userValues): void {
+                $user->update(Arr::except($userValues, ['status', 'account_status']));
+            });
+        } else {
+            $user = User::withoutEvents(fn () => User::create($userValues + [
+                'email' => null,
+                'password' => $password,
+                'temporary_pin' => $temporaryPin,
+            ]));
+        }
 
         $employeeValues = [
             'employee_id' => $employeeId,
@@ -788,7 +810,6 @@ class AdministratorStoreController extends Controller
             'emergency_contact_relationship' => $pick(['emergency_contact_relationship', 'emergency_contact_relation']),
             'emergency_contact_number' => $pick(['emergency_contact_number', 'emergency_phone']),
         ];
-
         $employmentHistory = $pick(['employment_history', 'employement_history']);
         if ($employmentHistory && Schema::hasColumn('employees', 'service_record_rows')) {
             $employeeValues['service_record_rows'] = [[
@@ -3281,6 +3302,7 @@ class AdministratorStoreController extends Controller
             'department' => 'nullable|string|max:255',
             'classification' => 'nullable|string|max:255',
             'job_type' => 'nullable|string|max:50',
+            'address_line' => 'nullable|string|max:255',
             'barangay' => 'nullable|string|max:255',
             'municipality' => 'nullable|string|max:255',
             'province' => 'nullable|string|max:255',
@@ -3317,6 +3339,9 @@ class AdministratorStoreController extends Controller
             'first_name' => $attrs['first'],
             'middle_name' => $attrs['middle'] ?? null,
             'last_name' => $attrs['last'],
+            'job_role' => $attrs['position'] ?? $user->job_role,
+            'position' => $attrs['position'] ?? $user->position,
+            'department' => $attrs['department'] ?? $user->department,
         ];
 
         if (!empty($attrs['email'])) {
@@ -3326,6 +3351,7 @@ class AdministratorStoreController extends Controller
         $user->update($userPayload);
 
         $addressParts = array_filter([
+            $attrs['address_line'] ?? null,
             $attrs['barangay'] ?? null,
             $attrs['municipality'] ?? null,
             $attrs['province'] ?? null,
@@ -4115,6 +4141,11 @@ class AdministratorStoreController extends Controller
         if ($this->isPermanentEmployeeClassification($oldClassification)) {
             return redirect()->route('admin.adminEmployee', $redirectParams)
                 ->with('success', 'Employee is already marked as Permanent.');
+        }
+
+        if (!str_contains(strtolower($oldClassification), 'probationary')) {
+            return redirect()->route('admin.adminEmployee', $redirectParams)
+                ->withErrors(['permanent' => 'Only Probationary employees can be marked as Permanent.']);
         }
 
         $regularizationDate = $this->resolveEmployeeRegularizationDateForUser($userId);

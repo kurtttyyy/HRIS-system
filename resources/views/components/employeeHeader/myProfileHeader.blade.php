@@ -7,6 +7,7 @@
         </div>
 
         <div class="flex items-center gap-2">
+            @include('components.themeToggle')
             <a href="{{ route('employee.employeeNotifications') }}" class="relative cursor-pointer rounded-2xl border border-sky-100 bg-white p-3.5 text-sky-700 transition hover:bg-sky-50" aria-label="Open notifications">
                 <span data-employee-notification-badge data-fallback-count="0" class="hidden pointer-events-none absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-xs font-bold text-white">
                     0

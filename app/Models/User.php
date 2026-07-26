@@ -41,6 +41,7 @@ class User extends Authenticatable
         'last_name',
         'middle_name',
         'role',
+        'admin_permissions',
         'job_role',
         'position',
         'department',
@@ -73,7 +74,14 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'temporary_pin' => 'encrypted',
+            'admin_permissions' => 'array',
         ];
+    }
+
+    public function hasAdminPermission(string $permission): bool
+    {
+        return is_null($this->admin_permissions)
+            || in_array($permission, $this->admin_permissions, true);
     }
 
     public function sendPasswordResetNotification($token): void

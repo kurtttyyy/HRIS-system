@@ -103,11 +103,15 @@ Route::controller(EmployeeStoreController::class)->group(function () {
 
 Route::controller(AdministratorPageController::class)->group(function () {
     Route::get('system/dashboard', 'display_home')->name('admin.adminHome');
+    Route::get('system/my-profile', 'display_my_profile')->name('admin.myProfile');
+    Route::post('system/my-profile', 'update_my_profile')->name('admin.myProfile.update');
+    Route::post('system/my-profile/admin-accounts', 'create_admin_account')->name('admin.accounts.store');
     Route::get('system/notifications', 'display_notifications')->name('admin.adminNotifications');
     Route::get('system/notifications/summary', 'notification_summary')->name('admin.adminNotifications.summary');
     Route::get('system/communication', 'display_communication')->name('admin.adminCommunication');
     Route::get('system/communication/unread-count', 'communication_unread_count')->name('admin.communicationUnreadCount');
     Route::get('system/employee', 'display_employee')->name('admin.adminEmployee');
+    Route::get('system/employee/temporary-pins/docx', 'download_employee_pin_docx')->name('admin.employeePins.docx');
     Route::get('system/employee/account-statuses', 'employee_account_statuses')->name('admin.employeeAccountStatuses');
     Route::get('system/employee/insert', 'display_employee_import')->name('admin.employeeImport');
     Route::get('system/leave/management', 'display_leave')->name('admin.adminLeaveManagement');

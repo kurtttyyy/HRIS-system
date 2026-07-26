@@ -226,6 +226,22 @@
 
     <div class="flex gap-3">
       <svg class="w-5 h-5 text-gray-400 mt-1" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 21V5a2 2 0 012-2h9a2 2 0 012 2v16M9 7h4M9 11h4M9 15h4M2 21h20" />
+      </svg>
+      <div>
+        <span class="block uppercase text-gray-400 font-semibold">Street / Sitio / Subdivision</span>
+        <span class="inline-flex items-center gap-2">
+          <span
+            :class="isMissingDisplayValue(addressFormParts().addressLine) ? 'text-rose-600' : 'text-slate-700'"
+            x-text="displayValueOrNoInfo(addressFormParts().addressLine)"
+          ></span>
+          <span x-show="isMissingDisplayValue(addressFormParts().addressLine)" class="missing-info-exclamation" aria-hidden="true">!</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="flex gap-3">
+      <svg class="w-5 h-5 text-gray-400 mt-1" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
     <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9v9a3 3 0 01-3 3H6a3 3 0 01-3-3v-9z" />
     <path stroke-linecap="round" stroke-linejoin="round" d="M9 21V12h6v9" />
     </svg>
@@ -241,7 +257,7 @@
     <circle cx="12" cy="9" r="2.5" />
     </svg>
       <div>
-        <span class="block uppercase text-gray-400 font-semibold">Municipality</span>
+        <span class="block uppercase text-gray-400 font-semibold">Municipality / City</span>
         <span class="inline-flex items-center gap-2"><span :class="isMissingDisplayValue(employeeAddressParts()[1]) ? 'text-rose-600' : 'text-slate-700'" x-text="displayValueOrNoInfo(employeeAddressParts()[1])"></span><span x-show="isMissingDisplayValue(employeeAddressParts()[1])" class="missing-info-exclamation" aria-hidden="true">!</span></span>
       </div>
     </div>

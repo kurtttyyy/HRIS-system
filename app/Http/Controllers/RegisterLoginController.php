@@ -339,7 +339,7 @@ class RegisterLoginController extends Controller
                 'Employee' => redirect()
                     ->route('employee.employeeHome', $tabSession !== '' ? ['tab_session' => $tabSession] : [])
                     ->with('show_employee_welcome', true),
-                'Admin'    => redirect()->route('admin.adminHome', $tabSession !== '' ? ['tab_session' => $tabSession] : []),
+                'Admin'    => redirect()->route($this->adminLandingRoute($user), $tabSession !== '' ? ['tab_session' => $tabSession] : []),
                 default    => redirect()->route('login_display')->with('error', 'Unauthorized role'),
             };
         }
@@ -349,6 +349,32 @@ class RegisterLoginController extends Controller
                 'email' => 'The provided credentials do not match our records.',
             ])
             ->withInput();
+    }
+
+    private function adminLandingRoute(User $user): string
+    {
+        $routes = [
+            'dashboard' => 'admin.adminHome',
+            'employees' => 'admin.adminEmployee',
+            'leave' => 'admin.adminLeaveManagement',
+            'payslip' => 'admin.adminPayslip',
+            'communication' => 'admin.adminCommunication',
+            'reports' => 'admin.adminReports',
+            'logs' => 'admin.activityLogs',
+            'hiring' => 'admin.adminApplicant',
+            'loads' => 'admin.adminLoads',
+            'matrix' => 'admin.schoolAdministrator',
+            'resignations' => 'admin.adminResignations',
+            'calendar' => 'admin.adminCalendar',
+        ];
+
+        foreach ($routes as $permission => $routeName) {
+            if ($user->hasAdminPermission($permission)) {
+                return $routeName;
+            }
+        }
+
+        return 'admin.myProfile';
     }
 
     private function userHasHiredApplicant(User $user): bool

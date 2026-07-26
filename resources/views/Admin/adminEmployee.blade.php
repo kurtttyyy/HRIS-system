@@ -146,7 +146,7 @@
 
   @php
     $resolveDepartment = function ($emp) {
-      return trim((string) (data_get($emp, 'applicant.position.department') ?: data_get($emp, 'employee.department') ?: ($emp->department ?? '')));
+      return trim((string) (($emp->department ?? '') ?: data_get($emp, 'employee.department') ?: data_get($emp, 'applicant.position.department')));
     };
     $isMissingEmployeeValue = function ($value): bool {
       if (is_null($value)) {
@@ -189,10 +189,55 @@
         return [];
       }
 
-      return collect(preg_split('/\s*,\s*/', $rawAddress))
+      $parts = collect(preg_split('/\s*,\s*/', $rawAddress))
         ->map(fn ($item) => trim((string) $item))
+        ->filter()
         ->values()
         ->all();
+      $splitLocality = static function (string $value): array {
+        $value = trim($value);
+        $patterns = [
+          '/^(.+?\b(?:st\.?|street|rd\.?|road|ave\.?|avenue|highway))\s+(.+)$/i',
+          '/^((?:p(?:urok)?[-\s]*\d+[a-z]?|zone\s+\d+))\s+(.+)$/i',
+          '/^(.+?)\s+((?:p(?:urok)?[-\s]*\d+[a-z]?))\s+(.+)$/i',
+        ];
+
+        foreach ($patterns as $index => $pattern) {
+          if (!preg_match($pattern, $value, $matches)) {
+            continue;
+          }
+
+          return $index === 2
+            ? ['address_line' => trim($matches[1].' '.$matches[2]), 'barangay' => trim($matches[3])]
+            : ['address_line' => trim($matches[1]), 'barangay' => trim($matches[2])];
+        }
+
+        return ['address_line' => '', 'barangay' => $value];
+      };
+
+      foreach ($parts as $index => $part) {
+        if (!preg_match('/\bsantiago\s+city\b/i', $part)) {
+          continue;
+        }
+
+        $attachedBarangay = trim((string) preg_replace('/\bsantiago\s+city\b/i', '', $part));
+        $locality = $splitLocality($attachedBarangay !== '' ? $attachedBarangay : ($parts[$index - 1] ?? ''));
+        $barangay = $locality['barangay'];
+        $province = collect(array_slice($parts, $index + 1))
+          ->first(fn ($value) => !preg_match('/\bsantiago\s+city\b/i', (string) $value));
+
+        return [$barangay, 'Santiago City', $province ?: 'Isabela'];
+      }
+
+      if (count($parts) >= 3) {
+        $locality = $splitLocality($parts[count($parts) - 3]);
+        $barangay = $locality['barangay'];
+        $barangay = preg_replace('/\bOld\s+Centro\s+1\b/i', 'Old Centro I', $barangay);
+
+        return [$barangay, $parts[count($parts) - 2], $parts[count($parts) - 1]];
+      }
+
+      return $parts;
     };
     $employeeMissingAddressPartLabels = function ($emp) use ($isMissingEmployeeValue, $employeeAddressParts) {
       $parts = $employeeAddressParts($emp);
@@ -485,10 +530,8 @@
             .join(', ');
         },
         employeeAddressParts() {
-          return this.normalizeAddressText(this.selectedEmployee?.employee?.address ?? '')
-            .split(',')
-            .map((part) => this.decodeDisplayText(part))
-            .filter(Boolean);
+          const parts = this.addressFormParts();
+          return [parts.barangay, parts.municipality, parts.province];
         },
         isPlaceholderValue(value) {
           const normalized = this.normalize(value);
@@ -700,6 +743,7 @@
               this.selectedEmployee?.employee?.employee_id,
               this.currentServiceStartRaw(),
               this.firstMeaningfulValue(
+                this.selectedEmployee?.department,
                 this.selectedEmployee?.employee?.department,
                 this.selectedEmployee?.applicant?.position?.department
               ),
@@ -1130,6 +1174,10 @@
         canMarkSelectedEmployeePermanent() {
           if (!this.selectedEmployee?.id || !this.selectedEmployee?.employee) return false;
           if (this.isPermanentClassification()) return false;
+          const classification = this.normalizeClassificationValue(
+            this.selectedEmployee?.employee?.classification
+          );
+          if (!classification.includes('probationary')) return false;
 
           const regularizationDate = this.selectedEmployeeRegularizationDate();
           if (!regularizationDate) return false;
@@ -1633,6 +1681,112 @@
           if (normalized.includes('non teaching') || normalized.includes('non-teaching')) return 'NT';
           return (value ?? '').toString().trim();
         },
+        employmentClassificationLabel() {
+          const jobType = this.normalizeClassificationValue(
+            this.selectedEmployee?.employee?.job_type
+            || this.selectedEmployee?.applicant?.position?.job_type
+          );
+          if (['non teaching', 'non-teaching', 'nonteaching', 'nt'].includes(jobType)) {
+            return 'Non-Teaching';
+          }
+
+          const classification = this.normalizeClassificationValue(
+            this.selectedEmployee?.employee?.classification
+            || this.selectedEmployee?.applicant?.position?.employment
+          );
+          if (classification.includes('part')) return 'Part-time';
+          if (
+            classification.includes('full')
+            || classification.includes('probationary')
+            || classification.includes('permanent')
+            || classification.includes('regular')
+          ) {
+            return 'Full-time';
+          }
+
+          return jobType.includes('part') ? 'Part-time' : 'Full-time';
+        },
+        prepareGeneralProfileEdit() {
+          if (!this.selectedEmployee) return;
+          if (!this.selectedEmployee.employee) this.selectedEmployee.employee = {};
+
+          this.selectedEmployee.employee.position =
+            this.selectedEmployee?.job_role
+            || this.selectedEmployee?.position
+            || this.selectedEmployee?.employee?.position
+            || this.selectedEmployee?.applicant?.position?.title
+            || '';
+          this.selectedEmployee.employee.department =
+            this.selectedEmployee?.department
+            || this.selectedEmployee?.employee?.department
+            || this.selectedEmployee?.applicant?.position?.department
+            || '';
+
+          this.openEditProfile = true;
+          this.modalTarget = 'general';
+        },
+        addressFormParts() {
+          const raw = (this.selectedEmployee?.employee?.address ?? '').toString().trim();
+          const parts = raw.split(',').map((part) => part.trim()).filter(Boolean);
+          const cityPattern = /\bsantiago\s+city\b/i;
+          const splitLocality = (value) => {
+            const locality = (value ?? '').toString().trim();
+            const street = locality.match(/^(.+?\b(?:st\.?|street|rd\.?|road|ave\.?|avenue|highway))\s+(.+)$/i);
+            if (street) return { addressLine: street[1], barangay: street[2] };
+
+            const purok = locality.match(/^((?:p(?:urok)?[-\s]*\d+[a-z]?|zone\s+\d+))\s+(.+)$/i);
+            if (purok) return { addressLine: purok[1], barangay: purok[2] };
+
+            const embeddedPurok = locality.match(/^(.+?)\s+((?:p(?:urok)?[-\s]*\d+[a-z]?))\s+(.+)$/i);
+            if (embeddedPurok) {
+              return {
+                addressLine: `${embeddedPurok[1]} ${embeddedPurok[2]}`.trim(),
+                barangay: embeddedPurok[3],
+              };
+            }
+
+            return { addressLine: '', barangay: locality };
+          };
+          const cityIndex = parts.findIndex((part) => cityPattern.test(part));
+
+          if (cityIndex >= 0) {
+            const cityPart = parts[cityIndex];
+            const attachedBarangay = cityPart.replace(cityPattern, '').trim().replace(/[,\s]+$/, '');
+            const precedingParts = parts.slice(0, cityIndex);
+            const locality = splitLocality(attachedBarangay || precedingParts[precedingParts.length - 1] || '');
+            const barangay = locality.barangay;
+            const addressLineParts = attachedBarangay
+              ? precedingParts
+              : precedingParts.slice(0, -1);
+            if (locality.addressLine) addressLineParts.push(locality.addressLine);
+            const explicitProvince = parts
+              .slice(cityIndex + 1)
+              .find((part) => !cityPattern.test(part));
+
+            return {
+              addressLine: addressLineParts.join(', '),
+              barangay,
+              municipality: 'Santiago City',
+              province: explicitProvince || 'Isabela',
+            };
+          }
+
+          let addressLine = parts.length >= 4 ? parts.slice(0, -3).join(', ') : '';
+          let barangay = parts.length >= 3 ? parts[parts.length - 3] : '';
+          const combinedLocality = splitLocality(barangay);
+          if (combinedLocality.addressLine) {
+            addressLine = [addressLine, combinedLocality.addressLine].filter(Boolean).join(', ');
+            barangay = combinedLocality.barangay;
+          }
+          barangay = barangay.replace(/\bOld\s+Centro\s+1\b/i, 'Old Centro I');
+
+          return {
+            addressLine,
+            barangay,
+            municipality: parts.length >= 2 ? parts[parts.length - 2] : (parts[0] || ''),
+            province: parts.length >= 2 ? parts[parts.length - 1] : '',
+          };
+        },
         ensureEmployeeClassification() {
           if (!this.selectedEmployee) return;
           if (!this.selectedEmployee.employee) this.selectedEmployee.employee = {};
@@ -1831,7 +1985,7 @@
         $employeeDirectory->map(fn($emp) => [
           'id' => (int) ($emp->id ?? 0),
           'name' => trim(($emp->last_name ?? '').', '.trim(($emp->first_name ?? '').' '.($emp->middle_name ?? '')), ', '),
-          'department' => trim((string) (data_get($emp, 'applicant.position.department') ?: data_get($emp, 'employee.department') ?: ($emp->department ?? ''))),
+          'department' => trim((string) (($emp->department ?? '') ?: data_get($emp, 'employee.department') ?: data_get($emp, 'applicant.position.department'))),
           'status' => $resolveDisplayAccountStatus($emp),
           'has_missing_info' => collect([
             data_get($emp, 'employee.account_number'),
@@ -1868,7 +2022,7 @@
         'per_page' => 10,
       ], $employeeFilters ?? []);
       $resolveDepartment = function ($emp) {
-        return trim((string) (data_get($emp, 'applicant.position.department') ?: data_get($emp, 'employee.department') ?: ($emp->department ?? '')));
+        return trim((string) (($emp->department ?? '') ?: data_get($emp, 'employee.department') ?: data_get($emp, 'applicant.position.department')));
       };
       $parseLeaveStatusDate = function ($value) {
         $text = trim((string) ($value ?? ''));
@@ -3212,7 +3366,7 @@
               ></h2>
               <p class="text-sm">
                 <span x-text="selectedEmployee?.job_role ?? selectedEmployee?.employee?.position ?? selectedEmployee?.position ?? selectedEmployee?.applicant?.position?.title ?? '-'"></span><br>
-                <span x-text="selectedEmployee?.employee?.department ?? selectedEmployee?.applicant?.position?.department ?? selectedEmployee?.department ?? '-'"></span>
+                <span x-text="selectedEmployee?.department ?? selectedEmployee?.employee?.department ?? selectedEmployee?.applicant?.position?.department ?? '-'"></span>
               </p>
               <template x-if="wasRehiredAfterResignation()">
                 <div class="mt-3">
@@ -3284,7 +3438,7 @@
             </form>
           </template>
           <button
-            @click="openEditProfile = true; modalTarget = 'general'"
+            @click="prepareGeneralProfileEdit()"
             class="flex-1 bg-slate-100 py-2 rounded-lg hover:bg-slate-200">
             Edit Profile
           </button>
@@ -3321,7 +3475,7 @@
 </body>
 
 @php
-  $adminEmployeeExcelRecords = $employee->map(function ($emp) use ($blankTableValue, $resolveDisplayAccountStatus, $wasRehiredAfterResignation, $displayEmployeeId) {
+  $adminEmployeeExcelRecords = $employeeDirectory->map(function ($emp) use ($blankTableValue, $resolveDisplayAccountStatus, $wasRehiredAfterResignation, $displayEmployeeId) {
     $classValue = trim((string) (data_get($emp, 'employee.classification') ?: data_get($emp, 'applicant.position.employment') ?: ($emp->classification ?? '')));
     $employmentCode = match (strtolower($classValue)) {
       'full-time', 'full time' => 'FT',
@@ -3449,7 +3603,7 @@
       'allowance' => $blankTableValue(trim((string) (data_get($emp, 'salary.cola') ?: ''))),
       'date_resigned' => $blankTableValue($dateResignedDisplay),
       'employment_history' => $blankTableValue($employmentHistoryDisplay),
-      'department' => $blankTableValue(trim((string) (data_get($emp, 'applicant.position.department') ?: data_get($emp, 'employee.department') ?: ($emp->department ?? '')))),
+      'department' => $blankTableValue(trim((string) (($emp->department ?? '') ?: data_get($emp, 'employee.department') ?: data_get($emp, 'applicant.position.department')))),
       'status' => $resolveDisplayAccountStatus($emp),
       'email' => $blankTableValue(trim((string) (data_get($emp, 'applicant.email_address') ?: ($emp->email_address ?? $emp->email ?? '')))),
       'temporary_pin' => trim((string) ($emp->temporary_pin ?? '')),
@@ -3461,10 +3615,10 @@
   window.adminEmployeeExcelRecords = @json($adminEmployeeExcelRecords);
 
   window.exportAdminEmployeePinsExcel = function exportAdminEmployeePinsExcel(filters = {}) {
-    const rows = (window.adminEmployeeExcelRecords ?? []).filter((record) => record.temporary_pin);
+    const rows = window.adminEmployeeExcelRecords ?? [];
 
     if (!rows.length) {
-      window.alert('No employees with temporary PINs match the current filters.');
+      window.alert('No employee records are available.');
       return;
     }
 
@@ -3475,14 +3629,14 @@
       <tr>
         <td>${index + 1}</td>
         <td>${escapeHtml(record.name)}</td>
-        <td style="mso-number-format:'\\@';">${escapeHtml(record.employee_id)}</td>
-        <td style="mso-number-format:'000000';">${escapeHtml(record.temporary_pin)}</td>
+        <td>${escapeHtml(record.department)}</td>
+        <td style="mso-number-format:'\\@';">${escapeHtml(record.temporary_pin || 'Already activated')}</td>
       </tr>`).join('');
     const html = `<html><head><meta charset="utf-8"><style>
       table{border-collapse:collapse;font-family:Arial,sans-serif;font-size:12pt}
       th,td{border:1px solid #94a3b8;padding:9px 14px;text-align:left;white-space:nowrap}
       th{background:#047857;color:#fff;font-weight:700}
-    </style></head><body><table><thead><tr><th>No.</th><th>Employee Name</th><th>Employee ID</th><th>Temporary PIN</th></tr></thead><tbody>${bodyRows}</tbody></table></body></html>`;
+    </style></head><body><table><thead><tr><th>No.</th><th>Employee Name</th><th>Department</th><th>Temporary PIN / Status</th></tr></thead><tbody>${bodyRows}</tbody></table></body></html>`;
     const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -3492,6 +3646,63 @@
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
+  };
+
+  window.printAdminEmployeePins = function printAdminEmployeePins() {
+    const rows = window.adminEmployeeExcelRecords ?? [];
+    if (!rows.length) {
+      window.alert('No employee records are available.');
+      return;
+    }
+
+    const escapeHtml = (value) => (value ?? '').toString()
+      .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+    const bodyRows = rows.map((record, index) => `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${escapeHtml(record.name)}</td>
+        <td>${escapeHtml(record.department)}</td>
+        <td class="${record.temporary_pin ? 'pin' : 'used'}">${escapeHtml(record.temporary_pin || 'Already activated')}</td>
+      </tr>`).join('');
+    const printWindow = window.open('', '_blank', 'width=1000,height=760');
+    if (!printWindow) {
+      window.alert('Allow pop-ups in your browser to print the Temporary PIN list.');
+      return;
+    }
+
+    printWindow.document.open();
+    printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8">
+      <title>Employee Temporary PIN List</title>
+      <style>
+        @page{size:A4 landscape;margin:12mm}
+        *{box-sizing:border-box}
+        body{margin:0;color:#0f172a;font-family:Arial,sans-serif}
+        .header{border-bottom:3px solid #059669;padding-bottom:12px;margin-bottom:16px}
+        h1{font-size:22px;margin:0 0 5px}
+        p{font-size:12px;color:#475569;margin:3px 0}
+        table{width:100%;border-collapse:collapse;font-size:11px}
+        th,td{border:1px solid #94a3b8;padding:7px 9px;text-align:left}
+        th{background:#047857;color:white;text-transform:uppercase;letter-spacing:.04em}
+        tbody tr:nth-child(even){background:#f8fafc}
+        td:first-child{width:48px;text-align:center}
+        .pin{font-family:Consolas,monospace;font-size:12px;font-weight:700;letter-spacing:.12em}
+        .used{color:#64748b;font-style:italic}
+        .notice{margin-top:12px;font-size:10px;color:#64748b}
+      </style></head><body>
+      <div class="header">
+        <h1>Northeastern College — Employee Temporary PIN List</h1>
+        <p>Generated ${escapeHtml(new Date().toLocaleString('en-PH'))}</p>
+        <p>Total NC employees and teachers: ${rows.length}</p>
+      </div>
+      <table>
+        <thead><tr><th>No.</th><th>Employee Name</th><th>Department</th><th>Temporary PIN / Status</th></tr></thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+      <p class="notice">Confidential: keep this list secure and destroy printed copies when no longer required.</p>
+      <script>window.addEventListener('load',()=>{window.print();});<\/script>
+      </body></html>`);
+    printWindow.document.close();
   };
 
   window.exportAdminEmployeesExcel = function exportAdminEmployeesExcel(filters = {}) {

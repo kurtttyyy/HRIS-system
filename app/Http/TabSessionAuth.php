@@ -14,7 +14,9 @@ class TabSessionAuth
         $tabSession = trim((string) ($request->input('tab_session') ?? $request->query('tab_session') ?? ''));
         $tabSessionScope = $this->resolveTabSessionScope($request);
 
-        if ($tabSession === '') {
+        $isFreshAuthEntry = $tabSession === '' && in_array((string) optional($request->route())->getName(), ['login_display', 'register'], true);
+
+        if ($tabSession === '' && !$isFreshAuthEntry) {
             $tabSession = $this->resolveStoredTabSession($request, $tabSessionScope);
         }
 

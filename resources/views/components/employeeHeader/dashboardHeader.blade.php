@@ -156,13 +156,6 @@
                                 My Profile
                             </a>
 
-                            <button
-                               type="button"
-                               class="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-50">
-                                <i class="fa fa-cog"></i>
-                                Settings
-                            </button>
-
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 @if (request()->filled('tab_session'))

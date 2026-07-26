@@ -95,7 +95,7 @@
               Required filename: <strong>{{ $requiredEmployeeFileBase }}.xlsx</strong> or <strong>{{ $requiredEmployeeFileBase }}.csv</strong>
             </div>
             <div class="mt-4 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-900">
-              <strong>Worksheet:</strong> <code>201 file</code>. Required columns are <code>Name</code> and <code>ID number</code>. Each valid row creates an internal employee record immediately. Directly imported employees are not placed in the applicant process, and no temporary-password email is sent. Other employee, government ID, salary, license, and education columns are saved too.
+              <strong>Worksheet:</strong> <code>201 file</code> or <code>Employee Information</code> is preferred. If neither tab exists, the importer uses the first worksheet. Required columns are <code>Name</code> and <code>ID number</code>. Each valid row creates an internal employee record immediately. Directly imported employees are not placed in the applicant process, and no temporary-password email is sent. Other employee, government ID, salary, license, and education columns are saved too.
             </div>
           </div>
 

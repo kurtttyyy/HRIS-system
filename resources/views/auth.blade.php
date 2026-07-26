@@ -365,21 +365,14 @@
             return nextUrl.toString();
         };
 
-        let tabSession = root.getAttribute('data-tab-session') || '';
-        if (!tabSession) {
-            try {
-                tabSession = window.sessionStorage.getItem('auth_tab_session') || '';
-            } catch (error) {
-                tabSession = '';
-            }
-        }
-
-        if (!tabSession) {
-            if (window.crypto?.randomUUID) {
-                tabSession = window.crypto.randomUUID();
-            } else {
-                tabSession = `tab-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-            }
+        // Always rotate the token when the authentication screen opens. A
+        // duplicated browser tab copies both its URL and sessionStorage, so
+        // reusing either value would bind two tabs to the same administrator.
+        let tabSession = '';
+        if (window.crypto?.randomUUID) {
+            tabSession = window.crypto.randomUUID();
+        } else {
+            tabSession = `tab-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
         }
 
         try {
