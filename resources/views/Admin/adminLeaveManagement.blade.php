@@ -43,6 +43,27 @@
       transform: translateX(4px);
       box-shadow: inset 3px 0 0 rgba(16, 185, 129, 0.55), 0 10px 24px rgba(15, 23, 42, 0.08);
     }
+    html[data-theme="dark"] #leave-management-page .leave-workspace-panel {
+      background: #111c30 !important;
+      border-color: #334155 !important;
+    }
+    html[data-theme="dark"] #leave-management-page .leave-workspace-header {
+      background: #172033 !important;
+      border-color: #334155 !important;
+    }
+    html[data-theme="dark"] #leave-management-page .leave-management-row-motion {
+      background: #172033 !important;
+      border-color: #334155 !important;
+    }
+    html[data-theme="dark"] #leave-management-page .leave-empty-state {
+      background: #0f172a !important;
+      border-color: #475569 !important;
+    }
+    html[data-theme="dark"] #leave-management-page .leave-workspace-panel button:hover,
+    html[data-theme="dark"] #leave-management-page .leave-workspace-panel a:hover {
+      filter: none !important;
+      box-shadow: none !important;
+    }
     #leave-summary-types-modal:not(.hidden) .leave-summary-panel {
       animation: leave-summary-panel-in 0.34s cubic-bezier(0.22, 1, 0.36, 1);
     }
@@ -169,8 +190,8 @@
       </div>
 
       <div data-admin-leave-live-region="request-workspace" class="grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.15fr)]">
-        <section class="leave-management-reveal overflow-hidden rounded-[1.75rem] border border-amber-100/80 bg-white/92 shadow-[0_22px_50px_rgba(15,23,42,0.07)] backdrop-blur" style="--leave-management-delay: 160ms;">
-          <div class="border-b border-amber-100 bg-[linear-gradient(180deg,rgba(254,243,199,0.45),rgba(255,255,255,0.85))] px-5 py-4">
+        <section class="leave-workspace-panel leave-management-reveal overflow-hidden rounded-[1.75rem] border border-amber-100/80 bg-white/92 shadow-[0_22px_50px_rgba(15,23,42,0.07)] backdrop-blur" style="--leave-management-delay: 160ms;">
+          <div class="leave-workspace-header border-b border-amber-100 bg-[linear-gradient(180deg,rgba(254,243,199,0.45),rgba(255,255,255,0.85))] px-5 py-4">
             <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
                 <div class="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-700">
@@ -351,7 +372,7 @@
                 </div>
               </div>
             @empty
-              <div class="rounded-[1.5rem] border border-dashed border-amber-200 bg-amber-50/60 px-6 py-10 text-center">
+              <div class="leave-empty-state rounded-[1.5rem] border border-dashed border-amber-200 bg-amber-50/60 px-6 py-10 text-center">
                 <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-amber-500 shadow-sm">
                   <i class="fa-regular fa-calendar-check text-xl"></i>
                 </div>
@@ -362,8 +383,8 @@
           </div>
         </section>
 
-        <section data-approved-history-section class="leave-management-reveal overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/92 shadow-[0_22px_50px_rgba(15,23,42,0.07)] backdrop-blur" style="--leave-management-delay: 200ms;">
-          <div class="border-b border-slate-200 bg-[linear-gradient(180deg,rgba(239,246,255,0.7),rgba(255,255,255,0.92))] px-5 pb-4 pt-4 lg:pb-2">
+        <section data-approved-history-section class="leave-workspace-panel leave-management-reveal overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/92 shadow-[0_22px_50px_rgba(15,23,42,0.07)] backdrop-blur" style="--leave-management-delay: 200ms;">
+          <div class="leave-workspace-header border-b border-slate-200 bg-[linear-gradient(180deg,rgba(239,246,255,0.7),rgba(255,255,255,0.92))] px-5 pb-4 pt-4 lg:pb-2">
             <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between lg:gap-6">
               <div class="shrink-0">
                 <div class="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/85 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
@@ -459,7 +480,7 @@
                 </div>
               </div>
             @empty
-              <div class="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50/70 px-6 py-10 text-center">
+              <div class="leave-empty-state rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50/70 px-6 py-10 text-center">
                 <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm">
                   <i class="fa-regular fa-folder-open text-xl"></i>
                 </div>
@@ -467,7 +488,7 @@
                 <p class="mt-1 text-sm text-slate-500">Approved leave history will appear here once requests are processed.</p>
               </div>
             @endforelse
-            <div data-approved-history-filter-empty class="hidden rounded-[1.5rem] border border-dashed border-sky-200 bg-sky-50/60 px-6 py-10 text-center">
+            <div data-approved-history-filter-empty class="leave-empty-state hidden rounded-[1.5rem] border border-dashed border-sky-200 bg-sky-50/60 px-6 py-10 text-center">
               <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-sky-500 shadow-sm">
                 <i class="fa-solid fa-filter-circle-xmark text-xl"></i>
               </div>

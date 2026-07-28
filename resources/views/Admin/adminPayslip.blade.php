@@ -47,6 +47,29 @@
       border-color: rgb(186 230 253);
       box-shadow: inset 3px 0 0 rgba(14, 165, 233, 0.55), 0 10px 24px rgba(15, 23, 42, 0.08);
     }
+    html[data-theme="dark"] #admin-payslip-page .payslip-upload-zone {
+      background: #172033 !important;
+      border-color: #0369a1 !important;
+    }
+    html[data-theme="dark"] #admin-payslip-page .payslip-upload-zone:hover {
+      background: #1e293b !important;
+      border-color: #38bdf8 !important;
+    }
+    html[data-theme="dark"] #admin-payslip-page #selected_payslip_name {
+      color: #7dd3fc !important;
+    }
+    html[data-theme="dark"] #admin-payslip-page .payslip-file-item {
+      background: #172033 !important;
+      border-color: #334155 !important;
+    }
+    html[data-theme="dark"] #admin-payslip-page .payslip-file-active {
+      background: #123047 !important;
+      border-color: #38bdf8 !important;
+    }
+    html[data-theme="dark"] #admin-payslip-page .payslip-empty-state {
+      background: #0f172a !important;
+      border-color: #475569 !important;
+    }
     @keyframes payslip-fade-up {
       to {
         opacity: 1;
@@ -209,7 +232,7 @@
 
             <form id="payslip_upload_form" action="{{ route('admin.uploadPayslipFile') }}" method="POST" enctype="multipart/form-data" class="mt-6 space-y-5">
               @csrf
-              <label for="payslip_file" class="group relative flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[1.5rem] border-2 border-dashed border-sky-200 bg-[linear-gradient(180deg,rgba(239,246,255,0.9),rgba(255,255,255,0.95))] px-6 py-10 text-center transition hover:border-sky-300 hover:bg-sky-50">
+              <label for="payslip_file" class="payslip-upload-zone group relative flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[1.5rem] border-2 border-dashed border-sky-200 bg-[linear-gradient(180deg,rgba(239,246,255,0.9),rgba(255,255,255,0.95))] px-6 py-10 text-center transition hover:border-sky-300 hover:bg-sky-50">
                 <div class="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-sky-300 to-transparent"></div>
                 <span class="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-sky-600 shadow-sm">
                   <i class="fa-solid fa-file-invoice-dollar text-2xl"></i>
@@ -320,7 +343,7 @@
                 </div>
               </div>
             @empty
-              <div class="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50/80 p-8 text-center">
+              <div class="payslip-empty-state rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50/80 p-8 text-center">
                 <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm">
                   <i class="fa-solid fa-folder-open text-xl"></i>
                 </div>

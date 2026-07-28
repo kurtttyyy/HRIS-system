@@ -12,13 +12,67 @@
     aside ~ main { margin-left: 16rem; }
     .report-card { transition: transform 220ms ease, box-shadow 220ms ease; }
     .report-card:hover { transform: translateY(-3px); box-shadow: 0 22px 48px rgba(15, 23, 42, 0.10); }
+    html[data-theme="dark"] #admin-reports-page [class*="bg-sky-50"] {
+      background: #14283a !important;
+      color: #7dd3fc !important;
+    }
+    html[data-theme="dark"] #admin-reports-page [class*="bg-emerald-50"] {
+      background: #153129 !important;
+      color: #6ee7b7 !important;
+    }
+    html[data-theme="dark"] #admin-reports-page [class*="bg-amber-50"],
+    html[data-theme="dark"] #admin-reports-page [class*="bg-yellow-50"],
+    html[data-theme="dark"] #admin-reports-page [class*="bg-orange-50"] {
+      background: #342a17 !important;
+      color: #fcd34d !important;
+    }
+    html[data-theme="dark"] #admin-reports-page [class*="bg-rose-50"],
+    html[data-theme="dark"] #admin-reports-page [class*="bg-pink-50"] {
+      background: #351d29 !important;
+      color: #fda4af !important;
+    }
+    html[data-theme="dark"] #admin-reports-page [class*="bg-violet-50"],
+    html[data-theme="dark"] #admin-reports-page [class*="bg-indigo-50"] {
+      background: #282342 !important;
+      color: #c4b5fd !important;
+    }
+    html[data-theme="dark"] #admin-reports-page [class*="bg-cyan-50"] {
+      background: #143039 !important;
+      color: #67e8f9 !important;
+    }
+    html[data-theme="dark"] #admin-reports-page [class*="bg-blue-50"] {
+      background: #172554 !important;
+      color: #93c5fd !important;
+    }
+    html[data-theme="dark"] #admin-reports-page [class*="bg-lime-50"] {
+      background: #253314 !important;
+      color: #bef264 !important;
+    }
+    html[data-theme="dark"] #admin-reports-page [class*="bg-teal-50"] {
+      background: #153532 !important;
+      color: #5eead4 !important;
+    }
+    html[data-theme="dark"] #admin-reports-page [class*="bg-red-50"] {
+      background: #3b1d24 !important;
+      color: #fca5a5 !important;
+    }
+    html[data-theme="dark"] #admin-reports-page svg text {
+      fill: #cbd5e1 !important;
+    }
+    html[data-theme="dark"] #admin-reports-page svg line {
+      stroke: #334155 !important;
+    }
+    html[data-theme="dark"] #admin-reports-page .report-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(2, 6, 23, .28);
+    }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800">
 <div class="flex min-h-screen">
   @include('components.adminSideBar')
 
-  <main class="flex-1 ml-16 transition-all duration-300">
+  <main class="ml-16 min-w-0 flex-1 transition-all duration-300">
     @include('components.adminHeader.reportsHeader')
 
     @php
@@ -36,7 +90,7 @@
       })->implode(' ');
     @endphp
 
-    <div class="space-y-6 p-4 pt-20 md:p-8">
+    <div id="admin-reports-page" class="min-w-0 space-y-6 p-4 pt-20 md:p-8">
       <section class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p class="text-xs font-bold uppercase tracking-[0.22em] text-emerald-700">Records Report</p>
@@ -133,10 +187,16 @@
           <p class="text-xs font-bold uppercase tracking-[0.2em] text-indigo-700">Horizontal Bars</p>
           <h2 class="mt-1 text-xl font-black text-slate-950">Employees by department</h2>
           <div class="mt-6 space-y-4">
+            @php
+              $departmentBarColors = ['#6366f1', '#10b981', '#f97316', '#0ea5e9', '#ec4899', '#8b5cf6', '#14b8a6', '#eab308'];
+            @endphp
             @forelse ($departmentCounts as $department => $count)
+              @php
+                $departmentBarColor = $departmentBarColors[$loop->index % count($departmentBarColors)];
+              @endphp
               <div>
                 <div class="flex justify-between gap-4 text-sm"><span class="font-bold text-slate-700">{{ $department }}</span><span class="font-black">{{ number_format($count) }}</span></div>
-                <div class="mt-2 h-3 rounded-full bg-slate-100"><div class="h-3 rounded-full bg-indigo-500" style="width: {{ max(5, round(($count / $maxDepartment) * 100)) }}%;"></div></div>
+                <div class="mt-2 h-3 rounded-full bg-slate-100"><div class="h-3 rounded-full" style="width: {{ max(5, round(($count / $maxDepartment) * 100)) }}%; background-color: {{ $departmentBarColor }};"></div></div>
               </div>
             @empty
               <p class="rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-slate-500">No department records yet.</p>
@@ -145,13 +205,13 @@
         </div>
 
         <div class="rounded-3xl border border-white bg-white p-6 shadow-sm">
-          <p class="text-xs font-bold uppercase tracking-[0.2em] text-sky-700">Column Chart</p>
+          <p class="text-xs font-bold uppercase tracking-[0.2em] text-orange-600">Column Chart</p>
           <h2 class="mt-1 text-xl font-black text-slate-950">Whole records volume</h2>
           <div class="mt-6 flex h-72 items-end gap-4 overflow-x-auto border-b border-slate-200 pb-4">
             @foreach ($recordVolume as $label => $count)
               <div class="flex min-w-[5.5rem] flex-1 flex-col items-center justify-end gap-2">
                 <span class="text-xs font-black text-slate-900">{{ number_format($count) }}</span>
-                <div class="w-full rounded-t-2xl bg-sky-500" style="height: {{ max(14, round(($count / $maxVolume) * 210)) }}px;"></div>
+                <div class="w-full rounded-t-2xl bg-orange-500" style="height: {{ max(14, round(($count / $maxVolume) * 210)) }}px;"></div>
                 <span class="text-center text-[11px] font-semibold leading-4 text-slate-500">{{ $label }}</span>
               </div>
             @endforeach
@@ -221,10 +281,10 @@
             <div class="rounded-2xl bg-violet-50 p-4"><p class="text-2xl font-black">{{ number_format($roleGroupCounts['staff'] ?? 0) }}</p><p class="text-xs font-semibold text-slate-500">Staff</p></div>
             <div class="rounded-2xl bg-amber-50 p-4"><p class="text-2xl font-black">{{ number_format($roleGroupCounts['teaching'] ?? 0) }}</p><p class="text-xs font-semibold text-slate-500">Teaching</p></div>
             <div class="rounded-2xl bg-orange-50 p-4"><p class="text-2xl font-black">{{ number_format($roleGroupCounts['non_teaching'] ?? 0) }}</p><p class="text-xs font-semibold text-slate-500">Non-Teaching</p></div>
-            <div class="rounded-2xl bg-slate-50 p-4"><p class="text-2xl font-black">{{ number_format($documentCount) }}</p><p class="text-xs font-semibold text-slate-500">Documents</p></div>
-            <div class="rounded-2xl bg-slate-50 p-4"><p class="text-2xl font-black">{{ number_format($openPositionCount) }}</p><p class="text-xs font-semibold text-slate-500">Open Jobs</p></div>
-            <div class="rounded-2xl bg-slate-50 p-4"><p class="text-2xl font-black">{{ number_format($conversationCount) }}</p><p class="text-xs font-semibold text-slate-500">Conversations</p></div>
-            <div class="rounded-2xl bg-slate-50 p-4"><p class="text-2xl font-black">{{ number_format($resignationCount) }}</p><p class="text-xs font-semibold text-slate-500">Resignations</p></div>
+            <div class="rounded-2xl bg-blue-50 p-4 text-blue-700"><p class="text-2xl font-black">{{ number_format($documentCount) }}</p><p class="text-xs font-semibold opacity-80">Documents</p></div>
+            <div class="rounded-2xl bg-lime-50 p-4 text-lime-700"><p class="text-2xl font-black">{{ number_format($openPositionCount) }}</p><p class="text-xs font-semibold opacity-80">Open Jobs</p></div>
+            <div class="rounded-2xl bg-teal-50 p-4 text-teal-700"><p class="text-2xl font-black">{{ number_format($conversationCount) }}</p><p class="text-xs font-semibold opacity-80">Conversations</p></div>
+            <div class="rounded-2xl bg-red-50 p-4 text-red-700"><p class="text-2xl font-black">{{ number_format($resignationCount) }}</p><p class="text-xs font-semibold opacity-80">Resignations</p></div>
           </div>
         </div>
 
@@ -234,7 +294,7 @@
           <div class="mt-6 divide-y divide-slate-100">
             @forelse ($recentActivities as $activity)
               <div class="flex items-start gap-3 py-3">
-                <span class="mt-1 grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-slate-100 text-slate-600"><i class="fa-solid fa-clock-rotate-left"></i></span>
+                <span class="mt-1 grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-red-100 text-red-600"><i class="fa-solid fa-clock-rotate-left"></i></span>
                 <div class="min-w-0 flex-1">
                   <p class="truncate text-sm font-black text-slate-900">{{ $activity->action ?: 'System activity' }}</p>
                   <p class="mt-1 text-xs leading-5 text-slate-500">{{ $activity->description ?: 'No description recorded.' }}</p>

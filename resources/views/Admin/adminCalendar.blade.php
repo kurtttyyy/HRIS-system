@@ -36,8 +36,50 @@
       transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease, background-color 0.24s ease;
     }
     .calendar-card-motion:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
+      transform: translateY(-2px);
+      box-shadow: 0 14px 28px rgba(15, 23, 42, 0.1);
+    }
+    html[data-theme="dark"] #admin-calendar-page .calendar-action {
+      background: #162238 !important;
+      border-color: #34455c !important;
+      color: #cbd5e1 !important;
+      box-shadow: none !important;
+    }
+    html[data-theme="dark"] #admin-calendar-page .calendar-action:hover:not(:disabled) {
+      background: #1b2a42 !important;
+      border-color: #4a6079 !important;
+      filter: none !important;
+      transform: translateY(-1px) !important;
+    }
+    html[data-theme="dark"] #admin-calendar-page .calendar-action:disabled {
+      background: #121d30 !important;
+      color: #718096 !important;
+      opacity: .72 !important;
+    }
+    html[data-theme="dark"] #admin-calendar-page .calendar-day {
+      background: #111c30 !important;
+      border-color: #304158 !important;
+      color: #cbd5e1 !important;
+      box-shadow: none !important;
+    }
+    html[data-theme="dark"] #admin-calendar-page .calendar-day:hover {
+      background: #17263c !important;
+      border-color: #465b73 !important;
+      filter: none !important;
+      transform: translateY(-1px) !important;
+    }
+    html[data-theme="dark"] #admin-calendar-page .calendar-day.is-today {
+      background: #172b45 !important;
+      border-color: #3b82f6 !important;
+    }
+    html[data-theme="dark"] #admin-calendar-page .calendar-day.is-selected {
+      background: #1b3150 !important;
+      border-color: #60a5fa !important;
+      box-shadow: inset 0 0 0 1px #60a5fa !important;
+    }
+    html[data-theme="dark"] #admin-calendar-page .calendar-event-label {
+      background: #1e2d43 !important;
+      border-left: 3px solid currentColor;
     }
     .calendar-icon-pop {
       animation: calendar-pop-in 0.65s cubic-bezier(0.22, 0.9, 0.2, 1) both;
@@ -243,7 +285,7 @@
               <button
                 id="addCustomEventBtn"
                 type="button"
-                class="inline-flex items-center justify-between rounded-[1.25rem] border border-amber-100 bg-amber-50 px-4 py-3 text-left text-sm font-semibold text-amber-800 transition hover:-translate-y-0.5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+                class="calendar-action inline-flex items-center justify-between rounded-[1.25rem] border border-amber-100 bg-amber-50 px-4 py-3 text-left text-sm font-semibold text-amber-800 transition hover:-translate-y-0.5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
                 disabled
               >
                 <span class="inline-flex items-center gap-3">
@@ -258,7 +300,7 @@
               <button
                 id="addExamDayBtn"
                 type="button"
-                class="inline-flex items-center justify-between rounded-[1.25rem] border border-emerald-100 bg-emerald-50 px-4 py-3 text-left text-sm font-semibold text-emerald-800 transition hover:-translate-y-0.5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+                class="calendar-action inline-flex items-center justify-between rounded-[1.25rem] border border-emerald-100 bg-emerald-50 px-4 py-3 text-left text-sm font-semibold text-emerald-800 transition hover:-translate-y-0.5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
                 disabled
               >
                 <span class="inline-flex items-center gap-3">
@@ -273,7 +315,7 @@
               <button
                 id="addCustomHolidayBtn"
                 type="button"
-                class="inline-flex items-center justify-between rounded-[1.25rem] border border-rose-100 bg-rose-50 px-4 py-3 text-left text-sm font-semibold text-rose-800 transition hover:-translate-y-0.5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+                class="calendar-action inline-flex items-center justify-between rounded-[1.25rem] border border-rose-100 bg-rose-50 px-4 py-3 text-left text-sm font-semibold text-rose-800 transition hover:-translate-y-0.5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
                 disabled
               >
                 <span class="inline-flex items-center gap-3">
@@ -302,7 +344,7 @@
               <button
                 id="convertEventToHolidayBtn"
                 type="button"
-                class="inline-flex items-center justify-between rounded-[1.25rem] border border-sky-100 bg-sky-50 px-4 py-3 text-left text-sm font-semibold text-sky-800 transition hover:-translate-y-0.5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+                class="calendar-action inline-flex items-center justify-between rounded-[1.25rem] border border-sky-100 bg-sky-50 px-4 py-3 text-left text-sm font-semibold text-sky-800 transition hover:-translate-y-0.5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
                 disabled
               >
                 <span class="inline-flex items-center gap-3">
@@ -317,7 +359,7 @@
               <button
                 id="removeCustomEventBtn"
                 type="button"
-                class="inline-flex items-center justify-between rounded-[1.25rem] border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+                class="calendar-action inline-flex items-center justify-between rounded-[1.25rem] border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
                 disabled
               >
                 <span class="inline-flex items-center gap-3">
@@ -332,7 +374,7 @@
               <button
                 id="removeCustomHolidayBtn"
                 type="button"
-                class="inline-flex items-center justify-between rounded-[1.25rem] border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+                class="calendar-action inline-flex items-center justify-between rounded-[1.25rem] border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
                 disabled
               >
                 <span class="inline-flex items-center gap-3">
@@ -795,7 +837,9 @@
       const cell = document.createElement('button');
       cell.type = 'button';
       cell.className = [
-        'group min-h-[132px] rounded-[1.4rem] border px-3 py-3 text-left text-xs md:text-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md',
+        'calendar-day group min-h-[132px] rounded-[1.4rem] border px-3 py-3 text-left text-xs md:text-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md',
+        isToday ? 'is-today' : '',
+        isSelected ? 'is-selected' : '',
         isToday
           ? 'border-blue-200 bg-blue-50 text-blue-900'
           : 'border-slate-200 bg-white text-slate-700',
@@ -816,19 +860,19 @@
 
       const visibleLabels = [];
       holidayEntries.slice(0, 1).forEach((entry) => {
-        visibleLabels.push(`<div class="truncate rounded-xl bg-rose-100 px-2 py-1 text-[10px] font-semibold text-rose-700">${entry.name}</div>`);
+        visibleLabels.push(`<div class="calendar-event-label truncate rounded-xl bg-rose-100 px-2 py-1 text-[10px] font-semibold text-rose-700">${entry.name}</div>`);
       });
       if (noClassLabel) {
-        visibleLabels.push(`<div class="truncate rounded-xl bg-orange-100 px-2 py-1 text-[10px] font-semibold text-orange-700">${noClassLabel}</div>`);
+        visibleLabels.push(`<div class="calendar-event-label truncate rounded-xl bg-orange-100 px-2 py-1 text-[10px] font-semibold text-orange-700">${noClassLabel}</div>`);
       }
       events.slice(0, visibleLabels.length < 2 ? 2 - visibleLabels.length : 0).forEach((entry) => {
-        visibleLabels.push(`<div class="truncate rounded-xl bg-sky-100 px-2 py-1 text-[10px] font-semibold text-sky-700">${entry}</div>`);
+        visibleLabels.push(`<div class="calendar-event-label truncate rounded-xl bg-sky-100 px-2 py-1 text-[10px] font-semibold text-sky-700">${entry}</div>`);
       });
       customEventEntries.slice(0, visibleLabels.length < 2 ? 2 - visibleLabels.length : 0).forEach((entry) => {
-        visibleLabels.push(`<div class="truncate rounded-xl bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-700">${entry.name}</div>`);
+        visibleLabels.push(`<div class="calendar-event-label truncate rounded-xl bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-700">${entry.name}</div>`);
       });
       examEntries.slice(0, visibleLabels.length < 2 ? 2 - visibleLabels.length : 0).forEach((entry) => {
-        visibleLabels.push(`<div class="truncate rounded-xl bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-700">${entry}</div>`);
+        visibleLabels.push(`<div class="calendar-event-label truncate rounded-xl bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-700">${entry}</div>`);
       });
 
       const totalEntries = holidayEntries.length + (noClassLabel ? 1 : 0) + events.length + customEventEntries.length + examEntries.length;

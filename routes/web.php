@@ -106,6 +106,7 @@ Route::controller(AdministratorPageController::class)->group(function () {
     Route::get('system/my-profile', 'display_my_profile')->name('admin.myProfile');
     Route::post('system/my-profile', 'update_my_profile')->name('admin.myProfile.update');
     Route::post('system/my-profile/admin-accounts', 'create_admin_account')->name('admin.accounts.store');
+    Route::post('system/my-profile/admin-accounts/{account}', 'update_admin_account')->name('admin.accounts.update');
     Route::get('system/notifications', 'display_notifications')->name('admin.adminNotifications');
     Route::get('system/notifications/summary', 'notification_summary')->name('admin.adminNotifications.summary');
     Route::get('system/communication', 'display_communication')->name('admin.adminCommunication');

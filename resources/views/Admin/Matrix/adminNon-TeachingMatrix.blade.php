@@ -7,6 +7,45 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
+    @media screen {
+      html[data-theme="dark"] #admin-matrix-page .matrix-card-motion,
+      html[data-theme="dark"] #admin-matrix-page .matrix-print-wrapper {
+        background: #111c30 !important;
+        border-color: #33445b !important;
+        box-shadow: none !important;
+      }
+      html[data-theme="dark"] #admin-matrix-page h1,
+      html[data-theme="dark"] #admin-matrix-page [class*="text-stone-9"],
+      html[data-theme="dark"] #admin-matrix-page .matrix-name-button {
+        color: #e5eaf2 !important;
+      }
+      html[data-theme="dark"] #admin-matrix-page [class*="text-stone-8"],
+      html[data-theme="dark"] #admin-matrix-page [class*="text-stone-7"],
+      html[data-theme="dark"] #admin-matrix-page [class*="text-stone-6"] {
+        color: #b8c3d3 !important;
+      }
+      html[data-theme="dark"] #admin-matrix-page table thead {
+        background: #18263d !important;
+      }
+      html[data-theme="dark"] #admin-matrix-page table th {
+        color: #dbe3ee !important;
+        border-color: #43536a !important;
+      }
+      html[data-theme="dark"] #admin-matrix-page table tbody,
+      html[data-theme="dark"] #admin-matrix-page table tbody tr,
+      html[data-theme="dark"] #admin-matrix-page table tbody tr:nth-child(odd),
+      html[data-theme="dark"] #admin-matrix-page table tbody tr:nth-child(even) {
+        background: #111c30 !important;
+      }
+      html[data-theme="dark"] #admin-matrix-page table td {
+        color: #cbd5e1 !important;
+        border-color: #34455c !important;
+      }
+      html[data-theme="dark"] #admin-matrix-page table tbody tr:hover {
+        background: #17263c !important;
+      }
+    }
+
     .matrix-name-button {
       display: inline-flex;
       align-items: center;
@@ -309,6 +348,15 @@
       box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
     }
 
+    .matrix-data-row {
+      transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    html[data-theme="dark"] main .matrix-data-row:hover {
+      background-color: #1e293b !important;
+      box-shadow: inset 4px 0 0 #38bdf8;
+    }
+
     .matrix-icon-pop {
       animation: matrix-pop-in 0.65s cubic-bezier(0.22, 0.9, 0.2, 1) both;
       animation-delay: var(--matrix-delay, 0ms);
@@ -518,7 +566,7 @@
           })
           ->values();
       @endphp
-      <div class="matrix-print-wrapper matrix-reveal w-full overflow-x-auto rounded-2xl border border-stone-300 bg-white shadow-sm" style="--matrix-delay: 160ms;">
+      <div class="matrix-print-wrapper w-full overflow-x-auto rounded-2xl border border-stone-300 bg-white shadow-sm">
         <table id="non-teaching-matrix" class="min-w-[1320px] w-full text-sm text-stone-800 border-collapse">
           <thead class="bg-stone-100">
             <tr class="hidden print:table-row">
@@ -545,12 +593,17 @@
                   trim((string) ($staff->last_name ?? '')),
                 ])));
 
-                $degreeRows = collect(optional($staff->applicant)->degrees ?? [])->values();
+                $hasDegreeValue = function ($value): bool {
+                  return !in_array(strtolower(trim((string) ($value ?? ''))), ['', '-', 'n/a', 'na'], true);
+                };
+                $degreeRows = collect(optional($staff->applicant)->degrees ?? [])
+                  ->filter(fn ($row) => $hasDegreeValue($row->degree_name ?? null))
+                  ->values();
                 $fallbackDegrees = collect([
                   ['degree_name' => trim((string) optional($staff->education)->doctorate), 'school_name' => trim((string) (optional($staff->applicant)->doctoral_school_name ?? '')), 'year_finished' => trim((string) (optional($staff->applicant)->doctoral_year_finished ?? ''))],
                   ['degree_name' => trim((string) optional($staff->education)->master), 'school_name' => trim((string) (optional($staff->applicant)->master_school_name ?? '')), 'year_finished' => trim((string) (optional($staff->applicant)->master_year_finished ?? ''))],
                   ['degree_name' => trim((string) optional($staff->education)->bachelor), 'school_name' => trim((string) (optional($staff->applicant)->bachelor_school_name ?? '')), 'year_finished' => trim((string) (optional($staff->applicant)->bachelor_year_finished ?? ''))],
-                ])->filter(fn ($row) => $row['degree_name'] !== '');
+                ])->filter(fn ($row) => $hasDegreeValue($row['degree_name']));
 
                 $specialization = collect([
                   trim((string) (optional($staff->applicant)->field_study ?? '')),
@@ -797,7 +850,7 @@
                   'profile_photo_url' => $profilePhotoUrl,
                 ];
               @endphp
-              <tr class="odd:bg-white even:bg-stone-50/40">
+              <tr class="matrix-data-row odd:bg-white even:bg-stone-50/40">
                 <td class="border border-stone-300 px-3 py-3 font-medium">
                   <span
                     role="button"

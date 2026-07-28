@@ -7,6 +7,45 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
+    @media screen {
+      html[data-theme="dark"] #admin-matrix-page .matrix-card-motion,
+      html[data-theme="dark"] #admin-matrix-page .matrix-print-wrapper {
+        background: #111c30 !important;
+        border-color: #33445b !important;
+        box-shadow: none !important;
+      }
+      html[data-theme="dark"] #admin-matrix-page h1,
+      html[data-theme="dark"] #admin-matrix-page [class*="text-stone-9"],
+      html[data-theme="dark"] #admin-matrix-page .matrix-name-button {
+        color: #e5eaf2 !important;
+      }
+      html[data-theme="dark"] #admin-matrix-page [class*="text-stone-8"],
+      html[data-theme="dark"] #admin-matrix-page [class*="text-stone-7"],
+      html[data-theme="dark"] #admin-matrix-page [class*="text-stone-6"] {
+        color: #b8c3d3 !important;
+      }
+      html[data-theme="dark"] #admin-matrix-page table thead {
+        background: #18263d !important;
+      }
+      html[data-theme="dark"] #admin-matrix-page table th {
+        color: #dbe3ee !important;
+        border-color: #43536a !important;
+      }
+      html[data-theme="dark"] #admin-matrix-page table tbody,
+      html[data-theme="dark"] #admin-matrix-page table tbody tr,
+      html[data-theme="dark"] #admin-matrix-page table tbody tr:nth-child(odd),
+      html[data-theme="dark"] #admin-matrix-page table tbody tr:nth-child(even) {
+        background: #111c30 !important;
+      }
+      html[data-theme="dark"] #admin-matrix-page table td {
+        color: #cbd5e1 !important;
+        border-color: #34455c !important;
+      }
+      html[data-theme="dark"] #admin-matrix-page table tbody tr:hover {
+        background: #17263c !important;
+      }
+    }
+
     .matrix-name-button {
       display: inline-flex;
       align-items: center;

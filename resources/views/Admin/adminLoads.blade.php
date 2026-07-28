@@ -35,8 +35,8 @@
       transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease, background-color 0.24s ease;
     }
     .loads-card-motion:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
+      transform: translateY(-2px);
+      box-shadow: 0 14px 28px rgba(15, 23, 42, 0.1);
     }
     .loads-icon-pop {
       animation: loads-pop-in 0.65s cubic-bezier(0.22, 0.9, 0.2, 1) both;
@@ -46,9 +46,38 @@
       transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     }
     .loads-row-motion:hover {
-      transform: translateX(4px);
+      transform: translateX(2px);
       border-color: rgb(186 230 253);
-      box-shadow: inset 3px 0 0 rgba(14, 165, 233, 0.55), 0 10px 24px rgba(15, 23, 42, 0.08);
+      box-shadow: inset 2px 0 0 rgba(14, 165, 233, 0.45), 0 8px 18px rgba(15, 23, 42, 0.07);
+    }
+    html[data-theme="dark"] #admin-loads-page .loads-surface {
+      background: #111c30 !important;
+      border-color: #2b3b52 !important;
+      box-shadow: none !important;
+    }
+    html[data-theme="dark"] #admin-loads-page .loads-upload-zone {
+      background: #162238 !important;
+      border-color: #3b526d !important;
+    }
+    html[data-theme="dark"] #admin-loads-page .loads-upload-zone:hover {
+      background: #19273d !important;
+      border-color: #52708e !important;
+    }
+    html[data-theme="dark"] #admin-loads-page .loads-file-item,
+    html[data-theme="dark"] #admin-loads-page .loads-empty-state {
+      background: #101a2d !important;
+      border-color: #34455c !important;
+      box-shadow: none !important;
+    }
+    html[data-theme="dark"] #admin-loads-page .loads-file-active {
+      background: #172940 !important;
+      border-color: #46718f !important;
+    }
+    html[data-theme="dark"] #admin-loads-page .loads-card-motion:hover,
+    html[data-theme="dark"] #admin-loads-page .loads-row-motion:hover {
+      background-color: #18263d !important;
+      border-color: #40516a !important;
+      box-shadow: 0 10px 22px rgba(2, 6, 23, 0.22) !important;
     }
     @keyframes loads-fade-up {
       to {
@@ -135,7 +164,7 @@
       </section>
 
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div class="loads-card-motion loads-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--loads-delay: 120ms;">
+        <div class="loads-surface loads-card-motion loads-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--loads-delay: 120ms;">
           <span class="loads-icon-pop inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-100 text-sky-600" style="--loads-delay: 150ms;">
             <i class="fa-solid fa-folder-tree text-lg"></i>
           </span>
@@ -144,7 +173,7 @@
           <p class="mt-1 text-sm text-slate-500">Stored source load files</p>
         </div>
 
-        <div class="loads-card-motion loads-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--loads-delay: 150ms;">
+        <div class="loads-surface loads-card-motion loads-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--loads-delay: 150ms;">
           <span class="loads-icon-pop inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600" style="--loads-delay: 180ms;">
             <i class="fa-solid fa-circle-check text-lg"></i>
           </span>
@@ -153,7 +182,7 @@
           <p class="mt-1 text-sm text-slate-500">Preview-ready load data</p>
         </div>
 
-        <div class="loads-card-motion loads-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--loads-delay: 180ms;">
+        <div class="loads-surface loads-card-motion loads-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--loads-delay: 180ms;">
           <span class="loads-icon-pop inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-600" style="--loads-delay: 210ms;">
             <i class="fa-solid fa-hourglass-half text-lg"></i>
           </span>
@@ -162,7 +191,7 @@
           <p class="mt-1 text-sm text-slate-500">Files waiting for scan</p>
         </div>
 
-        <div class="loads-card-motion loads-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--loads-delay: 210ms;">
+        <div class="loads-surface loads-card-motion loads-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--loads-delay: 210ms;">
           <span class="loads-icon-pop inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600" style="--loads-delay: 240ms;">
             <i class="fa-solid fa-eye text-lg"></i>
           </span>
@@ -174,7 +203,7 @@
 
       <div class="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.35fr)]">
         <section class="space-y-6">
-          <div class="loads-reveal overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/90 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur" style="--loads-delay: 250ms;">
+          <div class="loads-surface loads-reveal overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/90 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur" style="--loads-delay: 250ms;">
             <div class="flex items-start justify-between gap-4">
               <div>
                 <div class="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
@@ -204,7 +233,7 @@
 
             <form id="loads_upload_form" action="{{ route('admin.uploadLoadsFile') }}" method="POST" enctype="multipart/form-data" class="mt-6 space-y-5">
               @csrf
-              <label for="loads_file" class="group relative flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[1.5rem] border-2 border-dashed border-sky-200 bg-[linear-gradient(180deg,rgba(239,246,255,0.9),rgba(255,255,255,0.95))] px-6 py-10 text-center transition hover:border-sky-300 hover:bg-sky-50">
+              <label for="loads_file" class="loads-upload-zone group relative flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[1.5rem] border-2 border-dashed border-sky-200 bg-[linear-gradient(180deg,rgba(239,246,255,0.9),rgba(255,255,255,0.95))] px-6 py-10 text-center transition hover:border-sky-300 hover:bg-sky-50">
                 <div class="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-sky-300 to-transparent"></div>
                 <input id="loads_file" name="loads_file" type="file" accept=".xlsx,.xls,.csv" class="absolute inset-0 z-10 cursor-pointer opacity-0" />
                 <span class="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-sky-600 shadow-sm">
@@ -250,7 +279,7 @@
           </div>
         </section>
 
-        <section class="loads-reveal overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/90 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur" style="--loads-delay: 290ms;">
+        <section class="loads-surface loads-reveal overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/90 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur" style="--loads-delay: 290ms;">
           <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <div class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
@@ -327,7 +356,7 @@
                 </div>
               </div>
             @empty
-              <div class="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50/80 p-8 text-center">
+              <div class="loads-empty-state rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50/80 p-8 text-center">
                 <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm">
                   <i class="fa-solid fa-folder-open text-xl"></i>
                 </div>
@@ -339,7 +368,7 @@
         </section>
       </div>
 
-      <section class="loads-reveal overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/90 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur" style="--loads-delay: 330ms;">
+      <section class="loads-surface loads-reveal overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/90 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur" style="--loads-delay: 330ms;">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <div class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-indigo-700">

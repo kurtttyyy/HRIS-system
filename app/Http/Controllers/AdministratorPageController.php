@@ -188,6 +188,62 @@ class AdministratorPageController extends Controller
             ->with('success', 'Admin account created successfully. The staff member can now sign in with the assigned email and password.');
     }
 
+    public function update_admin_account(Request $request, User $account)
+    {
+        $currentAdmin = Auth::user();
+        abort_unless(
+            $currentAdmin
+            && in_array(strtolower(trim((string) $currentAdmin->role)), ['admin', 'administrator'], true)
+            && $currentAdmin->hasAdminPermission('manage_admins'),
+            403
+        );
+        abort_unless(in_array(strtolower(trim((string) $account->role)), ['admin', 'administrator'], true), 404);
+
+        $validated = $request->validateWithBag('editAdmin', [
+            'edit_admin_first_name' => ['required', 'string', 'max:100'],
+            'edit_admin_middle_name' => ['nullable', 'string', 'max:100'],
+            'edit_admin_last_name' => ['required', 'string', 'max:100'],
+            'edit_admin_email' => ['required', 'email', 'max:150', 'unique:users,email,'.$account->id],
+            'edit_admin_position' => ['required', 'string', 'max:150'],
+            'edit_admin_department' => ['required', 'string', 'max:150'],
+            'edit_admin_password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'edit_admin_access_level' => ['required', 'in:full,limited'],
+            'edit_admin_permissions' => ['nullable', 'array'],
+            'edit_admin_permissions.*' => ['in:dashboard,employees,leave,payslip,communication,reports,logs,hiring,loads,matrix,resignations,calendar'],
+        ]);
+
+        $permissions = $validated['edit_admin_access_level'] === 'full'
+            ? null
+            : array_values(array_unique($validated['edit_admin_permissions'] ?? []));
+
+        if ($validated['edit_admin_access_level'] === 'limited' && empty($permissions)) {
+            return back()->withErrors(
+                ['edit_admin_permissions' => 'Select at least one module for a limited administrator.'],
+                'editAdmin'
+            )->withInput();
+        }
+
+        $changes = [
+            'first_name' => trim($validated['edit_admin_first_name']),
+            'middle_name' => trim((string) ($validated['edit_admin_middle_name'] ?? '')) ?: 'N/A',
+            'last_name' => trim($validated['edit_admin_last_name']),
+            'email' => strtolower(trim($validated['edit_admin_email'])),
+            'job_role' => trim($validated['edit_admin_position']),
+            'position' => trim($validated['edit_admin_position']),
+            'department' => trim($validated['edit_admin_department']),
+            'admin_permissions' => $permissions,
+        ];
+        if (!empty($validated['edit_admin_password'])) {
+            $changes['password'] = Hash::make($validated['edit_admin_password']);
+        }
+
+        $account->update($changes);
+
+        return redirect()->route('admin.myProfile', array_filter([
+            'tab_session' => $request->query('tab_session') ?: $request->input('tab_session'),
+        ]))->with('success', 'Administrator account updated successfully.');
+    }
+
     public function display_home(Request $request){
         $accept = User::with([
             'employee',

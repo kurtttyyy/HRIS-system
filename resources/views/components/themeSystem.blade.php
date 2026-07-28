@@ -67,6 +67,40 @@
     html[data-theme="dark"] main [class*="shadow-"] {
         --tw-shadow-color: rgba(2, 6, 23, .45) !important;
     }
+
+    html[data-theme="dark"] main table tbody tr {
+        transition: background-color .2s ease, box-shadow .2s ease, transform .2s ease;
+    }
+    html[data-theme="dark"] main table tbody tr:hover {
+        background-color: #1e293b !important;
+        box-shadow: inset 4px 0 0 #38bdf8;
+    }
+    html[data-theme="dark"] main a[class*="rounded"],
+    html[data-theme="dark"] main button[class*="rounded"],
+    html[data-theme="dark"] main [role="button"] {
+        transition: filter .2s ease, transform .2s ease, box-shadow .2s ease, background-color .2s ease;
+    }
+    html[data-theme="dark"] main a[class*="rounded"]:hover,
+    html[data-theme="dark"] main button[class*="rounded"]:hover,
+    html[data-theme="dark"] main [role="button"]:hover {
+        filter: brightness(1.14);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(2, 6, 23, .28);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        html[data-theme="dark"] main table tbody tr,
+        html[data-theme="dark"] main a[class*="rounded"],
+        html[data-theme="dark"] main button[class*="rounded"],
+        html[data-theme="dark"] main [role="button"] {
+            transition: none;
+        }
+        html[data-theme="dark"] main a[class*="rounded"]:hover,
+        html[data-theme="dark"] main button[class*="rounded"]:hover,
+        html[data-theme="dark"] main [role="button"]:hover {
+            transform: none;
+        }
+    }
 </style>
 
 <script>

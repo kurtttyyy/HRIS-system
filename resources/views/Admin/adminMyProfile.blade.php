@@ -14,6 +14,38 @@
         .profile-card:hover{transform:translateY(-3px);border-color:#a7f3d0;box-shadow:0 18px 40px rgba(15,23,42,.08)}
         .profile-reveal{animation:profile-rise .55s cubic-bezier(.22,1,.36,1) both;animation-delay:var(--delay,0ms)}
         dialog::backdrop{background:rgba(15,23,42,.62);backdrop-filter:blur(5px)}
+        html[data-theme="dark"] :is(#create-admin-account,#edit-admin-account) .admin-permission-panel{
+            background:#111c30!important;
+            border-color:#33445b!important;
+        }
+        html[data-theme="dark"] :is(#create-admin-account,#edit-admin-account) .admin-permission-panel>p{
+            color:#6ee7b7!important;
+        }
+        html[data-theme="dark"] :is(#create-admin-account,#edit-admin-account) .admin-permission-option{
+            background:#162238!important;
+            border-color:#34455c!important;
+            color:#cbd5e1!important;
+            transition:border-color .18s ease,background-color .18s ease;
+        }
+        html[data-theme="dark"] :is(#create-admin-account,#edit-admin-account) .admin-permission-option:hover{
+            background:#1a2940!important;
+            border-color:#4b647e!important;
+        }
+        html[data-theme="dark"] :is(#create-admin-account,#edit-admin-account) .admin-permission-option:has(input:checked){
+            background:#12302d!important;
+            border-color:#2f806d!important;
+            color:#e2e8f0!important;
+        }
+        html[data-theme="dark"] :is(#create-admin-account,#edit-admin-account)>form>div:nth-child(2){
+            scrollbar-color:#526078 #111827;
+        }
+        html[data-theme="dark"] main .admin-modal-cancel:hover{
+            background:#243147!important;
+            color:#e2e8f0!important;
+            filter:none!important;
+            transform:none!important;
+            box-shadow:none!important;
+        }
         @keyframes profile-rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
         @media(prefers-reduced-motion:reduce){.profile-reveal{animation:none}.profile-card{transition:none}.profile-card:hover{transform:none}}
     </style>
@@ -134,10 +166,26 @@
                             $accountName = trim(implode(' ', array_filter([$account->first_name, $account->middle_name, $account->last_name])));
                             $accountInitials = strtoupper(substr((string) $account->first_name, 0, 1).substr((string) $account->last_name, 0, 1));
                         @endphp
-                        <div class="profile-card flex items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <button
+                            type="button"
+                            class="profile-card admin-account-card flex w-full items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left"
+                            data-admin-account="{{ json_encode([
+                                'id' => $account->id,
+                                'first_name' => $account->first_name,
+                                'middle_name' => $account->middle_name === 'N/A' ? '' : $account->middle_name,
+                                'last_name' => $account->last_name,
+                                'email' => $account->email,
+                                'position' => $account->job_role ?: $account->position,
+                                'department' => $account->department,
+                                'access_level' => is_null($account->admin_permissions) ? 'full' : 'limited',
+                                'permissions' => $account->admin_permissions ?? [],
+                            ], JSON_HEX_APOS | JSON_HEX_QUOT) }}"
+                            aria-label="Edit {{ $accountName ?: 'administrator' }}"
+                        >
                             <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 text-sm font-black text-white">{{ $accountInitials ?: 'AD' }}</div>
                             <div class="min-w-0 flex-1"><div class="flex items-center gap-2"><p class="truncate text-sm font-black">{{ $accountName ?: 'Administrator' }}</p>@if((int)$account->id === (int)$admin->id)<span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold text-emerald-700">YOU</span>@endif</div><p class="truncate text-xs text-slate-500">{{ $account->email }}</p><p class="mt-1 text-[10px] font-semibold text-emerald-700">{{ is_null($account->admin_permissions) ? 'Full access' : count($account->admin_permissions).' modules' }} · {{ $account->account_status ?: 'Active' }}</p></div>
-                        </div>
+                            <i class="fa-solid fa-pen text-xs text-slate-400"></i>
+                        </button>
                     @endforeach
                 </div>
             </section>
@@ -162,7 +210,7 @@
                     <div class="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs leading-5 text-blue-700 sm:col-span-2"><i class="fa-solid fa-circle-info mr-2"></i>Your administrator role and account creation date cannot be edited here.</div>
                 </div>
                 <div class="flex items-center justify-end gap-3 border-t border-slate-200 bg-white px-6 py-4">
-                    <button type="button" onclick="document.getElementById('admin-profile-editor').close()" class="rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-100">Cancel</button>
+                    <button type="button" onclick="document.getElementById('admin-profile-editor').close()" class="admin-modal-cancel rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-100">Cancel</button>
                     <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700"><i class="fa-solid fa-floppy-disk"></i>Save Changes</button>
                 </div>
             </form>
@@ -194,11 +242,11 @@
                         ];
                         $oldPermissions = old('admin_permissions', ['dashboard']);
                     @endphp
-                    <div id="limited-admin-permissions" class="{{ old('admin_access_level','limited') === 'limited' ? '' : 'hidden' }} rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 sm:col-span-2">
+                    <div id="limited-admin-permissions" class="admin-permission-panel {{ old('admin_access_level','limited') === 'limited' ? '' : 'hidden' }} rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 sm:col-span-2">
                         <p class="text-xs font-black uppercase tracking-[.18em] text-emerald-800">Allowed modules</p>
                         <div class="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-3">
                             @foreach($permissionOptions as $key => [$label, $icon])
-                                <label class="flex cursor-pointer items-center gap-2 rounded-xl border border-emerald-100 bg-white px-3 py-2.5 text-xs font-bold text-slate-700 hover:border-emerald-300"><input type="checkbox" name="admin_permissions[]" value="{{ $key }}" class="h-4 w-4 accent-emerald-600" @checked(in_array($key, $oldPermissions, true))><i class="fa-solid {{ $icon }} w-4 text-emerald-600"></i>{{ $label }}</label>
+                                <label class="admin-permission-option flex cursor-pointer items-center gap-2 rounded-xl border border-emerald-100 bg-white px-3 py-2.5 text-xs font-bold text-slate-700 hover:border-emerald-300"><input type="checkbox" name="admin_permissions[]" value="{{ $key }}" class="h-4 w-4 accent-emerald-600" @checked(in_array($key, $oldPermissions, true))><i class="fa-solid {{ $icon }} w-4 text-emerald-600"></i>{{ $label }}</label>
                             @endforeach
                         </div>
                     </div>
@@ -207,7 +255,39 @@
                     @if($errors->createAdmin->any())<div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700 sm:col-span-2">{{ $errors->createAdmin->first() }}</div>@endif
                     <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800 sm:col-span-2"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Only grant this account to trusted staff. It will have full administrator access immediately.</div>
                 </div>
-                <div class="flex justify-end gap-3 border-t border-slate-200 px-6 py-4"><button type="button" onclick="document.getElementById('create-admin-account').close()" class="rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100">Cancel</button><button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-700"><i class="fa-solid fa-user-shield"></i>Create Account</button></div>
+                <div class="flex justify-end gap-3 border-t border-slate-200 px-6 py-4"><button type="button" onclick="document.getElementById('create-admin-account').close()" class="admin-modal-cancel rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100">Cancel</button><button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-700"><i class="fa-solid fa-user-shield"></i>Create Account</button></div>
+            </form>
+        </dialog>
+        <dialog id="edit-admin-account" class="m-auto w-[calc(100vw-2rem)] max-w-2xl overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-0 shadow-2xl">
+            <form id="edit-admin-account-form" method="POST" action="">
+                @csrf
+                @if(request()->filled('tab_session'))<input type="hidden" name="tab_session" value="{{ request()->query('tab_session') }}">@endif
+                <input type="hidden" id="edit_admin_id" name="edit_admin_id" value="{{ old('edit_admin_id') }}">
+                <div class="flex items-center justify-between border-b border-slate-200 bg-slate-950 px-6 py-5 text-white">
+                    <div><p class="text-xs font-bold uppercase tracking-[.2em] text-emerald-300">Access management</p><h2 class="mt-1 text-xl font-black">Edit administrator</h2><p class="mt-1 text-xs text-white/60">Update account details and module access.</p></div>
+                    <button type="button" onclick="document.getElementById('edit-admin-account').close()" class="flex h-10 w-10 items-center justify-center rounded-full text-white/70 transition hover:bg-white/10 hover:text-white" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="grid max-h-[65vh] gap-4 overflow-y-auto p-6 sm:grid-cols-2">
+                    <label class="text-sm font-bold text-slate-700">First name<input id="edit_admin_first_name" name="edit_admin_first_name" value="{{ old('edit_admin_first_name') }}" required class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"></label>
+                    <label class="text-sm font-bold text-slate-700">Middle name<input id="edit_admin_middle_name" name="edit_admin_middle_name" value="{{ old('edit_admin_middle_name') }}" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"></label>
+                    <label class="text-sm font-bold text-slate-700">Last name<input id="edit_admin_last_name" name="edit_admin_last_name" value="{{ old('edit_admin_last_name') }}" required class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"></label>
+                    <label class="text-sm font-bold text-slate-700">Login email<input id="edit_admin_email" type="email" name="edit_admin_email" value="{{ old('edit_admin_email') }}" required class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"></label>
+                    <label class="text-sm font-bold text-slate-700">Position<input id="edit_admin_position" name="edit_admin_position" value="{{ old('edit_admin_position') }}" required class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"></label>
+                    <label class="text-sm font-bold text-slate-700">Department<input id="edit_admin_department" name="edit_admin_department" value="{{ old('edit_admin_department') }}" required class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"></label>
+                    <label class="text-sm font-bold text-slate-700 sm:col-span-2">Access level<select id="edit_admin_access_level" name="edit_admin_access_level" required class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"><option value="full">Full access - all modules</option><option value="limited">Limited access - selected modules</option></select></label>
+                    <div id="edit-limited-admin-permissions" class="admin-permission-panel rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 sm:col-span-2">
+                        <p class="text-xs font-black uppercase tracking-[.18em] text-emerald-800">Allowed modules</p>
+                        <div class="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-3">
+                            @foreach($permissionOptions as $key => [$label, $icon])
+                                <label class="admin-permission-option flex cursor-pointer items-center gap-2 rounded-xl border border-emerald-100 bg-white px-3 py-2.5 text-xs font-bold text-slate-700 hover:border-emerald-300"><input type="checkbox" name="edit_admin_permissions[]" value="{{ $key }}" class="h-4 w-4 accent-emerald-600" @checked(in_array($key, old('edit_admin_permissions', []), true))><i class="fa-solid {{ $icon }} w-4 text-emerald-600"></i>{{ $label }}</label>
+                            @endforeach
+                        </div>
+                    </div>
+                    <label class="text-sm font-bold text-slate-700">New password <span class="font-normal text-slate-400">(optional)</span><input type="password" name="edit_admin_password" minlength="8" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"></label>
+                    <label class="text-sm font-bold text-slate-700">Confirm new password<input type="password" name="edit_admin_password_confirmation" minlength="8" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"></label>
+                    @if($errors->editAdmin->any())<div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700 sm:col-span-2">{{ $errors->editAdmin->first() }}</div>@endif
+                </div>
+                <div class="flex justify-end gap-3 border-t border-slate-200 px-6 py-4"><button type="button" onclick="document.getElementById('edit-admin-account').close()" class="admin-modal-cancel rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100">Cancel</button><button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-700"><i class="fa-solid fa-floppy-disk"></i>Save Changes</button></div>
             </form>
         </dialog>
         @if($errors->getBag('default')->any())
@@ -216,6 +296,59 @@
         @if($errors->createAdmin->any())
             <script>document.addEventListener('DOMContentLoaded',()=>document.getElementById('create-admin-account')?.showModal());</script>
         @endif
+        <script>
+            (() => {
+                const modal = document.getElementById('edit-admin-account');
+                const form = document.getElementById('edit-admin-account-form');
+                const accessLevel = document.getElementById('edit_admin_access_level');
+                const permissionPanel = document.getElementById('edit-limited-admin-permissions');
+                const updateUrlBase = @json(url('system/my-profile/admin-accounts'));
+
+                function syncPermissionPanel() {
+                    permissionPanel?.classList.toggle('hidden', accessLevel?.value !== 'limited');
+                }
+
+                function openEditAdmin(account) {
+                    if (!modal || !form || !account?.id) return;
+                    form.action = `${updateUrlBase}/${account.id}`;
+                    document.getElementById('edit_admin_id').value = account.id;
+                    ['first_name', 'middle_name', 'last_name', 'email', 'position', 'department'].forEach((field) => {
+                        const input = document.getElementById(`edit_admin_${field}`);
+                        if (input) input.value = account[field] || '';
+                    });
+                    accessLevel.value = account.access_level || 'limited';
+                    const allowed = new Set(account.permissions || []);
+                    form.querySelectorAll('input[name="edit_admin_permissions[]"]').forEach((checkbox) => {
+                        checkbox.checked = allowed.has(checkbox.value);
+                    });
+                    form.querySelectorAll('input[type="password"]').forEach((input) => { input.value = ''; });
+                    syncPermissionPanel();
+                    modal.showModal();
+                }
+
+                document.querySelectorAll('.admin-account-card').forEach((card) => {
+                    card.addEventListener('click', () => {
+                        try {
+                            openEditAdmin(JSON.parse(card.dataset.adminAccount || '{}'));
+                        } catch (_) {
+                            // Ignore malformed account data.
+                        }
+                    });
+                });
+                accessLevel?.addEventListener('change', syncPermissionPanel);
+
+                @if($errors->editAdmin->any())
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const accountId = @json(old('edit_admin_id'));
+                        if (!accountId || !modal || !form) return;
+                        form.action = `${updateUrlBase}/${accountId}`;
+                        accessLevel.value = @json(old('edit_admin_access_level', 'limited'));
+                        syncPermissionPanel();
+                        modal.showModal();
+                    });
+                @endif
+            })();
+        </script>
     </main>
 </div>
 </body>

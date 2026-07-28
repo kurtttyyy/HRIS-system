@@ -194,7 +194,7 @@
 @include('components.adminHeader.scrollBehavior')
 
 <header id="admin-dashboard-header" data-admin-scroll-header class="admin-header-shell relative z-40 px-4 py-4 md:px-8 md:py-5">
-    <div data-admin-scroll-card class="admin-header-card relative overflow-visible flex flex-col gap-5 rounded-[1.75rem] border border-emerald-950/70 bg-[linear-gradient(135deg,_#020617_0%,_#020617_42%,_#111827_68%,_#064e3b_100%)] px-5 py-5 shadow-[0_24px_60px_rgba(3,19,29,0.34)] backdrop-blur-xl lg:flex-row lg:items-center lg:justify-between md:px-7">
+    <div data-admin-scroll-card class="admin-header-card relative flex w-full min-w-0 flex-col gap-5 overflow-visible rounded-[1.75rem] border border-emerald-950/70 bg-[linear-gradient(135deg,_#020617_0%,_#020617_42%,_#111827_68%,_#064e3b_100%)] px-5 py-5 shadow-[0_24px_60px_rgba(3,19,29,0.34)] backdrop-blur-xl lg:flex-row lg:items-center lg:justify-between md:px-7">
         <div class="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.14),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(110,231,183,0.14),_transparent_32%)]"></div>
         </div>
@@ -220,7 +220,7 @@
                 </label>
             @endif
 
-            <div class="flex flex-wrap items-center justify-end gap-3 xl:flex-nowrap">
+            <div class="flex min-w-0 max-w-full flex-wrap items-center justify-end gap-3 xl:flex-nowrap">
                 @if ($showThemeToggle)
                     @include('components.themeToggle')
                 @endif

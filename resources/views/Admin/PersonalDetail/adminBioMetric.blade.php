@@ -23,7 +23,7 @@ window.displayEmployeeId = function displayEmployeeId(employee, emptyValue = '-'
 
 <div
   class="max-w-5xl mx-auto bg-transparent px-5 py-8 border border-gray-400 text-[13px] text-black"
-  style="background-image: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), url('{{ asset('images/logo1.png') }}'); background-repeat: no-repeat; background-position: center top; background-size: cover;"
+  style="background-image: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), url('{{ asset('images/biometricbg3.png') }}'); background-repeat: no-repeat; background-position: center top; background-size: cover;"
 >
 
 <!-- EDIT & DOWNLOAD BUTTONS -->
@@ -987,7 +987,7 @@ window.displayEmployeeId = function displayEmployeeId(employee, emptyValue = '-'
 
 <script>
 const profileLogoUrl = @json(asset('images/logo.png'));
-const profileFormDesignUrl = @json(asset('images/logo1.png'));
+const profileFormDesignUrl = @json(asset('images/biometricbg3.png'));
 
 function biometricPlaceholderDataUri() {
   const placeholderSvg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><rect width='200' height='200' fill='#e5e7eb'/><circle cx='100' cy='74' r='40' fill='#9ca3af'/><path d='M16 200c8-46 42-78 84-78s76 32 84 78' fill='#9ca3af'/></svg>";

@@ -2083,6 +2083,15 @@ document.addEventListener('DOMContentLoaded', function () {
         field.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
+    function isPlausibleApplicantName(value) {
+        const candidate = String(value || '').trim();
+        if (candidate === '') return true;
+        if (candidate.length > 100) return false;
+        if (/\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{1,2}:\d{2}/.test(candidate)) return false;
+        if (/\b(?:out|in)\s+main\b|\b(?:hrd|msit)\b/i.test(candidate)) return false;
+        return /^[\p{L}\s.'-]+$/u.test(candidate);
+    }
+
     function syncScannedWorkDurationValue() {
         const workDuration = document.getElementById('work_duration');
         const dateFromInput = document.getElementById('work_date_from');
@@ -2309,9 +2318,9 @@ document.addEventListener('DOMContentLoaded', function () {
             return true;
         };
 
-        fillFieldFromPds('first_name', fields.first_name);
-        fillFieldFromPds('middle_name', fields.middle_name);
-        fillFieldFromPds('last_name', fields.surname);
+        fillFieldFromPds('first_name', isPlausibleApplicantName(fields.first_name) ? fields.first_name : '');
+        fillFieldFromPds('middle_name', isPlausibleApplicantName(fields.middle_name) ? fields.middle_name : '');
+        fillFieldFromPds('last_name', isPlausibleApplicantName(fields.surname) ? fields.surname : '');
         fillFieldFromPds('name_extension', pdsNameExtensionValue(fields.name_extension));
         fillFieldFromPds('email', fields.email_address);
         fillFieldFromPds('phone', fields.mobile_no || fields.telephone_no);
@@ -2493,6 +2502,15 @@ document.addEventListener('DOMContentLoaded', () => {
             })
         : [];
 
+    function isPlausibleDraftApplicantName(value) {
+        const candidate = String(value || '').trim();
+        if (candidate === '') return true;
+        if (candidate.length > 100) return false;
+        if (/\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{1,2}:\d{2}/.test(candidate)) return false;
+        if (/\b(?:out|in)\s+main\b|\b(?:hrd|msit)\b/i.test(candidate)) return false;
+        return /^[\p{L}\s.'-]+$/u.test(candidate);
+    }
+
     function saveFormDraft() {
         if (!applicationForm) return;
 
@@ -2521,15 +2539,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (!payload || typeof payload !== 'object') return;
 
+        let draftWasCleaned = false;
+        const applicantNameFieldIds = new Set(['first_name', 'middle_name', 'last_name', 'name_extension']);
         persistableFields.forEach((field) => {
             if (!(field.id in payload)) return;
             const value = payload[field.id];
+            if (applicantNameFieldIds.has(field.id) && !isPlausibleDraftApplicantName(value)) {
+                field.value = '';
+                delete payload[field.id];
+                draftWasCleaned = true;
+                return;
+            }
             if ((field.type || '').toLowerCase() === 'checkbox') {
                 field.checked = Boolean(value);
             } else {
                 field.value = value ?? '';
             }
         });
+        if (draftWasCleaned) {
+            try {
+                localStorage.setItem(formDraftStorageKey, JSON.stringify(payload));
+            } catch (_) {
+                // Ignore storage errors (private mode/quota).
+            }
+        }
     }
 
     function clearFormDraft() {

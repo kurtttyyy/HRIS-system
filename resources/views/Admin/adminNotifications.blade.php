@@ -17,6 +17,39 @@
         .admin-kicker {
             letter-spacing: 0.22em;
         }
+        html[data-theme="dark"] #admin-notification-inbox {
+            background: #111c30 !important;
+            border-color: #334155 !important;
+        }
+        html[data-theme="dark"] #admin-notification-inbox > div > aside {
+            background: #0f172a !important;
+            border-color: #334155 !important;
+        }
+        html[data-theme="dark"] #admin-notification-inbox .notification-row {
+            background: #111c30 !important;
+            color: #cbd5e1;
+        }
+        html[data-theme="dark"] #admin-notification-inbox .notification-row[class*="bg-emerald-50"] {
+            background: #132a2a !important;
+        }
+        html[data-theme="dark"] #admin-notification-inbox .notification-row:hover {
+            background: #1e293b !important;
+            box-shadow: inset 3px 0 0 #34d399;
+        }
+        html[data-theme="dark"] #admin-notification-inbox .notification-filter {
+            color: #cbd5e1 !important;
+        }
+        html[data-theme="dark"] #admin-notification-inbox .notification-filter.bg-emerald-50 {
+            background: #16382f !important;
+            color: #a7f3d0 !important;
+        }
+        html[data-theme="dark"] #admin-notification-inbox .notification-filter:hover,
+        html[data-theme="dark"] #admin-notification-inbox aside a:hover {
+            background: #1e293b !important;
+            box-shadow: none !important;
+            filter: none !important;
+            transform: none !important;
+        }
     </style>
 </head>
 <body class="bg-[radial-gradient(circle_at_top,_#f8fafc,_#eef2ff_40%,_#f8fafc_100%)] text-slate-900">
@@ -65,7 +98,7 @@
 <div class="flex min-h-screen">
     @include('components.adminSideBar')
 
-    <main class="flex-1 ml-16 transition-all duration-300">
+    <main class="ml-16 min-w-0 flex-1 transition-all duration-300">
         @include('components.adminHeader.dashboardHeader', [
             'headerTitle' => 'Admin Notifications',
             'headerSubtitle' => 'Track approvals, leave requests, and workforce signals from one inbox.',
@@ -77,8 +110,8 @@
             'openPositionApplicationsCount' => $openPositionApplicationsCount ?? 0,
         ])
 
-        <div class="p-4 pt-20 md:p-8">
-            <section class="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.08)]">
+        <div class="min-w-0 p-4 pt-20 md:p-8">
+            <section id="admin-notification-inbox" class="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.08)]">
                 <div class="grid grid-cols-1 xl:grid-cols-[280px_1fr]">
                     <aside class="border-b border-slate-200 bg-[linear-gradient(180deg,#f8fafc,#f1f5f9)] p-5 xl:border-b-0 xl:border-r">
                         <div class="rounded-[1.4rem] bg-slate-900 px-4 py-4 text-white shadow-lg">

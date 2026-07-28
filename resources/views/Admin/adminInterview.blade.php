@@ -38,8 +38,33 @@
       transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease, background-color 0.24s ease;
     }
     .interview-card-motion:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
+      transform: translateY(-2px);
+      box-shadow: 0 14px 28px rgba(15, 23, 42, 0.1);
+    }
+    html[data-theme="dark"] #admin-interview-page .interview-board-panel,
+    html[data-theme="dark"] #admin-interview-page .interview-list-panel {
+      background: #111c30 !important;
+      border-color: #2b3b52 !important;
+      box-shadow: none !important;
+    }
+    html[data-theme="dark"] #admin-interview-page .interview-list-panel {
+      background: #162238 !important;
+    }
+    html[data-theme="dark"] #admin-interview-page .interview-empty-state {
+      background: #101a2d !important;
+      border-color: #3a4a61 !important;
+      color: #9cabc0 !important;
+    }
+    html[data-theme="dark"] #admin-interview-page .interview-empty-state p {
+      color: #cbd5e1 !important;
+    }
+    html[data-theme="dark"] #admin-interview-page .interview-list-panel h3 {
+      color: #e5eaf2 !important;
+    }
+    html[data-theme="dark"] #admin-interview-page .interview-card-motion:hover {
+      border-color: #40516a !important;
+      background-color: #18263d !important;
+      box-shadow: 0 10px 22px rgba(2, 6, 23, 0.22) !important;
     }
     .interview-icon-pop {
       animation: interview-pop-in 0.65s cubic-bezier(0.22, 0.9, 0.2, 1) both;
@@ -184,7 +209,7 @@
         </article>
       </section>
 
-      <section class="interview-wrapper interview-reveal rounded-[2rem] border border-white/80 bg-white/92 p-5 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur md:p-6" style="--interview-delay: 240ms;">
+      <section class="interview-wrapper interview-board-panel interview-reveal rounded-[2rem] border border-white/80 bg-white/92 p-5 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur md:p-6" style="--interview-delay: 240ms;">
         <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div>
             <div class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-indigo-700">
@@ -207,7 +232,7 @@
         </div>
 
         <div class="mt-5 grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
-          <section class="interview-reveal rounded-[1.75rem] border border-indigo-100 bg-[linear-gradient(180deg,rgba(238,242,255,0.9),rgba(255,255,255,0.96))] p-5 md:p-6" style="--interview-delay: 280ms;">
+          <section class="interview-list-panel interview-reveal rounded-[1.75rem] border border-indigo-100 bg-[linear-gradient(180deg,rgba(238,242,255,0.9),rgba(255,255,255,0.96))] p-5 md:p-6" style="--interview-delay: 280ms;">
             <div class="mb-5 flex items-center justify-between gap-3">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.18em] text-indigo-500">Queue</p>
@@ -305,7 +330,7 @@
                   </div>
                 </article>
               @empty
-                <div id="upcomingEmptyState" class="rounded-[1.5rem] border border-dashed border-indigo-200 bg-white/80 p-8 text-center text-sm text-slate-500">
+                <div id="upcomingEmptyState" class="interview-empty-state rounded-[1.5rem] border border-dashed border-indigo-200 bg-white/80 p-8 text-center text-sm text-slate-500">
                   <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-indigo-50 text-indigo-500">
                     <i class="fa-regular fa-calendar-xmark text-lg"></i>
                   </div>
@@ -315,7 +340,7 @@
             </div>
           </section>
 
-          <section class="interview-reveal rounded-[1.75rem] border border-emerald-100 bg-[linear-gradient(180deg,rgba(236,253,245,0.9),rgba(255,255,255,0.96))] p-5 md:p-6" style="--interview-delay: 320ms;">
+          <section class="interview-list-panel interview-reveal rounded-[1.75rem] border border-emerald-100 bg-[linear-gradient(180deg,rgba(236,253,245,0.9),rgba(255,255,255,0.96))] p-5 md:p-6" style="--interview-delay: 320ms;">
             <div class="mb-5 flex items-center justify-between gap-3">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-500">Archive</p>
@@ -400,7 +425,7 @@
                   </div>
                 </article>
               @empty
-                <div id="completedEmptyState" class="rounded-[1.5rem] border border-dashed border-emerald-200 bg-white/80 p-8 text-center text-sm text-slate-500">
+                <div id="completedEmptyState" class="interview-empty-state rounded-[1.5rem] border border-dashed border-emerald-200 bg-white/80 p-8 text-center text-sm text-slate-500">
                   <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-500">
                     <i class="fa-regular fa-circle-check text-lg"></i>
                   </div>
