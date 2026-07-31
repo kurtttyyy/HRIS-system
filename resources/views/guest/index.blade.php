@@ -1335,48 +1335,6 @@
         color: #334155;
     }
 
-    .nc-chatbot-form {
-        padding: 0.75rem;
-        display: flex;
-        align-items: flex-end;
-        gap: 0.6rem;
-        background: #fff;
-        border-top: 1px solid #e2e8f0;
-    }
-
-    .nc-chatbot-input {
-        flex: 1;
-        resize: none;
-        max-height: 8rem;
-        border: 1px solid #cbd5e1;
-        border-radius: 0.85rem;
-        padding: 0.6rem 0.7rem;
-        font-size: 0.9rem;
-        outline: none;
-    }
-
-    .nc-chatbot-input:focus {
-        border-color: rgba(21, 115, 71, 0.55);
-        box-shadow: 0 0 0 0.18rem rgba(21, 115, 71, 0.12);
-    }
-
-    .nc-chatbot-send {
-        border: 0;
-        border-radius: 0.85rem;
-        min-width: 3.2rem;
-        height: 2.9rem;
-        background: linear-gradient(135deg, #157347, #1ea55d);
-        color: #fff;
-        font-weight: 700;
-        font-size: 0.84rem;
-        letter-spacing: 0.03em;
-    }
-
-    .nc-chatbot-send[disabled] {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-
     .nc-typing {
         display: inline-flex;
         gap: 0.25rem;
@@ -1979,10 +1937,6 @@
             <button class="nc-chatbot-chip" type="button" data-msg="Where are policy pages?">Policy links</button>
         </div>
 
-        <form class="nc-chatbot-form" id="ncChatForm">
-            <textarea class="nc-chatbot-input" id="ncChatInput" rows="1" maxlength="500" placeholder="Type your message..."></textarea>
-            <button class="nc-chatbot-send" id="ncChatSend" type="submit">Send</button>
-        </form>
     </section>
 </div>
 <script>
@@ -2342,9 +2296,6 @@
         const closeBtn = document.getElementById('ncChatClose');
         const messagesEl = document.getElementById('ncChatMessages');
         const chipsEl = document.getElementById('ncChatChips');
-        const form = document.getElementById('ncChatForm');
-        const input = document.getElementById('ncChatInput');
-        const sendBtn = document.getElementById('ncChatSend');
         const helpHint = document.getElementById('ncChatHelpHint');
         const robotHead = chatbotRoot.querySelector('.nc-robot');
         const robotEyes = Array.from(chatbotRoot.querySelectorAll('.nc-robot-eye'));
@@ -2539,11 +2490,7 @@
             if (!message || isSending) return;
 
             isSending = true;
-            sendBtn.disabled = true;
-            input.disabled = true;
             appendMessage('user', message);
-            input.value = '';
-            input.style.height = 'auto';
             setTyping(true);
 
             try {
@@ -2570,9 +2517,6 @@
                 appendMessage('bot', 'I could not connect right now. Please try again in a few seconds.');
             } finally {
                 isSending = false;
-                sendBtn.disabled = false;
-                input.disabled = false;
-                input.focus();
             }
         }
 
@@ -2587,7 +2531,6 @@
             chatbotRoot.classList.add('is-open');
             launcher.setAttribute('aria-expanded', 'true');
             if (helpHint) helpHint.classList.remove('is-visible');
-            input.focus();
         }
 
         function closePanel() {
@@ -2619,16 +2562,6 @@
         });
 
         closeBtn.addEventListener('click', closePanel);
-
-        form.addEventListener('submit', function (event) {
-            event.preventDefault();
-            sendMessage(input.value);
-        });
-
-        input.addEventListener('input', function () {
-            this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 128) + 'px';
-        });
 
         chipsEl.addEventListener('click', function (event) {
             const target = event.target.closest('.nc-chatbot-chip');
