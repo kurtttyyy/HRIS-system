@@ -650,8 +650,17 @@ class AdministratorStoreController extends Controller
             foreach ($rows as $index => $row) {
                 $sheetRow = $index + 2;
 
+                // Row 2 in the 201-file template contains the institution name,
+                // not an employee. Do not report it as a rejected employee row.
+                if ($sheetRow === 2 && !$this->employeeImportRowHasId($row)) {
+                    continue;
+                }
+
                 try {
-                    $result = DB::transaction(fn () => $this->createEmployeeAccountFromImportRow($row));
+                    $result = DB::transaction(
+                        fn () => $this->createEmployeeAccountFromImportRow($row),
+                        5
+                    );
                     if ($result === null) {
                         continue;
                     }
@@ -707,6 +716,17 @@ class AdministratorStoreController extends Controller
         }
 
         return '—';
+    }
+
+    private function employeeImportRowHasId(array $row): bool
+    {
+        foreach (['employee_id', 'employee_number', 'employee_no', 'id_number'] as $key) {
+            if ($this->normalizeEmployeeImportId($row[$key] ?? null) !== null) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function createEmployeeAccountFromImportRow(array $row): ?User

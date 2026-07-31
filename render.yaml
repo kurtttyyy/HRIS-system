@@ -28,7 +28,15 @@ services:
       - key: ALLOW_EPHEMERAL_SQLITE
         value: "true"
       - key: SESSION_DRIVER
-        value: database
+        value: file
+      - key: DB_BUSY_TIMEOUT
+        value: "15000"
+      - key: DB_JOURNAL_MODE
+        value: WAL
+      - key: DB_SYNCHRONOUS
+        value: NORMAL
+      - key: DB_TRANSACTION_MODE
+        value: IMMEDIATE
       - key: SESSION_SECURE_COOKIE
         value: "true"
       - key: CACHE_STORE
