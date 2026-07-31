@@ -25,6 +25,23 @@
       padding-top: 0.75rem;
       margin-top: 1rem;
     }
+    .payslip-employee-list {
+      max-height: 640px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-gutter: stable;
+      padding-right: 0.4rem;
+    }
+    .payslip-employee-list::-webkit-scrollbar { width: 8px; }
+    .payslip-employee-list::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 9999px;
+    }
+    .payslip-employee-list::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .payslip-employee-list::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
   </style>
 </head>
 <body class="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_45%,#f8fafc_100%)] text-slate-800">
@@ -98,7 +115,7 @@
     ])
 
     <div class="container mx-auto max-w-7xl p-4 md:p-8 pt-10 space-y-6">
-      <section class="relative overflow-hidden rounded-[2rem] border border-emerald-950/70 bg-[linear-gradient(135deg,_#020617_0%,_#020617_42%,_#111827_68%,_#064e3b_100%)] px-6 py-6 shadow-[0_24px_60px_rgba(3,19,29,0.34)] md:px-8">
+      <section id="payslip-review-hero" class="relative overflow-hidden rounded-[2rem] border border-emerald-950/70 bg-[linear-gradient(135deg,_#020617_0%,_#020617_42%,_#111827_68%,_#064e3b_100%)] px-6 py-6 shadow-[0_24px_60px_rgba(3,19,29,0.34)] md:px-8">
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.14),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(110,231,183,0.14),_transparent_32%)]"></div>
         <div class="absolute -left-8 top-6 h-24 w-24 rounded-full bg-cyan-300/10 blur-3xl"></div>
         <div class="absolute right-0 top-0 h-32 w-32 translate-x-10 -translate-y-8 rounded-full bg-emerald-300/20 blur-3xl"></div>
@@ -132,7 +149,7 @@
         </div>
       </section>
 
-      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div id="payslip-review-summary" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <div class="rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur">
           <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-100 text-sky-600">
             <i class="fa-solid fa-id-card text-lg"></i>
@@ -171,7 +188,7 @@
       </div>
 
       <div class="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.35fr)]">
-        <section class="overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/90 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur">
+        <section id="payslip-review-queue" class="overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/90 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur">
           <div class="flex items-center justify-between gap-4">
             <div>
               <div class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
@@ -195,7 +212,7 @@
             </label>
           </div>
 
-          <div class="mt-6 grid grid-cols-1 gap-4">
+          <div class="payslip-employee-list mt-6 grid grid-cols-1 gap-4">
             @forelse ($recordItems as $record)
               @php
                 $isSelected = $selectedRecord && (int) $selectedRecord->id === (int) $record->id;
@@ -246,7 +263,7 @@
           </div>
         </section>
 
-        <section class="space-y-6">
+        <section id="payslip-review-preview" class="space-y-6">
           @if ($selectedRecord)
           <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div class="rounded-[1.5rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
@@ -430,43 +447,134 @@
     });
   }
 
-  const headerSearchInput = document.querySelector('header input[placeholder="Search employees..."]');
-  const queueSearchInput = document.getElementById('employee_queue_search');
-  const employeeCards = Array.from(document.querySelectorAll('.employee-card'));
-  const emptySearchMessage = document.getElementById('employee_search_empty');
+  const payslipRegionIds = [
+    'payslip-review-hero',
+    'payslip-review-summary',
+    'payslip-review-queue',
+    'payslip-review-preview',
+  ];
+  let payslipPreviewRequest = null;
 
-  if (employeeCards.length) {
-    const filterCards = () => {
-      const headerTerm = headerSearchInput ? headerSearchInput.value.trim().toLowerCase() : '';
-      const queueTerm = queueSearchInput ? queueSearchInput.value.trim().toLowerCase() : '';
-      const term = [headerTerm, queueTerm].filter(Boolean).join(' ');
-      let visibleCount = 0;
+  const filterPayslipCards = () => {
+    const headerSearchInput = document.querySelector('header input[placeholder="Search employees..."]');
+    const queueSearchInput = document.getElementById('employee_queue_search');
+    const employeeCards = Array.from(document.querySelectorAll('.employee-card'));
+    const emptySearchMessage = document.getElementById('employee_search_empty');
+    const headerTerm = headerSearchInput ? headerSearchInput.value.trim().toLowerCase() : '';
+    const queueTerm = queueSearchInput ? queueSearchInput.value.trim().toLowerCase() : '';
+    const term = [headerTerm, queueTerm].filter(Boolean).join(' ');
+    let visibleCount = 0;
 
-      employeeCards.forEach((card) => {
-        const name = (card.dataset.employeeName || '').toLowerCase();
-        const id = (card.dataset.employeeId || '').toLowerCase();
-        const payDate = (card.dataset.payDate || '').toLowerCase();
-        const scannedAt = (card.dataset.scannedAt || '').toLowerCase();
-        const haystack = `${name} ${id} ${payDate} ${scannedAt}`.trim();
-        const matches = term === '' || haystack.includes(term);
-        card.classList.toggle('hidden', !matches);
-        if (matches) {
-          visibleCount++;
-        }
+    employeeCards.forEach((card) => {
+      const name = (card.dataset.employeeName || '').toLowerCase();
+      const id = (card.dataset.employeeId || '').toLowerCase();
+      const payDate = (card.dataset.payDate || '').toLowerCase();
+      const scannedAt = (card.dataset.scannedAt || '').toLowerCase();
+      const haystack = `${name} ${id} ${payDate} ${scannedAt}`.trim();
+      const matches = term === '' || haystack.includes(term);
+      card.classList.toggle('hidden', !matches);
+      if (matches) {
+        visibleCount++;
+      }
+    });
+
+    if (emptySearchMessage) {
+      emptySearchMessage.classList.toggle('hidden', visibleCount > 0 || term === '');
+    }
+  };
+
+  const payslipUrlWithTabSession = (href) => {
+    const url = new URL(href, window.location.origin);
+    const tabSession = new URL(window.location.href).searchParams.get('tab_session');
+    if (tabSession) {
+      url.searchParams.set('tab_session', tabSession);
+    }
+    return url;
+  };
+
+  const setPayslipRegionsLoading = (loading) => {
+    payslipRegionIds.forEach((id) => {
+      const region = document.getElementById(id);
+      if (!region) return;
+      region.style.transition = 'opacity 150ms ease';
+      region.style.opacity = loading ? '0.55' : '1';
+      region.style.pointerEvents = loading ? 'none' : '';
+      region.setAttribute('aria-busy', String(loading));
+    });
+  };
+
+  const loadPayslipPreview = async (href, pushHistory = true) => {
+    const url = payslipUrlWithTabSession(href);
+    payslipPreviewRequest?.abort();
+    const requestController = new AbortController();
+    payslipPreviewRequest = requestController;
+    setPayslipRegionsLoading(true);
+
+    try {
+      const response = await fetch(url.toString(), {
+        credentials: 'same-origin',
+        cache: 'no-store',
+        signal: requestController.signal,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-Payslip-Preview': '1',
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Unable to load payslip preview (${response.status}).`);
+      }
+
+      const nextDocument = new DOMParser().parseFromString(await response.text(), 'text/html');
+      const replacements = payslipRegionIds.map((id) => {
+        const current = document.getElementById(id);
+        const incoming = nextDocument.getElementById(id);
+        return { current, incoming };
+      });
+      if (replacements.some(({ current, incoming }) => !current || !incoming)) {
+        throw new Error('The payslip preview response was incomplete.');
+      }
+
+      replacements.forEach(({ current, incoming }) => {
+        current.replaceWith(incoming);
       });
 
-      if (emptySearchMessage) {
-        emptySearchMessage.classList.toggle('hidden', visibleCount > 0 || term === '');
+      if (pushHistory) {
+        window.history.pushState({ payslipPreview: true }, '', url.toString());
       }
-    };
+      filterPayslipCards();
+      window.refreshAdminSidebarSummary?.();
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        window.location.assign(url.toString());
+      }
+    } finally {
+      if (payslipPreviewRequest === requestController) {
+        payslipPreviewRequest = null;
+        setPayslipRegionsLoading(false);
+      }
+    }
+  };
 
-    if (headerSearchInput) {
-      headerSearchInput.addEventListener('input', filterCards);
+  document.addEventListener('click', (event) => {
+    const card = event.target.closest('.employee-card');
+    if (!card || event.defaultPrevented || event.button !== 0
+      || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return;
     }
-    if (queueSearchInput) {
-      queueSearchInput.addEventListener('input', filterCards);
+
+    event.preventDefault();
+    loadPayslipPreview(card.href);
+  });
+
+  document.addEventListener('input', (event) => {
+    if (event.target.matches('#employee_queue_search, header input[placeholder="Search employees..."]')) {
+      filterPayslipCards();
     }
-  }
+  });
+
+  window.addEventListener('popstate', () => {
+    loadPayslipPreview(window.location.href, false);
+  });
 </script>
 </body>
 </html>
