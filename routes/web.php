@@ -11,7 +11,9 @@ use App\Http\Controllers\RegisterLoginController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/csrf-token', function () {
-    return response()->json(['token' => csrf_token()]);
+    return response()
+        ->json(['token' => csrf_token()])
+        ->header('Cache-Control', 'no-store, no-cache, must-revalidate');
 })->name('csrf.token');
 
 Route::controller(PageController::class)->group(function () {

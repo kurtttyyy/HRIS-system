@@ -1726,6 +1726,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const fileInputs = document.querySelectorAll('#documentsForm input[type="file"]');
     const applicationForm = document.getElementById('formPersonal');
     const documentDraftUploadUrl = @json(route('applicant.document.draft'));
+    const csrfRefreshUrl = @json(route('csrf.token'));
     const documentDraftPosition = applicationForm?.querySelector('input[name="position"]')?.value ?? 'unknown';
     const documentDraftStorageKey = `non_teaching_document_drafts:${window.location.pathname}:${documentDraftPosition}`;
     const documentDraftKeyStorageKey = `${documentDraftStorageKey}:key`;
@@ -1752,9 +1753,43 @@ document.addEventListener('DOMContentLoaded', function () {
         applicationForm.appendChild(draftHiddenContainer);
     }
 
-    const getCsrfToken = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-        || document.querySelector('input[name="_token"]')?.value
-        || '';
+    let csrfRefreshPromise = null;
+    const refreshGuestCsrfToken = async () => {
+        if (csrfRefreshPromise) {
+            return csrfRefreshPromise;
+        }
+
+        csrfRefreshPromise = (async () => {
+            const response = await fetch(csrfRefreshUrl, {
+                method: 'GET',
+                credentials: 'same-origin',
+                cache: 'no-store',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Unable to refresh the secure upload session.');
+            }
+
+            const payload = await response.json();
+            if (!payload?.token) {
+                throw new Error('The secure upload session did not return a token.');
+            }
+
+            document.querySelector('meta[name="csrf-token"]')?.setAttribute('content', payload.token);
+            document.querySelectorAll('input[name="_token"]').forEach((input) => {
+                input.value = payload.token;
+            });
+
+            return payload.token;
+        })().finally(() => {
+            csrfRefreshPromise = null;
+        });
+
+        return csrfRefreshPromise;
+    };
 
     const documentIndexFromInput = (input) => {
         if (input.dataset.documentIndex) {
@@ -1930,17 +1965,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
             let response;
             try {
-                response = await fetch(documentDraftUploadUrl, {
+                const sendDraftUpload = (token) => fetch(documentDraftUploadUrl, {
                     method: 'POST',
                     credentials: 'same-origin',
                     headers: {
                         'Accept': 'application/json',
-                        'X-CSRF-TOKEN': getCsrfToken(),
+                        'X-CSRF-TOKEN': token,
                         'X-Requested-With': 'XMLHttpRequest',
                     },
                     body: formData,
                     signal: controller.signal,
                 });
+
+                response = await sendDraftUpload(await refreshGuestCsrfToken());
+                if (response.status === 419) {
+                    response = await sendDraftUpload(await refreshGuestCsrfToken());
+                }
             } catch (error) {
                 throw new Error(error.name === 'AbortError'
                     ? 'Upload timed out. Please choose a smaller file or try again.'
@@ -2349,9 +2389,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (isScanningPds) return;
 
-        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-            || document.querySelector('input[name="_token"]')?.value
-            || '';
         const formData = new FormData();
         formData.append('pds_file', intakeUploadInput.files[0]);
 
@@ -2363,7 +2400,7 @@ document.addEventListener('DOMContentLoaded', function () {
         scanProgressBar.style.width = '65%';
 
         try {
-            const response = await fetch(pdsScanUrl, {
+            const sendPdsScan = (token) => fetch(pdsScanUrl, {
                 method: 'POST',
                 credentials: 'same-origin',
                 headers: {
@@ -2373,6 +2410,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 body: formData,
             });
+
+            let response = await sendPdsScan(await refreshGuestCsrfToken());
+            if (response.status === 419) {
+                response = await sendPdsScan(await refreshGuestCsrfToken());
+            }
 
             const payload = await response.json().catch(() => ({}));
 
@@ -2690,31 +2732,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (applicationForm) {
         applicationForm.setAttribute('novalidate', 'novalidate');
-        const csrfRefreshUrl = @json(route('csrf.token'));
         const nativeSubmit = HTMLFormElement.prototype.submit.bind(applicationForm);
         let isSubmittingApplication = false;
 
         const refreshCsrfToken = async () => {
-            const tokenInput = applicationForm.querySelector('input[name="_token"]');
-            if (!tokenInput || !csrfRefreshUrl) return;
-
             try {
-                const response = await fetch(csrfRefreshUrl, {
-                    method: 'GET',
-                    credentials: 'same-origin',
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                    },
-                });
-
-                if (!response.ok) return;
-
-                const payload = await response.json();
-                if (payload?.token) {
-                    tokenInput.value = payload.token;
-                    document.querySelector('meta[name="csrf-token"]')?.setAttribute('content', payload.token);
-                }
+                await refreshGuestCsrfToken();
             } catch (error) {
                 // Continue with the rendered token if the refresh request is unavailable.
             }
