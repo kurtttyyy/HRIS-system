@@ -11,6 +11,60 @@
             0 0 34px rgba(34, 197, 94, 0.42) !important;
     }
 
+    .job-search-loading {
+        position: fixed;
+        inset: 0;
+        z-index: 1090;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        background: rgba(15, 23, 42, 0.05);
+        backdrop-filter: blur(1px);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+
+    .job-search-loading.is-visible {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .job-search-loading__card {
+        min-width: 15rem;
+        padding: 1.75rem 2rem;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        border-radius: 1.75rem;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+    }
+
+    .job-search-loading__cat {
+        display: block;
+        width: 7rem;
+        height: 7rem;
+        margin: 0 auto;
+        object-fit: contain;
+    }
+
+    .job-search-loading__title {
+        margin: 1rem 0 0;
+        color: #1e293b;
+        font-size: 0.875rem;
+        font-weight: 900;
+        letter-spacing: 0.025em;
+    }
+
+    .job-search-loading__copy {
+        margin: 0.25rem 0 0;
+        color: #64748b;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
     .site-footer {
         background:
             radial-gradient(circle at top left, rgba(21, 115, 71, 0.12), transparent 24%),
@@ -424,6 +478,26 @@
 
 <div class="header-divider"></div>
 
+<div
+    id="jobSearchLoading"
+    class="job-search-loading"
+    role="status"
+    aria-live="polite"
+    aria-label="Searching job vacancies"
+    aria-hidden="true"
+>
+    <div class="job-search-loading__card">
+        <img
+            src="{{ asset('images/animation_searching.gif') }}?v={{ filemtime(public_path('images/animation_searching.gif')) }}"
+            alt=""
+            aria-hidden="true"
+            class="job-search-loading__cat"
+        >
+        <p class="job-search-loading__title">AI Search</p>
+        <p class="job-search-loading__copy">Finding matching job vacancies...</p>
+    </div>
+</div>
+
 <main id="guest-job-applicant-page" class="container my-5 animated-card2 delay-5">
     <h2 class="fw-bold mb-4">Job Vacancies</h2>
 
@@ -767,6 +841,8 @@
     const searchInput = document.getElementById('jobOpenSearchInput');
     const jobCards = Array.from(document.querySelectorAll('.job-open-item'));
     const noResults = document.getElementById('jobOpenNoResults');
+    const searchLoading = document.getElementById('jobSearchLoading');
+    let searchLoadingTimer = null;
 
     function filterJobCards() {
         const searchTerm = (searchInput?.value || '').toLowerCase().trim();
@@ -943,12 +1019,24 @@ function formatDate(dateString) {
 
     searchForm?.addEventListener('submit', (event) => {
         event.preventDefault();
-        filterJobCards();
+
+        if (searchLoadingTimer) {
+            window.clearTimeout(searchLoadingTimer);
+        }
+
+        searchLoading?.classList.add('is-visible');
+        searchLoading?.setAttribute('aria-hidden', 'false');
+
+        searchLoadingTimer = window.setTimeout(() => {
+            filterJobCards();
+            searchLoading?.classList.remove('is-visible');
+            searchLoading?.setAttribute('aria-hidden', 'true');
+            searchLoadingTimer = null;
+        }, 650);
     });
 
     searchInput?.addEventListener('input', filterJobCards);
 </script>
 
 @endsection
-
 
