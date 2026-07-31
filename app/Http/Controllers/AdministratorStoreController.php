@@ -760,7 +760,19 @@ class AdministratorStoreController extends Controller
 
         $department = $pick(['department', 'office_department', 'office', 'unit', 'cit']);
         $position = $pick(['position', 'job_position', 'job_title', 'designation']);
-        $resignedDate = $this->normalizeDate($pick(['date_resigned', 'resignation_date']));
+        $resignedDateRaw = trim((string) ($pick(['date_resigned', 'resignation_date']) ?? ''));
+        if ($resignedDateRaw === '-') {
+            $resignedDateRaw = '';
+        }
+        $resignedDate = $this->normalizeDate($resignedDateRaw);
+        $rank = trim((string) ($pick(['rank', 'classification', 'employment_status']) ?? ''));
+        $grade = trim((string) ($pick(['grade', 'classification_salary', 'salary_classification']) ?? ''));
+        if ($grade !== '') {
+            $numericGrade = str_replace(',', '', $grade);
+            if (is_numeric($numericGrade)) {
+                $grade = rtrim(rtrim(number_format(round((float) $numericGrade, 4), 4, '.', ''), '0'), '.');
+            }
+        }
 
         $userValues = [
             'first_name' => $firstName,
@@ -803,23 +815,26 @@ class AdministratorStoreController extends Controller
             'address' => $pick(['address', 'home_address', 'residential_address']),
             'department' => $department,
             'position' => $position,
-            'classification' => $pick(['classification', 'employment_status', 'rank']),
-            'classification_salary' => $pick(['classification_salary', 'salary_classification', 'grade']),
+            'classification' => $rank,
+            'classification_salary' => $grade !== '' ? $grade : null,
             'job_type' => $this->normalizeEmployeeJobType($pick(['job_type', 'employee_type', 'class'])),
             'emergency_contact_name' => $pick(['emergency_contact_name']),
             'emergency_contact_relationship' => $pick(['emergency_contact_relationship', 'emergency_contact_relation']),
             'emergency_contact_number' => $pick(['emergency_contact_number', 'emergency_phone']),
         ];
-        $employmentHistory = $pick(['employment_history', 'employement_history']);
-        if ($employmentHistory && Schema::hasColumn('employees', 'service_record_rows')) {
+        $employmentHistory = trim((string) ($pick(['employment_history', 'employement_history']) ?? ''));
+        if ($employmentHistory === '-') {
+            $employmentHistory = '';
+        }
+        if (($employmentHistory !== '' || $resignedDateRaw !== '') && Schema::hasColumn('employees', 'service_record_rows')) {
             $employeeValues['service_record_rows'] = [[
                 'from_date' => $employeeValues['employement_date'] ?? '',
-                'to_date' => $resignedDate ?: '',
+                'to_date' => $resignedDateRaw,
                 'designation' => $position ?: '',
                 'status' => $employeeValues['classification'] ?? '',
                 'salary' => $pick(['salary', 'monthly_salary', 'basic_salary']) ?: '',
                 'office' => $department ?: '',
-                'separation_date' => $resignedDate ?: '',
+                'separation_date' => $resignedDateRaw,
                 'separation_cause' => $resignedDate ? 'Resigned' : '',
                 'remarks' => $employmentHistory,
             ]];
@@ -838,10 +853,12 @@ class AdministratorStoreController extends Controller
                 'address' => $employeeValues['address'] ?? 'N/A',
                 'department' => $department ?: 'Unassigned',
                 'position' => $position ?: 'Employee',
-                'classification' => $employeeValues['classification'] ?? 'Probationary',
+                'classification' => $employeeValues['classification'],
             ]);
         }
         $employee->fill($this->nonNullImportValues($employeeValues));
+        $employee->classification = $employeeValues['classification'];
+        $employee->classification_salary = $employeeValues['classification_salary'];
         Employee::withoutEvents(fn () => $employee->save());
 
         $this->ensureImportedEmployeeApplicantRecord(
@@ -926,17 +943,27 @@ class AdministratorStoreController extends Controller
             );
         }
 
+        $normalizeSalaryImportValue = static function ($value): ?string {
+            $value = trim((string) ($value ?? ''));
+
+            return in_array(strtolower($value), ['', '-', 'n/a', 'na'], true)
+                ? null
+                : $value;
+        };
         $salaryValues = [
-            'salary' => $pick(['salary', 'monthly_salary', 'basic_salary']),
-            'rate_per_hour' => $pick(['rate_per_hour', 'hourly_rate']),
-            'cola' => $pick(['cola', 'allowance']),
+            'salary' => $normalizeSalaryImportValue($pick([
+                'basic_salary', 'monthly_salary', 'salary',
+                'basic_monthly_salary', 'monthly_basic_salary',
+            ])),
+            'rate_per_hour' => $normalizeSalaryImportValue($pick([
+                'rate_per_hour', 'hourly_rate', 'rate_per_hr', 'rate_hour',
+            ])),
+            'cola' => $normalizeSalaryImportValue($pick(['cola', 'allowance'])),
         ];
-        if ($this->nonNullImportValues($salaryValues)) {
-            Salary::query()->updateOrCreate(
-                ['user_id' => $user->id],
-                array_map(static fn ($value) => $value ?: '0', $salaryValues)
-            );
-        }
+        Salary::query()->updateOrCreate(
+            ['user_id' => $user->id],
+            array_map(static fn ($value) => $value ?? '0', $salaryValues)
+        );
 
         $licenseValues = [
             'license' => $pick(['license', 'license_name', 'professional_license', 'eligibility', 'with_without_license']),
@@ -1005,7 +1032,53 @@ class AdministratorStoreController extends Controller
             throw new \RuntimeException('The 201 file column header row could not be recognized. Include Name and ID number columns.');
         }
 
-        return $this->mapRowsUsingGenericHeader(array_slice($rows, $headerIndex));
+        $employeeRows = array_slice($rows, $headerIndex);
+        $headerRow = $employeeRows[0] ?? [];
+        $salaryGroups = [];
+
+        foreach ($headerRow as $column => $headerText) {
+            $header = $this->normalizeHeader((string) $headerText);
+            if (!str_starts_with($header, 'rate_per_hour')) {
+                continue;
+            }
+
+            $year = null;
+            foreach (array_slice($employeeRows, 1, 5) as $row) {
+                $candidate = trim((string) ($row[$column] ?? ''));
+                if (preg_match('/^(19|20)\d{2}$/', $candidate)) {
+                    $year = (int) $candidate;
+                    break;
+                }
+            }
+
+            if ($year) {
+                $salaryGroups[] = [
+                    'year' => $year,
+                    'rate_column' => $column,
+                    'basic_column' => $this->columnNameFromIndex($this->columnToIndex($column)),
+                    'allowance_column' => $this->columnNameFromIndex($this->columnToIndex($column) + 1),
+                ];
+            }
+        }
+
+        if ($salaryGroups) {
+            $latestSalaryGroup = collect($salaryGroups)->sortByDesc('year')->first();
+
+            foreach ($headerRow as $column => $headerText) {
+                $header = $this->normalizeHeader((string) $headerText);
+                if (str_starts_with($header, 'rate_per_hour')
+                    || str_starts_with($header, 'basic_salary')
+                    || str_starts_with($header, 'allowance')) {
+                    $employeeRows[0][$column] = 'historical_'.$header.'_'.$column;
+                }
+            }
+
+            $employeeRows[0][$latestSalaryGroup['rate_column']] = 'rate_per_hour';
+            $employeeRows[0][$latestSalaryGroup['basic_column']] = 'basic_salary';
+            $employeeRows[0][$latestSalaryGroup['allowance_column']] = 'allowance';
+        }
+
+        return $this->mapRowsUsingGenericHeader($employeeRows);
     }
 
     private function parseEmployeeImportName(string $fullName): array

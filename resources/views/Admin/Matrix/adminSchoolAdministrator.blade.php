@@ -567,12 +567,18 @@
                   trim((string) ($admin->last_name ?? '')),
                 ])));
 
-                $degreeRows = collect(optional($admin->applicant)->degrees ?? [])->values();
+                $isMissingDegree = static function ($value): bool {
+                  $normalized = strtolower(trim((string) ($value ?? '')));
+                  return in_array($normalized, ['', '-', 'n/a', 'na', 'none', 'not applicable'], true);
+                };
+                $degreeRows = collect(optional($admin->applicant)->degrees ?? [])
+                  ->filter(fn ($row) => !$isMissingDegree($row->degree_name ?? ''))
+                  ->values();
                 $fallbackDegrees = collect([
                   ['degree_name' => trim((string) optional($admin->education)->doctorate), 'school_name' => trim((string) (optional($admin->applicant)->doctoral_school_name ?? '')), 'year_finished' => trim((string) (optional($admin->applicant)->doctoral_year_finished ?? ''))],
                   ['degree_name' => trim((string) optional($admin->education)->master), 'school_name' => trim((string) (optional($admin->applicant)->master_school_name ?? '')), 'year_finished' => trim((string) (optional($admin->applicant)->master_year_finished ?? ''))],
                   ['degree_name' => trim((string) optional($admin->education)->bachelor), 'school_name' => trim((string) (optional($admin->applicant)->bachelor_school_name ?? '')), 'year_finished' => trim((string) (optional($admin->applicant)->bachelor_year_finished ?? ''))],
-                ])->filter(fn ($row) => $row['degree_name'] !== '');
+                ])->filter(fn ($row) => !$isMissingDegree($row['degree_name']))->values();
 
                 $jobRole = trim((string) ($admin->job_role ?? ''));
                 $positionValue = collect([
@@ -614,6 +620,10 @@
                   }
                 }
                 $salaryValue = trim((string) (optional($admin->salary)->salary ?? ''));
+                $numericSalary = preg_replace('/[^0-9.\-]/', '', $salaryValue);
+                if ($numericSalary !== '' && is_numeric($numericSalary)) {
+                  $salaryValue = number_format((float) $numericSalary, 2, '.', ',');
+                }
                 $benefits = collect([
                   trim((string) (optional($admin->applicant)->benefit ?? '')),
                   trim((string) (optional(optional($admin->applicant)->position)->benifits ?? '')),

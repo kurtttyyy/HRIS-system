@@ -38,12 +38,6 @@ class PageController extends Controller
                     'email' => env('DEFAULT_ADMIN_EMAIL', 'kurtrobin20031118@gmail.com'),
                     'password' => env('DEFAULT_ADMIN_PASSWORD', 'Kurt12345'),
                 ],
-                [
-                    'label' => 'Maria Santos Demo',
-                    'role' => 'Employee',
-                    'email' => 'demo.employee1@example.com',
-                    'password' => 'Employee12345',
-                ],
             ],
         ];
     }

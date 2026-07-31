@@ -2179,6 +2179,19 @@
             ?: data_get($emp, 'employee.employement_date')
             ?: data_get($emp, 'employee.employment_date')
             ?: ($emp->date_hired ?? ''));
+        $isProbationaryEmployee = str_contains(strtolower($classValue), 'probationary');
+        if (!$isProbationaryEmployee && !empty($employmentDateRaw)) {
+          try {
+            $probationStart = \Carbon\Carbon::parse($employmentDateRaw);
+            $isNonTeaching = in_array(trim(strtoupper($jobTypeValue)), ['NT', 'NON-TEACHING', 'NON TEACHING'], true);
+            $probationEnd = $isNonTeaching
+              ? $probationStart->copy()->addMonths(6)
+              : $probationStart->copy()->addYears(3);
+            $isProbationaryEmployee = now()->lt($probationEnd);
+          } catch (\Throwable $e) {
+            $isProbationaryEmployee = false;
+          }
+        }
         $employmentDateDisplay = '';
         $lengthOfService = '';
         $dateResigned = collect(data_get($emp, 'resignations', []))
@@ -2211,6 +2224,14 @@
             $dateResignedDisplay = trim((string) $resignationEndDateRaw);
           }
         }
+        $importedServiceRows = collect(is_array(data_get($emp, 'employee.service_record_rows'))
+          ? data_get($emp, 'employee.service_record_rows')
+          : []);
+        if ($dateResignedDisplay === '') {
+          $dateResignedDisplay = trim((string) $importedServiceRows
+            ->pluck('separation_date')
+            ->first(fn ($value) => trim((string) $value) !== '' && trim((string) $value) !== '-'));
+        }
 
         $employmentHistoryDisplay = collect(data_get($emp, 'position_histories', []))
           ->map(function ($history) {
@@ -2223,6 +2244,13 @@
           })
           ->filter()
           ->implode(' | ');
+        if ($employmentHistoryDisplay === '') {
+          $employmentHistoryDisplay = $importedServiceRows
+            ->pluck('remarks')
+            ->map(fn ($value) => trim((string) $value))
+            ->filter(fn ($value) => $value !== '' && $value !== '-')
+            ->implode(' | ');
+        }
 
           $missingRequiredDocumentsCount = (int) data_get($emp, 'missing_required_documents_count', 0);
           $employeeIdDisplay = $displayEmployeeId($emp, '');
@@ -2261,8 +2289,8 @@
           'position' => $blankTableValue(trim((string) ($emp->job_role ?? data_get($emp, 'employee.position') ?? ($emp->position ?? data_get($emp, 'applicant.position.title') ?? '')))),
           'department' => $blankTableValue($resolveDepartment($emp)),
           'class' => $blankTableValue($classDisplay),
-          'rank' => $blankTableValue(trim((string) (data_get($emp, 'employee.rank') ?: ($emp->rank ?? '')))),
-          'grade' => $blankTableValue(trim((string) (data_get($emp, 'employee.grade') ?: ($emp->grade ?? '')))),
+          'rank' => $blankTableValue(trim((string) (data_get($emp, 'employee.rank') ?: data_get($emp, 'employee.classification') ?: ($emp->rank ?? '')))),
+          'grade' => $blankTableValue(trim((string) (data_get($emp, 'employee.grade') ?: data_get($emp, 'employee.classification_salary') ?: ($emp->grade ?? '')))),
           'sss' => $blankTableValue(trim((string) (data_get($emp, 'government.SSS') ?: ''))),
           'tin' => $blankTableValue(trim((string) (data_get($emp, 'government.TIN') ?: ''))),
           'philhealth' => $blankTableValue(trim((string) (data_get($emp, 'government.PhilHealth') ?: ''))),
@@ -2284,6 +2312,9 @@
           'allowance' => $blankTableValue(trim((string) (data_get($emp, 'salary.cola') ?: ''))),
           'date_resigned' => $blankTableValue($dateResignedDisplay),
           'employment_history' => $blankTableValue($employmentHistoryDisplay),
+          'row_status' => (!$isRehiredAfterResignation && $dateResignedDisplay !== '')
+            ? 'resigned'
+            : ($isProbationaryEmployee ? 'probationary' : ''),
           'status' => $resolveDisplayAccountStatus($emp),
           'has_missing_info' => $hasMissingInfo,
           'user_id' => (int) ($emp->id ?? 0),
@@ -2674,12 +2705,12 @@
 
         <div class="flex items-center gap-2">
             <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
-            On Leave
+            Probationary / On Leave
         </div>
 
         <div class="flex items-center gap-2">
             <span class="w-3 h-3 rounded-full bg-red-500"></span>
-            Inactive
+            Resigned / Inactive
         </div>
 
     </div>
@@ -3040,7 +3071,7 @@
         @endforeach
     </div>
 
-    @if (isset($employeePaginator) && $employeePaginator->hasPages())
+    @if (isset($employeePaginator) && $employeePaginator->total() > 0)
       <div
         x-show="!showDepartmentSummary"
         class="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 shadow-sm md:flex-row md:items-center md:justify-between"
@@ -3070,9 +3101,11 @@
               @foreach ([5, 10, 15, 25, 50] as $pageSize)
                 <option value="{{ $pageSize }}" @selected((int) ($employeeFilterState['per_page'] ?? 10) === $pageSize)>{{ $pageSize }}</option>
               @endforeach
+              <option value="all" @selected(($employeeFilterState['per_page'] ?? 10) === 'all')>All</option>
             </select>
           </label>
 
+          @if ($employeePaginator->hasPages())
           <nav class="flex flex-wrap items-center gap-2" aria-label="Employee pagination">
             @if ($employeePaginator->onFirstPage())
               <span class="inline-flex h-10 w-10 cursor-not-allowed items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-slate-400">
@@ -3121,6 +3154,7 @@
               </span>
             @endif
           </nav>
+          @endif
         </div>
       </div>
     @endif
@@ -3266,12 +3300,19 @@
               <td class="border border-black px-2 py-0.5"></td>
             </tr>
             @foreach ($employeeTableRecords as $row)
+              @php
+                $rowHighlightClass = match ($row['row_status'] ?? '') {
+                  'resigned' => 'bg-red-100',
+                  'probationary' => 'bg-yellow-100',
+                  default => 'bg-white',
+                };
+              @endphp
               <tr
                 x-show="matchesDepartment(@js($row['department'])) && matchesSearch(@js($row['name'])) && matchesStatus(@js($row['status']), @js((bool) ($row['has_missing_info'] ?? false)))"
-                class="bg-white text-[13px]"
+                class="{{ $rowHighlightClass }} text-[13px]"
               >
-                <td class="sticky left-0 z-10 border border-black bg-white px-2 py-1 text-center shadow-[inset_-1px_0_0_#000]">{{ $row['no'] }}</td>
-                <td class="sticky left-14 z-10 border border-black bg-white px-2 py-1 shadow-[inset_-1px_0_0_#000]">
+                <td class="sticky left-0 z-10 border border-black {{ $rowHighlightClass }} px-2 py-1 text-center shadow-[inset_-1px_0_0_#000]">{{ $row['no'] }}</td>
+                <td class="sticky left-14 z-10 border border-black {{ $rowHighlightClass }} px-2 py-1 shadow-[inset_-1px_0_0_#000]">
                   <button
                     type="button"
                     @click="openEmployeeProfile({{ (int) ($row['user_id'] ?? 0) }}, @js($row['header_start']), @js($row['header_end']))"
@@ -3552,6 +3593,14 @@
         $dateResignedDisplay = trim((string) $resignationEndDateRaw);
       }
     }
+    $importedServiceRows = collect(is_array(data_get($emp, 'employee.service_record_rows'))
+      ? data_get($emp, 'employee.service_record_rows')
+      : []);
+    if ($dateResignedDisplay === '') {
+      $dateResignedDisplay = trim((string) $importedServiceRows
+        ->pluck('separation_date')
+        ->first(fn ($value) => trim((string) $value) !== '' && trim((string) $value) !== '-'));
+    }
 
     $employmentHistoryDisplay = collect(data_get($emp, 'position_histories', []))
       ->map(function ($history) {
@@ -3564,6 +3613,13 @@
       })
       ->filter()
       ->implode(' | ');
+    if ($employmentHistoryDisplay === '') {
+      $employmentHistoryDisplay = $importedServiceRows
+        ->pluck('remarks')
+        ->map(fn ($value) => trim((string) $value))
+        ->filter(fn ($value) => $value !== '' && $value !== '-')
+        ->implode(' | ');
+    }
 
     return [
       'company' => 'Northeastern College, Inc.',
@@ -3580,8 +3636,8 @@
       'length_of_service' => $blankTableValue($lengthOfService),
       'position' => $blankTableValue(trim((string) ($emp->job_role ?? data_get($emp, 'employee.position') ?? ($emp->position ?? data_get($emp, 'applicant.position.title') ?? '')))),
       'class' => $blankTableValue($classDisplay),
-      'rank' => $blankTableValue(trim((string) (data_get($emp, 'employee.rank') ?: ($emp->rank ?? '')))),
-      'grade' => $blankTableValue(trim((string) (data_get($emp, 'employee.grade') ?: ($emp->grade ?? '')))),
+      'rank' => $blankTableValue(trim((string) (data_get($emp, 'employee.rank') ?: data_get($emp, 'employee.classification') ?: ($emp->rank ?? '')))),
+      'grade' => $blankTableValue(trim((string) (data_get($emp, 'employee.grade') ?: data_get($emp, 'employee.classification_salary') ?: ($emp->grade ?? '')))),
       'sss' => $blankTableValue(trim((string) (data_get($emp, 'government.SSS') ?: ''))),
       'tin' => $blankTableValue(trim((string) (data_get($emp, 'government.TIN') ?: ''))),
       'philhealth' => $blankTableValue(trim((string) (data_get($emp, 'government.PhilHealth') ?: ''))),

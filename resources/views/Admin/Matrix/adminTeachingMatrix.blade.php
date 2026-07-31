@@ -543,7 +543,7 @@
       @php
         $rows = collect($teachingEmployees ?? ($administrators ?? []));
       @endphp
-      <div class="matrix-print-wrapper matrix-reveal w-full overflow-x-auto rounded-2xl border border-stone-300 bg-white shadow-sm" style="--matrix-delay: 160ms;">
+      <div class="matrix-print-wrapper w-full overflow-x-auto rounded-2xl border border-stone-300 bg-white shadow-sm">
         <table id="teaching-matrix" class="min-w-[1700px] w-full text-sm text-stone-800 border-collapse">
           <thead class="bg-stone-100">
             <tr class="hidden print:table-row">
@@ -580,12 +580,14 @@
                   trim((string) ($staff->last_name ?? '')),
                 ])));
 
-                $degreeRows = collect(optional($staff->applicant)->degrees ?? [])->values();
+                $degreeRows = collect(optional($staff->applicant)->degrees ?? [])
+                  ->filter(fn ($row) => !$isPlaceholder(data_get($row, 'degree_name')))
+                  ->values();
                 $fallbackDegrees = collect([
                   ['degree_name' => trim((string) optional($staff->education)->doctorate), 'school_name' => trim((string) (optional($staff->applicant)->doctoral_school_name ?? '')), 'year_finished' => trim((string) (optional($staff->applicant)->doctoral_year_finished ?? ''))],
                   ['degree_name' => trim((string) optional($staff->education)->master), 'school_name' => trim((string) (optional($staff->applicant)->master_school_name ?? '')), 'year_finished' => trim((string) (optional($staff->applicant)->master_year_finished ?? ''))],
                   ['degree_name' => trim((string) optional($staff->education)->bachelor), 'school_name' => trim((string) (optional($staff->applicant)->bachelor_school_name ?? '')), 'year_finished' => trim((string) (optional($staff->applicant)->bachelor_year_finished ?? ''))],
-                ])->filter(fn ($row) => $row['degree_name'] !== '');
+                ])->filter(fn ($row) => !$isPlaceholder($row['degree_name']));
 
                 $specialization = collect([
                   trim((string) (optional($staff->applicant)->field_study ?? '')),
@@ -666,8 +668,28 @@
                   trim((string) (optional(optional($staff->applicant)->position)->employment ?? '')),
                 ])->filter(fn ($value) => !$isPlaceholder($value))->first() ?? '-';
 
-                $salaryPerMonth = trim((string) (optional($staff->salary)->salary ?? ''));
-                $salaryPerHour = trim((string) (optional($staff->salary)->rate_per_hour ?? ''));
+                $normalizeSalary = function ($value) use ($isPlaceholder): string {
+                  $value = trim((string) ($value ?? ''));
+                  if ($isPlaceholder($value)) {
+                    return '';
+                  }
+
+                  $numericValue = preg_replace('/[^0-9.\-]/', '', $value);
+                  if ($numericValue !== '' && is_numeric($numericValue) && (float) $numericValue === 0.0) {
+                    return '';
+                  }
+                  if ($numericValue !== '' && is_numeric($numericValue)) {
+                    $decimalPart = str_contains($numericValue, '.')
+                      ? rtrim(substr($numericValue, strpos($numericValue, '.') + 1), '0')
+                      : '';
+                    return number_format((float) $numericValue, strlen($decimalPart), '.', ',');
+                  }
+
+                  return $value;
+                };
+                $salaryPerMonth = $normalizeSalary(optional($staff->salary)->salary);
+                $salaryPerHour = $normalizeSalary(optional($staff->salary)->rate_per_hour);
+                $allowance = $normalizeSalary(optional($staff->salary)->cola);
                 $salaryText = '-';
                 if ($salaryPerHour !== '' && $salaryPerMonth !== '') {
                   $salaryText = 'Hr: '.$salaryPerHour.' / Mo: '.$salaryPerMonth;
@@ -678,6 +700,7 @@
                 }
 
                 $benefits = collect([
+                  $allowance !== '' ? 'Allowance: '.$allowance : '',
                   trim((string) (optional($staff->applicant)->benefit ?? '')),
                   trim((string) (optional(optional($staff->applicant)->position)->benifits ?? '')),
                 ])->filter()->values();

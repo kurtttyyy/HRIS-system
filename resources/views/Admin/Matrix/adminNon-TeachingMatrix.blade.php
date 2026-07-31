@@ -640,8 +640,32 @@
                   }
                 }
 
-                $salaryPerMonth = trim((string) (optional($staff->salary)->salary ?? ''));
-                $salaryPerHour = trim((string) (optional($staff->salary)->rate_per_hour ?? ''));
+                $isPlaceholder = function ($value): bool {
+                  $normalized = strtolower(trim((string) ($value ?? '')));
+                  return $normalized === '' || $normalized === 'n/a' || $normalized === 'na' || $normalized === '-';
+                };
+                $normalizeSalary = function ($value) use ($isPlaceholder): string {
+                  $value = trim((string) ($value ?? ''));
+                  if ($isPlaceholder($value)) {
+                    return '';
+                  }
+
+                  $numericValue = preg_replace('/[^0-9.\-]/', '', $value);
+                  if ($numericValue !== '' && is_numeric($numericValue) && (float) $numericValue === 0.0) {
+                    return '';
+                  }
+                  if ($numericValue !== '' && is_numeric($numericValue)) {
+                    $decimalPart = str_contains($numericValue, '.')
+                      ? rtrim(substr($numericValue, strpos($numericValue, '.') + 1), '0')
+                      : '';
+                    return number_format((float) $numericValue, strlen($decimalPart), '.', ',');
+                  }
+
+                  return $value;
+                };
+                $salaryPerMonth = $normalizeSalary(optional($staff->salary)->salary);
+                $salaryPerHour = $normalizeSalary(optional($staff->salary)->rate_per_hour);
+                $allowance = $normalizeSalary(optional($staff->salary)->cola);
                 $salaryText = '-';
                 if ($salaryPerHour !== '' && $salaryPerMonth !== '') {
                   $salaryText = 'Hr: '.$salaryPerHour.' / Mo: '.$salaryPerMonth;
@@ -652,14 +676,11 @@
                 }
 
                 $benefits = collect([
+                  $allowance !== '' ? 'Allowance: '.$allowance : '',
                   trim((string) (optional($staff->applicant)->benefit ?? '')),
                   trim((string) (optional(optional($staff->applicant)->position)->benifits ?? '')),
                 ])->filter()->values();
 
-                $isPlaceholder = function ($value): bool {
-                  $normalized = strtolower(trim((string) ($value ?? '')));
-                  return $normalized === '' || $normalized === 'n/a' || $normalized === 'na' || $normalized === '-';
-                };
                 $workPositionRaw = trim((string) (optional($staff->applicant)->work_position ?? ''));
                 $workDurationRaw = trim((string) (optional($staff->applicant)->work_duration ?? ''));
                 $workPosition = $isPlaceholder($workPositionRaw) ? '' : $workPositionRaw;

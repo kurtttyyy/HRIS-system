@@ -199,25 +199,6 @@ return new class extends Migration
     {
         return array_values(array_filter([
             [
-                'email' => 'demo.employee1@example.com',
-                'password' => 'Employee12345',
-                'first_name' => 'Maria',
-                'middle_name' => 'Demo',
-                'last_name' => 'Santos',
-                'employee_id' => 'EMP-DEMO-001',
-                'employement_date' => '2026-01-15',
-                'birthday' => '1995-03-12',
-                'account_number' => '0000000001',
-                'sex' => 'Female',
-                'civil_status' => 'Single',
-                'contact_number' => '09170000001',
-                'address' => 'N/A',
-                'department' => 'Human Resources',
-                'position' => 'HR Assistant',
-                'classification' => 'Probationary',
-                'job_type' => 'NT',
-            ],
-            [
                 'email' => 'demo.employee2@example.com',
                 'password' => 'Employee12345',
                 'first_name' => 'Juan',

@@ -1103,8 +1103,10 @@ class AdministratorPageController extends Controller
         $employeeSearch = trim((string) $request->query('search', ''));
         $employeeDepartment = trim((string) $request->query('department', 'All'));
         $employeeStatus = trim((string) $request->query('status', 'All'));
-        $employeePerPage = (int) $request->query('per_page', 10);
-        if (!in_array($employeePerPage, [5, 10, 15, 25, 50], true)) {
+        $employeePerPageOption = strtolower(trim((string) $request->query('per_page', '10')));
+        $showAllEmployees = $employeePerPageOption === 'all';
+        $employeePerPage = (int) $employeePerPageOption;
+        if (!$showAllEmployees && !in_array($employeePerPage, [5, 10, 15, 25, 50], true)) {
             $employeePerPage = 10;
         }
 
@@ -1182,6 +1184,10 @@ class AdministratorPageController extends Controller
             return true;
         })->values();
 
+        if ($showAllEmployees) {
+            $employeePerPage = max($filteredEmployees->count(), 1);
+        }
+
         $employeeLastPage = max((int) ceil($filteredEmployees->count() / $employeePerPage), 1);
         $employeePage = min(max((int) $request->query('page', 1), 1), $employeeLastPage);
         $employeePaginator = new LengthAwarePaginator(
@@ -1199,7 +1205,7 @@ class AdministratorPageController extends Controller
             'search' => $employeeSearch,
             'department' => $employeeDepartment !== '' ? $employeeDepartment : 'All',
             'status' => $employeeStatus !== '' ? $employeeStatus : 'All',
-            'per_page' => $employeePerPage,
+            'per_page' => $showAllEmployees ? 'all' : $employeePerPage,
         ];
 
         return view('Admin.adminEmployee', compact('employee', 'employeeDirectory', 'employeePaginator', 'employeeFilters'));
@@ -2811,7 +2817,19 @@ class AdministratorPageController extends Controller
             'applicant.degrees:id,applicant_id,degree_level,degree_name,school_name,year_finished,sort_order',
         ])
             ->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee'])
-            ->whereRaw("LOWER(TRIM(COALESCE(department_head, ''))) = ?", ['approved'])
+            ->where(function ($query) {
+                $leadershipPattern = 'president|vice[ -]?president|vice dean|dean|department head|program head';
+                $query
+                    ->whereRaw("LOWER(TRIM(COALESCE(department_head, ''))) = ?", ['approved'])
+                    ->orWhereRaw("LOWER(TRIM(COALESCE(job_role, ''))) REGEXP ?", [$leadershipPattern])
+                    ->orWhereRaw("LOWER(TRIM(COALESCE(position, ''))) REGEXP ?", [$leadershipPattern])
+                    ->orWhereHas('employee', function ($employeeQuery) use ($leadershipPattern) {
+                        $employeeQuery->whereRaw(
+                            "LOWER(TRIM(COALESCE(position, ''))) REGEXP ?",
+                            [$leadershipPattern]
+                        );
+                    });
+            })
             ->orderByRaw("
                 CASE
                     WHEN LOWER(TRIM(COALESCE(job_role, position, ''))) = 'president' THEN 0

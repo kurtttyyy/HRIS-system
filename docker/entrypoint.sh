@@ -114,8 +114,8 @@ if [ "${APP_ENV:-production}" = "production" ] \
     && [ "${DB_CONNECTION:-sqlite}" = "sqlite" ] \
     && [ "${ALLOW_EPHEMERAL_SQLITE:-false}" != "true" ]; then
     echo "Refusing to start production with SQLite inside the container." >&2
-    echo "Railway redeploys replace the container filesystem, so SQLite data stored here will disappear." >&2
-    echo "Attach a Railway MySQL database and set DB_CONNECTION=mysql, or set ALLOW_EPHEMERAL_SQLITE=true only if you accept data loss." >&2
+    echo "Container redeploys can replace the filesystem, so SQLite data stored here may disappear." >&2
+    echo "Attach a managed database, or set ALLOW_EPHEMERAL_SQLITE=true only for a disposable demo." >&2
     exit 1
 fi
 
@@ -143,14 +143,18 @@ touch /var/www/html/storage/logs/laravel.log
 chown www-data:www-data /var/www/html/storage/logs/laravel.log
 tail -n 0 -F /var/www/html/storage/logs/laravel.log >&2 &
 
-if [ -z "${APP_KEY:-}" ] && [ "${APP_ENV:-production}" = "production" ]; then
-    echo "APP_KEY is not set. Set a fixed APP_KEY in Railway before starting production." >&2
-    echo "A temporary APP_KEY changes on every deploy and invalidates encrypted sessions/cookies." >&2
-    exit 1
+if [ -z "${APP_KEY:-}" ] && [ -n "${APP_KEY_BASE64:-}" ]; then
+    export APP_KEY="base64:${APP_KEY_BASE64}"
 fi
 
 if [ -z "${APP_KEY:-}" ]; then
-    echo "APP_KEY is not set. Generating a temporary key for this container." >&2
+    if [ "${APP_ENV:-production}" = "production" ]; then
+        echo "APP_KEY is not set. Set APP_KEY or provide a fixed APP_KEY_BASE64 secret." >&2
+        echo "A temporary key would invalidate encrypted sessions and cookies after every restart." >&2
+        exit 1
+    fi
+
+    echo "APP_KEY is not set. Generating a temporary development key." >&2
     export APP_KEY="$(php artisan key:generate --show)"
 fi
 
