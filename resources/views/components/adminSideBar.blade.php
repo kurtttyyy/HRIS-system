@@ -223,6 +223,9 @@
 
     $hasEmployeeMissingInfoAlert = $employeeMissingInfoCount > 0;
   }
+  $adminSidebarEmployeeCount = \Illuminate\Support\Facades\Schema::hasTable('employees')
+    ? \App\Models\Employee::query()->count()
+    : 0;
 @endphp
 
 <style>
@@ -407,16 +410,12 @@
          : 'text-white hover:bg-green-600/30' }}">
       <span class="relative inline-flex w-5 items-center justify-center">
         <i class="fa-solid fa-users"></i>
-        @if ($hasEmployeeMissingInfoAlert)
-          <span class="admin-sidebar-alert-dot group-hover:hidden" aria-hidden="true">!</span>
-        @endif
+        <span data-admin-employee-dot class="admin-sidebar-alert-dot group-hover:hidden" aria-hidden="true" {{ $adminSidebarEmployeeCount > 0 ? '' : 'hidden' }}>!</span>
       </span>
       <span class="admin-sidebar-text whitespace-nowrap inline-block max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300">Employees</span>
-      @if ($employeeMissingInfoCount > 0)
-        <span class="admin-sidebar-count-badge ml-auto min-w-[1.4rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white">
-          {{ $employeeMissingInfoCount > 99 ? '99+' : $employeeMissingInfoCount }}
-        </span>
-      @endif
+      <span data-admin-employee-count class="admin-sidebar-count-badge ml-auto min-w-[1.4rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white" {{ $adminSidebarEmployeeCount > 0 ? '' : 'hidden' }}>
+        {{ $adminSidebarEmployeeCount > 99 ? '99+' : $adminSidebarEmployeeCount }}
+      </span>
     </a>
     @endif
 
@@ -500,17 +499,13 @@
         <span class="flex items-center gap-0 group-hover:gap-3 justify-center group-hover:justify-start">
           <span class="relative inline-flex items-center justify-center">
             <i class="fa-solid fa-briefcase"></i>
-            @if ($adminPendingApplicantCount > 0)
-              <span class="admin-sidebar-alert-dot group-hover:hidden" aria-hidden="true">!</span>
-            @endif
+            <span data-admin-pending-applicant-dot class="admin-sidebar-alert-dot group-hover:hidden" aria-hidden="true" {{ $adminPendingApplicantCount > 0 ? '' : 'hidden' }}>!</span>
           </span>
           <span class="admin-sidebar-text whitespace-nowrap inline-block max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300">Hiring</span>
         </span>
-        @if ($adminPendingApplicantCount > 0)
-          <span class="admin-sidebar-count-badge ml-auto min-w-[1.4rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white">
-            {{ $adminPendingApplicantCount > 99 ? '99+' : $adminPendingApplicantCount }}
-          </span>
-        @endif
+        <span data-admin-pending-applicant-count class="admin-sidebar-count-badge ml-auto min-w-[1.4rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white" {{ $adminPendingApplicantCount > 0 ? '' : 'hidden' }}>
+          {{ $adminPendingApplicantCount > 99 ? '99+' : $adminPendingApplicantCount }}
+        </span>
 
         <i class="fa-solid fa-chevron-down hidden group-hover:inline-block transition-all duration-200 hiring-chevron"></i>
       </summary>
@@ -526,16 +521,12 @@
                 : 'text-white hover:bg-green-600/30' }}">
           <span class="relative inline-flex items-center justify-center">
             <i class="fa-solid fa-user-check"></i>
-            @if ($adminPendingApplicantCount > 0)
-              <span class="admin-sidebar-alert-dot group-hover:hidden" aria-hidden="true">!</span>
-            @endif
+            <span data-admin-pending-applicant-dot class="admin-sidebar-alert-dot group-hover:hidden" aria-hidden="true" {{ $adminPendingApplicantCount > 0 ? '' : 'hidden' }}>!</span>
           </span>
           <span class="admin-sidebar-text whitespace-nowrap inline-block max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300">Applicant</span>
-          @if ($adminPendingApplicantCount > 0)
-            <span class="admin-sidebar-count-badge ml-auto min-w-[1.4rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white">
-              {{ $adminPendingApplicantCount > 99 ? '99+' : $adminPendingApplicantCount }}
-            </span>
-          @endif
+          <span data-admin-pending-applicant-count class="admin-sidebar-count-badge ml-auto min-w-[1.4rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white" {{ $adminPendingApplicantCount > 0 ? '' : 'hidden' }}>
+            {{ $adminPendingApplicantCount > 99 ? '99+' : $adminPendingApplicantCount }}
+          </span>
         </a>
 
         <a href="{{ route('admin.adminPosition', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}"
@@ -1001,6 +992,71 @@
         dot.hidden = count === 0;
       });
     };
+
+    const updateSidebarCount = (selector, value) => {
+      const count = Math.max(Number.parseInt(value ?? '0', 10) || 0, 0);
+      document.querySelectorAll(selector).forEach((badge) => {
+        badge.textContent = count > 99 ? '99+' : String(count);
+        badge.hidden = count === 0;
+      });
+      return count;
+    };
+
+    const updateAdminSidebarSummary = (summary) => {
+      const employeeCount = updateSidebarCount(
+        '[data-admin-employee-count]',
+        summary?.employee_count
+      );
+      document.querySelectorAll('[data-admin-employee-dot]').forEach((dot) => {
+        dot.hidden = employeeCount === 0;
+      });
+
+      const pendingApplicantCount = updateSidebarCount(
+        '[data-admin-pending-applicant-count]',
+        summary?.pending_applicant_count
+      );
+      document.querySelectorAll('[data-admin-pending-applicant-dot]').forEach((dot) => {
+        dot.hidden = pendingApplicantCount === 0;
+      });
+    };
+
+    const sidebarSummaryUrl = appendTabSession(@json(route('admin.sidebarSummary')));
+    let sidebarSummaryRequestInFlight = false;
+
+    const refreshAdminSidebarSummary = async () => {
+      if (sidebarSummaryRequestInFlight || document.hidden) {
+        return;
+      }
+
+      sidebarSummaryRequestInFlight = true;
+      try {
+        const response = await fetch(sidebarSummaryUrl, {
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: {
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+        });
+        if (!response.ok) {
+          return;
+        }
+        updateAdminSidebarSummary(await response.json());
+      } catch (error) {
+        // Keep the last successfully rendered counts during transient failures.
+      } finally {
+        sidebarSummaryRequestInFlight = false;
+      }
+    };
+
+    window.refreshAdminSidebarSummary = refreshAdminSidebarSummary;
+    refreshAdminSidebarSummary();
+    window.setInterval(refreshAdminSidebarSummary, 5000);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        refreshAdminSidebarSummary();
+      }
+    });
 
   })();
 </script>

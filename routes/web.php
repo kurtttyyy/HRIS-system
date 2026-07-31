@@ -112,6 +112,7 @@ Route::controller(AdministratorPageController::class)->group(function () {
     Route::get('system/communication', 'display_communication')->name('admin.adminCommunication');
     Route::get('system/communication/unread-count', 'communication_unread_count')->name('admin.communicationUnreadCount');
     Route::get('system/employee', 'display_employee')->name('admin.adminEmployee');
+    Route::get('system/sidebar/summary', 'sidebar_summary')->name('admin.sidebarSummary');
     Route::get('system/employee/temporary-pins/docx', 'download_employee_pin_docx')->name('admin.employeePins.docx');
     Route::get('system/employee/account-statuses', 'employee_account_statuses')->name('admin.employeeAccountStatuses');
     Route::get('system/employee/insert', 'display_employee_import')->name('admin.employeeImport');

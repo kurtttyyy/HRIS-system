@@ -1261,6 +1261,22 @@ class AdministratorPageController extends Controller
         ])->header('Cache-Control', 'no-store, no-cache, must-revalidate');
     }
 
+    public function sidebar_summary()
+    {
+        $pendingApplicants = Applicant::query()
+            ->where(function ($query) {
+                $query->whereNull('application_status')
+                    ->orWhereRaw("TRIM(application_status) = ''")
+                    ->orWhereRaw("LOWER(TRIM(application_status)) = ?", ['pending']);
+            })
+            ->count();
+
+        return response()->json([
+            'employee_count' => Employee::query()->count(),
+            'pending_applicant_count' => $pendingApplicants,
+        ])->header('Cache-Control', 'no-store, no-cache, must-revalidate');
+    }
+
     private function isSundayDate(?string $fromDate): bool
     {
         if (!$fromDate) {
