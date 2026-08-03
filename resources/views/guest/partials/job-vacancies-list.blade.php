@@ -48,8 +48,9 @@
             </ul>
 
             <button
-                onclick="window.location.href='{{ route('guest.jobOpen', $position->id) }}';"
                 class="btn btn-primary w-100 green-btn"
+                data-job-url="{{ route('guest.jobOpen', $position->id) }}"
+                type="button"
             >
                 View Details & Apply
             </button>

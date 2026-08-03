@@ -1,14 +1,20 @@
 <header class="navbar navbar-expand-lg navbar-dark navbar-custom shadow-sm">
     <div class="container-fluid">
-        <div class="navbar-brand d-flex align-items-center gap-3">
+        <a href="{{ route('guest.index') }}" class="navbar-brand d-flex align-items-center gap-3">
             <img src="{{ asset('images/logo.webp') }}" alt="Logo" height="70">
             <div class="d-flex flex-column">
                 <span class="fw-bold fs-2 mb-0 text-white">HUMAN RESOURCES DEPARTMENT</span>
                 <small class="subtext">Join Our Team</small>
             </div>
-        </div>
+        </a>
 
-        <div class="ms-auto d-flex align-items-center gap-4">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#guestNavigation"
+                aria-controls="guestNavigation" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="guestNavigation">
+            <nav class="guest-navigation ms-lg-auto" aria-label="Primary navigation">
             <!-- HOME -->
             <a href="{{ route('guest.index') }}" class="btn btn-outline-light border-0 nav-home-link">Home</a>
 
@@ -22,7 +28,7 @@
                     class="btn btn-outline-light border-0 nav-home-link">
                 Application Status
             </button>
-
+            </nav>
         </div>
     </div>
 </header>

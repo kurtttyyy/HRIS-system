@@ -703,6 +703,34 @@
         background: linear-gradient(135deg, var(--careers-brand) 0%, #22c55e 100%) !important;
         border: none !important;
         box-shadow: 0 16px 28px rgba(21, 115, 71, 0.2);
+        transform: translateY(0) scale(1);
+        transition: transform 120ms cubic-bezier(0.2, 0.8, 0.2, 1),
+                    box-shadow 120ms ease,
+                    filter 120ms ease;
+        will-change: transform;
+    }
+
+    .job-card .green-btn:hover {
+        filter: brightness(1.035);
+        box-shadow: 0 19px 30px rgba(21, 115, 71, 0.24);
+    }
+
+    .job-card .green-btn:active,
+    .job-card .green-btn.is-pressing {
+        transform: translateY(3px) scale(0.985);
+        box-shadow: 0 6px 12px rgba(21, 115, 71, 0.24);
+        filter: brightness(0.96);
+    }
+
+    .job-card .green-btn:focus-visible {
+        outline: 3px solid rgba(34, 197, 94, 0.4);
+        outline-offset: 3px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .job-card .green-btn {
+            transition: none;
+        }
     }
 
     .empty-state {
@@ -1967,6 +1995,18 @@
         page.querySelectorAll('.hero-kicker, .filter-chip, .badge').forEach((item, index) => {
             item.classList.add('guest-index-pop');
             item.style.setProperty('--guest-index-delay', `${120 + ((index % 4) * 40)}ms`);
+        });
+
+        page.addEventListener('click', function (event) {
+            const button = event.target.closest('.green-btn[data-job-url]');
+            if (!button || button.classList.contains('is-pressing')) return;
+
+            event.preventDefault();
+            button.classList.add('is-pressing');
+
+            window.setTimeout(function () {
+                window.location.href = button.dataset.jobUrl;
+            }, 130);
         });
 
         const animatedItems = Array.from(page.querySelectorAll('.guest-index-reveal'));

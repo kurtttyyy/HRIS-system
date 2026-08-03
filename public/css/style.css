@@ -124,9 +124,10 @@ body {
 .navbar-custom .container-fluid {
   gap: 1rem;
 }
-.navbar-custom .ms-auto {
-  flex-wrap: wrap;
-  justify-content: flex-end;
+.guest-navigation {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
   min-width: 0;
 }
 .navbar-custom .navbar-brand .fw-bold {
@@ -1011,42 +1012,57 @@ header.navbar.loaded {
   .hero .display-5 { font-size: 3rem; }
 }
 
-@media (max-width: 767.98px) {
+/* Bootstrap's navbar expands at lg, so retain the compact menu through tablet widths. */
+@media (max-width: 991.98px) {
   .navbar-custom .container-fluid {
-    flex-direction: column;
-    align-items: stretch;
-    padding-inline: 0.75rem;
+    padding: 0.65rem 0.9rem;
   }
 
   .navbar-custom .navbar-brand {
-    width: 100%;
+    width: auto;
+    margin-right: 0;
     align-items: center;
     gap: 0.65rem !important;
+    min-width: 0;
   }
 
   .navbar-custom .navbar-brand img {
-    height: 52px;
+    height: 44px;
   }
 
   .navbar-custom .navbar-brand .fw-bold {
-    font-size: clamp(0.95rem, 4.4vw, 1.18rem);
+    display: block;
+    font-size: clamp(0.9rem, 4.1vw, 1.12rem);
     line-height: 1.12;
-    overflow-wrap: anywhere;
+    max-width: 15rem;
   }
 
   .navbar-brand .subtext {
-    font-size: 0.86rem;
+    font-size: 0.78rem;
   }
 
-  .navbar-custom .ms-auto {
+  .navbar-custom .navbar-toggler {
+    border-color: rgba(255, 255, 255, 0.55);
+    padding: 0.38rem 0.5rem;
+  }
+
+  .navbar-custom .navbar-toggler:focus {
+    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+  }
+
+  .navbar-custom .navbar-collapse {
     width: 100%;
-    margin-left: 0 !important;
-    gap: 0.35rem !important;
-    justify-content: center;
+    margin-top: 0.6rem;
+  }
+
+  .guest-navigation {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.35rem;
+    width: 100%;
   }
 
   .navbar-custom .nav-home-link {
-    flex: 1 1 calc(50% - 0.35rem);
     min-height: 42px;
     padding: 0.55rem 0.45rem;
     font-size: 0.9rem;
