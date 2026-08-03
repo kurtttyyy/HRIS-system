@@ -486,6 +486,43 @@
     }
 
     @media (max-width: 575.98px) {
+        /* Keep all five application stages visible inside the card on phones. */
+        .stepper1 {
+            display: flex;
+            align-items: flex-start;
+            width: 100%;
+            margin: 0.9rem 0 1.35rem;
+        }
+
+        .stepper1 .step1 {
+            flex: 1 1 0;
+            min-width: 0;
+        }
+
+        .stepper1 .circle1 {
+            width: 2rem;
+            height: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .stepper1 .label1 {
+            width: 100%;
+            min-height: 2.2em;
+            margin-top: 0.35rem;
+            padding: 0 0.1rem;
+            font-size: clamp(0.56rem, 2.5vw, 0.68rem);
+            line-height: 1.1;
+            text-align: center;
+            overflow-wrap: anywhere;
+        }
+
+        .stepper1 .line1 {
+            flex: 0 1 0.6rem;
+            min-width: 0.25rem;
+            height: 2px;
+            margin: -1rem 0 0;
+        }
+
         .application-section-heading {
             align-items: flex-start;
             flex-direction: column;
