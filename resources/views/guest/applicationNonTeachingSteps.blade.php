@@ -1546,7 +1546,7 @@
         <h3 class="fw-bold mb-3">Review Your Application</h3>
 
         <div class="review-notice d-flex align-items-start mb-4">
-            <div class="review-icon">i</div>
+            <i class="bi bi-info-lg review-icon" aria-hidden="true"></i>
             <div class="ms-3">
                 <div class="fw-semibold" style="font-size: 1.1rem;">Before you submit</div>
                 <div class="text-dark-green">

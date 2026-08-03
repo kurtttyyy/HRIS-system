@@ -986,10 +986,12 @@ header.navbar.loaded {
 .review-icon {
     width: 36px;
     height: 36px;
+    flex: 0 0 36px;
     border-radius: 50%;
     background-color: #155724;
     color: #ffffff;
     font-size: 1.3rem;
+    line-height: 1;
     display: flex;
     justify-content: center;
     align-items: center;
