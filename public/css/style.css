@@ -1016,10 +1016,11 @@ header.navbar.loaded {
 @media (max-width: 991.98px) {
   .navbar-custom .container-fluid {
     padding: 0.65rem 0.9rem;
+    flex-wrap: nowrap;
   }
 
   .navbar-custom .navbar-brand {
-    width: auto;
+    flex: 1 1 auto;
     margin-right: 0;
     align-items: center;
     gap: 0.65rem !important;
@@ -1032,9 +1033,14 @@ header.navbar.loaded {
 
   .navbar-custom .navbar-brand .fw-bold {
     display: block;
-    font-size: clamp(0.9rem, 4.1vw, 1.12rem);
+    font-size: clamp(0.82rem, 3.8vw, 1.05rem);
     line-height: 1.12;
-    max-width: 15rem;
+    max-width: none;
+    overflow-wrap: normal;
+  }
+
+  .navbar-custom .navbar-brand > div {
+    min-width: 0;
   }
 
   .navbar-brand .subtext {
@@ -1042,6 +1048,7 @@ header.navbar.loaded {
   }
 
   .navbar-custom .navbar-toggler {
+    flex: 0 0 auto;
     border-color: rgba(255, 255, 255, 0.55);
     padding: 0.38rem 0.5rem;
   }
@@ -1051,14 +1058,22 @@ header.navbar.loaded {
   }
 
   .navbar-custom .navbar-collapse {
+    position: absolute;
+    top: 100%;
+    left: 0;
     width: 100%;
-    margin-top: 0.6rem;
+    margin-top: 0;
+    padding: 0.5rem 0.9rem 0.8rem;
+    background: linear-gradient(180deg, #0b6623 0%, #18df32 100%);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 14px rgba(0, 0, 0, 0.18);
   }
 
   .guest-navigation {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.35rem;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.2rem;
     width: 100%;
   }
 
@@ -1068,6 +1083,7 @@ header.navbar.loaded {
     font-size: 0.9rem;
     line-height: 1.15;
     white-space: normal;
+    text-align: left;
   }
 
   #jobSidebar {
