@@ -490,13 +490,26 @@
         .stepper1 {
             display: flex;
             align-items: flex-start;
+            position: relative;
             width: 100%;
             margin: 0.9rem 0 1.35rem;
+        }
+
+        .stepper1::before {
+            content: '';
+            position: absolute;
+            top: 1rem;
+            right: 10%;
+            left: 10%;
+            height: 2px;
+            background: #d9dee5;
         }
 
         .stepper1 .step1 {
             flex: 1 1 0;
             min-width: 0;
+            position: relative;
+            z-index: 1;
         }
 
         .stepper1 .circle1 {
@@ -517,10 +530,7 @@
         }
 
         .stepper1 .line1 {
-            flex: 0 1 0.6rem;
-            min-width: 0.25rem;
-            height: 2px;
-            margin: -1rem 0 0;
+            display: none;
         }
 
         .application-section-heading {
