@@ -1,26 +1,101 @@
 @include('components.adminHeader.scrollBehavior')
 
-<header data-admin-scroll-header class="relative z-40 px-4 py-4 md:px-8 md:py-5">
-    <div data-admin-scroll-card class="relative overflow-visible rounded-[2rem] border border-emerald-950/70 bg-[linear-gradient(135deg,_#020617_0%,_#020617_42%,_#111827_68%,_#064e3b_100%)] shadow-[0_24px_60px_rgba(3,19,29,0.34)] backdrop-blur-xl">
+<style>
+    @media (max-width: 767px) {
+        .employee-directory-header {
+            padding: 0.75rem;
+        }
+
+        .employee-directory-header-card {
+            border-radius: 1.25rem;
+        }
+
+        .employee-directory-header-layout {
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .employee-directory-kicker {
+            display: none;
+        }
+
+        .employee-directory-title-block {
+            margin-top: 0;
+        }
+
+        .employee-directory-title {
+            font-size: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .employee-directory-subtitle {
+            margin-top: 0.5rem;
+            line-height: 1.35;
+        }
+
+        .employee-directory-quick-actions {
+            margin-top: 0.75rem;
+            gap: 0.5rem;
+        }
+
+        .employee-directory-quick-actions > * {
+            padding: 0.35rem 0.6rem;
+        }
+
+        .employee-directory-filters {
+            border-radius: 1rem;
+            padding: 0.75rem;
+        }
+
+        .employee-directory-filter-grid {
+            gap: 0.75rem;
+        }
+
+        .employee-directory-filter-field {
+            border-radius: 0.85rem;
+            padding: 0.75rem;
+        }
+
+        .employee-directory-filter-actions {
+            margin-top: 0.75rem;
+            gap: 0.75rem;
+        }
+
+        .employee-directory-statuses,
+        .employee-directory-export-actions {
+            gap: 0.5rem;
+        }
+
+        .employee-directory-statuses button,
+        .employee-directory-export-actions > button,
+        .employee-directory-export-actions > div > button {
+            min-height: 2.35rem;
+            padding: 0.45rem 0.75rem;
+        }
+    }
+</style>
+
+<header data-admin-scroll-header class="employee-directory-header relative z-40 px-4 py-4 md:px-8 md:py-5">
+    <div data-admin-scroll-card class="employee-directory-header-card relative overflow-visible rounded-[2rem] border border-emerald-950/70 bg-[linear-gradient(135deg,_#020617_0%,_#020617_42%,_#111827_68%,_#064e3b_100%)] shadow-[0_24px_60px_rgba(3,19,29,0.34)] backdrop-blur-xl">
         <div class="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.14),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(110,231,183,0.14),_transparent_32%)]"></div>
             <div class="absolute -left-10 top-6 h-28 w-28 rounded-full bg-cyan-300/10 blur-3xl"></div>
             <div class="absolute right-0 top-0 h-36 w-36 translate-x-10 -translate-y-10 rounded-full bg-emerald-300/20 blur-3xl"></div>
         </div>
 
-        <div class="relative flex flex-col gap-6 px-5 py-5 md:px-7 md:py-6 xl:flex-row xl:items-end xl:justify-between">
+        <div class="employee-directory-header-layout relative flex flex-col gap-6 px-5 py-5 md:px-7 md:py-6 xl:flex-row xl:items-end xl:justify-between">
             <div class="max-w-3xl min-w-0">
-                <div class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-50">
+                <div class="employee-directory-kicker inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-50">
                     <span class="h-2 w-2 rounded-full bg-cyan-300"></span>
                     Workforce Center
                 </div>
 
-                <div class="mt-4 min-w-0">
-                    <h2 class="text-3xl font-black tracking-tight text-white md:text-4xl">Employee Directory</h2>
-                    <p class="mt-2 max-w-2xl text-sm leading-6 text-emerald-50/85 md:text-base">
+                <div class="employee-directory-title-block mt-4 min-w-0">
+                    <h2 class="employee-directory-title text-3xl font-black tracking-tight text-white md:text-4xl">Employee Directory</h2>
+                    <p class="employee-directory-subtitle mt-2 max-w-2xl text-sm leading-6 text-emerald-50/85 md:text-base">
                         Search profiles, narrow by department, and monitor employee status from one polished workspace.
                     </p>
-                    <div class="mt-3 flex flex-wrap items-center gap-3 text-xs font-medium text-emerald-50/80">
+                    <div class="employee-directory-quick-actions mt-3 flex flex-wrap items-center gap-3 text-xs font-medium text-emerald-50/80">
                         <span class="rounded-full border border-white/10 bg-white/8 px-3 py-1.5">{{ now()->format('l, F j, Y') }}</span>
                         <button
                             type="button"
@@ -48,9 +123,9 @@
                 </div>
 
             <div class="w-full xl:max-w-2xl">
-                <div class="rounded-[1.75rem] border border-white/10 bg-white/10 p-4 shadow-[0_16px_34px_rgba(3,19,29,0.2)] backdrop-blur">
-                    <div class="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.8fr)]">
-                        <label class="group relative flex items-center rounded-2xl border border-white/10 bg-white px-4 py-3 transition focus-within:border-emerald-300 focus-within:shadow-sm">
+                <div class="employee-directory-filters rounded-[1.75rem] border border-white/10 bg-white/10 p-4 shadow-[0_16px_34px_rgba(3,19,29,0.2)] backdrop-blur">
+                    <div class="employee-directory-filter-grid grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.8fr)]">
+                        <label class="employee-directory-filter-field group relative flex items-center rounded-2xl border border-white/10 bg-white px-4 py-3 transition focus-within:border-emerald-300 focus-within:shadow-sm">
                             <i class="fa-solid fa-magnifying-glass text-slate-400 transition group-focus-within:text-emerald-600"></i>
                             <input
                                 type="text"
@@ -62,7 +137,7 @@
                             >
                         </label>
 
-                        <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white px-4 py-3 transition focus-within:border-emerald-300 focus-within:shadow-sm">
+                        <label class="employee-directory-filter-field flex items-center gap-3 rounded-2xl border border-white/10 bg-white px-4 py-3 transition focus-within:border-emerald-300 focus-within:shadow-sm">
                             <i class="fa-solid fa-layer-group text-slate-400"></i>
                             <select
                                 x-model="department"
@@ -77,8 +152,8 @@
                         </label>
                     </div>
 
-                    <div class="mt-4 grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
-                        <div class="flex flex-wrap items-center gap-2">
+                    <div class="employee-directory-filter-actions mt-4 grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
+                        <div class="employee-directory-statuses flex flex-wrap items-center gap-2">
                             <button
                                 type="button"
                                 @click="statusFilter = 'All'; applyEmployeeDirectoryFilters()"
@@ -135,7 +210,7 @@
                             </button>
                         </div>
 
-                        <div class="flex flex-wrap items-center gap-2 xl:justify-end">
+                        <div class="employee-directory-export-actions flex flex-wrap items-center gap-2 xl:justify-end">
                             <div class="relative" @click.outside="exportMenuOpen = false">
                                 <button
                                     type="button"

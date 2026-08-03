@@ -897,6 +897,15 @@
           return;
         }
 
+        if (isCompactViewport()) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          closeSidebar();
+          ensureOverlay().classList.add('is-visible');
+          window.setTimeout(() => window.location.assign(href), 0);
+          return;
+        }
+
         ensureOverlay().classList.add('is-visible');
       });
     });

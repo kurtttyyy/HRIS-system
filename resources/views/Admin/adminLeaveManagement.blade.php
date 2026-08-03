@@ -124,6 +124,25 @@
         transform: none;
       }
     }
+    @media (max-width: 767px) {
+      #leave-management-page {
+        padding: 0.75rem !important;
+        padding-top: 0.75rem !important;
+      }
+      .leave-workspace-header {
+        padding: 1rem;
+      }
+      .approved-history-date-filters {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.75rem;
+      }
+      .approved-history-date-filters input {
+        min-width: 0;
+      }
+      .approved-history-date-filters [data-approved-history-reset] {
+        grid-column: auto;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#f7fafc_45%,#eefbf6_100%)] text-slate-800">
@@ -395,7 +414,7 @@
                 <p data-approved-history-count class="mt-3 text-xs font-medium text-sky-700">Showing {{ $approvedRequestCount }} approved request(s)</p>
               </div>
               <div class="w-full lg:max-w-[36rem]">
-                <div class="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+                <div class="approved-history-date-filters grid grid-cols-2 gap-2 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
                   <label class="text-[11px] font-bold uppercase tracking-wide text-slate-500">
                     From
                     <input data-approved-history-from type="date" class="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-700 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200">
