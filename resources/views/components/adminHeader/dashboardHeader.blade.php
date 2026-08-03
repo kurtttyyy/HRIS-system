@@ -189,6 +189,80 @@
             animation: none;
         }
     }
+
+    @media (max-width: 767px) {
+        .admin-header-shell {
+            padding: 0.75rem;
+        }
+
+        .admin-header-card {
+            flex-direction: row;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 0.75rem;
+            border-radius: 1.25rem;
+            padding: 1rem;
+        }
+
+        .admin-header-content {
+            min-width: 0;
+        }
+
+        .admin-header-content > .admin-header-meta:first-child {
+            display: none;
+        }
+
+        .admin-header-title {
+            margin-top: 0;
+            font-size: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .admin-header-subtitle {
+            line-height: 1.35;
+        }
+
+        .admin-header-content > .admin-header-meta:last-child {
+            margin-top: 0.5rem;
+            padding: 0.25rem 0.55rem;
+            font-size: 0.65rem;
+        }
+
+        .admin-header-actions {
+            width: auto;
+            flex: 0 0 auto;
+            flex-direction: row;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .admin-header-action-row {
+            flex-wrap: nowrap;
+            gap: 0.5rem;
+        }
+
+        .admin-header-actions .admin-notification-trigger {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.75rem;
+        }
+
+        .admin-header-profile-button {
+            gap: 0;
+            padding: 0.25rem;
+            border-radius: 0.75rem;
+        }
+
+        .admin-header-profile-button > div {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.625rem;
+        }
+
+        .admin-header-profile-button > i {
+            display: none;
+        }
+    }
 </style>
 
 @include('components.adminHeader.scrollBehavior')
@@ -198,7 +272,7 @@
         <div class="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.14),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(110,231,183,0.14),_transparent_32%)]"></div>
         </div>
-        <div class="relative min-w-0">
+        <div class="admin-header-content relative min-w-0">
             <div class="admin-header-meta inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-50">
                 Admin Header
             </div>
@@ -207,7 +281,7 @@
             <p class="admin-header-meta mt-3 inline-flex rounded-full border border-white/10 bg-white/8 px-3 py-1.5 text-xs font-medium text-emerald-50/80">{{ now()->format('l, F j, Y') }}</p>
         </div>
 
-        <div class="relative flex w-full min-w-0 flex-col gap-4 {{ $showHeaderSearch ? 'lg:max-w-[720px]' : 'lg:max-w-[660px]' }} lg:self-end xl:flex-row xl:items-center xl:justify-end">
+        <div class="admin-header-actions relative flex w-full min-w-0 flex-col gap-4 {{ $showHeaderSearch ? 'lg:max-w-[720px]' : 'lg:max-w-[660px]' }} lg:self-end xl:flex-row xl:items-center xl:justify-end">
             @if ($showHeaderSearch)
                 <label class="admin-header-search group relative flex min-w-0 flex-1 items-center rounded-2xl border border-white/10 bg-white px-4 py-3 focus-within:border-emerald-300 focus-within:shadow-sm">
                     <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
@@ -220,7 +294,7 @@
                 </label>
             @endif
 
-            <div class="flex min-w-0 max-w-full flex-wrap items-center justify-end gap-3 xl:flex-nowrap">
+            <div class="admin-header-action-row flex min-w-0 max-w-full flex-wrap items-center justify-end gap-3 xl:flex-nowrap">
                 @if ($showThemeToggle)
                     @include('components.themeToggle')
                 @endif
@@ -279,7 +353,7 @@
                 </div>
 
                 <div class="relative group min-w-0">
-                    <button class="flex max-w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/8 px-3 py-2 shadow-sm transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/15">
+                    <button class="admin-header-profile-button flex max-w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/8 px-3 py-2 shadow-sm transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/15">
                         <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-300 to-cyan-300 text-sm font-bold text-slate-950">
                             {{ $adminInitials !== '' ? $adminInitials : 'AD' }}
                         </div>

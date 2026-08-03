@@ -18,6 +18,31 @@
     .admin-kicker {
       letter-spacing: 0.22em;
     }
+    @media (max-width: 767px) {
+      .admin-home-content {
+        gap: 1rem;
+        padding: 0.75rem;
+        padding-top: 0.75rem;
+      }
+      .admin-command-header {
+        border-radius: 1.25rem;
+        padding: 1rem;
+      }
+      .admin-command-header .admin-kicker {
+        padding: 0.25rem 0.55rem;
+        font-size: 0.6rem;
+      }
+      .admin-command-header .admin-display {
+        font-size: 1.7rem;
+        line-height: 1.18;
+      }
+      .admin-command-header > .relative {
+        gap: 1rem;
+      }
+      .admin-command-header > .relative > div:first-child {
+        gap: 0.75rem;
+      }
+    }
     .dashboard-reveal {
       opacity: 0;
       transform: translateY(18px);
@@ -236,8 +261,8 @@
   <main class="flex-1 ml-16 transition-all duration-300">
     @include('components.adminHeader.dashboardHeader')
 
-    <div class="space-y-6 p-4 pt-20 md:p-8">
-      <section class="dashboard-reveal relative overflow-hidden rounded-[2rem] border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 px-6 py-6 text-white shadow-[0_24px_60px_rgba(15,23,42,0.18)] md:px-8">
+    <div class="admin-home-content space-y-6 p-4 pt-20 md:p-8">
+      <section class="admin-command-header dashboard-reveal relative overflow-hidden rounded-[2rem] border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 px-6 py-6 text-white shadow-[0_24px_60px_rgba(15,23,42,0.18)] md:px-8">
         <div class="absolute -left-10 top-4 h-28 w-28 rounded-full bg-emerald-400/15 blur-3xl"></div>
         <div class="absolute right-10 top-0 h-24 w-24 rounded-full bg-sky-300/15 blur-3xl"></div>
 
