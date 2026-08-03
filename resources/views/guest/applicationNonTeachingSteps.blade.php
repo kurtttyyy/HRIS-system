@@ -94,6 +94,22 @@
         box-shadow: 0 10px 20px rgba(22, 163, 74, 0.2);
     }
 
+    /* A visited step with missing required fields remains numbered for correction. */
+    .step1.incomplete1 .circle1 {
+        background: linear-gradient(135deg, #facc15 0%, #f97316 100%);
+        color: #ffffff;
+        transform: translateY(-1px);
+        box-shadow: 0 10px 20px rgba(234, 88, 12, 0.24);
+    }
+
+    .step1.incomplete1 .label1 {
+        color: #c2410c;
+    }
+
+    .line1.incomplete1 {
+        background: linear-gradient(90deg, #facc15 0%, #f97316 100%);
+    }
+
     .form-step {
         animation: fadeUpIn 0.35s ease both;
     }
@@ -2555,24 +2571,68 @@ document.addEventListener('DOMContentLoaded', () => {
         5: 'Step 5 of 5: Submit',
     };
 
+    function isRequiredFieldComplete(field) {
+        const type = (field.type || '').toLowerCase();
+
+        if (field.disabled || !hasRequiredAsterisk(field)) return true;
+
+        if (type === 'file') {
+            const documentIndex = field.dataset?.documentIndex;
+            return documentIndex
+                ? Boolean(window.hasDocumentDraftForIndex?.(documentIndex))
+                : Boolean(field.files?.length);
+        }
+
+        if (type === 'checkbox' || type === 'radio') return field.checked;
+
+        return field.validity.valid && field.value.trim() !== '';
+    }
+
+    function isStepComplete(stepNumber) {
+        const stepForms = {
+            1: personalForm,
+            2: experienceForm,
+            3: documentsForm,
+        };
+        const stepForm = stepForms[stepNumber];
+
+        if (!stepForm) return false;
+
+        return Array.from(stepForm.querySelectorAll('[required]'))
+            .filter((field) => hasRequiredAsterisk(field))
+            .every(isRequiredFieldComplete);
+    }
+
     function setStep(stepNumber) {
         steps.forEach((step, index) => {
-            step.classList.remove('active', 'completed1');
-            const isCompleted = index + 1 < stepNumber;
-            const isActive = index + 1 === stepNumber;
+            step.classList.remove('active', 'completed1', 'incomplete1');
+            const stepIndex = index + 1;
+            const isEarlierStep = stepIndex < stepNumber;
+            const isCompleted = isEarlierStep && isStepComplete(stepIndex);
+            const isIncomplete = isEarlierStep && !isCompleted;
+            const isActive = stepIndex === stepNumber;
 
             if (isCompleted) step.classList.add('completed1');
+            else if (isIncomplete) step.classList.add('incomplete1');
             else if (isActive) step.classList.add('active');
         });
 
         lines.forEach((line, index) => {
-            line.classList.toggle('completed1', index < stepNumber - 1);
+            const precedingStep = index + 1;
+            const isEarlierStep = precedingStep < stepNumber;
+            const isCompleted = isEarlierStep && isStepComplete(precedingStep);
+            line.classList.toggle('completed1', isCompleted);
+            line.classList.toggle('incomplete1', isEarlierStep && !isCompleted);
         });
 
         const stepper = document.querySelector('.stepper1');
         if (stepper) {
-            const completedConnectors = Math.min(Math.max(stepNumber - 1, 0), Math.max(steps.length - 1, 1));
-            stepper.style.setProperty('--completed-width', `${(completedConnectors / Math.max(steps.length - 1, 1)) * 100}%`);
+            const completedConnectors = Array.from({ length: Math.max(stepNumber - 1, 0) })
+                .findIndex((_, index) => !isStepComplete(index + 1));
+            const completedCount = completedConnectors === -1
+                ? Math.max(stepNumber - 1, 0)
+                : completedConnectors;
+            stepper.style.setProperty('--completed-width', `${(completedCount / Math.max(steps.length - 1, 1)) * 100}%`);
         }
 
         if (stepProgressBar) {
