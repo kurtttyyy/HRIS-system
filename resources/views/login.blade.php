@@ -122,6 +122,22 @@
                 transform: translateX(0) scale(1);
             }
         }
+
+        @media (max-width: 1023px) {
+            .login-showcase-card {
+                display: none !important;
+            }
+
+            .login-auth-shell {
+                align-items: flex-start !important;
+                padding: 1rem !important;
+            }
+
+            .login-form-card {
+                padding: 1.5rem !important;
+                border-radius: 1rem !important;
+            }
+        }
     </style>
 </head>
 <body>

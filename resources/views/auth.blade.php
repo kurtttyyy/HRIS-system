@@ -87,12 +87,12 @@
 
         @media (max-width: 1023px) {
             .auth-stage {
-                align-items: flex-start;
-                padding: 1rem;
+                align-items: flex-start !important;
+                padding: 1rem !important;
             }
 
             .auth-showcase-card {
-                display: none;
+                display: none !important;
             }
 
             .auth-form-card {
