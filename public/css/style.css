@@ -1092,6 +1092,57 @@ header.navbar.loaded {
   }
 }
 
+/* Job-detail drawer: reserve more of a phone screen for the actual job content. */
+@media (max-width: 575.98px) {
+  #jobSidebar {
+    padding: 0;
+  }
+
+  .sidebar-header {
+    padding: 0.85rem 1rem 0.65rem;
+  }
+
+  #jobSidebar .close-btn {
+    top: 0.8rem;
+    right: 0.9rem;
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  #sidebarTitle {
+    max-width: calc(100% - 3.25rem);
+    margin-bottom: 0.15rem;
+    font-size: clamp(1.45rem, 7vw, 1.75rem);
+    line-height: 1.1;
+  }
+
+  #sidebarCollege {
+    margin-bottom: 0.35rem;
+    font-size: 0.95rem;
+  }
+
+  .sidebar-meta-row {
+    gap: 0.3rem;
+    margin: 0.35rem 0;
+  }
+
+  .sidebar-date-row {
+    gap: 0.3rem;
+    margin-top: 0;
+  }
+
+  .job-chip,
+  .job-chip-outline {
+    gap: 0.28rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.72rem;
+  }
+
+  .sidebar-body {
+    padding: 1rem;
+  }
+}
+
 /* --------------------Page loader styles--------------------- */
 .page-loader {
   position: fixed;
