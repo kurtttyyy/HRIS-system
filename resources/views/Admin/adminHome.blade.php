@@ -20,9 +20,8 @@
     }
     @media (max-width: 767px) {
       .admin-home-content {
-        gap: 1rem;
-        padding: 0.75rem;
-        padding-top: 0.75rem;
+        padding: 0.75rem !important;
+        padding-top: 0.75rem !important;
       }
       .admin-command-header {
         border-radius: 1.25rem;

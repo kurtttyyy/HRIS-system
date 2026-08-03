@@ -335,6 +335,31 @@
       max-width: 100% !important;
       opacity: 1 !important;
     }
+
+    .admin-sidebar nav a,
+    .admin-sidebar nav summary {
+      justify-content: flex-start !important;
+      gap: 0.75rem !important;
+    }
+
+    .admin-sidebar nav summary > span {
+      justify-content: flex-start !important;
+      gap: 0.75rem !important;
+    }
+
+    .admin-sidebar nav details > div {
+      margin-left: 1.5rem !important;
+    }
+
+    .admin-sidebar .admin-sidebar-count-badge {
+      display: inline-flex;
+    }
+
+    .admin-sidebar-profile {
+      justify-content: flex-start !important;
+      padding-left: 1.25rem !important;
+      padding-right: 1.25rem !important;
+    }
   }
 
   @media (min-width: 1025px) {
@@ -658,7 +683,7 @@
   </nav>
 
   <!-- Profile -->
-  <div class="relative px-3 group-hover:px-6 py-4 border-t border-slate-800/90 flex items-center gap-3 justify-center group-hover:justify-start">
+  <div class="admin-sidebar-profile relative px-3 group-hover:px-6 py-4 border-t border-slate-800/90 flex items-center gap-3 justify-center group-hover:justify-start">
     <div class="w-9 h-9 min-w-9 min-h-9 max-w-9 max-h-9 shrink-0 rounded-full bg-emerald-500 flex items-center justify-center text-white font-semibold leading-none">{{ $adminInitials }}</div>
     <div class="admin-sidebar-text text-sm inline-block max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300">
       <div class="flex items-center gap-2">
