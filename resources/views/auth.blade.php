@@ -86,6 +86,20 @@
         }
 
         @media (max-width: 1023px) {
+            .auth-stage {
+                align-items: flex-start;
+                padding: 1rem;
+            }
+
+            .auth-showcase-card {
+                display: none;
+            }
+
+            .auth-form-card {
+                padding: 1.5rem !important;
+                border-radius: 1rem !important;
+            }
+
             .auth-stage.is-register .auth-showcase-card,
             .auth-stage.is-register .auth-form-card {
                 transform: none;
