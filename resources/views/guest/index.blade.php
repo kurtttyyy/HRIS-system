@@ -95,7 +95,8 @@
         border: 1px solid #d1d5db;
         border-radius: 0.5rem;
         padding: 0.6rem 0.8rem;
-        cursor: pointer;
+        cursor: grab;
+        touch-action: none;
         background: #fff;
     }
     .rating-option:hover {

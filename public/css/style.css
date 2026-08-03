@@ -1050,7 +1050,15 @@ header.navbar.loaded {
   .navbar-custom .navbar-toggler {
     flex: 0 0 auto;
     border-color: rgba(255, 255, 255, 0.55);
-    padding: 0.38rem 0.5rem;
+    width: 2.2rem;
+    height: 2.2rem;
+    padding: 0.3rem;
+  }
+
+  .navbar-custom .navbar-toggler-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    background-size: 100%;
   }
 
   .navbar-custom .navbar-toggler:focus {

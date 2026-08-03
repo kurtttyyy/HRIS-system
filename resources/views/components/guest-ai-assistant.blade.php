@@ -23,7 +23,8 @@
         background: radial-gradient(circle at 26% 22%, #ffffff 0%, #f8fafc 42%, #e5e7eb 100%);
         box-shadow: 0 18px 32px rgba(15, 23, 42, 0.28), inset 0 2px 5px rgba(255, 255, 255, 0.85), inset 0 -8px 14px rgba(148, 163, 184, 0.22), 0 0 0 4px rgba(255, 255, 255, 0.88);
         color: #0f172a;
-        cursor: pointer;
+        cursor: grab;
+        touch-action: none;
         animation: nc-chatbot-float 2.8s ease-in-out infinite;
         overflow: hidden;
         transform-style: preserve-3d;
