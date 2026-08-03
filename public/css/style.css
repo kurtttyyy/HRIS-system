@@ -916,6 +916,16 @@ header.navbar.loaded {
     color: #fff;
 }
 
+.step1.completed1 .circle1 {
+    font-size: 0;
+}
+
+.step1.completed1 .circle1::after {
+    content: '✓';
+    font-size: 0.95rem;
+    font-weight: 800;
+}
+
 .step1.active .label1,
 .step1.completed1 .label1 {
     color: #16a34a;

@@ -369,11 +369,11 @@
         52%, 56% { transform: scaleY(1); opacity: 1; }
     }
 
-    @media (max-width: 767.98px) {
-        .nc-chatbot { right: 2.7rem; bottom: 1.8rem; width: 5.1rem; }
-        .nc-chatbot-launcher { width: 5.2rem; height: 5.2rem; }
-        .nc-chatbot-launcher-label { top: 5.6rem; font-size: 0.6rem; }
-        .nc-chatbot-help-hint { top: -2.7rem; font-size: 0.67rem; }
+    @media (max-width: 991.98px) {
+        .nc-chatbot { right: 1.1rem; bottom: 1.1rem; width: 5.1rem; }
+        .nc-chatbot-launcher { width: 5.2rem; height: 5.2rem; scale: 0.72; transform-origin: bottom right; }
+        .nc-chatbot-launcher-label { display: none; }
+        .nc-chatbot-help-hint { display: none; }
         .nc-chatbot-panel { right: -0.2rem; width: min(23rem, calc(100vw - 1rem)); bottom: 4.8rem; }
     }
 </style>

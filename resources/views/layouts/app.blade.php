@@ -32,7 +32,9 @@
             const launcher = document.getElementById('ncChatLauncher');
             if (!chatbot || !launcher) return;
 
-            const storageKey = 'nc-chatbot-position';
+            const storageKey = window.matchMedia('(max-width: 991.98px)').matches
+                ? 'nc-chatbot-position-mobile'
+                : 'nc-chatbot-position-desktop';
             let dragStart = null;
             let dragged = false;
             let ignoreNextClick = false;

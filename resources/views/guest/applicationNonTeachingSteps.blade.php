@@ -491,6 +491,7 @@
             display: flex;
             align-items: flex-start;
             position: relative;
+            --completed-width: 0%;
             width: 100%;
             margin: 0.9rem 0 1.35rem;
         }
@@ -502,7 +503,13 @@
             right: 10%;
             left: 10%;
             height: 2px;
-            background: #d9dee5;
+            background: linear-gradient(
+                90deg,
+                #16a34a 0,
+                #16a34a var(--completed-width),
+                #d9dee5 var(--completed-width),
+                #d9dee5 100%
+            );
         }
 
         .stepper1 .step1 {
@@ -2551,13 +2558,22 @@ document.addEventListener('DOMContentLoaded', () => {
     function setStep(stepNumber) {
         steps.forEach((step, index) => {
             step.classList.remove('active', 'completed1');
-            if (index + 1 < stepNumber) step.classList.add('completed1');
-            else if (index + 1 === stepNumber) step.classList.add('active');
+            const isCompleted = index + 1 < stepNumber;
+            const isActive = index + 1 === stepNumber;
+
+            if (isCompleted) step.classList.add('completed1');
+            else if (isActive) step.classList.add('active');
         });
 
         lines.forEach((line, index) => {
             line.classList.toggle('completed1', index < stepNumber - 1);
         });
+
+        const stepper = document.querySelector('.stepper1');
+        if (stepper) {
+            const completedConnectors = Math.min(Math.max(stepNumber - 1, 0), Math.max(steps.length - 1, 1));
+            stepper.style.setProperty('--completed-width', `${(completedConnectors / Math.max(steps.length - 1, 1)) * 100}%`);
+        }
 
         if (stepProgressBar) {
             const maxStep = Math.max(1, steps.length);

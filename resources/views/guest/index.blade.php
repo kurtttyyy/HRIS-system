@@ -1505,7 +1505,7 @@
         }
     }
 
-    @media (max-width: 767.98px) {
+    @media (max-width: 991.98px) {
         .careers-page {
             overflow-x: hidden;
         }
@@ -1644,36 +1644,24 @@
         }
 
         .nc-chatbot {
-            right: 2.7rem;
-            bottom: 1.8rem;
+            right: 1.1rem;
+            bottom: 1.1rem;
             width: 5.1rem;
         }
 
         .nc-chatbot-launcher {
             width: 5.2rem;
             height: 5.2rem;
+            scale: 0.72;
+            transform-origin: bottom right;
         }
 
         .nc-chatbot-launcher-label {
-            display: block;
-            top: 5.6rem;
-            left: 50%;
-            right: auto;
-            transform: translateX(-50%);
-            font-size: 0.6rem;
+            display: none;
         }
 
         .nc-chatbot-help-hint {
-            top: -2.7rem;
-            left: 50%;
-            right: auto;
-            transform: translate(-50%, 6px);
-            font-size: 0.67rem;
-            padding: 0.42rem 0.55rem;
-        }
-
-        .nc-chatbot-help-hint.is-visible {
-            transform: translate(-50%, 0);
+            display: none;
         }
 
         .nc-chatbot-panel {
