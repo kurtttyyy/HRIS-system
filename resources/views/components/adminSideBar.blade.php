@@ -316,6 +316,17 @@
   }
 
   @media (max-width: 1024px) {
+    [data-admin-sidebar-toggle] {
+      transition: opacity 160ms ease, visibility 160ms ease, transform 160ms ease;
+    }
+
+    [data-admin-sidebar-toggle][aria-expanded="true"] {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: scale(0.9);
+    }
+
     .admin-sidebar {
       width: 18rem !important;
       transform: translateX(-100%);
