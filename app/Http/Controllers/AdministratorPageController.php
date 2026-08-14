@@ -2821,29 +2821,62 @@ class AdministratorPageController extends Controller
         return view('Admin.adminActivityLogs', compact('activityLogs', 'search', 'role', 'date', 'event'));
     }
 
-    public function display_school_administrator(){
-        $administrators = User::with([
+    private function matrixEmployeeRelations(array $positionColumns): array
+    {
+        $relations = [
             'employee',
             'education',
             'government',
             'license',
             'salary',
-            'applicant.position:id,title,department,employment,benifits',
+            'applicant.position:'.implode(',', $positionColumns),
             'applicant.documents:id,applicant_id,filename,filepath,mime_type,type',
-            'applicant.degrees:id,applicant_id,degree_level,degree_name,school_name,year_finished,sort_order',
-        ])
+        ];
+
+        if (Schema::hasTable('applicant_degrees')) {
+            $relations[] = 'applicant.degrees';
+        }
+
+        return $relations;
+    }
+
+    private function ensureMatrixDegreeRelationsAreLoaded($employees): void
+    {
+        if (Schema::hasTable('applicant_degrees')) {
+            return;
+        }
+
+        foreach ($employees as $employee) {
+            if ($employee->applicant) {
+                $employee->applicant->setRelation('degrees', collect());
+            }
+        }
+    }
+
+    public function display_school_administrator(){
+        $administrators = User::with($this->matrixEmployeeRelations([
+            'id', 'title', 'department', 'employment', 'benifits',
+        ]))
             ->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee'])
             ->where(function ($query) {
-                $leadershipPattern = 'president|vice[ -]?president|vice dean|dean|department head|program head';
-                $query
-                    ->whereRaw("LOWER(TRIM(COALESCE(department_head, ''))) = ?", ['approved'])
-                    ->orWhereRaw("LOWER(TRIM(COALESCE(job_role, ''))) REGEXP ?", [$leadershipPattern])
-                    ->orWhereRaw("LOWER(TRIM(COALESCE(position, ''))) REGEXP ?", [$leadershipPattern])
-                    ->orWhereHas('employee', function ($employeeQuery) use ($leadershipPattern) {
-                        $employeeQuery->whereRaw(
-                            "LOWER(TRIM(COALESCE(position, ''))) REGEXP ?",
-                            [$leadershipPattern]
-                        );
+                $leadershipTerms = ['president', 'vice president', 'vice-president', 'vice dean', 'dean', 'department head', 'program head'];
+                $query->whereRaw("LOWER(TRIM(COALESCE(department_head, ''))) = ?", ['approved'])
+                    ->orWhere(function ($roleQuery) use ($leadershipTerms) {
+                        foreach ($leadershipTerms as $term) {
+                            $roleQuery->orWhereRaw("LOWER(TRIM(COALESCE(job_role, ''))) LIKE ?", ['%'.$term.'%']);
+                        }
+                    })
+                    ->orWhere(function ($positionQuery) use ($leadershipTerms) {
+                        foreach ($leadershipTerms as $term) {
+                            $positionQuery->orWhereRaw("LOWER(TRIM(COALESCE(position, ''))) LIKE ?", ['%'.$term.'%']);
+                        }
+                    })
+                    ->orWhereHas('employee', function ($employeeQuery) use ($leadershipTerms) {
+                        $employeeQuery->where(function ($employeePositionQuery) use ($leadershipTerms) {
+                            foreach ($leadershipTerms as $term) {
+                                $employeePositionQuery->orWhereRaw("LOWER(TRIM(COALESCE(position, ''))) LIKE ?", ['%'.$term.'%']);
+                            }
+                        });
                     });
             })
             ->orderByRaw("
@@ -2861,21 +2894,16 @@ class AdministratorPageController extends Controller
             ->orderBy('first_name')
             ->get();
 
+        $this->ensureMatrixDegreeRelationsAreLoaded($administrators);
+
         return view('Admin.Matrix.adminSchoolAdministrator', compact('administrators'));
     }
 
     public function display_non_teaching_matrix()
     {
-        $nonTeachingEmployees = User::with([
-            'employee',
-            'education',
-            'government',
-            'license',
-            'salary',
-            'applicant.position:id,title,department,employment,benifits,job_type,skills',
-            'applicant.documents:id,applicant_id,filename,filepath,mime_type,type',
-            'applicant.degrees:id,applicant_id,degree_level,degree_name,school_name,year_finished,sort_order',
-        ])
+        $nonTeachingEmployees = User::with($this->matrixEmployeeRelations([
+            'id', 'title', 'department', 'employment', 'benifits', 'job_type', 'skills',
+        ]))
             ->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee'])
             ->whereRaw("NOT (TRIM(COALESCE(job_role, '')) <> '' AND TRIM(COALESCE(department_head, '')) <> '')")
             ->where(function ($query) {
@@ -2891,21 +2919,16 @@ class AdministratorPageController extends Controller
             ->orderBy('first_name')
             ->get();
 
+        $this->ensureMatrixDegreeRelationsAreLoaded($nonTeachingEmployees);
+
         return view('Admin.Matrix.adminNon-TeachingMatrix', compact('nonTeachingEmployees'));
     }
 
     public function display_teaching_matrix()
     {
-        $teachingEmployees = User::with([
-            'employee',
-            'education',
-            'government',
-            'license',
-            'salary',
-            'applicant.position:id,title,department,employment,benifits,job_type,skills,responsibilities,requirements',
-            'applicant.documents:id,applicant_id,filename,filepath,mime_type,type',
-            'applicant.degrees:id,applicant_id,degree_level,degree_name,school_name,year_finished,sort_order',
-        ])
+        $teachingEmployees = User::with($this->matrixEmployeeRelations([
+            'id', 'title', 'department', 'employment', 'benifits', 'job_type', 'skills', 'responsibilities', 'requirements',
+        ]))
             ->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee'])
             ->where(function ($query) {
                 $query
@@ -2920,6 +2943,8 @@ class AdministratorPageController extends Controller
             ->orderBy('first_name')
             ->get();
 
+        $this->ensureMatrixDegreeRelationsAreLoaded($teachingEmployees);
+
         $this->attachSubjectLoadsToEmployees($teachingEmployees);
 
         return view('Admin.Matrix.adminTeachingMatrix', compact('teachingEmployees'));
@@ -2928,6 +2953,14 @@ class AdministratorPageController extends Controller
     private function attachSubjectLoadsToEmployees($employees): void
     {
         if (!$employees || $employees->isEmpty()) {
+            return;
+        }
+
+        $loadsTable = (new LoadsRecord())->getTable();
+        if (!Schema::hasTable($loadsTable)) {
+            foreach ($employees as $employee) {
+                $employee->setAttribute('subject_loads', []);
+            }
             return;
         }
 

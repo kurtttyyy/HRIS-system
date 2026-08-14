@@ -3,15 +3,16 @@
 <style>
     @media (max-width: 767px) {
         .employee-directory-header {
-            padding: 0.75rem;
+            padding: 4.5rem 0.75rem 0.75rem;
         }
 
         .employee-directory-header-card {
             border-radius: 1.25rem;
+            box-shadow: 0 14px 32px rgba(3, 19, 29, 0.2);
         }
 
         .employee-directory-header-layout {
-            gap: 1rem;
+            gap: 0.875rem;
             padding: 1rem;
         }
 
@@ -24,53 +25,99 @@
         }
 
         .employee-directory-title {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             line-height: 1.2;
         }
 
         .employee-directory-subtitle {
-            margin-top: 0.5rem;
-            line-height: 1.35;
+            margin-top: 0.35rem;
+            font-size: 0.78rem;
+            line-height: 1.45;
         }
 
         .employee-directory-quick-actions {
-            margin-top: 0.75rem;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            margin-top: 0.8rem;
             gap: 0.5rem;
         }
 
         .employee-directory-quick-actions > * {
-            padding: 0.35rem 0.6rem;
+            display: inline-flex;
+            min-height: 2.25rem;
+            align-items: center;
+            justify-content: center;
+            padding: 0.4rem 0.45rem;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .employee-directory-date {
+            display: none !important;
         }
 
         .employee-directory-filters {
-            border-radius: 1rem;
-            padding: 0.75rem;
+            border-radius: 0.9rem;
+            padding: 0.65rem;
+            background: rgba(255, 255, 255, 0.07);
         }
 
         .employee-directory-filter-grid {
-            gap: 0.75rem;
-        }
-
-        .employee-directory-filter-field {
-            border-radius: 0.85rem;
-            padding: 0.75rem;
-        }
-
-        .employee-directory-filter-actions {
-            margin-top: 0.75rem;
-            gap: 0.75rem;
-        }
-
-        .employee-directory-statuses,
-        .employee-directory-export-actions {
             gap: 0.5rem;
         }
 
-        .employee-directory-statuses button,
+        .employee-directory-filter-field {
+            min-height: 2.7rem;
+            border-radius: 0.7rem;
+            padding: 0.65rem 0.75rem;
+        }
+
+        .employee-directory-filter-actions {
+            margin-top: 0.6rem;
+            gap: 0.6rem;
+        }
+
+        .employee-directory-statuses {
+            flex-wrap: nowrap !important;
+            gap: 0.4rem;
+            overflow-x: auto;
+            padding-bottom: 0.15rem;
+            scrollbar-width: none;
+        }
+
+        .employee-directory-statuses::-webkit-scrollbar {
+            display: none;
+        }
+
+        .employee-directory-export-actions {
+            display: grid !important;
+            grid-template-columns: 0.8fr 1.2fr;
+            gap: 0.45rem;
+        }
+
+        .employee-directory-statuses button {
+            flex: 0 0 auto;
+            min-height: 2.1rem;
+            padding: 0.35rem 0.7rem;
+            font-size: 0.75rem;
+        }
+
         .employee-directory-export-actions > button,
         .employee-directory-export-actions > div > button {
-            min-height: 2.35rem;
-            padding: 0.45rem 0.75rem;
+            width: 100%;
+            min-height: 2.25rem;
+            padding: 0.4rem 0.65rem;
+            font-size: 0.75rem;
+        }
+
+        .employee-directory-export-actions > div {
+            width: 100%;
+        }
+
+        .employee-directory-export-actions > div > div {
+            left: 0;
+            right: auto;
+            width: min(18rem, calc(100vw - 3rem));
         }
     }
 </style>
@@ -96,13 +143,14 @@
                         Search profiles, narrow by department, and monitor employee status from one polished workspace.
                     </p>
                     <div class="employee-directory-quick-actions mt-3 flex flex-wrap items-center gap-3 text-xs font-medium text-emerald-50/80">
-                        <span class="rounded-full border border-white/10 bg-white/8 px-3 py-1.5">{{ now()->format('l, F j, Y') }}</span>
+                        <span class="employee-directory-date rounded-full border border-white/10 bg-white/8 px-3 py-1.5">{{ now()->format('l, F j, Y') }}</span>
                         <button
                             type="button"
                             @click="showDepartmentSummary = true; $nextTick(() => document.getElementById('department-staffing-summary')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))"
                             class="rounded-full border border-white/10 bg-white/8 px-3 py-1.5 transition hover:border-emerald-300/40 hover:bg-white/15"
                         >
-                            Total Record
+                            <i class="fa-solid fa-chart-simple text-[10px]"></i>
+                            Summary
                         </button>
                         <button
                             type="button"

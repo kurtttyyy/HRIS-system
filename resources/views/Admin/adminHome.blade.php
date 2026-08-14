@@ -41,6 +41,47 @@
       .admin-command-header > .relative > div:first-child {
         gap: 0.75rem;
       }
+      .quick-actions-section {
+        border-radius: 1.25rem !important;
+        padding: 1rem !important;
+      }
+      .quick-actions-section > div:first-child {
+        gap: 0.35rem;
+      }
+      .quick-actions-section h2 {
+        margin-top: 0.35rem !important;
+        font-size: 1.25rem !important;
+        line-height: 1.3 !important;
+      }
+      .quick-actions-section > div:first-child > p {
+        font-size: 0.75rem !important;
+      }
+      .quick-actions-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.75rem !important;
+        margin-top: 1rem !important;
+      }
+      .quick-action-card {
+        min-height: 8.75rem;
+        border-radius: 1rem !important;
+        padding: 0.875rem !important;
+      }
+      .quick-action-card > div:first-child {
+        width: 2.5rem !important;
+        height: 2.5rem !important;
+        border-radius: 0.75rem !important;
+      }
+      .quick-action-card > div:first-child i {
+        font-size: 1rem !important;
+      }
+      .quick-action-card h3 {
+        margin-top: 0.8rem !important;
+        font-size: 0.875rem !important;
+        line-height: 1.25 !important;
+      }
+      .quick-action-card p {
+        display: none;
+      }
     }
     .dashboard-reveal {
       opacity: 0;
@@ -320,16 +361,16 @@
         </div>
       </section>
 
-      <section class="dashboard-reveal rounded-[2rem] border border-slate-200 bg-white/85 p-6 shadow-sm backdrop-blur-sm" style="--dashboard-delay: 120ms;">
+      <section class="quick-actions-section dashboard-reveal rounded-[2rem] border border-slate-200 bg-white/85 p-6 shadow-sm backdrop-blur-sm" style="--dashboard-delay: 120ms;">
         <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div><p class="admin-kicker text-xs font-semibold uppercase text-sky-700">Quick Actions</p><h2 class="admin-display mt-2 text-2xl text-slate-900">Jump into the next admin task.</h2></div>
           <p class="text-sm text-slate-500">Shortcuts for the tools you use most often.</p>
         </div>
-        <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
-          <a href="{{ route('admin.adminEmployee') }}" class="dashboard-card-motion dashboard-reveal group rounded-[1.5rem] border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-5" style="--dashboard-delay: 150ms;"><div class="dashboard-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/25" style="--dashboard-delay: 170ms;"><i class="fa-solid fa-user-plus text-2xl"></i></div><h3 class="admin-display mt-5 text-lg text-slate-900">Manage Employees</h3><p class="mt-2 text-sm leading-6 text-slate-500">Review employee records and keep profiles organized.</p></a>
-          <a href="{{ route('admin.adminApplicant') }}" class="dashboard-card-motion dashboard-reveal group rounded-[1.5rem] border border-sky-100 bg-gradient-to-br from-sky-50 to-white p-5" style="--dashboard-delay: 190ms;"><div class="dashboard-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-500 text-white shadow-lg shadow-sky-500/25" style="--dashboard-delay: 210ms;"><i class="fa-solid fa-id-card-clip text-2xl"></i></div><h3 class="admin-display mt-5 text-lg text-slate-900">Review Applicants</h3><p class="mt-2 text-sm leading-6 text-slate-500">Track incoming applications and move qualified candidates through the pipeline.</p></a>
-          <a href="{{ route('admin.adminPosition') }}" class="dashboard-card-motion dashboard-reveal group rounded-[1.5rem] border border-violet-100 bg-gradient-to-br from-violet-50 to-white p-5" style="--dashboard-delay: 270ms;"><div class="dashboard-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-500 text-white shadow-lg shadow-violet-500/25" style="--dashboard-delay: 290ms;"><i class="fa-solid fa-briefcase text-2xl"></i></div><h3 class="admin-display mt-5 text-lg text-slate-900">Open Positions</h3><p class="mt-2 text-sm leading-6 text-slate-500">Maintain job openings and see how many applicants are attached to each role.</p></a>
-          <a href="{{ route('admin.adminPayslip') }}" class="dashboard-card-motion dashboard-reveal group rounded-[1.5rem] border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-5" style="--dashboard-delay: 310ms;"><div class="dashboard-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-lg shadow-amber-500/25" style="--dashboard-delay: 330ms;"><i class="fa-solid fa-money-check-dollar text-2xl"></i></div><h3 class="admin-display mt-5 text-lg text-slate-900">Manage Payslips</h3><p class="mt-2 text-sm leading-6 text-slate-500">Upload, process, and review employee payslip records.</p></a>
+        <div class="quick-actions-grid mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+          <a href="{{ route('admin.adminEmployee') }}" class="quick-action-card dashboard-card-motion dashboard-reveal group rounded-[1.5rem] border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-5" style="--dashboard-delay: 150ms;"><div class="dashboard-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/25" style="--dashboard-delay: 170ms;"><i class="fa-solid fa-user-plus text-2xl"></i></div><h3 class="admin-display mt-5 text-lg text-slate-900">Manage Employees</h3><p class="mt-2 text-sm leading-6 text-slate-500">Review employee records and keep profiles organized.</p></a>
+          <a href="{{ route('admin.adminApplicant') }}" class="quick-action-card dashboard-card-motion dashboard-reveal group rounded-[1.5rem] border border-sky-100 bg-gradient-to-br from-sky-50 to-white p-5" style="--dashboard-delay: 190ms;"><div class="dashboard-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-500 text-white shadow-lg shadow-sky-500/25" style="--dashboard-delay: 210ms;"><i class="fa-solid fa-id-card-clip text-2xl"></i></div><h3 class="admin-display mt-5 text-lg text-slate-900">Review Applicants</h3><p class="mt-2 text-sm leading-6 text-slate-500">Track incoming applications and move qualified candidates through the pipeline.</p></a>
+          <a href="{{ route('admin.adminPosition') }}" class="quick-action-card dashboard-card-motion dashboard-reveal group rounded-[1.5rem] border border-violet-100 bg-gradient-to-br from-violet-50 to-white p-5" style="--dashboard-delay: 270ms;"><div class="dashboard-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-500 text-white shadow-lg shadow-violet-500/25" style="--dashboard-delay: 290ms;"><i class="fa-solid fa-briefcase text-2xl"></i></div><h3 class="admin-display mt-5 text-lg text-slate-900">Open Positions</h3><p class="mt-2 text-sm leading-6 text-slate-500">Maintain job openings and see how many applicants are attached to each role.</p></a>
+          <a href="{{ route('admin.adminPayslip') }}" class="quick-action-card dashboard-card-motion dashboard-reveal group rounded-[1.5rem] border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-5" style="--dashboard-delay: 310ms;"><div class="dashboard-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-lg shadow-amber-500/25" style="--dashboard-delay: 330ms;"><i class="fa-solid fa-money-check-dollar text-2xl"></i></div><h3 class="admin-display mt-5 text-lg text-slate-900">Manage Payslips</h3><p class="mt-2 text-sm leading-6 text-slate-500">Upload, process, and review employee payslip records.</p></a>
         </div>
       </section>
 

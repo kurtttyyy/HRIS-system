@@ -134,6 +134,116 @@
         transition: none;
       }
     }
+    @media (max-width: 767px) {
+      #admin-employee-page {
+        padding: 0.75rem !important;
+        padding-top: 0.25rem !important;
+        row-gap: 1rem;
+      }
+      .employee-status-legend-bar {
+        margin: 0;
+        padding: 0.65rem 0.75rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.9rem;
+        background: rgba(255, 255, 255, 0.88);
+      }
+      .employee-status-legend-bar > div {
+        display: grid;
+        width: 100%;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.5rem;
+        font-size: 0.68rem;
+        line-height: 1.25;
+      }
+      .employee-status-legend-bar > div > div {
+        align-items: flex-start;
+        gap: 0.35rem;
+      }
+      .employee-status-legend-bar span {
+        width: 0.5rem !important;
+        height: 0.5rem !important;
+        margin-top: 0.15rem;
+        flex: 0 0 auto;
+      }
+      .employee-card-grid {
+        gap: 0.75rem !important;
+      }
+      .employee-directory-card {
+        min-height: 0 !important;
+        border: 1px solid #e2e8f0;
+        border-radius: 1rem !important;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.07) !important;
+      }
+      .employee-card-cover {
+        height: 3.5rem !important;
+      }
+      .employee-card-avatar {
+        width: 3.25rem !important;
+        height: 3.25rem !important;
+        margin-top: 3.5rem !important;
+        border-width: 3px !important;
+        font-size: 0.85rem !important;
+      }
+      .employee-card-content {
+        margin-top: 0 !important;
+        padding: 2rem 0.9rem 0.8rem !important;
+      }
+      .employee-card-content > div:first-child {
+        min-height: 0 !important;
+      }
+      .employee-card-name {
+        font-size: 0.95rem !important;
+        line-height: 1.25rem !important;
+        -webkit-line-clamp: 1;
+      }
+      .employee-card-role-wrap {
+        min-height: 0 !important;
+        margin-top: 0.15rem;
+      }
+      .employee-card-role {
+        font-size: 0.75rem !important;
+      }
+      .employee-card-meta {
+        display: grid;
+        grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+        gap: 0.3rem 0.75rem !important;
+        margin-top: 0.75rem !important;
+        font-size: 0.72rem !important;
+      }
+      .employee-card-meta > div {
+        min-width: 0;
+        margin-top: 0 !important;
+      }
+      .employee-card-meta > div:nth-child(2) {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .employee-card-meta > div:last-child {
+        grid-column: 1 / -1;
+      }
+      .employee-card-footer-divider {
+        margin-top: 0.7rem !important;
+        margin-bottom: 0.6rem !important;
+      }
+      .employee-card-footer button {
+        font-size: 0.75rem !important;
+      }
+      .employee-card-footer span {
+        padding: 0.25rem 0.5rem !important;
+        font-size: 0.68rem !important;
+      }
+      .employee-missing-badge {
+        top: 0.65rem;
+        right: 0.65rem;
+      }
+      .employee-missing-icon {
+        width: 1rem;
+        height: 1rem;
+        font-size: 0.65rem;
+        animation: none;
+      }
+    }
   </style>
 </head>
 
@@ -2998,8 +3108,8 @@
                     <span class="employee-missing-icon">!</span>
                 </div>
             @endif
-            <div class="h-24 flex justify-center items-center" style="background-image: linear-gradient(to right, {{ $headerStart }}, {{ $headerEnd }});">
-                <div class="w-16 h-16 rounded-full text-white flex items-center justify-center text-lg font-bold border-4 border-white mt-24 overflow-hidden" style="background-color: {{ $avatarColor }};">
+            <div class="employee-card-cover h-24 flex justify-center items-center" style="background-image: linear-gradient(to right, {{ $headerStart }}, {{ $headerEnd }});">
+                <div class="employee-card-avatar w-16 h-16 rounded-full text-white flex items-center justify-center text-lg font-bold border-4 border-white mt-24 overflow-hidden" style="background-color: {{ $avatarColor }};">
                     @if($profilePhotoUrl)
                         <img
                           src="{{ $profilePhotoUrl }}"
@@ -3013,15 +3123,15 @@
                 </div>
             </div>
 
-            <div class="mt-7 flex flex-1 flex-col p-4">
+            <div class="employee-card-content mt-7 flex flex-1 flex-col p-4">
                 <div class="flex min-h-[3.5rem] items-center justify-center">
                   <h3 class="employee-card-name text-center text-lg font-bold leading-6 text-gray-800" title="{{ $employeeCardName }}">{{ $employeeCardName }}</h3>
                 </div>
-                <div class="flex min-h-[1.5rem] items-center justify-center">
+                <div class="employee-card-role-wrap flex min-h-[1.5rem] items-center justify-center">
                   <p class="employee-card-role max-w-full text-center text-sm text-gray-500" title="{{ $employeeCardRole }}">{{ $employeeCardRole }}</p>
                 </div>
 
-                <div class="mt-4 space-y-1 text-gray-500 text-sm">
+                <div class="employee-card-meta mt-4 space-y-1 text-gray-500 text-sm">
                     <div class="flex items-center gap-2">
                         <i class="fa-regular fa-id-badge"></i>
                         {{ $displayEmployeeId($emp, '') }}
@@ -3036,9 +3146,9 @@
                     </div>
                 </div>
 
-                <hr class="mb-3 mt-auto">
+                <hr class="employee-card-footer-divider mb-3 mt-auto">
 
-                <div class="flex justify-between items-center">
+                <div class="employee-card-footer flex justify-between items-center">
                     <div class="flex items-center -space-x-">
                         @php
                           $accountStatus = $resolveDisplayAccountStatus($emp);
