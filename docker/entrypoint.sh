@@ -158,6 +158,10 @@ if [ -z "${APP_KEY:-}" ]; then
     export APP_KEY="$(php artisan key:generate --show)"
 fi
 
+# Never carry compiled Blade output across deployments. This also guarantees
+# templates are recompiled after PHP/Blade syntax fixes.
+php artisan view:clear
+
 php artisan migrate --force
 if [ "${RUN_DATABASE_SEEDER:-false}" = "true" ]; then
     php artisan db:seed --force
