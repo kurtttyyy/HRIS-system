@@ -112,6 +112,8 @@ Route::controller(AdministratorPageController::class)->group(function () {
     Route::get('system/notifications', 'display_notifications')->name('admin.adminNotifications');
     Route::get('system/notifications/summary', 'notification_summary')->name('admin.adminNotifications.summary');
     Route::get('system/communication', 'display_communication')->name('admin.adminCommunication');
+    Route::get('system/communication/people', 'display_communication')->name('admin.communicationPeople');
+    Route::get('system/communication/notifications', 'display_communication')->name('admin.communicationNotifications');
     Route::get('system/communication/unread-count', 'communication_unread_count')->name('admin.communicationUnreadCount');
     Route::get('system/employee', 'display_employee')->name('admin.adminEmployee');
     Route::get('system/sidebar/summary', 'sidebar_summary')->name('admin.sidebarSummary');

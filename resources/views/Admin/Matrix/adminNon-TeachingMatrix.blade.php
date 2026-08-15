@@ -412,6 +412,39 @@
       }
     }
 
+    @media (max-width: 767px) {
+      .matrix-main-content { margin-left: 0 !important; width: 100% !important; max-width: 100% !important; }
+      .matrix-content-section { padding-left: .75rem !important; padding-right: .75rem !important; }
+      .matrix-content-section:first-of-type { padding: .75rem .75rem .65rem 4.75rem !important; }
+      .matrix-content-section:first-of-type .matrix-card-motion { border-radius: 1rem !important; padding: .9rem !important; box-shadow: 0 8px 24px rgba(15,23,42,.06) !important; }
+      .matrix-content-section:first-of-type h1 { margin-top: .2rem !important; font-size: 1.1rem !important; line-height: 1.25 !important; }
+      .matrix-content-section:first-of-type h1 + p { margin-top: .3rem !important; font-size: .7rem !important; line-height: 1.4 !important; }
+      .matrix-content-section:first-of-type p:first-child { font-size: .58rem !important; letter-spacing: .14em !important; }
+      .matrix-export-actions { display: grid !important; width: 100%; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .4rem !important; }
+      .matrix-export-actions button { justify-content: center; padding: .5rem .35rem !important; font-size: .68rem !important; }
+      .matrix-print-section { padding-bottom: 1rem !important; }
+      .matrix-print-wrapper { overflow: visible !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; }
+      .matrix-print-wrapper::before { content: "Tap a name to view the complete personnel profile"; display: block; margin-bottom: .55rem; color: #64748b; font-size: .65rem; text-align: center; }
+      .matrix-print-wrapper table,.matrix-print-wrapper tbody { display: block; width: 100% !important; min-width: 0 !important; }
+      .matrix-print-wrapper thead { display: none !important; }
+      .matrix-print-wrapper tbody { display: grid; gap: .65rem; }
+      .matrix-print-wrapper tbody tr { display: block; overflow: hidden; border: 1px solid #e2e8f0; border-radius: .9rem; background: #fff !important; box-shadow: 0 6px 18px rgba(15,23,42,.045); }
+      .matrix-print-wrapper tbody td { display: grid; grid-template-columns: 6.5rem minmax(0,1fr); gap: .65rem; width: 100% !important; min-width: 0 !important; border: 0 !important; border-bottom: 1px solid #f1f5f9 !important; padding: .65rem .75rem !important; font-size: .7rem !important; line-height: 1.4 !important; overflow-wrap: anywhere; }
+      .matrix-print-wrapper tbody td::before { color: #64748b; font-size: .58rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+      .matrix-print-wrapper tbody td:first-child { display: block; padding: .8rem .75rem .65rem !important; background: #f8fafc; }
+      .matrix-print-wrapper tbody td:first-child::before { display: none; }
+      .matrix-print-wrapper tbody td:nth-child(n+4) { display: none !important; }
+      .matrix-name-button { font-size: .85rem !important; color: #0f172a !important; }
+      #non-teaching-matrix td:nth-child(2)::before { content: "Education"; }\n      #non-teaching-matrix td:nth-child(3)::before { content: "Specialization"; }
+      .matrix-employee-modal { padding: .5rem !important; }
+      .matrix-employee-card { max-height: 96dvh; border-radius: .9rem; }
+      .matrix-employee-card-header { padding: .8rem 1rem; }
+      .matrix-employee-card-title { font-size: 1.05rem; }
+      .matrix-employee-card-body { padding: .85rem; }
+      .matrix-employee-avatar { width: 7rem; }
+    }
+
+
     @media print {
       @page {
         size: 13in 8.5in;

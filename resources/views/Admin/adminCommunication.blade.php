@@ -34,19 +34,20 @@
         @media (max-width:1279px){
             #admin-chat-panel{position:fixed;inset:1rem;z-index:80;height:calc(100vh - 2rem)!important;min-height:0!important}
         }
-        .communication-mobile-header,.communication-mobile-people,.communication-mobile-nav{display:none}
+        .communication-mobile-header,.communication-mobile-people,.communication-mobile-nav,.communication-mobile-empty,.communication-mobile-notifications{display:none}
         @media (max-width:767px){
             body{background:#050505!important;color:#f8fafc}
             .admin-header-shell,[data-admin-sidebar-toggle]{display:none!important}
             #admin-communication-app>main{width:100%!important;margin-left:0!important}
             #admin-communication-page{padding:0 0 5rem!important;row-gap:0!important;background:#050505}
-            .communication-mobile-header{display:block;padding:1rem 1rem .65rem}
+            #admin-communication-page.space-y-8>:not([hidden])~:not([hidden]){margin-top:0!important}
+            .communication-mobile-header{display:block;padding:.85rem 1rem .55rem}
             .communication-mobile-title-row{display:flex;align-items:center;justify-content:space-between;gap:1rem}
-            .communication-mobile-title{font-size:1.75rem;font-weight:800;letter-spacing:-.04em;color:#fff}
+            .communication-mobile-title{font-size:1.55rem;font-weight:800;letter-spacing:-.04em;color:#fff}
             .communication-mobile-compose{display:inline-flex;height:2.5rem;width:2.5rem;align-items:center;justify-content:center;border-radius:999px;background:#242424;color:#f8fafc}
-            .communication-mobile-search{position:relative;margin-top:.85rem}
+            .communication-mobile-search{position:relative;margin-top:.65rem}
             .communication-mobile-search i{position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:#94a3b8}
-            .communication-mobile-search input{width:100%;border:0;border-radius:999px;background:#242424;padding:.75rem 1rem .75rem 2.75rem;font-size:.9rem;color:#fff;outline:none}
+            .communication-mobile-search input{width:100%;border:0;border-radius:999px;background:#242424;padding:.65rem 1rem .65rem 2.75rem;font-size:.85rem;color:#fff;outline:none}
             .communication-mobile-search input::placeholder{color:#9ca3af}
             .communication-mobile-people{display:flex;gap:.8rem;overflow-x:auto;padding:.35rem 1rem .9rem;scrollbar-width:none}
             .communication-mobile-people::-webkit-scrollbar{display:none}
@@ -57,11 +58,16 @@
             #admin-communication-page>.grid>section{min-height:0!important;border:0!important;border-radius:0!important;background:#050505!important;padding:0 .55rem!important;box-shadow:none!important}
             #admin-communication-page>.grid>section>.space-y-4>div:first-child{display:none}
             #admin-communication-page>.grid>section>.space-y-4{padding:.15rem .45rem .35rem}
+            #admin-communication-page>.grid>section>.space-y-4>:not([hidden])~:not([hidden]){margin-top:.35rem!important}
             #admin-communication-page>.grid>section>.space-y-4>div:last-child{gap:.45rem}
             #admin-communication-page>.grid>section>.space-y-4>div:last-child>div{display:none}
             #admin-all-filter,#admin-unread-filter{border-color:#303030!important;background:#202020!important;color:#e5e7eb!important;padding:.45rem .8rem!important}
             #admin-communication-directory-grid{margin-top:.15rem!important;gap:0!important;overflow:visible!important;padding:0!important}
             [data-communication-directory-card]{position:relative;border:0!important;border-radius:.85rem!important;background:transparent!important;padding:.65rem .55rem!important;box-shadow:none!important;ring:0!important}
+            [data-communication-directory-card][data-has-messages="false"]{display:none!important}
+            #admin-communication-page[data-mobile-tab="people"] [data-communication-directory-card][data-has-messages="false"]{display:block!important}
+            #admin-communication-page[data-mobile-tab="people"] #admin-communication-page-filters{display:none!important}
+            #admin-communication-page[data-mobile-tab="notifications"]>.grid{display:none!important}
             [data-communication-directory-card]:active{background:#171717!important}
             [data-communication-directory-card] .communication-icon-pop{height:3.35rem!important;width:3.35rem!important;border-radius:999px!important;font-size:.85rem!important}
             [data-admin-employee-name-row] p{font-size:.92rem!important;color:#f8fafc!important}
@@ -69,6 +75,17 @@
             [data-communication-directory-card] .text-slate-500,[data-admin-message-preview]{color:#9ca3af!important}
             [data-communication-directory-card] [data-admin-chat-connect]{position:absolute!important;inset:0!important;z-index:4!important;opacity:0!important}
             #admin-communication-empty{border-color:#303030!important;background:#141414!important;color:#9ca3af!important}
+            .communication-mobile-empty{display:flex;min-height:9rem;align-items:center;justify-content:center;padding:1.5rem;text-align:center;color:#9ca3af}
+            .communication-mobile-empty i{display:block;margin-bottom:.65rem;font-size:1.5rem;color:#64748b}
+            .communication-mobile-empty p{font-size:.82rem;font-weight:600}
+            .communication-mobile-notifications{display:block;padding:.35rem .75rem}
+            .communication-notification-row{display:flex;gap:.75rem;border-radius:.9rem;padding:.75rem;color:#f8fafc;text-decoration:none}
+            .communication-notification-row:active{background:#171717}
+            .communication-notification-icon{display:flex;height:2.7rem;width:2.7rem;flex:0 0 2.7rem;align-items:center;justify-content:center;border-radius:999px;background:#1e293b;color:#60a5fa}
+            .communication-notification-copy{min-width:0;flex:1}
+            .communication-notification-title{font-size:.82rem;font-weight:700;line-height:1.35}
+            .communication-notification-message{margin-top:.15rem;font-size:.68rem;line-height:1.4;color:#9ca3af}
+            .communication-notification-date{margin-top:.2rem;font-size:.6rem;color:#60a5fa}
             #admin-conversation-workspace{min-height:0!important}
             [data-admin-chat-placeholder]{display:none!important}
             #admin-chat-panel{inset:0!important;height:100dvh!important;min-height:0!important;border:0!important;border-radius:0!important}
@@ -89,6 +106,10 @@
     $lastOwnMessageId = (int) optional($messages->filter(fn ($message) => (int) ($message->sender_user_id ?? 0) === (int) auth()->id())->last())->id;
     $availableCount = $directoryMembers->filter(fn ($member) => in_array(strtolower(trim((string) ($member->status ?? ''))), ['approved', 'available'], true))->count();
     $unreadMessageCount = (int) $directoryMembers->sum(fn ($member) => (int) ($member->unread_message_count ?? 0));
+    $mobileConversationCount = $directoryMembers->filter(fn ($member) => (bool) ($member->has_conversation_messages ?? false))->count();
+    $mobileTab = request()->routeIs('admin.communicationPeople')
+        ? 'people'
+        : (request()->routeIs('admin.communicationNotifications') ? 'notifications' : 'chats');
 @endphp
 <div id="admin-communication-app" class="flex min-h-screen">
     @include('components.adminSideBar')
@@ -99,17 +120,23 @@
             'headerSearchPlaceholder' => 'Search employees or conversations...',
             'headerSearchInputId' => 'admin-communication-search',
         ])
-        <div id="admin-communication-page" class="space-y-8 p-4 pt-20 md:p-8">
+        <div id="admin-communication-page" data-mobile-tab="{{ $mobileTab }}" class="space-y-8 p-4 pt-20 md:p-8">
             <header class="communication-mobile-header">
                 <div class="communication-mobile-title-row">
-                    <h1 class="communication-mobile-title">Messages</h1>
-                    <span class="communication-mobile-compose" aria-hidden="true"><i class="fa-regular fa-pen-to-square"></i></span>
+                    <h1 class="communication-mobile-title">{{ $mobileTab === 'people' ? 'People' : ($mobileTab === 'notifications' ? 'Notifications' : 'Messages') }}</h1>
+                    <span class="communication-mobile-compose {{ $mobileTab === 'notifications' ? 'invisible' : '' }}" aria-hidden="true"><i class="fa-regular fa-pen-to-square"></i></span>
                 </div>
-                <label class="communication-mobile-search">
+                <label class="communication-mobile-search {{ $mobileTab === 'notifications' ? 'hidden' : '' }}">
                     <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-                    <input id="admin-communication-mobile-search" type="search" placeholder="Search conversations" autocomplete="off" aria-label="Search conversations">
+                    <input id="admin-communication-mobile-search" type="search" placeholder="{{ $mobileTab === 'people' ? 'Search people' : 'Search conversations' }}" autocomplete="off" aria-label="Search {{ $mobileTab === 'people' ? 'people' : 'conversations' }}">
                 </label>
             </header>
+            @if ($mobileTab === 'notifications')
+                <div id="communication-mobile-notifications" class="communication-mobile-notifications" data-summary-url="{{ route('admin.adminNotifications.summary') }}">
+                    <div class="communication-mobile-empty"><div><i class="fa-regular fa-bell"></i><p>Loading notifications...</p></div></div>
+                </div>
+            @endif
+            @if ($mobileTab === 'chats' && $directoryMembers->count() > 1)
             <div class="communication-mobile-people" aria-label="Employee shortcuts">
                 @foreach ($directoryMembers->take(10) as $employee)
                     @php
@@ -122,6 +149,7 @@
                     </a>
                 @endforeach
             </div>
+            @endif
             @if (session('success'))
                 <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{{ session('success') }}</div>
             @endif
@@ -133,7 +161,7 @@
             @endif
             <div class="grid gap-5 xl:grid-cols-[23rem_minmax(0,1fr)]">
             <section class="communication-reveal flex min-h-[38rem] flex-col rounded-[2rem] border border-slate-200 bg-white/95 p-5 shadow-sm xl:h-[calc(100vh-11rem)] xl:min-h-0" style="--communication-delay:0ms">
-                <div class="space-y-4">
+                <div id="admin-communication-page-filters" class="space-y-4">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">Conversations</p>
                         <h3 class="mt-2 text-xl font-black tracking-tight text-slate-900">Messages</h3>
@@ -191,6 +219,7 @@
                             data-department="{{ strtolower($department) }}"
                             data-unread="{{ $employeeHasUnreadMessages ? 'true' : 'false' }}"
                             data-unread-count="{{ $employeeUnreadCount }}"
+                            data-has-messages="{{ ($employee->has_conversation_messages ?? false) ? 'true' : 'false' }}"
                             class="communication-card-motion communication-reveal rounded-2xl border p-3 shadow-sm {{ (int) ($selectedParticipant?->id ?? 0) === (int) ($employee->id ?? 0) ? 'border-emerald-300 bg-emerald-50 ring-2 ring-emerald-100' : 'border-slate-200 bg-slate-50/70' }}"
                             style="--communication-delay: {{ 110 + (($loop->index % 6) * 35) }}ms;"
                         >
@@ -229,6 +258,14 @@
                         </article>
                     @endforeach
                 </div>
+                @if ($mobileTab === 'chats' && $mobileConversationCount === 0)
+                    <div class="communication-mobile-empty">
+                        <div>
+                            <i class="fa-regular fa-message" aria-hidden="true"></i>
+                            <p>No messages yet</p>
+                        </div>
+                    </div>
+                @endif
                 <div id="admin-communication-empty" class="mt-6 hidden rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">
                     No employee matched your search.
                 </div>
@@ -384,14 +421,70 @@
             </div>
         </div>
         <nav class="communication-mobile-nav" aria-label="Mobile communication navigation">
-            <a href="{{ route('admin.adminCommunication') }}" class="is-active"><i class="fa-solid fa-comment"></i><span>Chats</span></a>
-            <a href="{{ route('admin.adminEmployee') }}"><i class="fa-solid fa-user-group"></i><span>People</span></a>
-            <a href="{{ route('admin.adminNotifications') }}"><i class="fa-solid fa-bell"></i><span>Notifications</span></a>
+            <a href="{{ route('admin.adminCommunication') }}" class="{{ $mobileTab === 'chats' ? 'is-active' : '' }}"><i class="fa-solid fa-comment"></i><span>Chats</span></a>
+            <a href="{{ route('admin.communicationPeople') }}" class="{{ $mobileTab === 'people' ? 'is-active' : '' }}"><i class="fa-solid fa-user-group"></i><span>People</span></a>
+            <a href="{{ route('admin.communicationNotifications') }}" class="{{ $mobileTab === 'notifications' ? 'is-active' : '' }}"><i class="fa-solid fa-bell"></i><span>Notifications</span></a>
             <button type="button" data-communication-menu aria-label="Open menu"><i class="fa-solid fa-bars"></i><span>Menu</span></button>
         </nav>
     </main>
 </div>
 <script>
+(function(){
+    const list = document.getElementById('communication-mobile-notifications');
+    if (!list) return;
+
+    fetch(list.dataset.summaryUrl, {
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin',
+    })
+        .then((response) => {
+            if (!response.ok) throw new Error('Notification request failed.');
+            return response.json();
+        })
+        .then((payload) => {
+            const items = Array.isArray(payload.items) ? payload.items : [];
+            list.replaceChildren();
+
+            if (!items.length) {
+                const empty = document.createElement('div');
+                empty.className = 'communication-mobile-empty';
+                empty.innerHTML = '<div><i class="fa-regular fa-bell" aria-hidden="true"></i><p>No notifications yet</p></div>';
+                list.appendChild(empty);
+                return;
+            }
+
+            items.forEach((item) => {
+                const row = document.createElement('a');
+                row.className = 'communication-notification-row';
+                row.href = item.href || '#';
+
+                const icon = document.createElement('span');
+                icon.className = 'communication-notification-icon';
+                const iconElement = document.createElement('i');
+                iconElement.className = item.icon || 'fa-regular fa-bell';
+                icon.appendChild(iconElement);
+
+                const copy = document.createElement('span');
+                copy.className = 'communication-notification-copy';
+                const title = document.createElement('span');
+                title.className = 'communication-notification-title block';
+                title.textContent = item.title || item.label || 'Notification';
+                const message = document.createElement('span');
+                message.className = 'communication-notification-message block';
+                message.textContent = item.message || item.description || '';
+                const date = document.createElement('span');
+                date.className = 'communication-notification-date block';
+                date.textContent = item.date_human || 'Live';
+                copy.append(title, message, date);
+                row.append(icon, copy);
+                list.appendChild(row);
+            });
+        })
+        .catch(() => {
+            list.innerHTML = '<div class="communication-mobile-empty"><div><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i><p>Unable to load notifications</p></div></div>';
+        });
+})();
+
 (function(){
     document.addEventListener('click', function(event){
         const menuButton = event.target.closest('[data-communication-menu]');
@@ -788,6 +881,7 @@ document.addEventListener('submit', async function (event) {
             if (!incomingCard) return;
 
             card.dataset.unread = incomingCard.dataset.unread || 'false';
+            card.dataset.hasMessages = incomingCard.dataset.hasMessages || 'false';
             card.dataset.unreadCount = incomingCard.dataset.unreadCount || '0';
 
             const currentNameRow = card.querySelector('[data-admin-employee-name-row]');

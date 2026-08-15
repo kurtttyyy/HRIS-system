@@ -681,6 +681,7 @@ class AdministratorPageController extends Controller
                 'id' => (int) $conversation->id,
                 'participant' => $participant,
                 'latest_message' => trim((string) ($latestMessage?->body ?? '')),
+                'has_messages' => (bool) $latestMessage,
                 'latest_at' => $conversation->last_message_at ?? $latestMessage?->created_at ?? $conversation->updated_at,
                 'unread_count' => (int) ($conversation->unread_count ?? 0),
             ];
@@ -702,6 +703,7 @@ class AdministratorPageController extends Controller
             $employee->has_unread_messages = $employee->unread_message_count > 0;
             $employee->latest_message_preview = trim((string) data_get($latestConversation, 'latest_message', ''));
             $employee->latest_message_at = data_get($latestConversation, 'latest_at');
+            $employee->has_conversation_messages = (bool) data_get($latestConversation, 'has_messages', false);
             return $employee;
         })->sort(function ($left, $right) {
             $unreadComparison = (int) ($right->unread_message_count ?? 0) <=> (int) ($left->unread_message_count ?? 0);
