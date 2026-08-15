@@ -40,10 +40,12 @@
             margin-top: 0.35rem;
             font-size: 0.75rem;
             line-height: 1.4;
+            text-align: center;
         }
 
         .leave-management-header-stats {
             margin-top: 0.55rem;
+            justify-content: center;
             gap: 0.35rem;
             font-size: 0.65rem;
         }
@@ -59,6 +61,7 @@
 
         .leave-management-month-filter > p {
             font-size: 0.6rem;
+            text-align: center;
         }
 
         .leave-management-month-filter-row {
@@ -76,6 +79,7 @@
 
         .leave-management-month-input input {
             font-size: 0.75rem;
+            text-align: center;
         }
 
         .leave-management-month-apply {

@@ -34,6 +34,49 @@
         @media (max-width:1279px){
             #admin-chat-panel{position:fixed;inset:1rem;z-index:80;height:calc(100vh - 2rem)!important;min-height:0!important}
         }
+        .communication-mobile-header,.communication-mobile-people,.communication-mobile-nav{display:none}
+        @media (max-width:767px){
+            body{background:#050505!important;color:#f8fafc}
+            #admin-communication-app>aside,.admin-header-shell{display:none!important}
+            #admin-communication-app>main{width:100%!important;margin-left:0!important}
+            #admin-communication-page{padding:0 0 5rem!important;row-gap:0!important;background:#050505}
+            .communication-mobile-header{display:block;padding:1rem 1rem .65rem}
+            .communication-mobile-title-row{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+            .communication-mobile-title{font-size:1.75rem;font-weight:800;letter-spacing:-.04em;color:#fff}
+            .communication-mobile-compose{display:inline-flex;height:2.5rem;width:2.5rem;align-items:center;justify-content:center;border-radius:999px;background:#242424;color:#f8fafc}
+            .communication-mobile-search{position:relative;margin-top:.85rem}
+            .communication-mobile-search i{position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:#94a3b8}
+            .communication-mobile-search input{width:100%;border:0;border-radius:999px;background:#242424;padding:.75rem 1rem .75rem 2.75rem;font-size:.9rem;color:#fff;outline:none}
+            .communication-mobile-search input::placeholder{color:#9ca3af}
+            .communication-mobile-people{display:flex;gap:.8rem;overflow-x:auto;padding:.35rem 1rem .9rem;scrollbar-width:none}
+            .communication-mobile-people::-webkit-scrollbar{display:none}
+            .communication-mobile-person{width:4.25rem;flex:0 0 4.25rem;text-align:center}
+            .communication-mobile-avatar{display:flex;height:3.75rem;width:3.75rem;align-items:center;justify-content:center;border-radius:999px;background:linear-gradient(145deg,#334155,#059669);font-size:.85rem;font-weight:800;color:#fff;box-shadow:0 0 0 2px #050505,0 0 0 3px #334155}
+            .communication-mobile-person p{margin-top:.4rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.68rem;color:#cbd5e1}
+            #admin-communication-page>.grid{display:block!important}
+            #admin-communication-page>.grid>section{min-height:0!important;border:0!important;border-radius:0!important;background:#050505!important;padding:0 .55rem!important;box-shadow:none!important}
+            #admin-communication-page>.grid>section>.space-y-4>div:first-child{display:none}
+            #admin-communication-page>.grid>section>.space-y-4{padding:.15rem .45rem .35rem}
+            #admin-communication-page>.grid>section>.space-y-4>div:last-child{gap:.45rem}
+            #admin-communication-page>.grid>section>.space-y-4>div:last-child>div{display:none}
+            #admin-all-filter,#admin-unread-filter{border-color:#303030!important;background:#202020!important;color:#e5e7eb!important;padding:.45rem .8rem!important}
+            #admin-communication-directory-grid{margin-top:.15rem!important;gap:0!important;overflow:visible!important;padding:0!important}
+            [data-communication-directory-card]{position:relative;border:0!important;border-radius:.85rem!important;background:transparent!important;padding:.65rem .55rem!important;box-shadow:none!important;ring:0!important}
+            [data-communication-directory-card]:active{background:#171717!important}
+            [data-communication-directory-card] .communication-icon-pop{height:3.35rem!important;width:3.35rem!important;border-radius:999px!important;font-size:.85rem!important}
+            [data-admin-employee-name-row] p{font-size:.92rem!important;color:#f8fafc!important}
+            [data-admin-employee-name-row] [data-admin-name-unread]{padding:.15rem .4rem!important;font-size:.58rem!important}
+            [data-communication-directory-card] .text-slate-500,[data-admin-message-preview]{color:#9ca3af!important}
+            [data-communication-directory-card] [data-admin-chat-connect]{position:absolute!important;inset:0!important;z-index:4!important;opacity:0!important}
+            #admin-communication-empty{border-color:#303030!important;background:#141414!important;color:#9ca3af!important}
+            #admin-conversation-workspace{min-height:0!important}
+            [data-admin-chat-placeholder]{display:none!important}
+            #admin-chat-panel{inset:0!important;height:100dvh!important;min-height:0!important;border:0!important;border-radius:0!important}
+            .communication-mobile-nav{position:fixed;bottom:0;left:0;right:0;z-index:60;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #242424;background:rgba(5,5,5,.96);padding:.5rem .25rem max(.5rem,env(safe-area-inset-bottom));backdrop-filter:blur(16px)}
+            .communication-mobile-nav a{display:flex;flex-direction:column;align-items:center;gap:.2rem;font-size:.6rem;color:#9ca3af}
+            .communication-mobile-nav i{font-size:1.05rem}
+            .communication-mobile-nav a.is-active{color:#60a5fa}
+        }
     </style>
 </head>
 <body class="bg-[radial-gradient(circle_at_top,_#f8fafc,_#eef2ff_40%,_#f8fafc_100%)] text-slate-900">
@@ -47,7 +90,7 @@
     $availableCount = $directoryMembers->filter(fn ($member) => in_array(strtolower(trim((string) ($member->status ?? ''))), ['approved', 'available'], true))->count();
     $unreadMessageCount = (int) $directoryMembers->sum(fn ($member) => (int) ($member->unread_message_count ?? 0));
 @endphp
-<div class="flex min-h-screen">
+<div id="admin-communication-app" class="flex min-h-screen">
     @include('components.adminSideBar')
     <main class="flex-1 transition-all duration-300">
         @include('components.adminHeader.dashboardHeader', [
@@ -57,6 +100,28 @@
             'headerSearchInputId' => 'admin-communication-search',
         ])
         <div id="admin-communication-page" class="space-y-8 p-4 pt-20 md:p-8">
+            <header class="communication-mobile-header">
+                <div class="communication-mobile-title-row">
+                    <h1 class="communication-mobile-title">Messages</h1>
+                    <span class="communication-mobile-compose" aria-hidden="true"><i class="fa-regular fa-pen-to-square"></i></span>
+                </div>
+                <label class="communication-mobile-search">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <input id="admin-communication-mobile-search" type="search" placeholder="Search conversations" autocomplete="off" aria-label="Search conversations">
+                </label>
+            </header>
+            <div class="communication-mobile-people" aria-label="Employee shortcuts">
+                @foreach ($directoryMembers->take(10) as $employee)
+                    @php
+                        $mobileEmployeeName = trim(implode(' ', array_filter([$employee->first_name ?? null, $employee->last_name ?? null]))) ?: ($employee->email ?? 'Employee');
+                        $mobileEmployeeInitials = strtoupper(substr(trim((string) ($employee->first_name ?? 'E')), 0, 1).substr(trim((string) ($employee->last_name ?? '')), 0, 1));
+                    @endphp
+                    <a href="{{ route('admin.adminCommunication', array_filter(['user' => $employee->id, 'tab_session' => request()->query('tab_session')])) }}#admin-chat-panel" data-admin-chat-connect class="communication-mobile-person">
+                        <span class="communication-mobile-avatar">{{ $mobileEmployeeInitials ?: 'EM' }}</span>
+                        <p>{{ $mobileEmployeeName }}</p>
+                    </a>
+                @endforeach
+            </div>
             @if (session('success'))
                 <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{{ session('success') }}</div>
             @endif
@@ -318,6 +383,12 @@
             </div>
             </div>
         </div>
+        <nav class="communication-mobile-nav" aria-label="Mobile communication navigation">
+            <a href="{{ route('admin.adminCommunication') }}" class="is-active"><i class="fa-solid fa-comment"></i><span>Chats</span></a>
+            <a href="{{ route('admin.adminEmployee') }}"><i class="fa-solid fa-user-group"></i><span>People</span></a>
+            <a href="{{ route('admin.adminNotifications') }}"><i class="fa-solid fa-bell"></i><span>Alerts</span></a>
+            <a href="{{ route('admin.adminHome') }}"><i class="fa-solid fa-house"></i><span>Home</span></a>
+        </nav>
     </main>
 </div>
 <script>
@@ -589,6 +660,7 @@ document.addEventListener('submit', async function (event) {
 
 (function(){
     const searchInput = document.getElementById('admin-communication-search');
+    const mobileSearchInput = document.getElementById('admin-communication-mobile-search');
     const cards = Array.from(document.querySelectorAll('[data-communication-directory-card]'));
     const emptyMessage = document.getElementById('admin-communication-empty');
     const directoryGrid = document.getElementById('admin-communication-directory-grid');
@@ -626,7 +698,14 @@ document.addEventListener('submit', async function (event) {
         }
     };
 
-    searchInput.addEventListener('input', applyDirectorySearch);
+    searchInput.addEventListener('input', () => {
+        if (mobileSearchInput && mobileSearchInput.value !== searchInput.value) mobileSearchInput.value = searchInput.value;
+        applyDirectorySearch();
+    });
+    mobileSearchInput?.addEventListener('input', () => {
+        searchInput.value = mobileSearchInput.value;
+        applyDirectorySearch();
+    });
     const updateFilterButtons = () => {
         allFilter?.setAttribute('aria-pressed', unreadOnly ? 'false' : 'true');
         unreadFilter?.setAttribute('aria-pressed', unreadOnly ? 'true' : 'false');

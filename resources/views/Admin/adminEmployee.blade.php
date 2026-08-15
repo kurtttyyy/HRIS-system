@@ -2704,20 +2704,22 @@
       x-transition:leave="transition ease-in duration-150"
       x-transition:leave-start="opacity-100"
       x-transition:leave-end="opacity-0"
-      class="pointer-events-none fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/5 backdrop-blur-[1px]"
+      class="pointer-events-none fixed bottom-4 left-1/2 z-[70] -translate-x-1/2"
       role="status"
       aria-live="polite"
       aria-label="Searching employees"
     >
-      <div class="flex min-w-[15rem] flex-col items-center rounded-[1.75rem] border border-white/80 bg-white/95 px-8 py-7 shadow-[0_24px_70px_rgba(15,23,42,0.22)]">
+      <div class="flex items-center gap-2.5 rounded-full border border-slate-200/90 bg-white/95 py-2 pl-2 pr-4 shadow-[0_10px_30px_rgba(15,23,42,0.16)] backdrop-blur-md">
         <img
           src="{{ asset('images/animation_searching.gif') }}?v={{ filemtime(public_path('images/animation_searching.gif')) }}"
           alt=""
           aria-hidden="true"
-          class="h-28 w-28 object-contain"
+          class="h-8 w-8 rounded-full object-contain"
         >
-        <p class="mt-4 text-sm font-black tracking-wide text-slate-800">AI Search</p>
-        <p class="mt-1 text-xs font-medium text-slate-500">Finding matching employees...</p>
+        <div class="min-w-0 whitespace-nowrap">
+          <p class="text-xs font-bold text-slate-800">Meow Searching</p>
+          <p class="text-[10px] font-medium text-slate-500">Results will update shortly</p>
+        </div>
       </div>
     </div>
 

@@ -181,20 +181,23 @@
         padding: 0.65rem !important;
       }
       .approved-history-date-filters {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-        gap: 0.5rem !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap: 0.75rem !important;
       }
       .approved-history-date-filters label {
         min-width: 0;
       }
       .approved-history-date-filters input {
+        display: block;
         width: 100% !important;
+        max-width: 100% !important;
         min-width: 0;
+        box-sizing: border-box;
         padding: 0.55rem 0.6rem !important;
         font-size: 0.75rem !important;
       }
       .approved-history-date-filters [data-approved-history-reset] {
-        grid-column: 1 / -1 !important;
+        grid-column: 1 !important;
         justify-self: start;
         min-height: auto;
         border: 0 !important;
