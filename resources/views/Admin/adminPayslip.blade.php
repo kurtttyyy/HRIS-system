@@ -276,6 +276,87 @@
         padding: 0.65rem 0.8rem !important;
         font-size: 0.75rem !important;
       }
+      .payslip-queue-panel {
+        border-radius: 1rem !important;
+        padding: 0.9rem !important;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.055) !important;
+      }
+      .payslip-queue-badge,
+      .payslip-queue-note {
+        display: none !important;
+      }
+      .payslip-queue-heading {
+        margin-top: 0 !important;
+        font-size: 1.15rem !important;
+        line-height: 1.2;
+      }
+      .payslip-queue-description {
+        margin-top: 0.35rem !important;
+        font-size: 0.72rem !important;
+        line-height: 1.4 !important;
+      }
+      #payslip_file_list {
+        margin-top: 0.8rem !important;
+      }
+      .payslip-file-item {
+        border-radius: 0.85rem !important;
+        padding: 0.75rem !important;
+        box-shadow: none !important;
+      }
+      .payslip-file-item > .flex {
+        gap: 0.7rem !important;
+      }
+      .payslip-file-item > .flex > div:first-child {
+        gap: 0.65rem !important;
+      }
+      .payslip-file-item > .flex > div:first-child > div:last-child {
+        min-width: 0;
+      }
+      .payslip-file-item > .flex > div:first-child > span {
+        width: 2.25rem !important;
+        height: 2.25rem !important;
+        border-radius: 0.7rem !important;
+      }
+      .payslip-file-item > .flex > div:first-child > span i {
+        font-size: 0.95rem !important;
+      }
+      .payslip-file-item [data-file-id] {
+        min-width: 0;
+      }
+      .payslip-file-item .payslip-scan-status {
+        padding: 0.2rem 0.45rem !important;
+        font-size: 0.55rem !important;
+        letter-spacing: 0.1em !important;
+      }
+      .payslip-file-item p.text-sm {
+        overflow-wrap: anywhere;
+        font-size: 0.75rem !important;
+        line-height: 1.3;
+      }
+      .payslip-file-item p.text-xs {
+        font-size: 0.62rem !important;
+        line-height: 1.3;
+      }
+      .payslip-file-item .h-2\.5 {
+        height: 0.4rem !important;
+      }
+      .payslip-file-item > .flex > div:last-child {
+        display: flex;
+        min-width: 0 !important;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        font-size: 0.62rem !important;
+      }
+      .payslip-file-item > .flex > div:last-child span {
+        display: inline !important;
+      }
+      .payslip-file-item .payslip-view-link {
+        margin-top: 0 !important;
+        width: auto !important;
+        padding: 0.4rem 0.7rem !important;
+        font-size: 0.68rem !important;
+      }
     }
   </style>
 </head>
@@ -454,18 +535,18 @@
           </div>
         </section>
 
-        <section class="payslip-reveal overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/90 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur" style="--payslip-delay: 290ms;">
+        <section class="payslip-queue-panel payslip-reveal overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/90 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur" style="--payslip-delay: 290ms;">
           <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <div class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
+              <div class="payslip-queue-badge inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
                 Processing Queue
               </div>
-              <h2 class="mt-4 text-2xl font-black tracking-tight text-slate-900">File status and preview access</h2>
-              <p class="mt-2 text-sm leading-6 text-slate-500">
+              <h2 class="payslip-queue-heading mt-4 text-2xl font-black tracking-tight text-slate-900">File status and preview access</h2>
+              <p class="payslip-queue-description mt-2 text-sm leading-6 text-slate-500">
                 Select a file to scan, monitor processing status, and open the payslip preview once scanning completes.
               </p>
             </div>
-            <div class="rounded-[1.5rem] border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-500">
+            <div class="payslip-queue-note rounded-[1.5rem] border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-500">
               Scan currently reads the Excel/CSV for preview and saves the file data for payslip view.
             </div>
           </div>

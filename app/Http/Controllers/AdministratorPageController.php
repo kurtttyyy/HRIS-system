@@ -2823,15 +2823,36 @@ class AdministratorPageController extends Controller
 
     private function matrixEmployeeRelations(array $positionColumns): array
     {
+        $positionTable = (new OpenPosition())->getTable();
+        $availablePositionColumns = Schema::hasTable($positionTable)
+            ? array_values(array_filter(
+                $positionColumns,
+                fn (string $column): bool => Schema::hasColumn($positionTable, $column)
+            ))
+            : [];
+
         $relations = [
             'employee',
             'education',
             'government',
             'license',
             'salary',
-            'applicant.position:'.implode(',', $positionColumns),
-            'applicant.documents:id,applicant_id,filename,filepath,mime_type,type',
         ];
+
+        if (!empty($availablePositionColumns)) {
+            $relations[] = 'applicant.position:'.implode(',', $availablePositionColumns);
+        }
+
+        if (Schema::hasTable('applicant_documents')) {
+            $documentColumns = array_values(array_filter(
+                ['id', 'applicant_id', 'filename', 'filepath', 'mime_type', 'type'],
+                fn (string $column): bool => Schema::hasColumn('applicant_documents', $column)
+            ));
+
+            if (!empty($documentColumns)) {
+                $relations[] = 'applicant.documents:'.implode(',', $documentColumns);
+            }
+        }
 
         if (Schema::hasTable('applicant_degrees')) {
             $relations[] = 'applicant.degrees';
