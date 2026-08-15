@@ -37,7 +37,7 @@
         .communication-mobile-header,.communication-mobile-people,.communication-mobile-nav{display:none}
         @media (max-width:767px){
             body{background:#050505!important;color:#f8fafc}
-            #admin-communication-app>aside,.admin-header-shell{display:none!important}
+            .admin-header-shell,[data-admin-sidebar-toggle]{display:none!important}
             #admin-communication-app>main{width:100%!important;margin-left:0!important}
             #admin-communication-page{padding:0 0 5rem!important;row-gap:0!important;background:#050505}
             .communication-mobile-header{display:block;padding:1rem 1rem .65rem}
@@ -73,7 +73,7 @@
             [data-admin-chat-placeholder]{display:none!important}
             #admin-chat-panel{inset:0!important;height:100dvh!important;min-height:0!important;border:0!important;border-radius:0!important}
             .communication-mobile-nav{position:fixed;bottom:0;left:0;right:0;z-index:60;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #242424;background:rgba(5,5,5,.96);padding:.5rem .25rem max(.5rem,env(safe-area-inset-bottom));backdrop-filter:blur(16px)}
-            .communication-mobile-nav a{display:flex;flex-direction:column;align-items:center;gap:.2rem;font-size:.6rem;color:#9ca3af}
+            .communication-mobile-nav a,.communication-mobile-nav button{display:flex;flex-direction:column;align-items:center;gap:.2rem;border:0;background:transparent;font-size:.6rem;color:#9ca3af}
             .communication-mobile-nav i{font-size:1.05rem}
             .communication-mobile-nav a.is-active{color:#60a5fa}
         }
@@ -386,12 +386,20 @@
         <nav class="communication-mobile-nav" aria-label="Mobile communication navigation">
             <a href="{{ route('admin.adminCommunication') }}" class="is-active"><i class="fa-solid fa-comment"></i><span>Chats</span></a>
             <a href="{{ route('admin.adminEmployee') }}"><i class="fa-solid fa-user-group"></i><span>People</span></a>
-            <a href="{{ route('admin.adminNotifications') }}"><i class="fa-solid fa-bell"></i><span>Alerts</span></a>
-            <a href="{{ route('admin.adminHome') }}"><i class="fa-solid fa-house"></i><span>Home</span></a>
+            <a href="{{ route('admin.adminNotifications') }}"><i class="fa-solid fa-bell"></i><span>Notifications</span></a>
+            <button type="button" data-communication-menu aria-label="Open menu"><i class="fa-solid fa-bars"></i><span>Menu</span></button>
         </nav>
     </main>
 </div>
 <script>
+(function(){
+    document.addEventListener('click', function(event){
+        const menuButton = event.target.closest('[data-communication-menu]');
+        if (!menuButton) return;
+        document.querySelector('[data-admin-sidebar-toggle]')?.click();
+    });
+})();
+
 (function(){
     const initCommunicationPageAnimation = () => {
         const page = document.getElementById('admin-communication-page');

@@ -825,6 +825,17 @@
         transform: translateX(2px);
     }
 
+    @media (hover: none) and (pointer: coarse) {
+        .site-footer .footer-link-list a {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .site-footer .footer-link-list a:hover {
+            transform: none;
+        }
+    }
+
     .footer-shell {
         max-width: 1240px;
         margin: 0 auto;
@@ -1899,7 +1910,7 @@
                 <ul class="footer-link-list">
                     <li><a href="#heroCarousel">Home</a></li>
                     <li><a href="{{ route('guest.jobOpenLanding') }}">Job Vacancies</a></li>
-                    <li><a href="{{ route('login_display') }}">Applicant Login</a></li>
+                    <li><a href="{{ route('login_display') }}" data-mobile-direct-link>Applicant Login</a></li>
                     <li><a href="{{ route('register') }}">Create Account</a></li>
                 </ul>
             </div>
@@ -1996,6 +2007,14 @@
             window.setTimeout(function () {
                 window.location.href = button.dataset.jobUrl;
             }, 130);
+        });
+
+        page.addEventListener('pointerup', function (event) {
+            const link = event.target.closest('a[data-mobile-direct-link]');
+            if (!link || event.pointerType !== 'touch') return;
+
+            event.preventDefault();
+            window.location.assign(link.href);
         });
 
         const animatedItems = Array.from(page.querySelectorAll('.guest-index-reveal'));
