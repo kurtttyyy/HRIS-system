@@ -102,6 +102,181 @@
         transform: none;
       }
     }
+    @media (max-width: 767px) {
+      main {
+        margin-left: 0 !important;
+      }
+      #admin-payslip-page {
+        padding: 0.75rem !important;
+        padding-top: 0.75rem !important;
+      }
+      .payslip-hero {
+        border-radius: 1.25rem !important;
+        padding: 0.9rem !important;
+        padding-left: 4rem !important;
+        box-shadow: 0 14px 34px rgba(3, 19, 29, 0.2) !important;
+      }
+      .payslip-hero-layout {
+        gap: 0.7rem !important;
+      }
+      .payslip-hero-badge {
+        display: none !important;
+      }
+      .payslip-hero-title {
+        margin-top: 0 !important;
+        font-size: 1.35rem !important;
+        line-height: 1.2 !important;
+      }
+      .payslip-hero-description {
+        margin-top: 0.35rem !important;
+        font-size: 0.72rem !important;
+        line-height: 1.4 !important;
+      }
+      .payslip-hero-stats {
+        margin-top: 0.55rem !important;
+        gap: 0.35rem !important;
+        font-size: 0.62rem !important;
+      }
+      .payslip-hero-stats > span {
+        padding: 0.25rem 0.45rem !important;
+      }
+      .payslip-hero-status-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.45rem !important;
+      }
+      .payslip-hero-status-card {
+        min-width: 0;
+        border-radius: 0.75rem !important;
+        padding: 0.6rem !important;
+        box-shadow: none !important;
+      }
+      .payslip-hero-status-card > p:first-child {
+        font-size: 0.55rem !important;
+        letter-spacing: 0.12em !important;
+      }
+      .payslip-hero-status-card > p:nth-child(2) {
+        margin-top: 0.3rem !important;
+        overflow: hidden;
+        font-size: 0.72rem !important;
+        line-height: 1.25;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .payslip-hero-status-card > p:nth-child(3) {
+        margin-top: 0.2rem !important;
+        font-size: 0.6rem !important;
+        line-height: 1.3;
+      }
+      .payslip-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.65rem !important;
+      }
+      .payslip-summary-card {
+        min-height: 8.5rem;
+        border-radius: 1rem !important;
+        padding: 0.85rem !important;
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.055) !important;
+      }
+      .payslip-summary-card .payslip-icon-pop {
+        width: 2.25rem !important;
+        height: 2.25rem !important;
+        border-radius: 0.7rem !important;
+      }
+      .payslip-summary-card .payslip-icon-pop i {
+        font-size: 0.85rem !important;
+      }
+      .payslip-summary-card > p:nth-of-type(1) {
+        margin-top: 0.7rem !important;
+        font-size: 0.6rem !important;
+        line-height: 1.3;
+        letter-spacing: 0.1em !important;
+      }
+      .payslip-summary-card > p:nth-of-type(2) {
+        margin-top: 0.3rem !important;
+        font-size: 1.5rem !important;
+        line-height: 1;
+      }
+      .payslip-summary-card > p:nth-of-type(3) {
+        margin-top: 0.3rem !important;
+        font-size: 0.68rem !important;
+        line-height: 1.25;
+      }
+      .payslip-upload-panel {
+        border-radius: 1rem !important;
+        padding: 0.9rem !important;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.055) !important;
+      }
+      .payslip-upload-badge {
+        display: none !important;
+      }
+      .payslip-upload-heading {
+        margin-top: 0 !important;
+        font-size: 1.15rem !important;
+        line-height: 1.2;
+      }
+      .payslip-upload-description {
+        margin-top: 0.35rem !important;
+        font-size: 0.72rem !important;
+        line-height: 1.4 !important;
+      }
+      #payslip_upload_form {
+        margin-top: 0.8rem !important;
+        gap: 0.75rem !important;
+      }
+      #payslip_upload_form > :not([hidden]) ~ :not([hidden]) {
+        margin-top: 0.75rem !important;
+      }
+      .payslip-upload-zone {
+        display: grid !important;
+        grid-template-columns: 2.5rem minmax(0, 1fr) !important;
+        grid-template-rows: auto auto auto !important;
+        column-gap: 0.75rem !important;
+        padding: 0.85rem !important;
+        border-width: 1px !important;
+        border-style: solid !important;
+        border-radius: 0.85rem !important;
+        text-align: left !important;
+      }
+      .payslip-upload-zone > span {
+        grid-column: 1;
+        grid-row: 1 / 4;
+        width: 2.5rem !important;
+        height: 2.5rem !important;
+        border-radius: 0.7rem !important;
+      }
+      .payslip-upload-zone > span i {
+        font-size: 1rem !important;
+      }
+      .payslip-upload-zone > p {
+        grid-column: 2;
+        margin: 0 !important;
+      }
+      .payslip-upload-zone > p:nth-of-type(1) {
+        font-size: 0.78rem !important;
+      }
+      .payslip-upload-zone > p:nth-of-type(2) {
+        margin-top: 0.15rem !important;
+        font-size: 0.65rem !important;
+      }
+      .payslip-upload-zone > p:nth-of-type(3) {
+        margin-top: 0.25rem !important;
+        font-size: 0.68rem !important;
+      }
+      .payslip-upload-steps,
+      .payslip-upload-facts {
+        display: none !important;
+      }
+      .payslip-upload-actions {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.5rem !important;
+      }
+      .payslip-upload-actions button {
+        justify-content: center;
+        padding: 0.65rem 0.8rem !important;
+        font-size: 0.75rem !important;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_45%,#f8fafc_100%)] text-slate-800">
@@ -126,34 +301,34 @@
     @endphp
 
     <div id="admin-payslip-page" class="p-4 md:p-8 pt-10 space-y-6">
-      <section class="payslip-reveal relative overflow-hidden rounded-[2rem] border border-emerald-950/70 bg-[linear-gradient(135deg,_#020617_0%,_#020617_42%,_#111827_68%,_#064e3b_100%)] px-6 py-6 shadow-[0_24px_60px_rgba(3,19,29,0.34)] md:px-8" style="--payslip-delay: 0ms;">
+      <section class="payslip-hero payslip-reveal relative overflow-hidden rounded-[2rem] border border-emerald-950/70 bg-[linear-gradient(135deg,_#020617_0%,_#020617_42%,_#111827_68%,_#064e3b_100%)] px-6 py-6 shadow-[0_24px_60px_rgba(3,19,29,0.34)] md:px-8" style="--payslip-delay: 0ms;">
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.14),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(110,231,183,0.14),_transparent_32%)]"></div>
         <div class="absolute -left-8 top-6 h-24 w-24 rounded-full bg-cyan-300/10 blur-3xl"></div>
         <div class="absolute right-0 top-0 h-32 w-32 translate-x-10 -translate-y-8 rounded-full bg-emerald-300/20 blur-3xl"></div>
-        <div class="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+        <div class="payslip-hero-layout relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div class="max-w-3xl">
-            <div class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-50">
+            <div class="payslip-hero-badge inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-50">
               <span class="h-2 w-2 rounded-full bg-cyan-300"></span>
               Payroll Center
             </div>
-            <h1 class="mt-4 text-3xl font-black tracking-tight text-white md:text-4xl">Payslip Operations</h1>
-            <p class="mt-2 max-w-2xl text-sm leading-6 text-emerald-50/85 md:text-base">
+            <h1 class="payslip-hero-title mt-4 text-3xl font-black tracking-tight text-white md:text-4xl">Payslip Operations</h1>
+            <p class="payslip-hero-description mt-2 max-w-2xl text-sm leading-6 text-emerald-50/85 md:text-base">
               Upload payroll files, scan them into preview-ready records, and move from raw spreadsheet to payslip review in one workspace.
             </p>
-            <div class="mt-4 flex flex-wrap gap-3 text-xs font-medium text-emerald-50/80">
+            <div class="payslip-hero-stats mt-4 flex flex-wrap gap-3 text-xs font-medium text-emerald-50/80">
               <span class="rounded-full border border-white/10 bg-white/8 px-3 py-1.5">{{ now()->format('l, F j, Y') }}</span>
               <span id="payslip-header-uploaded-count" class="rounded-full border border-white/10 bg-white/8 px-3 py-1.5">{{ $uploadedCount }} uploaded file(s)</span>
               <span id="payslip-header-scanned-count" class="rounded-full border border-white/10 bg-white/8 px-3 py-1.5">{{ $scannedCount }} scanned</span>
             </div>
           </div>
 
-          <div class="grid gap-3 sm:grid-cols-2 xl:min-w-[420px]">
-            <div class="payslip-card-motion payslip-reveal rounded-2xl border border-white/10 bg-white/8 px-4 py-4 shadow-sm backdrop-blur" style="--payslip-delay: 70ms;">
+          <div class="payslip-hero-status-grid grid gap-3 sm:grid-cols-2 xl:min-w-[420px]">
+            <div class="payslip-hero-status-card payslip-card-motion payslip-reveal rounded-2xl border border-white/10 bg-white/8 px-4 py-4 shadow-sm backdrop-blur" style="--payslip-delay: 70ms;">
               <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-50/70">Latest Upload</p>
               <p id="payslip-latest-upload-name" class="mt-2 text-sm font-semibold text-white">{{ $latestUpload?->original_name ?? 'No file yet' }}</p>
               <p id="payslip-latest-upload-date" class="mt-1 text-xs text-emerald-50/75">{{ optional($latestUpload?->uploaded_at)->format('M d, Y h:i A') ?? 'Waiting for first upload' }}</p>
             </div>
-            <div class="payslip-card-motion payslip-reveal rounded-2xl border border-white/10 bg-white/8 px-4 py-4 shadow-sm backdrop-blur" style="--payslip-delay: 100ms;">
+            <div class="payslip-hero-status-card payslip-card-motion payslip-reveal rounded-2xl border border-white/10 bg-white/8 px-4 py-4 shadow-sm backdrop-blur" style="--payslip-delay: 100ms;">
               <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-50/70">Queue Status</p>
               <p id="payslip-header-pending-count" class="mt-2 text-sm font-semibold text-white">{{ $pendingCount }} pending scan</p>
               <p class="mt-1 text-xs text-emerald-50/75">Scan reads and saves file data for payslip view.</p>
@@ -162,8 +337,8 @@
         </div>
       </section>
 
-      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div class="payslip-card-motion payslip-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--payslip-delay: 120ms;">
+      <div class="payslip-summary-grid grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div class="payslip-summary-card payslip-card-motion payslip-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--payslip-delay: 120ms;">
           <span class="payslip-icon-pop inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-100 text-sky-600" style="--payslip-delay: 150ms;">
             <i class="fa-solid fa-folder-tree text-lg"></i>
           </span>
@@ -172,7 +347,7 @@
           <p class="mt-1 text-sm text-slate-500">Stored payroll source files</p>
         </div>
 
-        <div class="payslip-card-motion payslip-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--payslip-delay: 150ms;">
+        <div class="payslip-summary-card payslip-card-motion payslip-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--payslip-delay: 150ms;">
           <span class="payslip-icon-pop inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600" style="--payslip-delay: 180ms;">
             <i class="fa-solid fa-circle-check text-lg"></i>
           </span>
@@ -181,7 +356,7 @@
           <p class="mt-1 text-sm text-slate-500">Preview-ready payslip data</p>
         </div>
 
-        <div class="payslip-card-motion payslip-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--payslip-delay: 180ms;">
+        <div class="payslip-summary-card payslip-card-motion payslip-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--payslip-delay: 180ms;">
           <span class="payslip-icon-pop inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-600" style="--payslip-delay: 210ms;">
             <i class="fa-solid fa-hourglass-half text-lg"></i>
           </span>
@@ -190,7 +365,7 @@
           <p class="mt-1 text-sm text-slate-500">Files waiting for processing</p>
         </div>
 
-        <div class="payslip-card-motion payslip-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--payslip-delay: 210ms;">
+        <div class="payslip-summary-card payslip-card-motion payslip-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--payslip-delay: 210ms;">
           <span class="payslip-icon-pop inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600" style="--payslip-delay: 240ms;">
             <i class="fa-solid fa-eye text-lg"></i>
           </span>
@@ -202,14 +377,14 @@
 
       <div class="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.35fr)]">
         <section class="space-y-6">
-          <div class="payslip-reveal overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/90 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur" style="--payslip-delay: 250ms;">
+          <div class="payslip-upload-panel payslip-reveal overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/90 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur" style="--payslip-delay: 250ms;">
             <div class="flex items-start justify-between gap-4">
               <div>
-                <div class="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
+                <div class="payslip-upload-badge inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
                   Upload Center
                 </div>
-                <h2 class="mt-4 text-2xl font-black tracking-tight text-slate-900">Import payslip file</h2>
-                <p class="mt-2 text-sm leading-6 text-slate-500">
+                <h2 class="payslip-upload-heading mt-4 text-2xl font-black tracking-tight text-slate-900">Import payslip file</h2>
+                <p class="payslip-upload-description mt-2 text-sm leading-6 text-slate-500">
                   Upload payroll spreadsheets in `.xlsx` or `.csv`, then select one from the queue to scan and open its preview.
                 </p>
               </div>
@@ -239,7 +414,7 @@
                 </span>
                 <p class="mt-5 text-base font-semibold text-slate-800">Browse payslip file to upload</p>
                 <p class="mt-2 text-sm text-slate-500">Accepted formats: `.xlsx` and `.csv`.</p>
-                <div class="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-500">
+                <div class="payslip-upload-steps mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-500">
                   <span class="rounded-full border border-slate-200 bg-white px-3 py-1">1. Upload</span>
                   <span class="rounded-full border border-slate-200 bg-white px-3 py-1">2. Select</span>
                   <span class="rounded-full border border-slate-200 bg-white px-3 py-1">3. Scan</span>
@@ -250,7 +425,7 @@
 
               <input id="payslip_file" name="payslip_file" type="file" accept=".xlsx,.csv" class="hidden" />
 
-              <div class="grid gap-3 rounded-[1.5rem] border border-slate-200 bg-slate-50/80 p-4 sm:grid-cols-3">
+              <div class="payslip-upload-facts grid gap-3 rounded-[1.5rem] border border-slate-200 bg-slate-50/80 p-4 sm:grid-cols-3">
                 <div class="rounded-2xl bg-white px-4 py-3 shadow-sm">
                   <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Accepted</p>
                   <p class="mt-2 text-sm font-semibold text-slate-700">Excel and CSV</p>
@@ -265,7 +440,7 @@
                 </div>
               </div>
 
-              <div class="flex justify-end gap-3">
+              <div class="payslip-upload-actions flex justify-end gap-3">
                 <button id="upload_payslip_btn" type="submit" disabled class="inline-flex items-center gap-2 rounded-full bg-sky-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-sky-300">
                   <i class="fa-solid fa-upload"></i>
                   Upload

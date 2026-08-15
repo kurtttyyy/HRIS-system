@@ -125,22 +125,139 @@
       }
     }
     @media (max-width: 767px) {
+      main {
+        margin-left: 0 !important;
+      }
       #leave-management-page {
         padding: 0.75rem !important;
-        padding-top: 0.75rem !important;
+        padding-top: 0.5rem !important;
+      }
+      .leave-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.65rem !important;
+      }
+      .leave-summary-card {
+        min-height: 8.5rem;
+        padding: 0.85rem !important;
+        border-radius: 1rem !important;
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.055) !important;
+      }
+      .leave-summary-card .leave-management-icon-pop {
+        width: 2.25rem !important;
+        height: 2.25rem !important;
+        border-radius: 0.7rem !important;
+      }
+      .leave-summary-card .leave-management-icon-pop i {
+        font-size: 0.85rem !important;
+      }
+      .leave-summary-card > p:nth-of-type(1) {
+        margin-top: 0.7rem !important;
+        font-size: 0.6rem !important;
+        line-height: 1.3;
+        letter-spacing: 0.1em !important;
+      }
+      .leave-summary-card > p:nth-of-type(2) {
+        margin-top: 0.3rem !important;
+        font-size: 1.5rem !important;
+        line-height: 1;
+      }
+      .leave-summary-card > p:nth-of-type(3) {
+        margin-top: 0.3rem !important;
+        font-size: 0.68rem !important;
+        line-height: 1.25;
       }
       .leave-workspace-header {
-        padding: 1rem;
+        padding: 0.875rem !important;
+      }
+      [data-pending-leave-section],
+      [data-approved-history-section] {
+        border-radius: 1rem !important;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05) !important;
+      }
+      [data-pending-leave-section] > .leave-workspace-header {
+        padding-bottom: 0.65rem !important;
+      }
+      [data-pending-leave-section] > .p-4 {
+        padding: 0.65rem !important;
       }
       .approved-history-date-filters {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 0.75rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.5rem !important;
       }
-      .approved-history-date-filters input {
+      .approved-history-date-filters label {
         min-width: 0;
       }
+      .approved-history-date-filters input {
+        width: 100% !important;
+        min-width: 0;
+        padding: 0.55rem 0.6rem !important;
+        font-size: 0.75rem !important;
+      }
       .approved-history-date-filters [data-approved-history-reset] {
-        grid-column: auto;
+        grid-column: 1 / -1 !important;
+        justify-self: start;
+        min-height: auto;
+        border: 0 !important;
+        background: transparent !important;
+        padding: 0.2rem 0 !important;
+        font-size: 0.7rem !important;
+        color: #64748b !important;
+      }
+      [data-approved-history-section] {
+        border-radius: 1.1rem !important;
+      }
+      [data-approved-history-section] > .leave-workspace-header {
+        border-bottom-color: #e2e8f0 !important;
+        background: rgba(255, 255, 255, 0.94) !important;
+      }
+      .approved-history-badge {
+        display: none !important;
+      }
+      [data-approved-history-section] .leave-workspace-header h3 {
+        margin-top: 0 !important;
+        font-size: 1.05rem !important;
+      }
+      [data-approved-history-section] .leave-workspace-header p {
+        margin-top: 0.25rem !important;
+        font-size: 0.72rem !important;
+      }
+      [data-approved-history-count] {
+        margin-top: 0.4rem !important;
+        color: #64748b !important;
+      }
+      [data-approved-history-list] {
+        padding: 0.75rem !important;
+      }
+      .leave-empty-state {
+        display: grid;
+        grid-template-columns: 2.5rem minmax(0, 1fr);
+        grid-template-rows: auto auto;
+        column-gap: 0.75rem;
+        align-items: center;
+        padding: 0.8rem !important;
+        border-style: solid !important;
+        border-color: #e2e8f0 !important;
+        border-radius: 0.8rem !important;
+        background: rgba(248, 250, 252, 0.72) !important;
+        text-align: left !important;
+      }
+      .leave-empty-state > div:first-child {
+        grid-column: 1;
+        grid-row: 1 / 3;
+        width: 2.25rem !important;
+        height: 2.25rem !important;
+        margin: 0 !important;
+        border-radius: 0.75rem !important;
+      }
+      .leave-empty-state > p {
+        grid-column: 2;
+        margin: 0 !important;
+        font-size: 0.72rem !important;
+        line-height: 1.35 !important;
+      }
+      .leave-empty-state > p + p {
+        margin-top: 0.15rem !important;
+        font-size: 0.65rem !important;
       }
     }
   </style>
@@ -170,8 +287,8 @@
         </div>
       @endif
 
-      <div data-admin-leave-live-region="summary-cards" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <button type="button" data-leave-summary-open data-summary-title="Leave Used This Month" data-summary-subtitle="Approved leave types and total days used." data-summary-details="{{ json_encode($leaveSummaryBreakdowns['leave_used'] ?? []) }}" class="leave-management-card-motion leave-management-reveal cursor-pointer rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur focus:outline-none focus:ring-4 focus:ring-sky-200" style="--leave-management-delay: 30ms;">
+      <div data-admin-leave-live-region="summary-cards" class="leave-summary-grid grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <button type="button" data-leave-summary-open data-summary-title="Leave Used This Month" data-summary-subtitle="Approved leave types and total days used." data-summary-details="{{ json_encode($leaveSummaryBreakdowns['leave_used'] ?? []) }}" class="leave-summary-card leave-management-card-motion leave-management-reveal cursor-pointer rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur focus:outline-none focus:ring-4 focus:ring-sky-200" style="--leave-management-delay: 30ms;">
           <span class="leave-management-icon-pop inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-100 text-sky-600" style="--leave-management-delay: 70ms;">
             <i class="fa-regular fa-calendar-check text-lg"></i>
           </span>
@@ -180,7 +297,7 @@
           <p class="mt-1 text-sm text-slate-500">Total approved leave days</p>
         </button>
 
-        <button type="button" data-leave-summary-open data-summary-title="Sick Leave Used" data-summary-subtitle="Approved sick leave request types and days used." data-summary-details="{{ json_encode($leaveSummaryBreakdowns['sick_used'] ?? []) }}" class="leave-management-card-motion leave-management-reveal cursor-pointer rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur focus:outline-none focus:ring-4 focus:ring-blue-200" style="--leave-management-delay: 60ms;">
+        <button type="button" data-leave-summary-open data-summary-title="Sick Leave Used" data-summary-subtitle="Approved sick leave request types and days used." data-summary-details="{{ json_encode($leaveSummaryBreakdowns['sick_used'] ?? []) }}" class="leave-summary-card leave-management-card-motion leave-management-reveal cursor-pointer rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur focus:outline-none focus:ring-4 focus:ring-blue-200" style="--leave-management-delay: 60ms;">
           <span class="leave-management-icon-pop inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-600" style="--leave-management-delay: 100ms;">
             <i class="fa-solid fa-notes-medical text-lg"></i>
           </span>
@@ -189,7 +306,7 @@
           <p class="mt-1 text-sm text-slate-500">Approved sick leave days</p>
         </button>
 
-        <button type="button" data-leave-summary-open data-summary-title="Approved Requests" data-summary-subtitle="Approved requests grouped by leave type." data-summary-details="{{ json_encode($leaveSummaryBreakdowns['approved'] ?? []) }}" class="leave-management-card-motion leave-management-reveal cursor-pointer rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur focus:outline-none focus:ring-4 focus:ring-emerald-200" style="--leave-management-delay: 90ms;">
+        <button type="button" data-leave-summary-open data-summary-title="Approved Requests" data-summary-subtitle="Approved requests grouped by leave type." data-summary-details="{{ json_encode($leaveSummaryBreakdowns['approved'] ?? []) }}" class="leave-summary-card leave-management-card-motion leave-management-reveal cursor-pointer rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur focus:outline-none focus:ring-4 focus:ring-emerald-200" style="--leave-management-delay: 90ms;">
           <span class="leave-management-icon-pop inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600" style="--leave-management-delay: 130ms;">
             <i class="fa-solid fa-circle-check text-lg"></i>
           </span>
@@ -198,7 +315,7 @@
           <p class="mt-1 text-sm text-slate-500">Approved leave records in month</p>
         </button>
 
-        <button type="button" data-leave-summary-open data-summary-title="Rejected Requests" data-summary-subtitle="Rejected requests grouped by leave type." data-summary-details="{{ json_encode($leaveSummaryBreakdowns['rejected'] ?? []) }}" class="leave-management-card-motion leave-management-reveal cursor-pointer rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur focus:outline-none focus:ring-4 focus:ring-rose-200" style="--leave-management-delay: 120ms;">
+        <button type="button" data-leave-summary-open data-summary-title="Rejected Requests" data-summary-subtitle="Rejected requests grouped by leave type." data-summary-details="{{ json_encode($leaveSummaryBreakdowns['rejected'] ?? []) }}" class="leave-summary-card leave-management-card-motion leave-management-reveal cursor-pointer rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur focus:outline-none focus:ring-4 focus:ring-rose-200" style="--leave-management-delay: 120ms;">
           <span class="leave-management-icon-pop inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-100 text-rose-600" style="--leave-management-delay: 160ms;">
             <i class="fa-solid fa-circle-xmark text-lg"></i>
           </span>
@@ -209,7 +326,7 @@
       </div>
 
       <div data-admin-leave-live-region="request-workspace" class="grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.15fr)]">
-        <section class="leave-workspace-panel leave-management-reveal overflow-hidden rounded-[1.75rem] border border-amber-100/80 bg-white/92 shadow-[0_22px_50px_rgba(15,23,42,0.07)] backdrop-blur" style="--leave-management-delay: 160ms;">
+        <section data-pending-leave-section class="leave-workspace-panel leave-management-reveal overflow-hidden rounded-[1.75rem] border border-amber-100/80 bg-white/92 shadow-[0_22px_50px_rgba(15,23,42,0.07)] backdrop-blur" style="--leave-management-delay: 160ms;">
           <div class="leave-workspace-header border-b border-amber-100 bg-[linear-gradient(180deg,rgba(254,243,199,0.45),rgba(255,255,255,0.85))] px-5 py-4">
             <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
@@ -406,7 +523,7 @@
           <div class="leave-workspace-header border-b border-slate-200 bg-[linear-gradient(180deg,rgba(239,246,255,0.7),rgba(255,255,255,0.92))] px-5 pb-4 pt-4 lg:pb-2">
             <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between lg:gap-6">
               <div class="shrink-0">
-                <div class="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/85 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
+                <div class="approved-history-badge inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/85 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
                   Approved Timeline
                 </div>
                 <h3 class="mt-3 text-xl font-black tracking-tight text-slate-900">Leave History</h3>

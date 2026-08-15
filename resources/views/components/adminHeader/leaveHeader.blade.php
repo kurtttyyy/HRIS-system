@@ -13,7 +13,7 @@
 <style>
     @media (max-width: 767px) {
         .leave-management-header {
-            padding: 0.75rem;
+            padding: 0.625rem 0.75rem 0.25rem;
         }
 
         .leave-management-header-card {
@@ -21,8 +21,9 @@
         }
 
         .leave-management-header-layout {
-            gap: 1rem;
-            padding: 1rem;
+            gap: 0.75rem;
+            padding: 0.9rem;
+            padding-left: 4rem;
         }
 
         .leave-management-header-badge {
@@ -31,31 +32,37 @@
 
         .leave-management-header-title {
             margin-top: 0;
-            font-size: 1.65rem;
-            line-height: 1.18;
+            font-size: 1.35rem;
+            line-height: 1.2;
         }
 
         .leave-management-header-subtitle {
-            margin-top: 0.5rem;
-            line-height: 1.35;
+            margin-top: 0.35rem;
+            font-size: 0.75rem;
+            line-height: 1.4;
         }
 
         .leave-management-header-stats {
-            margin-top: 0.75rem;
-            gap: 0.5rem;
+            margin-top: 0.55rem;
+            gap: 0.35rem;
+            font-size: 0.65rem;
         }
 
         .leave-management-header-stats > span {
-            padding: 0.35rem 0.6rem;
+            padding: 0.25rem 0.45rem;
         }
 
         .leave-management-month-filter {
-            border-radius: 1rem;
-            padding: 0.75rem;
+            border-radius: 0.85rem;
+            padding: 0.6rem;
+        }
+
+        .leave-management-month-filter > p {
+            font-size: 0.6rem;
         }
 
         .leave-management-month-filter-row {
-            margin-top: 0.75rem;
+            margin-top: 0.45rem;
             flex-direction: row;
             align-items: center;
             gap: 0.5rem;
@@ -63,13 +70,18 @@
 
         .leave-management-month-input {
             min-width: 0;
-            padding: 0.75rem;
-            border-radius: 0.85rem;
+            padding: 0.55rem 0.65rem;
+            border-radius: 0.7rem;
+        }
+
+        .leave-management-month-input input {
+            font-size: 0.75rem;
         }
 
         .leave-management-month-apply {
             flex: 0 0 auto;
-            padding: 0.75rem 1rem;
+            padding: 0.55rem 0.75rem;
+            font-size: 0.75rem;
         }
     }
 </style>
