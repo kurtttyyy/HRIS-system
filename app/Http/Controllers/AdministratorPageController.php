@@ -2875,42 +2875,59 @@ class AdministratorPageController extends Controller
     }
 
     public function display_school_administrator(){
+        $userTable = (new User())->getTable();
+        $employeeTable = (new Employee())->getTable();
+        $hasDepartmentHead = Schema::hasColumn($userTable, 'department_head');
+        $hasJobRole = Schema::hasColumn($userTable, 'job_role');
+        $hasUserPosition = Schema::hasColumn($userTable, 'position');
+        $hasEmployeePosition = Schema::hasColumn($employeeTable, 'position');
+        $hasLeadershipFilter = $hasDepartmentHead || $hasJobRole || $hasUserPosition || $hasEmployeePosition;
+
         $administrators = User::with($this->matrixEmployeeRelations([
             'id', 'title', 'department', 'employment', 'benifits',
         ]))
-            ->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee'])
-            ->where(function ($query) {
+            ->when(Schema::hasColumn($userTable, 'role'), fn ($query) => $query->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee']))
+            ->when($hasLeadershipFilter, function ($query) use ($hasDepartmentHead, $hasJobRole, $hasUserPosition, $hasEmployeePosition) {
                 $leadershipTerms = ['president', 'vice president', 'vice-president', 'vice dean', 'dean', 'department head', 'program head'];
-                $query->whereRaw("LOWER(TRIM(COALESCE(department_head, ''))) = ?", ['approved'])
-                    ->orWhere(function ($roleQuery) use ($leadershipTerms) {
+                $query->where(function ($leadershipQuery) use ($leadershipTerms, $hasDepartmentHead, $hasJobRole, $hasUserPosition, $hasEmployeePosition) {
+                    if ($hasDepartmentHead) {
+                        $leadershipQuery->orWhereRaw("LOWER(TRIM(COALESCE(department_head, ''))) = ?", ['approved']);
+                    }
+                    if ($hasJobRole) {
+                        $leadershipQuery->orWhere(function ($roleQuery) use ($leadershipTerms) {
                         foreach ($leadershipTerms as $term) {
                             $roleQuery->orWhereRaw("LOWER(TRIM(COALESCE(job_role, ''))) LIKE ?", ['%'.$term.'%']);
                         }
-                    })
-                    ->orWhere(function ($positionQuery) use ($leadershipTerms) {
+                        });
+                    }
+                    if ($hasUserPosition) {
+                        $leadershipQuery->orWhere(function ($positionQuery) use ($leadershipTerms) {
                         foreach ($leadershipTerms as $term) {
                             $positionQuery->orWhereRaw("LOWER(TRIM(COALESCE(position, ''))) LIKE ?", ['%'.$term.'%']);
                         }
-                    })
-                    ->orWhereHas('employee', function ($employeeQuery) use ($leadershipTerms) {
+                        });
+                    }
+                    if ($hasEmployeePosition) {
+                        $leadershipQuery->orWhereHas('employee', function ($employeeQuery) use ($leadershipTerms) {
                         $employeeQuery->where(function ($employeePositionQuery) use ($leadershipTerms) {
                             foreach ($leadershipTerms as $term) {
                                 $employeePositionQuery->orWhereRaw("LOWER(TRIM(COALESCE(position, ''))) LIKE ?", ['%'.$term.'%']);
                             }
                         });
-                    });
+                        });
+                    }
+                });
             })
-            ->orderByRaw("
+            ->when($hasJobRole || $hasUserPosition, fn ($query) => $query->orderByRaw("
                 CASE
-                    WHEN LOWER(TRIM(COALESCE(job_role, position, ''))) = 'president' THEN 0
-                    WHEN LOWER(TRIM(COALESCE(job_role, position, ''))) LIKE 'vice president%' THEN 1
-                    WHEN LOWER(TRIM(COALESCE(job_role, position, ''))) LIKE 'vice-president%' THEN 1
-                    WHEN LOWER(TRIM(COALESCE(job_role, position, ''))) LIKE 'dean%' THEN 2
-                    WHEN LOWER(TRIM(COALESCE(job_role, position, ''))) LIKE '%department head%' THEN 3
+                    WHEN LOWER(TRIM(COALESCE(".($hasJobRole ? 'job_role' : 'position').", ''))) = 'president' THEN 0
+                    WHEN LOWER(TRIM(COALESCE(".($hasJobRole ? 'job_role' : 'position').", ''))) LIKE 'vice president%' THEN 1
+                    WHEN LOWER(TRIM(COALESCE(".($hasJobRole ? 'job_role' : 'position').", ''))) LIKE 'vice-president%' THEN 1
+                    WHEN LOWER(TRIM(COALESCE(".($hasJobRole ? 'job_role' : 'position').", ''))) LIKE 'dean%' THEN 2
+                    WHEN LOWER(TRIM(COALESCE(".($hasJobRole ? 'job_role' : 'position').", ''))) LIKE '%department head%' THEN 3
                     ELSE 4
                 END
-            ")
-            ->orderByRaw("LOWER(TRIM(COALESCE(job_role, position, '')))")
+            "))
             ->orderBy('last_name')
             ->orderBy('first_name')
             ->get();
@@ -2922,19 +2939,30 @@ class AdministratorPageController extends Controller
 
     public function display_non_teaching_matrix()
     {
+        $userTable = (new User())->getTable();
+        $employeeTable = (new Employee())->getTable();
+        $positionTable = (new OpenPosition())->getTable();
+        $hasEmployeeJobType = Schema::hasColumn($employeeTable, 'job_type');
+        $hasPositionJobType = Schema::hasColumn($positionTable, 'job_type');
         $nonTeachingEmployees = User::with($this->matrixEmployeeRelations([
             'id', 'title', 'department', 'employment', 'benifits', 'job_type', 'skills',
         ]))
-            ->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee'])
-            ->whereRaw("NOT (TRIM(COALESCE(job_role, '')) <> '' AND TRIM(COALESCE(department_head, '')) <> '')")
-            ->where(function ($query) {
+            ->when(Schema::hasColumn($userTable, 'role'), fn ($query) => $query->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee']))
+            ->when(Schema::hasColumn($userTable, 'job_role') && Schema::hasColumn($userTable, 'department_head'), fn ($query) => $query->whereRaw("NOT (TRIM(COALESCE(job_role, '')) <> '' AND TRIM(COALESCE(department_head, '')) <> '')"))
+            ->when($hasEmployeeJobType || $hasPositionJobType, function ($query) use ($hasEmployeeJobType, $hasPositionJobType) {
+                $query->where(function ($query) use ($hasEmployeeJobType, $hasPositionJobType) {
+                if ($hasEmployeeJobType) {
                 $query
                     ->whereHas('employee', function ($employeeQuery) {
                         $employeeQuery->whereRaw("LOWER(TRIM(COALESCE(job_type, ''))) IN (?, ?, ?)", ['non-teaching', 'non teaching', 'nt']);
-                    })
-                    ->orWhereHas('applicant.position', function ($positionQuery) {
+                    });
+                }
+                if ($hasPositionJobType) {
+                    $query->orWhereHas('applicant.position', function ($positionQuery) {
                         $positionQuery->whereRaw("LOWER(TRIM(COALESCE(job_type, ''))) IN (?, ?, ?)", ['non-teaching', 'non teaching', 'nt']);
                     });
+                }
+                });
             })
             ->orderBy('last_name')
             ->orderBy('first_name')
@@ -2947,18 +2975,29 @@ class AdministratorPageController extends Controller
 
     public function display_teaching_matrix()
     {
+        $userTable = (new User())->getTable();
+        $employeeTable = (new Employee())->getTable();
+        $positionTable = (new OpenPosition())->getTable();
+        $hasEmployeeJobType = Schema::hasColumn($employeeTable, 'job_type');
+        $hasPositionJobType = Schema::hasColumn($positionTable, 'job_type');
         $teachingEmployees = User::with($this->matrixEmployeeRelations([
             'id', 'title', 'department', 'employment', 'benifits', 'job_type', 'skills', 'responsibilities', 'requirements',
         ]))
-            ->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee'])
-            ->where(function ($query) {
+            ->when(Schema::hasColumn($userTable, 'role'), fn ($query) => $query->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee']))
+            ->when($hasEmployeeJobType || $hasPositionJobType, function ($query) use ($hasEmployeeJobType, $hasPositionJobType) {
+                $query->where(function ($query) use ($hasEmployeeJobType, $hasPositionJobType) {
+                if ($hasEmployeeJobType) {
                 $query
                     ->whereHas('employee', function ($employeeQuery) {
                         $employeeQuery->whereRaw("LOWER(TRIM(COALESCE(job_type, ''))) IN (?, ?, ?)", ['teaching', 'teacher', 'faculty']);
-                    })
-                    ->orWhereHas('applicant.position', function ($positionQuery) {
+                    });
+                }
+                if ($hasPositionJobType) {
+                    $query->orWhereHas('applicant.position', function ($positionQuery) {
                         $positionQuery->whereRaw("LOWER(TRIM(COALESCE(job_type, ''))) IN (?, ?, ?)", ['teaching', 'teacher', 'faculty']);
                     });
+                }
+                });
             })
             ->orderBy('last_name')
             ->orderBy('first_name')

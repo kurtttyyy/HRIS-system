@@ -1656,7 +1656,7 @@
     });
 
     return [
-      '<?xml version="1.0"?>',
+      '<' + '?xml version="1.0"?>',
       '<?mso-application progid="Excel.Sheet"?>',
       '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"',
       ' xmlns:o="urn:schemas-microsoft-com:office:office"',
@@ -1763,7 +1763,7 @@
     ).join('');
 
     const xmlParts = [
-      '<?xml version="1.0"?>',
+      '<' + '?xml version="1.0"?>',
       '<?mso-application progid="Excel.Sheet"?>',
       '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"',
       ' xmlns:o="urn:schemas-microsoft-com:office:office"',
