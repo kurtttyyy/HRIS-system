@@ -76,6 +76,21 @@
       overflow-x: hidden;
       scrollbar-gutter: stable both-edges;
     }
+    .employee-profile-tabs {
+      overflow-x: auto;
+      overflow-y: hidden;
+      overscroll-behavior-x: contain;
+      scroll-behavior: smooth;
+      scroll-snap-type: x proximity;
+      touch-action: pan-x;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
+    .employee-profile-tabs > button {
+      flex: 0 0 auto;
+      white-space: nowrap;
+      scroll-snap-align: start;
+    }
     .employee-page-reveal {
       opacity: 0;
       transform: translate3d(0, 22px, 0) scale(0.985);
@@ -443,6 +458,7 @@
         employeeById: {},
         employeeFilterSequence: 0,
         employeeFilterLoading: false,
+        employeeProfileLoading: false,
         accountStatusVersion: '',
         accountStatusPolling: false,
         accountStatusPollTimer: null,
@@ -1256,14 +1272,19 @@
             return;
           }
           this.openProfile = true;
+          this.employeeProfileLoading = true;
           this.tab = 'overview';
-          await this.setEmployee({
-            ...(emp ?? {}),
-            ui_theme: {
-              header_start: headerStart ?? 'rgb(168 85 247)',
-              header_end: headerEnd ?? 'rgb(99 102 241)',
-            },
-          });
+          try {
+            await this.setEmployee({
+              ...(emp ?? {}),
+              ui_theme: {
+                header_start: headerStart ?? 'rgb(168 85 247)',
+                header_end: headerEnd ?? 'rgb(99 102 241)',
+              },
+            });
+          } finally {
+            this.employeeProfileLoading = false;
+          }
         },
         async openEmployeeFromQuery() {
           const params = new URLSearchParams(window.location.search);
@@ -1279,7 +1300,12 @@
           }
 
           this.openProfile = true;
-          await this.setEmployee(matchedEmployee);
+          this.employeeProfileLoading = true;
+          try {
+            await this.setEmployee(matchedEmployee);
+          } finally {
+            this.employeeProfileLoading = false;
+          }
 
           const requestedTab = this.normalize(params.get('tab'));
           const allowedTabs = ['overview', 'personal', 'performance', 'documents', 'record', 'biometric'];
@@ -3408,7 +3434,29 @@
       class="fixed inset-0 bg-black/50 flex items-center justify-center z-40"
       style="display:none"
     >
-      <div class="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div class="relative bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+        <div
+          x-cloak
+          x-show="employeeProfileLoading"
+          x-transition.opacity
+          class="absolute inset-0 z-50 flex min-h-64 items-center justify-center bg-white/95 px-6 text-center backdrop-blur-sm"
+          role="status"
+          aria-live="polite"
+          aria-label="Loading employee details"
+        >
+          <div class="flex flex-col items-center gap-3">
+            <img
+              src="{{ asset('images/animation_searching.gif') }}?v={{ filemtime(public_path('images/animation_searching.gif')) }}"
+              alt=""
+              aria-hidden="true"
+              class="h-20 w-20 rounded-full object-contain"
+            >
+            <div>
+              <p class="font-bold text-slate-800">Loading employee details</p>
+              <p class="mt-1 text-sm text-slate-500">Please wait while the profile is being prepared.</p>
+            </div>
+          </div>
+        </div>
         <div class="employee-profile-modal-scroll">
 
         <div
@@ -3418,7 +3466,7 @@
           <button @click="openProfile=false" class="absolute top-4 right-4 text-2xl">&times;</button>
 
           <div class="flex items-center gap-4">
-            <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center font-bold overflow-hidden">
+            <div class="w-16 h-16 min-w-16 shrink-0 aspect-square rounded-full bg-white/20 flex items-center justify-center font-bold overflow-hidden">
               <template x-if="hasProfilePhoto()">
                 <img
                   :src="profilePhotoUrl()"
@@ -3461,7 +3509,7 @@
         </div>
 
         <!-- Tabs -->
-        <div class="flex gap-6 px-6 pt-4 border-b text-sm">
+        <div class="employee-profile-tabs flex gap-6 px-6 pt-4 border-b text-sm" aria-label="Employee profile sections">
           <button @click="tab='overview'" :class="tab==='overview' ? 'text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-2' : 'text-gray-500'" class="inline-flex items-center gap-1.5">
             <span>Overview</span>
             <span x-show="tabMissingCount('overview') > 0" class="inline-flex min-w-[1.2rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">!</span>
