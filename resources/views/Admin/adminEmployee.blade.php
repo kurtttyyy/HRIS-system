@@ -458,7 +458,6 @@
         employeeById: {},
         employeeFilterSequence: 0,
         employeeFilterLoading: false,
-        employeeProfileLoading: false,
         accountStatusVersion: '',
         accountStatusPolling: false,
         accountStatusPollTimer: null,
@@ -1272,19 +1271,14 @@
             return;
           }
           this.openProfile = true;
-          this.employeeProfileLoading = true;
           this.tab = 'overview';
-          try {
-            await this.setEmployee({
-              ...(emp ?? {}),
-              ui_theme: {
-                header_start: headerStart ?? 'rgb(168 85 247)',
-                header_end: headerEnd ?? 'rgb(99 102 241)',
-              },
-            });
-          } finally {
-            this.employeeProfileLoading = false;
-          }
+          await this.setEmployee({
+            ...(emp ?? {}),
+            ui_theme: {
+              header_start: headerStart ?? 'rgb(168 85 247)',
+              header_end: headerEnd ?? 'rgb(99 102 241)',
+            },
+          });
         },
         async openEmployeeFromQuery() {
           const params = new URLSearchParams(window.location.search);
@@ -1300,12 +1294,7 @@
           }
 
           this.openProfile = true;
-          this.employeeProfileLoading = true;
-          try {
-            await this.setEmployee(matchedEmployee);
-          } finally {
-            this.employeeProfileLoading = false;
-          }
+          await this.setEmployee(matchedEmployee);
 
           const requestedTab = this.normalize(params.get('tab'));
           const allowedTabs = ['overview', 'personal', 'performance', 'documents', 'record', 'biometric'];
@@ -2730,21 +2719,21 @@
       x-transition:leave="transition ease-in duration-150"
       x-transition:leave-start="opacity-100"
       x-transition:leave-end="opacity-0"
-      class="pointer-events-none fixed bottom-4 left-1/2 z-[70] -translate-x-1/2"
+      class="pointer-events-none fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/15 px-4 backdrop-blur-[1px]"
       role="status"
       aria-live="polite"
       aria-label="Searching employees"
     >
-      <div class="flex items-center gap-2.5 rounded-full border border-slate-200/90 bg-white/95 py-2 pl-2 pr-4 shadow-[0_10px_30px_rgba(15,23,42,0.16)] backdrop-blur-md">
+      <div class="flex min-w-[15rem] flex-col items-center gap-3 rounded-3xl border border-slate-200/90 bg-white/95 px-8 py-6 text-center shadow-[0_20px_55px_rgba(15,23,42,0.24)] backdrop-blur-md">
         <img
           src="{{ asset('images/animation_searching.gif') }}?v={{ filemtime(public_path('images/animation_searching.gif')) }}"
           alt=""
           aria-hidden="true"
-          class="h-8 w-8 rounded-full object-contain"
+          class="h-24 w-24 rounded-full object-contain sm:h-28 sm:w-28"
         >
         <div class="min-w-0 whitespace-nowrap">
-          <p class="text-xs font-bold text-slate-800">Meow Searching</p>
-          <p class="text-[10px] font-medium text-slate-500">Results will update shortly</p>
+          <p class="text-base font-bold text-slate-800">Meow Searching</p>
+          <p class="mt-1 text-xs font-medium text-slate-500">Results will update shortly</p>
         </div>
       </div>
     </div>
@@ -3434,29 +3423,7 @@
       class="fixed inset-0 bg-black/50 flex items-center justify-center z-40"
       style="display:none"
     >
-      <div class="relative bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
-        <div
-          x-cloak
-          x-show="employeeProfileLoading"
-          x-transition.opacity
-          class="absolute inset-0 z-50 flex min-h-64 items-center justify-center bg-white/95 px-6 text-center backdrop-blur-sm"
-          role="status"
-          aria-live="polite"
-          aria-label="Loading employee details"
-        >
-          <div class="flex flex-col items-center gap-3">
-            <img
-              src="{{ asset('images/animation_searching.gif') }}?v={{ filemtime(public_path('images/animation_searching.gif')) }}"
-              alt=""
-              aria-hidden="true"
-              class="h-20 w-20 rounded-full object-contain"
-            >
-            <div>
-              <p class="font-bold text-slate-800">Loading employee details</p>
-              <p class="mt-1 text-sm text-slate-500">Please wait while the profile is being prepared.</p>
-            </div>
-          </div>
-        </div>
+      <div class="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
         <div class="employee-profile-modal-scroll">
 
         <div
