@@ -3,7 +3,7 @@
         const savedTheme = localStorage.getItem('hris-color-theme');
         const theme = savedTheme === 'dark' || savedTheme === 'light'
             ? savedTheme
-            : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            : 'light';
         document.documentElement.dataset.theme = theme;
     })();
 </script>

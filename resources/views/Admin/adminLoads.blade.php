@@ -111,6 +111,182 @@
         transform: none;
       }
     }
+    @media (max-width: 767px) {
+      main { margin-left: 0 !important; }
+      #admin-loads-page {
+        padding: 0.75rem !important;
+      }
+      .loads-hero {
+        padding: 1rem !important;
+        border-radius: 1.25rem !important;
+        box-shadow: 0 14px 34px rgba(3, 19, 29, 0.18) !important;
+      }
+      .loads-hero-layout {
+        gap: 0.75rem !important;
+      }
+      .loads-hero-badge {
+        display: none !important;
+      }
+      .loads-hero-title {
+        margin-top: 0 !important;
+        padding-left: 3.5rem;
+        font-size: 1.4rem !important;
+        line-height: 1.18 !important;
+      }
+      .loads-hero-description {
+        margin-top: 0.4rem !important;
+        font-size: 0.72rem !important;
+        line-height: 1.45 !important;
+      }
+      .loads-hero-stats {
+        margin-top: 0.65rem !important;
+        gap: 0.35rem !important;
+        font-size: 0.6rem !important;
+      }
+      .loads-hero-stats > span {
+        padding: 0.25rem 0.45rem !important;
+      }
+      .loads-hero-status-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.5rem !important;
+      }
+      .loads-hero-status-card {
+        min-width: 0;
+        padding: 0.65rem !important;
+        border-radius: 0.8rem !important;
+        box-shadow: none !important;
+      }
+      .loads-hero-status-card p:first-child {
+        font-size: 0.55rem !important;
+        letter-spacing: 0.12em !important;
+      }
+      .loads-hero-status-card p:nth-child(2) {
+        margin-top: 0.3rem !important;
+        overflow: hidden;
+        font-size: 0.72rem !important;
+        line-height: 1.25;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .loads-hero-status-card p:nth-child(3) {
+        margin-top: 0.2rem !important;
+        font-size: 0.58rem !important;
+        line-height: 1.3;
+      }
+      .loads-summary-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.65rem !important;
+      }
+      .loads-summary-card {
+        min-width: 0;
+        min-height: 8.5rem;
+        padding: 0.85rem !important;
+        border-radius: 1rem !important;
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.055) !important;
+      }
+      .loads-summary-card .loads-icon-pop {
+        width: 2.25rem !important;
+        height: 2.25rem !important;
+        border-radius: 0.7rem !important;
+        font-size: 0.8rem !important;
+      }
+      .loads-summary-card > p:nth-of-type(1) {
+        margin-top: 0.7rem !important;
+        font-size: 0.6rem !important;
+        letter-spacing: 0.1em !important;
+      }
+      .loads-summary-card > p:nth-of-type(2) {
+        margin-top: 0.3rem !important;
+        font-size: 1.5rem !important;
+        line-height: 1;
+      }
+      .loads-summary-card > p:nth-of-type(3) {
+        margin-top: 0.3rem !important;
+        font-size: 0.66rem !important;
+        line-height: 1.25;
+      }
+      .loads-upload-panel {
+        padding: 1rem !important;
+        border-radius: 1rem !important;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.055) !important;
+      }
+      .loads-upload-heading {
+        margin-top: 0 !important;
+        font-size: 1.15rem !important;
+      }
+      .loads-upload-badge {
+        display: none !important;
+      }
+      .loads-upload-description {
+        margin-top: 0.35rem !important;
+        font-size: 0.7rem !important;
+        line-height: 1.4 !important;
+      }
+      #loads_upload_form {
+        margin-top: 1rem !important;
+        row-gap: 0.85rem !important;
+      }
+      .loads-upload-zone {
+        padding: 1.25rem 0.75rem !important;
+        border-radius: 1rem !important;
+      }
+      .loads-upload-zone > span {
+        width: 2.75rem !important;
+        height: 2.75rem !important;
+        border-radius: 0.8rem !important;
+      }
+      .loads-upload-zone > span i {
+        font-size: 1rem !important;
+      }
+      .loads-upload-zone > p:nth-of-type(1) {
+        margin-top: 0.75rem !important;
+        font-size: 0.82rem !important;
+      }
+      .loads-upload-zone > p:nth-of-type(2) {
+        margin-top: 0.3rem !important;
+        font-size: 0.65rem !important;
+      }
+      .loads-upload-steps {
+        display: grid !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        width: 100%;
+        margin-top: 0.75rem !important;
+        gap: 0.3rem !important;
+      }
+      .loads-upload-steps > span {
+        overflow: hidden;
+        padding: 0.3rem 0.2rem !important;
+        font-size: 0.55rem !important;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      #selected_loads_name {
+        margin-top: 0.75rem !important;
+        font-size: 0.68rem !important;
+      }
+      .loads-upload-info {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 0.4rem !important;
+        padding: 0.5rem !important;
+        border-radius: 0.9rem !important;
+      }
+      .loads-upload-info > div {
+        min-width: 0;
+        padding: 0.55rem !important;
+        border-radius: 0.65rem !important;
+        box-shadow: none !important;
+      }
+      .loads-upload-info > div p:first-child {
+        font-size: 0.5rem !important;
+        letter-spacing: 0.1em !important;
+      }
+      .loads-upload-info > div p:nth-child(2) {
+        margin-top: 0.3rem !important;
+        font-size: 0.6rem !important;
+        line-height: 1.25;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_45%,#f8fafc_100%)] text-slate-800">
@@ -127,34 +303,34 @@
       $latestUpload = $loadsFiles->sortByDesc(fn ($file) => optional($file->uploaded_at)?->timestamp ?? 0)->first();
     @endphp
     <div id="admin-loads-page" class="p-4 md:p-8 pt-10 space-y-6">
-      <section class="loads-reveal relative overflow-hidden rounded-[2rem] border border-emerald-950/70 bg-[linear-gradient(135deg,_#020617_0%,_#020617_42%,_#111827_68%,_#064e3b_100%)] px-6 py-6 shadow-[0_24px_60px_rgba(3,19,29,0.34)] md:px-8" style="--loads-delay: 0ms;">
+      <section class="loads-hero loads-reveal relative overflow-hidden rounded-[2rem] border border-emerald-950/70 bg-[linear-gradient(135deg,_#020617_0%,_#020617_42%,_#111827_68%,_#064e3b_100%)] px-6 py-6 shadow-[0_24px_60px_rgba(3,19,29,0.34)] md:px-8" style="--loads-delay: 0ms;">
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.14),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(110,231,183,0.14),_transparent_32%)]"></div>
         <div class="absolute -left-8 top-6 h-24 w-24 rounded-full bg-cyan-300/10 blur-3xl"></div>
         <div class="absolute right-0 top-0 h-32 w-32 translate-x-10 -translate-y-8 rounded-full bg-emerald-300/20 blur-3xl"></div>
-        <div class="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+        <div class="loads-hero-layout relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div class="max-w-3xl">
-            <div class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-50">
+            <div class="loads-hero-badge inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-50">
               <span class="h-2 w-2 rounded-full bg-cyan-300"></span>
               Loads Center
             </div>
-            <h1 class="mt-4 text-3xl font-black tracking-tight text-white md:text-4xl">Uploaded and Scanned Loads</h1>
-            <p class="mt-2 max-w-2xl text-sm leading-6 text-emerald-50/85 md:text-base">
+            <h1 class="loads-hero-title mt-4 text-3xl font-black tracking-tight text-white md:text-4xl">Uploaded and Scanned Loads</h1>
+            <p class="loads-hero-description mt-2 max-w-2xl text-sm leading-6 text-emerald-50/85 md:text-base">
               Upload teaching-load files, track scan readiness, and move from raw source sheets to view-ready load summaries in one workspace.
             </p>
-            <div class="mt-4 flex flex-wrap gap-3 text-xs font-medium text-emerald-50/80">
+            <div class="loads-hero-stats mt-4 flex flex-wrap gap-3 text-xs font-medium text-emerald-50/80">
               <span class="rounded-full border border-white/10 bg-white/8 px-3 py-1.5">{{ now()->format('l, F j, Y') }}</span>
               <span class="rounded-full border border-white/10 bg-white/8 px-3 py-1.5">{{ $uploadedCount }} uploaded file(s)</span>
               <span class="rounded-full border border-white/10 bg-white/8 px-3 py-1.5">{{ $scannedCount }} scanned</span>
             </div>
           </div>
 
-          <div class="grid gap-3 sm:grid-cols-2 xl:min-w-[420px]">
-            <div class="loads-card-motion loads-reveal rounded-2xl border border-white/10 bg-white/8 px-4 py-4 shadow-sm backdrop-blur" style="--loads-delay: 70ms;">
+          <div class="loads-hero-status-grid grid gap-3 sm:grid-cols-2 xl:min-w-[420px]">
+            <div class="loads-hero-status-card loads-card-motion loads-reveal rounded-2xl border border-white/10 bg-white/8 px-4 py-4 shadow-sm backdrop-blur" style="--loads-delay: 70ms;">
               <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-50/70">Latest Upload</p>
               <p class="mt-2 text-sm font-semibold text-white">{{ $latestUpload?->original_name ?? 'No file yet' }}</p>
               <p class="mt-1 text-xs text-emerald-50/75">{{ optional($latestUpload?->uploaded_at)->format('M d, Y h:i A') ?? 'Waiting for first upload' }}</p>
             </div>
-            <div class="loads-card-motion loads-reveal rounded-2xl border border-white/10 bg-white/8 px-4 py-4 shadow-sm backdrop-blur" style="--loads-delay: 100ms;">
+            <div class="loads-hero-status-card loads-card-motion loads-reveal rounded-2xl border border-white/10 bg-white/8 px-4 py-4 shadow-sm backdrop-blur" style="--loads-delay: 100ms;">
               <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-50/70">Queue Status</p>
               <p class="mt-2 text-sm font-semibold text-white">{{ $pendingCount }} pending scan</p>
               <p class="mt-1 text-xs text-emerald-50/75">Upload is active. Scan remains a visual placeholder for now.</p>
@@ -163,8 +339,8 @@
         </div>
       </section>
 
-      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div class="loads-surface loads-card-motion loads-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--loads-delay: 120ms;">
+      <div class="loads-summary-grid grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div class="loads-summary-card loads-surface loads-card-motion loads-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--loads-delay: 120ms;">
           <span class="loads-icon-pop inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-100 text-sky-600" style="--loads-delay: 150ms;">
             <i class="fa-solid fa-folder-tree text-lg"></i>
           </span>
@@ -173,7 +349,7 @@
           <p class="mt-1 text-sm text-slate-500">Stored source load files</p>
         </div>
 
-        <div class="loads-surface loads-card-motion loads-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--loads-delay: 150ms;">
+        <div class="loads-summary-card loads-surface loads-card-motion loads-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--loads-delay: 150ms;">
           <span class="loads-icon-pop inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600" style="--loads-delay: 180ms;">
             <i class="fa-solid fa-circle-check text-lg"></i>
           </span>
@@ -182,7 +358,7 @@
           <p class="mt-1 text-sm text-slate-500">Preview-ready load data</p>
         </div>
 
-        <div class="loads-surface loads-card-motion loads-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--loads-delay: 180ms;">
+        <div class="loads-summary-card loads-surface loads-card-motion loads-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--loads-delay: 180ms;">
           <span class="loads-icon-pop inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-600" style="--loads-delay: 210ms;">
             <i class="fa-solid fa-hourglass-half text-lg"></i>
           </span>
@@ -191,7 +367,7 @@
           <p class="mt-1 text-sm text-slate-500">Files waiting for scan</p>
         </div>
 
-        <div class="loads-surface loads-card-motion loads-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--loads-delay: 210ms;">
+        <div class="loads-summary-card loads-surface loads-card-motion loads-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--loads-delay: 210ms;">
           <span class="loads-icon-pop inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600" style="--loads-delay: 240ms;">
             <i class="fa-solid fa-eye text-lg"></i>
           </span>
@@ -203,14 +379,14 @@
 
       <div class="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.35fr)]">
         <section class="space-y-6">
-          <div class="loads-surface loads-reveal overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/90 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur" style="--loads-delay: 250ms;">
+          <div class="loads-upload-panel loads-surface loads-reveal overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/90 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur" style="--loads-delay: 250ms;">
             <div class="flex items-start justify-between gap-4">
               <div>
-                <div class="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
+                <div class="loads-upload-badge inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
                   Upload Center
                 </div>
-                <h2 class="mt-4 text-2xl font-black tracking-tight text-slate-900">Import loads file</h2>
-                <p class="mt-2 text-sm leading-6 text-slate-500">
+                <h2 class="loads-upload-heading mt-4 text-2xl font-black tracking-tight text-slate-900">Import loads file</h2>
+                <p class="loads-upload-description mt-2 text-sm leading-6 text-slate-500">
                   Static design preview only. This layout mirrors the payslip workflow for uploaded and scanned load files.
                 </p>
               </div>
@@ -241,7 +417,7 @@
                 </span>
                 <p class="mt-5 text-base font-semibold text-slate-800">Browse loads file to upload</p>
                 <p class="mt-2 text-sm text-slate-500">Accepted formats: `.xlsx`, `.xls`, and `.csv`.</p>
-                <div class="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-500">
+                <div class="loads-upload-steps mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-500">
                   <span class="rounded-full border border-slate-200 bg-white px-3 py-1">1. Upload</span>
                   <span class="rounded-full border border-slate-200 bg-white px-3 py-1">2. Select</span>
                   <span class="rounded-full border border-slate-200 bg-white px-3 py-1">3. Scan</span>
@@ -250,7 +426,7 @@
                 <p id="selected_loads_name" class="mt-5 text-sm font-medium text-sky-700">No file selected</p>
               </label>
 
-              <div class="grid gap-3 rounded-[1.5rem] border border-slate-200 bg-slate-50/80 p-4 sm:grid-cols-3">
+              <div class="loads-upload-info grid gap-3 rounded-[1.5rem] border border-slate-200 bg-slate-50/80 p-4 sm:grid-cols-3">
                 <div class="rounded-2xl bg-white px-4 py-3 shadow-sm">
                   <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Accepted</p>
                   <p class="mt-2 text-sm font-semibold text-slate-700">Excel and CSV</p>

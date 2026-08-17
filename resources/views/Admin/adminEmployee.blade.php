@@ -180,6 +180,17 @@
         margin-top: 0.15rem;
         flex: 0 0 auto;
       }
+      #employee-directory-table-export thead th:nth-child(1),
+      #employee-directory-table-export thead th:nth-child(2) {
+        left: auto !important;
+        z-index: 10 !important;
+      }
+      #employee-directory-table-export tbody td:nth-child(1),
+      #employee-directory-table-export tbody td:nth-child(2) {
+        position: static !important;
+        left: auto !important;
+        box-shadow: none !important;
+      }
     }
   </style>
 </head>

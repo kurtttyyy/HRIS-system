@@ -12,6 +12,104 @@
     body { font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif; transition: margin-left 0.3s ease; }
     main { transition: margin-left 0.3s ease; }
     aside ~ main { margin-left: 16rem; }
+    @media (max-width: 767px) {
+      main { margin-left: 0 !important; }
+      .job-detail-page {
+        padding: 5rem 0.75rem 1.5rem !important;
+      }
+      .job-detail-back {
+        padding: 0.6rem 0.85rem !important;
+        font-size: 0.75rem !important;
+      }
+      .job-detail-hero {
+        padding: 1rem !important;
+        border-radius: 1.25rem !important;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.07) !important;
+      }
+      .job-detail-avatar {
+        width: 3rem !important;
+        height: 3rem !important;
+        flex: 0 0 3rem;
+        border-radius: 1rem !important;
+        font-size: 0.95rem !important;
+      }
+      .job-detail-heading-row {
+        gap: 0.75rem !important;
+      }
+      .job-detail-title {
+        margin-top: 0.7rem !important;
+        font-size: 1.5rem !important;
+        line-height: 1.15 !important;
+      }
+      .job-detail-subtitle {
+        margin-top: 0.35rem !important;
+        font-size: 0.75rem !important;
+      }
+      .job-detail-meta {
+        margin-top: 0.75rem !important;
+        gap: 0.4rem !important;
+      }
+      .job-detail-meta > span {
+        padding: 0.4rem 0.6rem !important;
+        font-size: 0.65rem !important;
+      }
+      .job-detail-actions {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+        gap: 0.55rem !important;
+      }
+      .job-detail-actions > a,
+      .job-detail-actions > form,
+      .job-detail-actions > span,
+      .job-detail-actions button {
+        width: 100%;
+      }
+      .job-detail-actions > a,
+      .job-detail-actions button,
+      .job-detail-actions > span {
+        justify-content: center;
+        padding: 0.65rem 0.75rem !important;
+        font-size: 0.72rem !important;
+      }
+      .job-detail-metrics {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        margin-top: 1rem !important;
+        gap: 0 !important;
+        padding: 0.55rem !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 1rem;
+        background: rgba(255, 255, 255, 0.78);
+      }
+      .job-detail-metric {
+        min-width: 0;
+        padding: 0.5rem 0.3rem !important;
+        border: 0 !important;
+        border-right: 1px solid #e2e8f0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+      }
+      .job-detail-metric:last-child {
+        border-right: 0 !important;
+      }
+      .job-detail-metric > div {
+        width: 1.75rem !important;
+        height: 1.75rem !important;
+        border-radius: 0.55rem !important;
+        font-size: 0.68rem !important;
+      }
+      .job-detail-metric p:nth-of-type(1) {
+        margin-top: 0.5rem !important;
+        font-size: 1rem !important;
+        line-height: 1.1;
+      }
+      .job-detail-metric p:nth-of-type(2) {
+        margin-top: 0.25rem !important;
+        font-size: 0.58rem !important;
+        line-height: 1.25;
+      }
+    }
   </style>
 </head>
 
@@ -56,20 +154,20 @@
   @include('components.adminSideBar')
 
   <main class="flex-1 ml-16 transition-all duration-300">
-    <div class="space-y-6 p-4 pt-10 md:p-8">
-      <a href="{{ route('admin.adminPosition') }}" class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition hover:border-slate-300 hover:text-slate-900">
+    <div class="job-detail-page space-y-6 p-4 pt-10 md:p-8">
+      <a href="{{ route('admin.adminPosition') }}" class="job-detail-back inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition hover:border-slate-300 hover:text-slate-900">
         <i class="fa-solid fa-arrow-left text-xs"></i>
         Back to Jobs
       </a>
 
       <div class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_370px]">
         <div class="space-y-6">
-          <section class="relative overflow-hidden rounded-[2rem] border border-white/80 bg-white/92 p-6 shadow-[0_24px_55px_rgba(15,23,42,0.08)] backdrop-blur">
+          <section class="job-detail-hero relative overflow-hidden rounded-[2rem] border border-white/80 bg-white/92 p-6 shadow-[0_24px_55px_rgba(15,23,42,0.08)] backdrop-blur">
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.14),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.1),_transparent_28%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(255,255,255,0.92))]"></div>
             <div class="relative">
               <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                <div class="flex items-start gap-4">
-                  <div class="flex h-16 w-16 items-center justify-center rounded-[1.5rem] bg-[linear-gradient(135deg,#0ea5e9,#2563eb)] text-xl font-black text-white shadow-lg">
+                <div class="job-detail-heading-row flex items-start gap-4">
+                  <div class="job-detail-avatar flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.5rem] bg-[linear-gradient(135deg,#0ea5e9,#2563eb)] text-xl font-black text-white shadow-lg">
                     {{ $initials !== '' ? $initials : 'JB' }}
                   </div>
 
@@ -81,10 +179,10 @@
                       <span class="rounded-full border border-slate-200 bg-white/85 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">{{ $open->job_type }}</span>
                     </div>
 
-                    <h1 class="mt-4 text-3xl font-black tracking-tight text-slate-900 md:text-4xl">{{ $open->title }}</h1>
-                    <p class="mt-2 text-sm text-slate-600 md:text-base">{{ $open->department }} | {{ $open->employment }}</p>
+                    <h1 class="job-detail-title mt-4 text-3xl font-black tracking-tight text-slate-900 md:text-4xl">{{ $open->title }}</h1>
+                    <p class="job-detail-subtitle mt-2 text-sm text-slate-600 md:text-base">{{ $open->department }} | {{ $open->employment }}</p>
 
-                    <div class="mt-4 flex flex-wrap gap-2">
+                    <div class="job-detail-meta mt-4 flex flex-wrap gap-2">
                       @if (!empty($open->location))
                         <span class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/85 px-3 py-1.5 text-xs font-medium text-slate-600">
                           <i class="fa-solid fa-location-dot text-sky-500"></i>
@@ -99,7 +197,7 @@
                   </div>
                 </div>
 
-                <div class="flex flex-wrap gap-3">
+                <div class="job-detail-actions flex flex-wrap gap-3">
                   @if ($open->deleted_at)
                     <form action="{{ route('admin.restorePosition', $open->id) }}" method="POST">
                       @csrf
@@ -131,8 +229,8 @@
                 </div>
               </div>
 
-              <div class="mt-8 grid gap-4 border-t border-slate-200 pt-6 md:grid-cols-3">
-                <div class="rounded-[1.5rem] border border-slate-200 bg-white/80 p-4 text-center">
+              <div class="job-detail-metrics mt-8 grid gap-4 border-t border-slate-200 pt-6 md:grid-cols-3">
+                <div class="job-detail-metric rounded-[1.5rem] border border-slate-200 bg-white/80 p-4 text-center">
                   <div class="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-600">
                     <i class="fa-solid fa-users"></i>
                   </div>
@@ -140,7 +238,7 @@
                   <p class="mt-1 text-sm text-slate-500">Total Applicants</p>
                 </div>
 
-                <div class="rounded-[1.5rem] border border-slate-200 bg-white/80 p-4 text-center">
+                <div class="job-detail-metric rounded-[1.5rem] border border-slate-200 bg-white/80 p-4 text-center">
                   <div class="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600">
                     <i class="fa-regular fa-folder-open"></i>
                   </div>
@@ -148,7 +246,7 @@
                   <p class="mt-1 text-sm text-slate-500">In Review Pipeline</p>
                 </div>
 
-                <div class="rounded-[1.5rem] border border-slate-200 bg-white/80 p-4 text-center">
+                <div class="job-detail-metric rounded-[1.5rem] border border-slate-200 bg-white/80 p-4 text-center">
                   <div class="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
                     <i class="fa-regular fa-clock"></i>
                   </div>

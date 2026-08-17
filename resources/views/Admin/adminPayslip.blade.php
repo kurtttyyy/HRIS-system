@@ -113,7 +113,6 @@
       .payslip-hero {
         border-radius: 1.25rem !important;
         padding: 0.9rem !important;
-        padding-left: 4rem !important;
         box-shadow: 0 14px 34px rgba(3, 19, 29, 0.2) !important;
       }
       .payslip-hero-layout {
@@ -124,6 +123,7 @@
       }
       .payslip-hero-title {
         margin-top: 0 !important;
+        padding-left: 3.5rem;
         font-size: 1.35rem !important;
         line-height: 1.2 !important;
       }
@@ -168,10 +168,13 @@
         line-height: 1.3;
       }
       .payslip-summary-grid {
+        display: grid !important;
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         gap: 0.65rem !important;
       }
       .payslip-summary-card {
+        width: 100% !important;
+        min-width: 0 !important;
         min-height: 8.5rem;
         border-radius: 1rem !important;
         padding: 0.85rem !important;

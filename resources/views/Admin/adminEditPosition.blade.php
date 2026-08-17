@@ -100,6 +100,99 @@
       background: rgba(248, 250, 252, 0.76);
       padding: 0.95rem;
     }
+
+    @media (max-width: 767px) {
+      main { margin-left: 0 !important; }
+      .edit-position-page {
+        padding: 5rem 0.75rem 1.5rem !important;
+      }
+      .edit-position-back {
+        padding: 0.6rem 0.85rem !important;
+        font-size: 0.75rem !important;
+      }
+      .edit-position-hero {
+        border-radius: 1.1rem !important;
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07) !important;
+      }
+      .edit-position-hero > div {
+        gap: 0.85rem !important;
+        padding: 1rem !important;
+      }
+      .edit-position-heading {
+        gap: 0.75rem !important;
+      }
+      .edit-position-avatar {
+        width: 3rem !important;
+        height: 3rem !important;
+        flex: 0 0 3rem;
+        border-radius: 1rem !important;
+        font-size: 0.95rem !important;
+      }
+      .edit-position-title {
+        margin-top: 0.65rem !important;
+        font-size: 1.45rem !important;
+        line-height: 1.15 !important;
+      }
+      .edit-position-description {
+        margin-top: 0.4rem !important;
+        font-size: 0.72rem !important;
+        line-height: 1.45 !important;
+      }
+      .edit-position-actions {
+        display: grid !important;
+        grid-template-columns: 0.8fr 1.2fr;
+        width: 100%;
+        gap: 0.55rem !important;
+      }
+      .edit-position-actions > * {
+        justify-content: center;
+        padding: 0.65rem 0.7rem !important;
+        font-size: 0.72rem !important;
+      }
+      .edit-position-form section.glass-panel:not(.edit-position-hero) {
+        padding: 1rem !important;
+        border-radius: 1.1rem !important;
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.055) !important;
+      }
+      .edit-position-form .section-title {
+        gap: 0.6rem;
+        margin-bottom: 0.9rem;
+      }
+      .edit-position-form .section-icon {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.65rem;
+        font-size: 0.75rem;
+      }
+      .edit-position-form .section-title h2,
+      .edit-position-form .section-title h3 {
+        font-size: 1rem !important;
+      }
+      .edit-position-form .section-title p {
+        font-size: 0.58rem !important;
+        letter-spacing: 0.13em !important;
+      }
+      .edit-position-form .grid {
+        gap: 0.85rem;
+      }
+      .field-label {
+        margin-bottom: 0.35rem;
+        font-size: 0.68rem;
+      }
+      .field-control {
+        border-radius: 0.7rem;
+        padding: 0.65rem 0.75rem;
+        font-size: 0.8rem;
+      }
+      textarea.field-control {
+        min-height: 7rem;
+        line-height: 1.5;
+      }
+      .summary-item {
+        padding: 0.7rem;
+        border-radius: 0.75rem;
+      }
+    }
   </style>
 </head>
 
@@ -127,10 +220,10 @@
   @include('components.adminSideBar')
 
   <main class="flex-1 ml-16 transition-all duration-300">
-    <div class="p-4 pt-8 md:p-8">
+    <div class="edit-position-page p-4 pt-8 md:p-8">
       <div class="edit-shell space-y-5">
         <div class="flex flex-wrap items-center justify-between gap-3">
-          <a href="{{ route('admin.adminShowPosition', $open->id) }}" class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 shadow-sm transition hover:border-teal-200 hover:text-teal-700">
+          <a href="{{ route('admin.adminShowPosition', $open->id) }}" class="edit-position-back inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 shadow-sm transition hover:border-teal-200 hover:text-teal-700">
             <i class="fa-solid fa-arrow-left text-xs"></i>
             Back to Position
           </a>
@@ -140,7 +233,7 @@
           </div>
         </div>
 
-        <form action="{{ route('admin.updatePosition', $open->id) }}" method="POST" class="space-y-5">
+        <form action="{{ route('admin.updatePosition', $open->id) }}" method="POST" class="edit-position-form space-y-5">
           @csrf
 
           @if ($errors->any())
@@ -149,10 +242,10 @@
             </div>
           @endif
 
-          <section class="glass-panel overflow-hidden rounded-3xl">
+          <section class="edit-position-hero glass-panel overflow-hidden rounded-3xl">
             <div class="grid gap-6 p-6 md:grid-cols-[1fr_auto] md:p-7">
-              <div class="flex gap-4">
-                <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#0f766e,#2563eb)] text-xl font-black text-white shadow-lg">
+              <div class="edit-position-heading flex gap-4">
+                <div class="edit-position-avatar flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#0f766e,#2563eb)] text-xl font-black text-white shadow-lg">
                   {{ $roleInitials !== '' ? $roleInitials : 'JP' }}
                 </div>
                 <div>
@@ -160,14 +253,14 @@
                     <span class="rounded-full bg-teal-50 px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-teal-700">{{ $jobTypeValue ?: 'Job Type' }}</span>
                     <span class="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">{{ $employmentValue ?: 'Employment' }}</span>
                   </div>
-                  <h1 class="mt-3 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">Edit Job Posting</h1>
-                  <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                  <h1 class="edit-position-title mt-3 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">Edit Job Posting</h1>
+                  <p class="edit-position-description mt-2 max-w-2xl text-sm leading-6 text-slate-600">
                     Update the vacancy details shown to applicants. Keep the role clear, searchable, and ready for review.
                   </p>
                 </div>
               </div>
 
-              <div class="flex items-start gap-3">
+              <div class="edit-position-actions flex items-start gap-3">
                 <a href="{{ route('admin.adminShowPosition', $open->id) }}" class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-600 transition hover:text-slate-900">
                   <i class="fa-solid fa-xmark text-xs"></i>
                   Cancel

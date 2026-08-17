@@ -100,6 +100,51 @@
         transform: none;
       }
     }
+    @media (max-width: 767px) {
+      main { margin-left: 0 !important; }
+      #admin-interview-page {
+        padding: 0.75rem !important;
+      }
+      .interview-stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.65rem !important;
+      }
+      .interview-stat-card {
+        min-height: 9rem;
+        padding: 0.85rem !important;
+        border-radius: 1rem !important;
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.055) !important;
+      }
+      .interview-stat-card > div {
+        gap: 0.5rem !important;
+      }
+      .interview-stat-card p:first-child {
+        font-size: 0.6rem !important;
+        line-height: 1.3;
+        letter-spacing: 0.1em !important;
+      }
+      .interview-stat-card p:nth-child(2) {
+        margin-top: 0.45rem !important;
+        font-size: 1.8rem !important;
+        line-height: 1;
+      }
+      .interview-stat-card p:nth-child(3) {
+        margin-top: 0.35rem !important;
+        font-size: 0.66rem !important;
+        line-height: 1.3;
+      }
+      .interview-stat-card .interview-icon-pop {
+        width: 2.35rem !important;
+        height: 2.35rem !important;
+        border-radius: 0.75rem !important;
+        font-size: 0.8rem !important;
+      }
+      .interview-stat-card .interview-icon-pop + span {
+        margin-top: 0.5rem !important;
+        padding: 0.2rem 0.45rem !important;
+        font-size: 0.58rem !important;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#f1f5f9_48%,#eefbf6_100%)] text-slate-800">
@@ -143,8 +188,8 @@
         </div>
       </section>
 
-      <section class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <article class="interview-card-motion interview-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--interview-delay: 110ms;">
+      <section class="interview-stat-grid grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <article class="interview-stat-card interview-card-motion interview-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--interview-delay: 110ms;">
           <div class="flex items-start justify-between gap-4">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Today</p>
@@ -160,7 +205,7 @@
           </div>
         </article>
 
-        <article class="interview-card-motion interview-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--interview-delay: 140ms;">
+        <article class="interview-stat-card interview-card-motion interview-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--interview-delay: 140ms;">
           <div class="flex items-start justify-between gap-4">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">This Month</p>
@@ -176,7 +221,7 @@
           </div>
         </article>
 
-        <article class="interview-card-motion interview-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--interview-delay: 170ms;">
+        <article class="interview-stat-card interview-card-motion interview-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--interview-delay: 170ms;">
           <div class="flex items-start justify-between gap-4">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">This Year</p>
@@ -192,7 +237,7 @@
           </div>
         </article>
 
-        <article class="interview-card-motion interview-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--interview-delay: 200ms;">
+        <article class="interview-stat-card interview-card-motion interview-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--interview-delay: 200ms;">
           <div class="flex items-start justify-between gap-4">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Upcoming</p>

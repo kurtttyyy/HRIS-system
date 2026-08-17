@@ -23,7 +23,6 @@
         .leave-management-header-layout {
             gap: 0.75rem;
             padding: 0.9rem;
-            padding-left: 4rem;
         }
 
         .leave-management-header-badge {
@@ -32,6 +31,7 @@
 
         .leave-management-header-title {
             margin-top: 0;
+            padding-left: 3.5rem;
             font-size: 1.35rem;
             line-height: 1.2;
         }

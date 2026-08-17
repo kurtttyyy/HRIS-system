@@ -36,52 +36,52 @@
         }
         .communication-mobile-header,.communication-mobile-people,.communication-mobile-nav,.communication-mobile-empty,.communication-mobile-notifications{display:none}
         @media (max-width:767px){
-            body{background:#050505!important;color:#f8fafc}
+            body{background:#f8fafc!important;color:#0f172a}
             .admin-header-shell,[data-admin-sidebar-toggle]{display:none!important}
             #admin-communication-app>main{width:100%!important;margin-left:0!important}
-            #admin-communication-page{padding:0 0 5rem!important;row-gap:0!important;background:#050505}
+            #admin-communication-page{padding:0 0 5rem!important;row-gap:0!important;background:#f8fafc}
             #admin-communication-page.space-y-8>:not([hidden])~:not([hidden]){margin-top:0!important}
             .communication-mobile-header{display:block;padding:.85rem 1rem .55rem}
             .communication-mobile-title-row{display:flex;align-items:center;justify-content:space-between;gap:1rem}
-            .communication-mobile-title{font-size:1.55rem;font-weight:800;letter-spacing:-.04em;color:#fff}
-            .communication-mobile-compose{display:inline-flex;height:2.5rem;width:2.5rem;align-items:center;justify-content:center;border-radius:999px;background:#242424;color:#f8fafc}
+            .communication-mobile-title{font-size:1.55rem;font-weight:800;letter-spacing:-.04em;color:#0f172a}
+            .communication-mobile-compose{display:inline-flex;height:2.5rem;width:2.5rem;align-items:center;justify-content:center;border-radius:999px;background:#e2e8f0;color:#334155}
             .communication-mobile-search{position:relative;margin-top:.65rem}
             .communication-mobile-search i{position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:#94a3b8}
-            .communication-mobile-search input{width:100%;border:0;border-radius:999px;background:#242424;padding:.65rem 1rem .65rem 2.75rem;font-size:.85rem;color:#fff;outline:none}
-            .communication-mobile-search input::placeholder{color:#9ca3af}
+            .communication-mobile-search input{width:100%;border:1px solid #e2e8f0;border-radius:999px;background:#fff;padding:.65rem 1rem .65rem 2.75rem;font-size:.85rem;color:#0f172a;outline:none}
+            .communication-mobile-search input::placeholder{color:#94a3b8}
             .communication-mobile-people{display:flex;gap:.8rem;overflow-x:auto;padding:.35rem 1rem .9rem;scrollbar-width:none}
             .communication-mobile-people::-webkit-scrollbar{display:none}
             .communication-mobile-person{width:4.25rem;flex:0 0 4.25rem;text-align:center}
-            .communication-mobile-avatar{display:flex;height:3.75rem;width:3.75rem;align-items:center;justify-content:center;border-radius:999px;background:linear-gradient(145deg,#334155,#059669);font-size:.85rem;font-weight:800;color:#fff;box-shadow:0 0 0 2px #050505,0 0 0 3px #334155}
-            .communication-mobile-person p{margin-top:.4rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.68rem;color:#cbd5e1}
+            .communication-mobile-avatar{display:flex;height:3.75rem;width:3.75rem;align-items:center;justify-content:center;border-radius:999px;background:linear-gradient(145deg,#334155,#059669);font-size:.85rem;font-weight:800;color:#fff;box-shadow:0 0 0 2px #f8fafc,0 0 0 3px #cbd5e1}
+            .communication-mobile-person p{margin-top:.4rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.68rem;color:#475569}
             #admin-communication-page>.grid{display:block!important}
-            #admin-communication-page>.grid>section{min-height:0!important;border:0!important;border-radius:0!important;background:#050505!important;padding:0 .55rem!important;box-shadow:none!important}
+            #admin-communication-page>.grid>section{min-height:0!important;border:0!important;border-radius:0!important;background:#f8fafc!important;padding:0 .55rem!important;box-shadow:none!important}
             #admin-communication-page>.grid>section>.space-y-4>div:first-child{display:none}
             #admin-communication-page>.grid>section>.space-y-4{padding:.15rem .45rem .35rem}
             #admin-communication-page>.grid>section>.space-y-4>:not([hidden])~:not([hidden]){margin-top:.35rem!important}
             #admin-communication-page>.grid>section>.space-y-4>div:last-child{gap:.45rem}
             #admin-communication-page>.grid>section>.space-y-4>div:last-child>div{display:none}
-            #admin-all-filter,#admin-unread-filter{border-color:#303030!important;background:#202020!important;color:#e5e7eb!important;padding:.45rem .8rem!important}
+            #admin-all-filter,#admin-unread-filter{border-color:#e2e8f0!important;background:#fff!important;color:#334155!important;padding:.45rem .8rem!important}
             #admin-communication-directory-grid{margin-top:.15rem!important;gap:0!important;overflow:visible!important;padding:0!important}
             [data-communication-directory-card]{position:relative;border:0!important;border-radius:.85rem!important;background:transparent!important;padding:.65rem .55rem!important;box-shadow:none!important;ring:0!important}
             [data-communication-directory-card][data-has-messages="false"]{display:none!important}
             #admin-communication-page[data-mobile-tab="people"] [data-communication-directory-card][data-has-messages="false"]{display:block!important}
             #admin-communication-page[data-mobile-tab="people"] #admin-communication-page-filters{display:none!important}
             #admin-communication-page[data-mobile-tab="notifications"]>.grid{display:none!important}
-            [data-communication-directory-card]:active{background:#171717!important}
+            [data-communication-directory-card]:active{background:#e2e8f0!important}
             [data-communication-directory-card] .communication-icon-pop{height:3.35rem!important;width:3.35rem!important;border-radius:999px!important;font-size:.85rem!important}
-            [data-admin-employee-name-row] p{font-size:.92rem!important;color:#f8fafc!important}
+            [data-admin-employee-name-row] p{font-size:.92rem!important;color:#0f172a!important}
             [data-admin-employee-name-row] [data-admin-name-unread]{padding:.15rem .4rem!important;font-size:.58rem!important}
             [data-communication-directory-card] .text-slate-500,[data-admin-message-preview]{color:#9ca3af!important}
             [data-communication-directory-card] [data-admin-chat-connect]{position:absolute!important;inset:0!important;z-index:4!important;opacity:0!important}
-            #admin-communication-empty{border-color:#303030!important;background:#141414!important;color:#9ca3af!important}
-            .communication-mobile-empty{display:flex;min-height:9rem;align-items:center;justify-content:center;padding:1.5rem;text-align:center;color:#9ca3af}
+            #admin-communication-empty{border-color:#e2e8f0!important;background:#fff!important;color:#64748b!important}
+            .communication-mobile-empty{display:flex;min-height:9rem;align-items:center;justify-content:center;padding:1.5rem;text-align:center;color:#64748b}
             .communication-mobile-empty i{display:block;margin-bottom:.65rem;font-size:1.5rem;color:#64748b}
             .communication-mobile-empty p{font-size:.82rem;font-weight:600}
             .communication-mobile-notifications{display:block;padding:.35rem .75rem}
-            .communication-notification-row{display:flex;gap:.75rem;border-radius:.9rem;padding:.75rem;color:#f8fafc;text-decoration:none}
-            .communication-notification-row:active{background:#171717}
-            .communication-notification-icon{display:flex;height:2.7rem;width:2.7rem;flex:0 0 2.7rem;align-items:center;justify-content:center;border-radius:999px;background:#1e293b;color:#60a5fa}
+            .communication-notification-row{display:flex;gap:.75rem;border-radius:.9rem;padding:.75rem;color:#0f172a;text-decoration:none}
+            .communication-notification-row:active{background:#e2e8f0}
+            .communication-notification-icon{display:flex;height:2.7rem;width:2.7rem;flex:0 0 2.7rem;align-items:center;justify-content:center;border-radius:999px;background:#dbeafe;color:#2563eb}
             .communication-notification-copy{min-width:0;flex:1}
             .communication-notification-title{font-size:.82rem;font-weight:700;line-height:1.35}
             .communication-notification-message{margin-top:.15rem;font-size:.68rem;line-height:1.4;color:#9ca3af}
@@ -89,10 +89,28 @@
             #admin-conversation-workspace{min-height:0!important}
             [data-admin-chat-placeholder]{display:none!important}
             #admin-chat-panel{inset:0!important;height:100dvh!important;min-height:0!important;border:0!important;border-radius:0!important}
-            .communication-mobile-nav{position:fixed;bottom:0;left:0;right:0;z-index:60;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #242424;background:rgba(5,5,5,.96);padding:.5rem .25rem max(.5rem,env(safe-area-inset-bottom));backdrop-filter:blur(16px)}
+            .communication-mobile-nav{position:fixed;bottom:0;left:0;right:0;z-index:60;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #e2e8f0;background:rgba(255,255,255,.96);padding:.5rem .25rem max(.5rem,env(safe-area-inset-bottom));backdrop-filter:blur(16px)}
             .communication-mobile-nav a,.communication-mobile-nav button{display:flex;flex-direction:column;align-items:center;gap:.2rem;border:0;background:transparent;font-size:.6rem;color:#9ca3af}
             .communication-mobile-nav i{font-size:1.05rem}
             .communication-mobile-nav a.is-active{color:#60a5fa}
+            html[data-theme="dark"] body{background:#050505!important;color:#f8fafc}
+            html[data-theme="dark"] #admin-communication-page,
+            html[data-theme="dark"] #admin-communication-page>.grid>section{background:#050505!important}
+            html[data-theme="dark"] .communication-mobile-title{color:#fff}
+            html[data-theme="dark"] .communication-mobile-compose{background:#242424;color:#f8fafc}
+            html[data-theme="dark"] .communication-mobile-search input{border-color:#242424;background:#242424;color:#fff}
+            html[data-theme="dark"] .communication-mobile-avatar{box-shadow:0 0 0 2px #050505,0 0 0 3px #334155}
+            html[data-theme="dark"] .communication-mobile-person p{color:#cbd5e1}
+            html[data-theme="dark"] #admin-all-filter,
+            html[data-theme="dark"] #admin-unread-filter{border-color:#303030!important;background:#202020!important;color:#e5e7eb!important}
+            html[data-theme="dark"] [data-communication-directory-card]:active{background:#171717!important}
+            html[data-theme="dark"] [data-admin-employee-name-row] p{color:#f8fafc!important}
+            html[data-theme="dark"] #admin-communication-empty{border-color:#303030!important;background:#141414!important;color:#9ca3af!important}
+            html[data-theme="dark"] .communication-mobile-empty{color:#9ca3af}
+            html[data-theme="dark"] .communication-notification-row{color:#f8fafc}
+            html[data-theme="dark"] .communication-notification-row:active{background:#171717}
+            html[data-theme="dark"] .communication-notification-icon{background:#1e293b;color:#60a5fa}
+            html[data-theme="dark"] .communication-mobile-nav{border-top-color:#242424;background:rgba(5,5,5,.96)}
         }
     </style>
 </head>

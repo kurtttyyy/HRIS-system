@@ -133,6 +133,49 @@
         transform: none;
       }
     }
+    @media (max-width: 767px) {
+      #admin-applicant-page {
+        padding: 0.75rem !important;
+      }
+      .applicant-stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.65rem !important;
+      }
+      .applicant-stat-card {
+        min-height: 9rem;
+        padding: 0.85rem !important;
+        border-radius: 1rem !important;
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.055) !important;
+      }
+      .applicant-stat-card > div {
+        gap: 0.5rem !important;
+      }
+      .applicant-stat-card p:first-child {
+        font-size: 0.6rem !important;
+        line-height: 1.3;
+        letter-spacing: 0.1em !important;
+      }
+      .applicant-stat-card p:nth-child(2) {
+        margin-top: 0.45rem !important;
+        font-size: 1.8rem !important;
+        line-height: 1;
+      }
+      .applicant-stat-card p:nth-child(3) {
+        margin-top: 0.35rem !important;
+        font-size: 0.68rem !important;
+        line-height: 1.3;
+      }
+      .applicant-stat-card .applicant-icon-pop {
+        width: 2.35rem !important;
+        height: 2.35rem !important;
+        border-radius: 0.75rem !important;
+      }
+      .applicant-stat-card .applicant-icon-pop + span {
+        margin-top: 0.5rem !important;
+        padding: 0.2rem 0.45rem !important;
+        font-size: 0.6rem !important;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#f1f5f9_45%,#eefbf6_100%)]">
@@ -160,7 +203,7 @@
     @include('components.adminHeader.applicantHeader')
 
     <div id="admin-applicant-page" class="min-w-0 space-y-6 p-4 pt-20 md:p-8">
-      <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <div class="applicant-stat-grid grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
         <div role="button" tabindex="0" data-applicant-dashboard-filter="all" class="applicant-stat-card applicant-card-motion applicant-reveal cursor-pointer rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-[0_24px_55px_rgba(15,23,42,0.1)] focus:outline-none focus:ring-2 focus:ring-sky-300" style="--applicant-delay: 30ms;">
           <div class="flex items-start justify-between gap-4">
             <div>
@@ -308,7 +351,7 @@
           <div class="rounded-[1.35rem] border border-slate-200 bg-white p-5 shadow-sm">
             <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
               <div class="flex items-start gap-4">
-                <div class="flex h-16 w-16 items-center justify-center rounded-[1.35rem] bg-[linear-gradient(135deg,#0ea5e9,#2563eb)] text-xl font-bold text-white" id="applicantInitials">
+                <div class="flex h-16 w-16 shrink-0 aspect-square items-center justify-center rounded-full bg-[linear-gradient(135deg,#0ea5e9,#2563eb)] text-xl font-bold text-white" id="applicantInitials">
                   AP
                 </div>
                 <div>
@@ -812,7 +855,7 @@
       const position = app.position?.title ?? '';
       const status = app.application_status ?? '';
       const email = app.email ?? '';
-      const dateText = formatDate(app.created_at);
+      const dateText = formatDate(app.date_hired || app.created_at);
 
       const matchesSearch = !searchTerm || [
         fullName,
@@ -975,14 +1018,14 @@
       const badgeClass = statusClasses[statusKey] || statusClasses.default;
       const initials = getInitials(app.first_name, app.last_name);
       const position = app.position?.title ?? 'Unassigned Position';
-      const appliedDate = formatDate(app.created_at);
+      const appliedDate = formatDate(app.date_hired || app.created_at);
       const fullName = `${app.first_name ?? ''} ${app.last_name ?? ''}`.trim();
 
       return `
         <tr class="applicant-table-row transition hover:bg-white">
           <td class="px-5 py-4">
             <div class="flex items-center gap-3">
-              <div class="flex h-11 w-11 items-center justify-center rounded-full bg-sky-500 font-semibold text-white">${initials}</div>
+              <div class="flex h-11 w-11 shrink-0 aspect-square items-center justify-center rounded-full bg-sky-500 font-semibold text-white">${initials}</div>
               <div>
                 <p class="font-semibold text-slate-900">${fullName}</p>
                 <p class="text-xs text-slate-400">${app.email ?? ''}</p>

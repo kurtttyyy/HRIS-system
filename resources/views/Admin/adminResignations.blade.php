@@ -73,6 +73,115 @@
         transform: none;
       }
     }
+    @media (max-width: 767px) {
+      main { margin-left: 0 !important; }
+      #admin-resignation-page {
+        padding: 0.75rem !important;
+      }
+      .resignation-stat-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.65rem !important;
+      }
+      .resignation-stat-card {
+        min-width: 0;
+        min-height: 9rem;
+        padding: 0.85rem !important;
+        border-radius: 1rem !important;
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.055) !important;
+      }
+      .resignation-stat-card > div {
+        gap: 0.5rem !important;
+      }
+      .resignation-stat-card p:first-child {
+        font-size: 0.6rem !important;
+        line-height: 1.3;
+        letter-spacing: 0.1em !important;
+      }
+      .resignation-stat-card p:nth-child(2) {
+        margin-top: 0.45rem !important;
+        font-size: 1.8rem !important;
+        line-height: 1;
+      }
+      .resignation-stat-card p:nth-child(3) {
+        margin-top: 0.35rem !important;
+        font-size: 0.66rem !important;
+        line-height: 1.3;
+      }
+      .resignation-stat-card .resignation-icon-pop {
+        width: 2.35rem !important;
+        height: 2.35rem !important;
+        border-radius: 0.75rem !important;
+        font-size: 0.8rem !important;
+      }
+      .resignation-stat-card .resignation-icon-pop + span {
+        margin-top: 0.5rem !important;
+        padding: 0.2rem 0.45rem !important;
+        font-size: 0.58rem !important;
+      }
+      .resignation-records-panel {
+        padding: 1rem !important;
+        border-radius: 1.1rem !important;
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.055) !important;
+      }
+      .resignation-records-badge {
+        display: none !important;
+      }
+      .resignation-records-title {
+        margin-top: 0 !important;
+        font-size: 1.2rem !important;
+      }
+      .resignation-records-description {
+        margin-top: 0.3rem !important;
+        font-size: 0.68rem !important;
+        line-height: 1.4;
+      }
+      .resignation-records-filters {
+        grid-template-columns: minmax(0, 1fr) auto !important;
+        gap: 0.5rem !important;
+      }
+      .resignation-records-search {
+        grid-column: 1 / -1;
+      }
+      .resignation-records-filters label,
+      .resignation-records-filters button {
+        min-width: 0;
+        border-radius: 0.75rem !important;
+        padding: 0.65rem 0.75rem !important;
+        font-size: 0.7rem !important;
+      }
+      .resignation-records-summary {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        margin-top: 0.85rem !important;
+        gap: 0 !important;
+        padding: 0.5rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.9rem;
+        background: #f8fafc;
+      }
+      .resignation-records-summary > div {
+        min-width: 0;
+        padding: 0.4rem 0.3rem !important;
+        border: 0 !important;
+        border-right: 1px solid #e2e8f0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        text-align: center;
+      }
+      .resignation-records-summary > div:last-child {
+        border-right: 0 !important;
+      }
+      .resignation-records-summary > div p:first-child {
+        font-size: 0.48rem !important;
+        line-height: 1.25;
+        letter-spacing: 0.08em !important;
+      }
+      .resignation-records-summary > div p:nth-child(2) {
+        margin-top: 0.3rem !important;
+        font-size: 0.85rem !important;
+        line-height: 1.15;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#f1f5f9_45%,#eefbf6_100%)] text-slate-800">
@@ -129,8 +238,8 @@
       @endif
       <div id="resignation-live-message" class="fixed right-5 top-5 z-[100] hidden max-w-sm rounded-[1.5rem] border px-5 py-4 text-sm font-medium shadow-xl" role="status" aria-live="polite"></div>
 
-      <section class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-        <article class="resignation-card-motion resignation-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--resignation-delay: 120ms;">
+      <section class="resignation-stat-grid grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <article class="resignation-stat-card resignation-card-motion resignation-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--resignation-delay: 120ms;">
           <div class="flex items-start justify-between gap-4">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Pending</p>
@@ -146,7 +255,7 @@
           </div>
         </article>
 
-        <article class="resignation-card-motion resignation-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--resignation-delay: 150ms;">
+        <article class="resignation-stat-card resignation-card-motion resignation-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--resignation-delay: 150ms;">
           <div class="flex items-start justify-between gap-4">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Approved</p>
@@ -162,7 +271,7 @@
           </div>
         </article>
 
-        <article class="resignation-card-motion resignation-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--resignation-delay: 180ms;">
+        <article class="resignation-stat-card resignation-card-motion resignation-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--resignation-delay: 180ms;">
           <div class="flex items-start justify-between gap-4">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Rejected</p>
@@ -178,7 +287,7 @@
           </div>
         </article>
 
-        <article class="resignation-card-motion resignation-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--resignation-delay: 210ms;">
+        <article class="resignation-stat-card resignation-card-motion resignation-reveal rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur" style="--resignation-delay: 210ms;">
           <div class="flex items-start justify-between gap-4">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Cancelled</p>
@@ -296,18 +405,18 @@
           </div>
         </div>
 
-        <div class="resignation-reveal rounded-[2rem] border border-white/80 bg-white/92 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur xl:col-span-2" style="--resignation-delay: 290ms;">
+        <div class="resignation-records-panel resignation-reveal rounded-[2rem] border border-white/80 bg-white/92 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur xl:col-span-2" style="--resignation-delay: 290ms;">
           <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
             <div>
-              <div class="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
+              <div class="resignation-records-badge inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
                 Resignation Records
               </div>
-              <h2 class="mt-3 text-2xl font-black tracking-tight text-slate-900">Employee exit records</h2>
-              <p class="mt-1 text-sm text-slate-500">Search, filter, and update resignation outcomes without leaving the dashboard.</p>
+              <h2 class="resignation-records-title mt-3 text-2xl font-black tracking-tight text-slate-900">Employee exit records</h2>
+              <p class="resignation-records-description mt-1 text-sm text-slate-500">Search, filter, and update resignation outcomes without leaving the dashboard.</p>
             </div>
 
-            <form method="GET" action="{{ route('admin.adminResignations') }}" class="grid gap-3 sm:grid-cols-3 xl:min-w-[720px]">
-              <label class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+            <form method="GET" action="{{ route('admin.adminResignations') }}" class="resignation-records-filters grid gap-3 sm:grid-cols-3 xl:min-w-[720px]">
+              <label class="resignation-records-search flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
                 <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
                 <input
                   type="text"
@@ -334,7 +443,7 @@
             </form>
           </div>
 
-          <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div class="resignation-records-summary mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
             <div class="rounded-[1.5rem] border border-slate-200 bg-slate-50 px-4 py-4">
               <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Records Shown</p>
               <p id="resignation-records-shown-count" class="mt-2 text-2xl font-black tracking-tight text-slate-900">{{ $resignations->count() }}</p>
