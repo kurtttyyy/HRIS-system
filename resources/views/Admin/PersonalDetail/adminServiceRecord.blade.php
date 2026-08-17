@@ -3,13 +3,159 @@
 
 
 <!-- ================= PERSONAL DETAILS ================= -->
-<div x-show="tab==='record'" x-transition class="w-full p-6">
+<style>
+  @media (max-width: 767px) {
+    .employee-service-record {
+      padding: 0.85rem !important;
+    }
+    .employee-service-record > div {
+      row-gap: 0.85rem !important;
+    }
+    .employee-service-info {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 0.6rem !important;
+    }
+    .employee-service-info > div {
+      min-width: 0;
+      min-height: 5.25rem;
+      padding: 0.8rem !important;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.9rem !important;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.045) !important;
+    }
+    .employee-service-info > div > p:first-child {
+      font-size: 0.58rem !important;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+    .employee-service-info > div > p:nth-child(2),
+    .employee-service-info > div > span {
+      margin-top: 0.45rem !important;
+      overflow-wrap: anywhere;
+      font-size: 0.78rem !important;
+      line-height: 1.3;
+    }
+    .employee-service-stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 0.6rem !important;
+    }
+    .employee-service-stats > div {
+      min-width: 0;
+      min-height: 6rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0.8rem !important;
+      border: 1px solid transparent;
+      border-radius: 0.9rem !important;
+    }
+    .employee-service-stats > div:first-child {
+      grid-column: 1 / -1;
+      min-height: 5rem;
+      border-color: #c7d2fe;
+      background: linear-gradient(135deg, #eef2ff, #e0e7ff) !important;
+    }
+    .employee-service-stats > div:nth-child(2) {
+      border-color: #bbf7d0;
+      background: linear-gradient(135deg, #f0fdf4, #dcfce7) !important;
+    }
+    .employee-service-stats > div:nth-child(3) {
+      border-color: #ddd6fe;
+      background: linear-gradient(135deg, #f5f3ff, #ede9fe) !important;
+    }
+    .employee-service-stats > div > p:first-child {
+      font-size: 1.25rem !important;
+      line-height: 1.15;
+      overflow-wrap: anywhere;
+    }
+    .employee-service-stats > div:first-child > p:first-child {
+      font-size: 1.55rem !important;
+    }
+    .employee-service-stats > div > p:last-child {
+      margin-top: 0.25rem;
+      font-size: 0.65rem !important;
+    }
+    .employee-service-content {
+      gap: 0.85rem !important;
+    }
+    .employee-service-content > div,
+    .employee-service-content > div > div {
+      border-radius: 0.9rem !important;
+    }
+    .employee-service-timeline {
+      padding: 1rem !important;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05) !important;
+    }
+    .employee-service-timeline > h2 {
+      margin-bottom: 0.75rem !important;
+      font-size: 0.9rem;
+    }
+    .employee-service-timeline-scroll {
+      max-height: 20rem !important;
+      padding-right: 0 !important;
+    }
+    .employee-service-timeline-item {
+      padding: 0.25rem 0 0.25rem 2rem !important;
+    }
+    .employee-service-timeline-item > span {
+      left: 0.1rem !important;
+      top: 1rem !important;
+      width: 0.75rem !important;
+      height: 0.75rem !important;
+    }
+    .employee-service-timeline-card {
+      padding: 0.75rem !important;
+      border-radius: 0.75rem !important;
+      box-shadow: none !important;
+    }
+    .employee-service-timeline-card > div:first-child {
+      gap: 0.35rem !important;
+    }
+    .employee-service-timeline-card > div:first-child span {
+      padding: 0.2rem 0.4rem !important;
+      font-size: 0.55rem !important;
+    }
+    .employee-service-timeline-card h3 {
+      margin-top: 0.5rem !important;
+      font-size: 0.78rem !important;
+    }
+    .employee-service-timeline-card p {
+      margin-top: 0.25rem !important;
+      font-size: 0.65rem !important;
+      line-height: 1.45 !important;
+    }
+    .employee-service-sidebar {
+      row-gap: 0.65rem !important;
+    }
+    .employee-service-sidebar > div {
+      padding: 0.9rem !important;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.045) !important;
+    }
+    .employee-service-sidebar h2 {
+      margin-bottom: 0.65rem !important;
+      font-size: 0.85rem;
+    }
+    .employee-service-sidebar .space-y-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.4rem !important;
+    }
+    .employee-service-sidebar .space-y-3 > * {
+      margin-top: 0 !important;
+      min-width: 0;
+      padding: 0.5rem 0.25rem !important;
+      font-size: 0.6rem !important;
+    }
+  }
+</style>
+<div x-show="tab==='record'" x-transition class="employee-service-record w-full p-6">
 
   <!-- Main Container -->
   <div class="max-w-7xl mx-auto space-y-6">
 
     <!-- Top Info Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="employee-service-info grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="bg-white rounded-xl p-4 shadow">
         <p class="text-xs text-gray-400">EMPLOYEE ID</p>
         <p class="font-semibold mt-1" x-text="selectedEmployee?.employee?.employee_id ?? '-'"></p>
@@ -48,7 +194,7 @@
     </div>
 
     <!-- Stats -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="employee-service-stats grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div class="bg-indigo-50 text-indigo-600 rounded-xl p-6 text-center">
         <p
           class="text-3xl font-bold"
@@ -101,19 +247,19 @@
     </div>
 
     <!-- Timeline + Sidebar -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="employee-service-content grid grid-cols-1 lg:grid-cols-3 gap-6">
 
       <!-- Service Timeline -->
-      <div class="lg:col-span-2 bg-white rounded-xl p-6 shadow">
+      <div class="employee-service-timeline lg:col-span-2 bg-white rounded-xl p-6 shadow">
         <h2 class="font-semibold mb-6">Service Timeline</h2>
 
-        <div class="relative max-h-[30rem] overflow-y-auto pr-2">
+        <div class="employee-service-timeline-scroll relative max-h-[30rem] overflow-y-auto pr-2">
           <span class="absolute left-3 top-2 bottom-2 w-px bg-indigo-200"></span>
 
           <template x-for="(timelineItem, index) in buildServiceTimeline()" :key="`${timelineItem.type}-${index}`">
-            <article class="relative pl-10 py-1 pr-1">
+            <article class="employee-service-timeline-item relative pl-10 py-1 pr-1">
               <span class="absolute left-[6px] top-6 w-4 h-4 rounded-full border-2 border-white shadow-sm" :class="timelineItem.dotClass"></span>
-              <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div class="employee-service-timeline-card rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <div class="flex flex-wrap items-center justify-between gap-2">
                   <span class="text-xs px-2.5 py-1 rounded-md font-medium" :class="timelineItem.badgeClass" x-text="timelineItem.badge"></span>
                   <span class="text-xs font-medium text-slate-500" x-text="timelineItem.dateLabel"></span>
@@ -135,7 +281,7 @@
       </div>
 
       <!-- Right Panel -->
-      <div class="space-y-6">
+      <div class="employee-service-sidebar space-y-6">
 
         <!-- Leave Balance -->
         <div class="bg-white rounded-xl p-6 shadow">

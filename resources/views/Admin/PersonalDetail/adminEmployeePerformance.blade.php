@@ -1,8 +1,99 @@
 <!-- Performance Tab -->
-<div x-show="tab === 'performance'" x-transition class="p-6 space-y-6">
+<style>
+  @media (max-width: 767px) {
+    .employee-performance-tab {
+      padding: 0.85rem !important;
+      row-gap: 0.85rem !important;
+    }
+    .employee-performance-metrics {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 0.6rem !important;
+    }
+    .employee-performance-metrics > div {
+      min-width: 0;
+      min-height: 6.75rem;
+      justify-content: space-between;
+      gap: 0.5rem !important;
+      padding: 0.85rem !important;
+      border: 1px solid transparent;
+      border-radius: 1rem !important;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+    }
+    .employee-performance-metrics > div:nth-child(1) {
+      border-color: #bfdbfe;
+      background: linear-gradient(135deg, #eff6ff, #dbeafe) !important;
+      color: #1d4ed8 !important;
+    }
+    .employee-performance-metrics > div:nth-child(2) {
+      border-color: #bbf7d0;
+      background: linear-gradient(135deg, #f0fdf4, #dcfce7) !important;
+      color: #15803d !important;
+    }
+    .employee-performance-metrics > div:nth-child(3) {
+      border-color: #ddd6fe;
+      background: linear-gradient(135deg, #f5f3ff, #ede9fe) !important;
+      color: #7e22ce !important;
+    }
+    .employee-performance-metrics > div:nth-child(4) {
+      border-color: #fed7aa;
+      background: linear-gradient(135deg, #fff7ed, #ffedd5) !important;
+      color: #c2410c !important;
+    }
+    .employee-performance-metrics svg {
+      width: 1.15rem !important;
+      height: 1.15rem !important;
+      flex: 0 0 auto;
+    }
+    .employee-performance-metrics span {
+      font-size: 0.68rem !important;
+      line-height: 1.25;
+    }
+    .employee-performance-metrics > div > div:last-child {
+      font-size: 1.65rem !important;
+      line-height: 1;
+    }
+    .employee-performance-section {
+      padding: 1rem !important;
+      row-gap: 0.75rem !important;
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem !important;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05) !important;
+    }
+    .employee-performance-section > h3 {
+      margin-bottom: 0.5rem !important;
+      font-size: 1rem !important;
+    }
+    .employee-performance-section > h3 svg {
+      width: 1.2rem !important;
+      height: 1.2rem !important;
+    }
+    .employee-performance-section article {
+      padding: 0.75rem !important;
+      border-radius: 0.75rem !important;
+    }
+    .employee-performance-section article header {
+      gap: 0.5rem;
+    }
+    .employee-performance-section article h4 {
+      font-size: 0.78rem;
+    }
+    .employee-performance-section article p,
+    .employee-performance-section article time,
+    .employee-performance-section article > div:last-child {
+      font-size: 0.62rem !important;
+      line-height: 1.4;
+    }
+    .employee-performance-section article > div:last-child {
+      flex-wrap: wrap;
+      gap: 0.4rem 0.75rem !important;
+    }
+  }
+</style>
+<div x-show="tab === 'performance'" x-transition class="employee-performance-tab p-6 space-y-6">
 
   <!-- Metric Cards -->
-  <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+  <div class="employee-performance-metrics grid grid-cols-1 sm:grid-cols-4 gap-4">
 
     <!-- Overall Rating -->
     <div class="bg-blue-600 text-white rounded-xl p-5 flex flex-col gap-2">
@@ -51,7 +142,7 @@
   </div>
 
   <!-- Performance Reviews Section -->
-  <section class="bg-white rounded-xl p-6 shadow-sm space-y-6">
+  <section class="employee-performance-section bg-white rounded-xl p-6 shadow-sm space-y-6">
 
     <h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -120,7 +211,7 @@
   </section>
 
   <!-- Goals & Objectives Section -->
-  <section class="bg-white rounded-xl p-6 shadow-sm space-y-5">
+  <section class="employee-performance-section bg-white rounded-xl p-6 shadow-sm space-y-5">
 
     <h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

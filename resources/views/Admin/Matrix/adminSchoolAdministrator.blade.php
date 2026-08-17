@@ -406,13 +406,15 @@
     @media (max-width: 767px) {
       .matrix-main-content { margin-left: 0 !important; width: 100% !important; max-width: 100% !important; }
       .matrix-content-section { padding-left: .75rem !important; padding-right: .75rem !important; }
-      .matrix-content-section:first-of-type { padding: .75rem .75rem .65rem 4.75rem !important; }
-      .matrix-content-section:first-of-type .matrix-card-motion { border-radius: 1rem !important; padding: .9rem !important; box-shadow: 0 8px 24px rgba(15,23,42,.06) !important; }
-      .matrix-content-section:first-of-type h1 { margin-top: .2rem !important; font-size: 1.1rem !important; line-height: 1.25 !important; }
+      .matrix-content-section:first-of-type { padding: .75rem .75rem .65rem !important; }
+      .matrix-content-section:first-of-type .matrix-card-motion { border-color: #dbeafe !important; border-radius: 1.1rem !important; padding: 1rem !important; background: linear-gradient(135deg,rgba(255,255,255,.96),rgba(239,246,255,.86)) !important; box-shadow: 0 10px 28px rgba(15,23,42,.065) !important; }
+      .matrix-header-copy { min-width: 0; padding-left: 3.5rem; }
+      .matrix-content-section:first-of-type h1 { margin-top: .4rem !important; font-size: 1.15rem !important; line-height: 1.2 !important; font-weight: 800 !important; letter-spacing: -.02em; }
       .matrix-content-section:first-of-type h1 + p { margin-top: .3rem !important; font-size: .7rem !important; line-height: 1.4 !important; }
-      .matrix-content-section:first-of-type p:first-child { font-size: .58rem !important; letter-spacing: .14em !important; }
-      .matrix-export-actions { display: grid !important; width: 100%; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .4rem !important; }
-      .matrix-export-actions button { justify-content: center; padding: .5rem .35rem !important; font-size: .68rem !important; }
+      .matrix-content-section:first-of-type .matrix-header-copy > p:first-child { display: inline-flex; border: 1px solid #bfdbfe; border-radius: 999px; background: #eff6ff; padding: .2rem .45rem; color: #1d4ed8; font-size: .52rem !important; font-weight: 800; letter-spacing: .12em !important; }
+      .matrix-export-actions { display: grid !important; width: 100%; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .45rem !important; }
+      .matrix-export-actions button { min-width: 0; justify-content: center; border-radius: .7rem !important; padding: .55rem .3rem !important; font-size: .65rem !important; box-shadow: none !important; }
+      .matrix-export-actions button i { font-size: .72rem; }
       .matrix-print-section { padding-bottom: 1rem !important; }
       .matrix-print-wrapper { overflow: visible !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; }
       .matrix-print-wrapper::before { content: "Tap a name to view the complete personnel profile"; display: block; margin-bottom: .55rem; color: #64748b; font-size: .65rem; text-align: center; }
@@ -533,7 +535,7 @@
     <section class="matrix-content-section matrix-print-hide px-4 md:px-8 pt-8 pb-6">
       <div class="matrix-card-motion matrix-reveal rounded-2xl border border-stone-300 bg-white/80 backdrop-blur-sm shadow-sm p-5 md:p-7" style="--matrix-delay: 0ms;">
         <div class="flex flex-wrap items-start justify-between gap-4">
-          <div>
+          <div class="matrix-header-copy">
             <p class="text-xs uppercase tracking-[0.2em] text-stone-600">Matrix 14</p>
             <h1 class="mt-1 text-xl md:text-2xl font-semibold text-stone-900">
               Matrix List of School Administrators

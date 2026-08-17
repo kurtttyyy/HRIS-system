@@ -24,7 +24,8 @@
       .job-detail-hero {
         padding: 1rem !important;
         border-radius: 1.25rem !important;
-        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.07) !important;
+        border-color: rgba(186, 230, 253, 0.8) !important;
+        box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08) !important;
       }
       .job-detail-avatar {
         width: 3rem !important;
@@ -36,10 +37,15 @@
       .job-detail-heading-row {
         gap: 0.75rem !important;
       }
+      .job-detail-copy {
+        min-width: 0;
+        flex: 1;
+      }
       .job-detail-title {
         margin-top: 0.7rem !important;
         font-size: 1.5rem !important;
         line-height: 1.15 !important;
+        overflow-wrap: anywhere;
       }
       .job-detail-subtitle {
         margin-top: 0.35rem !important;
@@ -47,11 +53,24 @@
       }
       .job-detail-meta {
         margin-top: 0.75rem !important;
+        display: grid !important;
+        grid-template-columns: 1fr;
         gap: 0.4rem !important;
       }
       .job-detail-meta > span {
+        width: fit-content;
+        max-width: 100%;
         padding: 0.4rem 0.6rem !important;
         font-size: 0.65rem !important;
+        line-height: 1.3;
+      }
+      .job-detail-badges {
+        gap: 0.35rem !important;
+      }
+      .job-detail-badges > span {
+        padding: 0.25rem 0.5rem !important;
+        font-size: 0.55rem !important;
+        letter-spacing: 0.1em !important;
       }
       .job-detail-actions {
         display: grid !important;
@@ -71,6 +90,7 @@
         justify-content: center;
         padding: 0.65rem 0.75rem !important;
         font-size: 0.72rem !important;
+        border-radius: 0.75rem !important;
       }
       .job-detail-metrics {
         display: grid !important;
@@ -171,8 +191,8 @@
                     {{ $initials !== '' ? $initials : 'JB' }}
                   </div>
 
-                  <div>
-                    <div class="flex flex-wrap items-center gap-2">
+                  <div class="job-detail-copy">
+                    <div class="job-detail-badges flex flex-wrap items-center gap-2">
                       <span class="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] {{ $open->deleted_at ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700' }}">
                         {{ $open->deleted_at ? 'Closed' : 'Active' }}
                       </span>

@@ -66,6 +66,57 @@
                 transform: none;
             }
         }
+        @media (max-width: 767px) {
+            main { margin-left: 0 !important; }
+            #admin-position-page {
+                padding: 0.75rem !important;
+            }
+            .position-stat-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 0.65rem !important;
+            }
+            .position-stat-card {
+                min-width: 0;
+                min-height: 9rem;
+                padding: 0.85rem !important;
+                border-radius: 1rem !important;
+                box-shadow: 0 8px 22px rgba(15, 23, 42, 0.055) !important;
+            }
+            .position-stat-card > div {
+                gap: 0.5rem !important;
+            }
+            .position-stat-card p:first-child {
+                font-size: 0.58rem !important;
+                line-height: 1.3;
+                letter-spacing: 0.09em !important;
+            }
+            .position-stat-card p:nth-child(2) {
+                margin-top: 0.45rem !important;
+                font-size: 1.75rem !important;
+                line-height: 1;
+            }
+            .position-stat-card p:nth-child(3) {
+                margin-top: 0.35rem !important;
+                font-size: 0.64rem !important;
+                line-height: 1.3;
+            }
+            .position-stat-card .position-icon-pop {
+                width: 2.35rem !important;
+                height: 2.35rem !important;
+                border-radius: 0.75rem !important;
+                font-size: 0.8rem !important;
+            }
+            .position-stat-card .position-icon-pop + span {
+                margin-top: 0.5rem !important;
+                max-width: 4rem;
+                justify-content: center;
+                padding: 0.2rem 0.4rem !important;
+                font-size: 0.55rem !important;
+                line-height: 1.2;
+                text-align: center;
+            }
+        }
   </style>
 </head>
 <body class="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#f1f5f9_45%,#eefbf6_100%)]">
@@ -106,7 +157,7 @@
                 </div>
             @endif
 
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+            <div class="position-stat-grid grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
                 @php
                     $activePositionCount = collect($openPosition ?? [])->whereNull('deleted_at')->count();
                     $closedPositionCount = collect($openPosition ?? [])->filter(fn ($position) => !is_null($position->deleted_at))->count();

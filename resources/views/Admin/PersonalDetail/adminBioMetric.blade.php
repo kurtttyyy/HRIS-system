@@ -17,12 +17,12 @@ window.displayEmployeeId = function displayEmployeeId(employee, emptyValue = '-'
 };
 </script>
 
-<div x-show="tab === 'biometric'" x-transition class="w-full p-6 space-y-6">
-    <div class="p-8 space-y-6">
+<div x-show="tab === 'biometric'" x-transition class="biometric-profile-tab w-full p-6 space-y-6">
+    <div class="biometric-profile-shell p-8 space-y-6">
       <div>
 
 <div
-  class="max-w-5xl mx-auto bg-transparent px-5 py-8 border border-gray-400 text-[13px] text-black"
+  class="biometric-profile-paper max-w-5xl mx-auto bg-transparent px-5 py-8 border border-gray-400 text-[13px] text-black"
   style="background-image: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), url('{{ asset('images/biometricbg3.png') }}'); background-repeat: no-repeat; background-position: center top; background-size: cover;"
 >
 
@@ -143,7 +143,7 @@ window.displayEmployeeId = function displayEmployeeId(employee, emptyValue = '-'
   </style>
 
   <!-- TOP + EMPLOYMENT SECTION -->
-  <div class="grid grid-cols-2 gap-5 items-start">
+  <div class="biometric-profile-grid grid grid-cols-2 gap-5 items-start">
 
     <div class="space-y-3">
       <div class="border border-gray-500">
@@ -404,7 +404,7 @@ window.displayEmployeeId = function displayEmployeeId(employee, emptyValue = '-'
 
   <!-- SALARY -->
   <div
-    class="border border-gray-500 w-[49%]"
+    class="biometric-profile-salary border border-gray-500 w-[49%]"
     :style="(() => {
       const totalDegreeRows = degreeRows('bachelor').length + degreeRows('master').length + degreeRows('doctorate').length;
       return totalDegreeRows > 3 ? 'margin-top: 0.75rem;' : 'margin-top: -102px;';
@@ -950,6 +950,113 @@ window.displayEmployeeId = function displayEmployeeId(employee, emptyValue = '-'
     grid-row: 1 / span 2;
     white-space: normal;
     overflow-wrap: anywhere;
+  }
+
+  @media screen and (max-width: 767px) {
+    .biometric-profile-tab {
+      padding: 0.75rem !important;
+    }
+
+    .biometric-profile-shell {
+      padding: 0 !important;
+    }
+
+    .biometric-profile-paper {
+      width: 100%;
+      padding: 1rem !important;
+      border-radius: 1.25rem;
+      background-size: contain !important;
+      overflow: hidden;
+    }
+
+    #action-buttons {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      margin: -1rem -1rem 1rem !important;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #e2e8f0;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(10px);
+    }
+
+    #action-buttons button {
+      display: inline-flex;
+      width: 2.75rem;
+      height: 2.75rem;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.75rem;
+    }
+
+    #profile-form > .text-center {
+      margin-bottom: 1.25rem;
+    }
+
+    #profile-form > .text-center img {
+      height: 4.5rem;
+      margin-bottom: 0.25rem;
+    }
+
+    #profile-form > .text-center p {
+      font-size: 0.8rem;
+      line-height: 1.25;
+    }
+
+    .biometric-profile-grid {
+      grid-template-columns: minmax(0, 1fr) !important;
+      gap: 1rem !important;
+    }
+
+    .biometric-profile-grid > div {
+      min-width: 0;
+    }
+
+    .biometric-profile-grid > .space-y-7 {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .biometric-profile-grid > .space-y-7 > * {
+      margin-top: 0 !important;
+    }
+
+    .employee-photo-box {
+      width: 8rem;
+      height: 8rem;
+      border-radius: 1rem;
+    }
+
+    .row.row-split {
+      grid-template-columns: minmax(7.5rem, 40%) minmax(0, 1fr);
+    }
+
+    .row.row-split .split-label,
+    .row.row-split .split-value {
+      min-width: 0;
+      padding: 0.65rem 0.75rem;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+      word-break: normal;
+    }
+
+    .biometric-profile-salary {
+      width: 100% !important;
+      margin-top: 1rem !important;
+    }
+
+    #profile-form > .mt-8 {
+      margin-top: 1.25rem;
+      font-size: 0.72rem;
+      line-height: 1.5;
+    }
+
+    #profile-form > .mt-6.text-xl {
+      margin-top: 1rem;
+      font-size: 0.78rem;
+      line-height: 1.4;
+    }
   }
 
   /* PRINT ONLY THE FORM */
