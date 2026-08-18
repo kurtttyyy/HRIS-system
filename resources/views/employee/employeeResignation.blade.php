@@ -127,14 +127,25 @@
                 margin-top: 0.75rem !important;
                 gap: 0.75rem;
             }
-            #employee-resignation-page #employee-resignation-form > div:first-of-type {
+            #employee-resignation-page .employee-resignation-date-grid {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 0.5rem;
+                column-gap: 0.75rem;
+                row-gap: 0.5rem;
+            }
+            #employee-resignation-page .employee-resignation-date-grid > div {
+                min-width: 0;
+                overflow: hidden;
             }
             #employee-resignation-page #employee-resignation-form label {
                 font-size: 0.62rem;
             }
             #employee-resignation-page #employee-resignation-form input[type="date"] {
+                display: block;
+                box-sizing: border-box;
+                width: 100%;
+                max-width: 100%;
+                inline-size: 100%;
+                min-inline-size: 0;
                 min-width: 0;
                 height: 2.55rem;
                 padding: 0.4rem 0.55rem;
@@ -410,7 +421,7 @@
 
                     <form id="employee-resignation-form" method="POST" action="{{ route('employee.storeResignation') }}" enctype="multipart/form-data" class="mt-6 space-y-5">
                         @csrf
-                        <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                        <div class="employee-resignation-date-grid grid grid-cols-1 gap-5 md:grid-cols-2">
                             <div>
                                 <label class="mb-1 block text-sm font-medium text-slate-700">Submitted Date</label>
                                 <input

@@ -1,12 +1,12 @@
-<header class="sticky top-0 z-40 border-b border-slate-200/80 bg-white/80 px-4 py-4 backdrop-blur-xl md:px-8 md:py-5">
-    <div class="flex items-center justify-between gap-4 rounded-[1.75rem] border border-sky-100 bg-gradient-to-r from-white via-sky-50 to-white px-5 py-5 shadow-sm">
-        <div>
+<header class="employee-profile-header sticky top-0 z-40 border-b border-slate-200/80 bg-white/80 px-4 py-4 backdrop-blur-xl md:px-8 md:py-5">
+    <div class="employee-profile-header__inner flex items-center justify-between gap-4 rounded-[1.75rem] border border-sky-100 bg-gradient-to-r from-white via-sky-50 to-white px-5 py-5 shadow-sm">
+        <div class="employee-profile-header__copy">
             <p class="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">Profile Workspace</p>
             <h2 class="mt-2 text-3xl font-black tracking-tight text-slate-900">My Profile</h2>
             <p class="mt-1 text-sm text-slate-500">View and manage your personal information</p>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="employee-profile-header__actions flex items-center gap-2">
             @include('components.themeToggle')
             <a href="{{ route('employee.employeeNotifications') }}" class="relative cursor-pointer rounded-2xl border border-sky-100 bg-white p-3.5 text-sky-700 transition hover:bg-sky-50" aria-label="Open notifications">
                 <span data-employee-notification-badge data-fallback-count="0" class="hidden pointer-events-none absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-xs font-bold text-white">
@@ -41,6 +41,69 @@
         </div>
     </div>
 </header>
+<style>
+    @media (max-width: 767px) {
+        .employee-profile-header {
+            position: relative;
+            padding: .75rem .75rem 0 4.75rem;
+            border-bottom: 0;
+            background: transparent;
+            backdrop-filter: none;
+        }
+
+        .employee-profile-header__inner {
+            min-height: 5.25rem;
+            padding: .85rem;
+            gap: .65rem;
+            border-radius: 1.1rem;
+        }
+
+        .employee-profile-header__copy { min-width: 0; }
+        .employee-profile-header__copy > p:first-child { display: none; }
+        .employee-profile-header__copy h2 {
+            margin-top: 0;
+            font-size: 1.25rem;
+            line-height: 1.35;
+        }
+        .employee-profile-header__copy h2 + p {
+            margin-top: .15rem;
+            max-width: 12rem;
+            font-size: .75rem;
+            line-height: 1.25;
+        }
+
+        .employee-profile-header__actions {
+            flex: 0 0 auto;
+            gap: .35rem;
+        }
+        .employee-profile-header__actions [data-theme-toggle] {
+            min-width: 2.75rem !important;
+            width: 2.75rem;
+            height: 2.75rem;
+            padding: 0;
+            justify-content: center;
+            border-radius: .85rem;
+        }
+        .employee-profile-header__actions [data-theme-toggle] > span:first-child {
+            width: 2.75rem;
+            height: 2.75rem;
+        }
+        .employee-profile-header__actions [data-theme-toggle] > span:nth-child(2),
+        .employee-profile-header__actions [data-theme-toggle] > span:last-child {
+            display: none;
+        }
+        .employee-profile-header__actions > a,
+        .employee-profile-header__actions > .group > button {
+            display: flex;
+            width: 2.75rem;
+            height: 2.75rem;
+            padding: 0;
+            align-items: center;
+            justify-content: center;
+            border-radius: .85rem;
+        }
+    }
+</style>
 <script>
     (function () {
         const badge = document.querySelector('[data-employee-notification-badge]');

@@ -11,6 +11,97 @@
         main { transition: margin-left 0.3s ease; }
         aside:not(:hover) ~ main { margin-left: 4rem; }
         aside:hover ~ main { margin-left: 14rem; }
+
+        @media screen and (max-width: 767px) {
+            html, body { max-width: 100%; overflow-x: hidden; }
+            aside ~ main {
+                width: 100% !important;
+                min-width: 0 !important;
+                margin-left: 0 !important;
+            }
+            #employee-notifications-page {
+                padding: 0.75rem !important;
+            }
+            #employee-notification-inbox {
+                border-radius: 1rem !important;
+                box-shadow: none;
+            }
+            #employee-notification-inbox > div > aside {
+                padding: 0.75rem !important;
+            }
+            #employee-notification-inbox > div > aside > div:first-child {
+                display: flex;
+                min-height: 3.25rem;
+                align-items: center;
+                gap: 0.65rem;
+                padding: 0.65rem 0.75rem;
+                border-radius: 0.75rem;
+                box-shadow: none;
+            }
+            #employee-notification-inbox > div > aside > div:first-child p:first-child {
+                font-size: 0.55rem;
+                letter-spacing: 0.14em;
+            }
+            #employee-notification-inbox > div > aside > div:first-child p:nth-child(2) {
+                margin-top: 0;
+                font-size: 1.15rem;
+            }
+            #employee-notification-inbox > div > aside > div:first-child p:last-child {
+                margin-top: 0;
+                margin-left: auto;
+                font-size: 0.62rem;
+            }
+            #employee-notification-inbox > div > aside > div:nth-child(2) {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0.4rem;
+                margin-top: 0.6rem;
+            }
+            #employee-notification-inbox .notification-filter {
+                min-width: 0;
+                justify-content: center;
+                gap: 0.3rem;
+                padding: 0.5rem 0.35rem;
+                border-radius: 0.65rem;
+                font-size: 0.58rem;
+            }
+            #employee-notification-inbox .notification-filter > span:first-child {
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            #employee-notification-inbox .notification-filter i {
+                margin-right: 0.2rem;
+            }
+            #employee-notification-inbox > div > aside > div:last-child {
+                display: none;
+            }
+            #employee-notification-inbox .employee-notification-list-header {
+                padding: 0.65rem 0.75rem;
+            }
+            #employee-notification-inbox .employee-notification-list-header > div > div:first-child p,
+            #employee-notification-inbox .employee-notification-list-header > div > div:last-child {
+                display: none;
+            }
+            #employee-notification-inbox .employee-notification-list-header h2 {
+                margin-top: 0;
+                font-size: 1rem;
+            }
+            #employee-notification-inbox #notification-results-label {
+                padding: 0.45rem 0.75rem;
+                font-size: 0.52rem;
+                letter-spacing: 0.1em;
+            }
+            #employee-notification-inbox .notification-row {
+                padding: 0.75rem;
+                gap: 0.5rem;
+            }
+            #employee-notification-inbox #notification-empty-state,
+            #employee-notification-inbox #notification-filter-empty {
+                padding: 1.5rem 0.75rem;
+            }
+        }
     </style>
 </head>
 <body class="bg-[radial-gradient(circle_at_top,_#ecfdf5,_#eff6ff_32%,_#f8fafc_72%)] text-slate-900">
@@ -48,8 +139,8 @@
             'notifications' => 0,
         ])
 
-        <div class="p-4 pt-20 md:p-8">
-            <section class="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.08)]">
+        <div id="employee-notifications-page" class="p-4 pt-20 md:p-8">
+            <section id="employee-notification-inbox" class="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.08)]">
                 <div class="grid grid-cols-1 xl:grid-cols-[260px_1fr]">
                     <aside class="border-b border-slate-200 bg-[linear-gradient(180deg,#f8fafc,#f1f5f9)] p-5 xl:border-b-0 xl:border-r">
                         <div class="rounded-[1.4rem] bg-slate-900 px-4 py-4 text-white shadow-lg">
@@ -92,7 +183,7 @@
                     </aside>
 
                     <div class="min-w-0">
-                        <div class="border-b border-slate-200 bg-white px-5 py-4">
+                        <div class="employee-notification-list-header border-b border-slate-200 bg-white px-5 py-4">
                             <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                                 <div>
                                     <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Notification Mail</p>

@@ -145,9 +145,7 @@
                 gap: 0.75rem;
             }
             #employee-leave-page .employee-leave-intro > div:first-child {
-                padding: 0.2rem 0.55rem;
-                font-size: 0.55rem;
-                letter-spacing: 0.16em;
+                display: none;
             }
             #employee-leave-page .employee-leave-intro h3 {
                 padding-right: 0.25rem;
@@ -183,9 +181,12 @@
                 font-size: 1.1rem;
             }
             #employee-leave-page .employee-leave-month-filter {
-                padding: 0.75rem !important;
+                padding: 0.6rem !important;
                 border-radius: 0.875rem !important;
                 background: rgba(255, 255, 255, 0.08) !important;
+            }
+            #employee-leave-page .employee-leave-month-filter > div:first-child {
+                display: none;
             }
             #employee-leave-page .employee-leave-month-filter > div:first-child > div:first-child p:first-child {
                 font-size: 0.55rem;
@@ -201,14 +202,18 @@
             }
             #employee-leave-page .employee-leave-month-form {
                 display: grid;
-                grid-template-columns: minmax(0, 1fr) auto;
-                gap: 0.5rem;
-                margin-top: 0.6rem !important;
+                grid-template-columns: minmax(0, 1fr) 4.75rem;
+                width: 100%;
+                gap: 0.4rem;
+                margin-top: 0 !important;
             }
             #employee-leave-page .employee-leave-month-form label {
                 display: none;
             }
             #employee-leave-page .employee-leave-month-form input[type="month"] {
+                box-sizing: border-box;
+                width: 100%;
+                max-width: 100%;
                 min-width: 0;
                 height: 2.65rem;
                 padding: 0.45rem 0.65rem;
@@ -216,8 +221,10 @@
                 font-size: 0.7rem;
             }
             #employee-leave-page .employee-leave-month-form button {
-                width: auto;
-                min-width: 4.75rem;
+                box-sizing: border-box;
+                width: 4.75rem;
+                min-width: 0;
+                max-width: 4.75rem;
                 height: 2.65rem;
                 padding: 0.45rem 0.75rem;
                 border-radius: 0.7rem;
@@ -430,11 +437,23 @@
                 margin-top: 0 !important;
             }
             #employee-leave-page .employee-form-selector a {
+                display: flex;
+                height: 3.25rem;
                 min-width: 0;
+                align-items: center;
+                justify-content: center;
                 padding: 0.55rem !important;
                 border-radius: 0.65rem !important;
                 text-align: center;
                 font-size: 0.62rem;
+                line-height: 0.9rem;
+                box-sizing: border-box;
+            }
+            #employee-leave-page .employee-form-selector a p:first-child {
+                display: -webkit-box;
+                overflow: hidden;
+                -webkit-box-orient: vertical;
+                -webkit-line-clamp: 2;
             }
             #employee-leave-page .employee-form-selector a p:last-child {
                 display: none;

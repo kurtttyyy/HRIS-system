@@ -49,6 +49,41 @@
         padding-left: 1.25rem;
     }
 
+    @media screen and (max-width: 767px) {
+        #leave-application-instructions {
+            display: none !important;
+        }
+
+        #leave-application-form .applicant-signature-block {
+            padding-top: 1rem !important;
+        }
+
+        #leave-application-form .applicant-signature-block > div {
+            max-width: 12rem;
+            border-color: #cbd5e1;
+        }
+
+        #leave-application-form .applicant-signature-block p {
+            margin-top: 0.35rem;
+            color: #64748b;
+            font-size: 0.6rem;
+        }
+
+        #leave-application-form > div:last-of-type {
+            display: block;
+            margin-top: 0.75rem !important;
+        }
+
+        #leave-application-download-button {
+            width: 100%;
+            min-height: 2.65rem;
+            padding: 0.55rem 0.75rem !important;
+            border-radius: 0.65rem !important;
+            font-size: 0.68rem;
+            font-weight: 700;
+        }
+    }
+
     @page {
         size: 8.5in 13in;
         margin: 0.18in 0.22in;
