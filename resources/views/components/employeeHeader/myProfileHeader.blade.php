@@ -45,31 +45,31 @@
     @media (max-width: 767px) {
         .employee-profile-header {
             position: relative;
-            padding: .75rem .75rem 0 4.75rem;
+            padding: .7rem .75rem .25rem 4.5rem;
             border-bottom: 0;
-            background: transparent;
+            background: #f6f8fb;
             backdrop-filter: none;
         }
 
         .employee-profile-header__inner {
-            min-height: 5.25rem;
-            padding: .85rem;
+            min-height: 4.25rem;
+            padding: .65rem .75rem;
             gap: .65rem;
-            border-radius: 1.1rem;
+            border: 0;
+            border-radius: .95rem;
+            background: #fff;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, .06), 0 8px 24px rgba(15, 23, 42, .04);
         }
 
         .employee-profile-header__copy { min-width: 0; }
         .employee-profile-header__copy > p:first-child { display: none; }
         .employee-profile-header__copy h2 {
             margin-top: 0;
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             line-height: 1.35;
         }
         .employee-profile-header__copy h2 + p {
-            margin-top: .15rem;
-            max-width: 12rem;
-            font-size: .75rem;
-            line-height: 1.25;
+            display: none;
         }
 
         .employee-profile-header__actions {
@@ -77,16 +77,16 @@
             gap: .35rem;
         }
         .employee-profile-header__actions [data-theme-toggle] {
-            min-width: 2.75rem !important;
-            width: 2.75rem;
-            height: 2.75rem;
+            min-width: 2.35rem !important;
+            width: 2.35rem;
+            height: 2.35rem;
             padding: 0;
             justify-content: center;
-            border-radius: .85rem;
+            border-radius: .75rem;
         }
         .employee-profile-header__actions [data-theme-toggle] > span:first-child {
-            width: 2.75rem;
-            height: 2.75rem;
+            width: 2.35rem;
+            height: 2.35rem;
         }
         .employee-profile-header__actions [data-theme-toggle] > span:nth-child(2),
         .employee-profile-header__actions [data-theme-toggle] > span:last-child {
@@ -95,13 +95,20 @@
         .employee-profile-header__actions > a,
         .employee-profile-header__actions > .group > button {
             display: flex;
-            width: 2.75rem;
-            height: 2.75rem;
+            width: 2.35rem;
+            height: 2.35rem;
             padding: 0;
             align-items: center;
             justify-content: center;
-            border-radius: .85rem;
+            border-radius: .75rem;
         }
+
+        html[data-theme="dark"] .employee-profile-header { background: #090d14; }
+        html[data-theme="dark"] .employee-profile-header__inner {
+            background: #111827;
+            box-shadow: none;
+        }
+        html[data-theme="dark"] .employee-profile-header__copy h2 { color: #f8fafc; }
     }
 </style>
 <script>

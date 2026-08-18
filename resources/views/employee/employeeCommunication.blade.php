@@ -27,6 +27,60 @@
         @keyframes employee-communication-chat-pop{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
         @media (prefers-reduced-motion:reduce){#employee-communication-page .employee-communication-reveal,#employee-communication-page .employee-communication-icon-pop,#employee-communication-page .employee-communication-card-motion{opacity:1;transform:none;transition:none}#chat-panel.employee-communication-chat-pop{animation:none}}
         @media (max-width:1279px){#chat-panel{position:fixed;inset:1rem;z-index:80;height:calc(100vh - 2rem)!important;min-height:0!important}}
+        .employee-communication-mobile-header,.employee-communication-mobile-people{display:none}
+        @media (max-width:767px){
+            body{background:#f8fafc!important;color:#0f172a}
+            aside~main,aside:not(:hover)~main,aside:hover~main{width:100%!important;min-width:0;margin-left:0!important}
+            .employee-communication-header{display:none!important}
+            #employee-communication-page{padding:0 0 1.5rem!important;background:#f8fafc}
+            .employee-communication-mobile-header{display:block;padding:.9rem 1rem .55rem 4.75rem}
+            .employee-communication-mobile-title-row{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+            .employee-communication-mobile-title{font-size:1.55rem;font-weight:800;letter-spacing:-.04em;color:#0f172a}
+            .employee-communication-mobile-compose{display:inline-flex;height:2.5rem;width:2.5rem;align-items:center;justify-content:center;border-radius:999px;background:#e2e8f0;color:#334155}
+            .employee-communication-mobile-search{position:relative;display:block;margin-top:.65rem}
+            .employee-communication-mobile-search i{position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:#94a3b8}
+            .employee-communication-mobile-search input{width:100%;border:1px solid #e2e8f0;border-radius:999px;background:#fff;padding:.7rem 1rem .7rem 2.75rem;font-size:.85rem;color:#0f172a;outline:none}
+            .employee-communication-mobile-people{display:flex;gap:.8rem;overflow-x:auto;padding:.35rem 1rem .9rem;scrollbar-width:none}
+            .employee-communication-mobile-people::-webkit-scrollbar{display:none}
+            .employee-communication-mobile-person{width:4.25rem;flex:0 0 4.25rem;text-align:center;text-decoration:none}
+            .employee-communication-mobile-avatar{position:relative;display:flex;height:3.75rem;width:3.75rem;align-items:center;justify-content:center;border-radius:999px;background:linear-gradient(145deg,#334155,#059669);font-size:.85rem;font-weight:800;color:#fff;box-shadow:0 0 0 2px #f8fafc,0 0 0 3px #cbd5e1}
+            .employee-communication-mobile-avatar::after{content:"";position:absolute;right:.1rem;bottom:.1rem;width:.65rem;height:.65rem;border:2px solid #f8fafc;border-radius:999px;background:#34d399}
+            .employee-communication-mobile-person p{margin-top:.4rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.68rem;color:#475569}
+            #employee-communication-page>.grid{display:block!important}
+            #employee-communication-page>.grid>section{min-height:0!important;height:auto!important;border:0!important;border-radius:0!important;background:#f8fafc!important;padding:0 .75rem!important;box-shadow:none!important;backdrop-filter:none!important}
+            #employee-communication-page>.grid>section>.space-y-4{padding:.15rem .25rem .35rem}
+            #employee-communication-page>.grid>section>.space-y-4>div:first-child,
+            #employee-communication-page>.grid>section>.space-y-4 label{display:none!important}
+            #employee-communication-page>.grid>section>.space-y-4>div:last-child{gap:.4rem}
+            .directory-filter{padding:.45rem .8rem!important;border:1px solid #e2e8f0!important;background:#fff!important;color:#334155!important}
+            #employee-communication-page>.grid>section>.mt-4{display:none!important}
+            #directory-grid{margin-top:.25rem!important;gap:0!important;overflow:visible!important;padding:0!important}
+            .directory-card{position:relative;border:0!important;border-radius:.85rem!important;background:transparent!important;padding:.7rem .55rem!important;box-shadow:none!important;--tw-ring-shadow:0 0 #0000!important}
+            .directory-card:active{background:#e2e8f0!important}
+            .directory-card .employee-communication-icon-pop{height:3.35rem!important;width:3.35rem!important;border-radius:999px!important;font-size:.85rem!important}
+            [data-employee-admin-name-row] h4{font-size:.92rem!important;color:#0f172a!important}
+            [data-employee-admin-name-row] [data-employee-name-unread]{padding:.15rem .4rem!important;font-size:.58rem!important}
+            .directory-card [data-employee-message-preview]{color:#9ca3af!important}
+            .directory-card [data-chat-connect]{position:absolute!important;inset:0!important;z-index:4!important;opacity:0!important}
+            #employee-conversation-workspace{min-height:0!important;height:auto!important}
+            [data-employee-chat-placeholder]{display:none!important}
+            #chat-panel{inset:0!important;width:100%!important;height:100dvh!important;min-height:0!important;border:0!important;border-radius:0!important}
+            #chat-panel>div:first-child{padding:.7rem .85rem!important}
+            #chat-panel>div:first-child p:first-child{font-size:1rem!important}
+            #message-thread{padding:.85rem!important}
+            html[data-theme="dark"] body,
+            html[data-theme="dark"] #employee-communication-page,
+            html[data-theme="dark"] #employee-communication-page>.grid>section{background:#050505!important;color:#f8fafc}
+            html[data-theme="dark"] .employee-communication-mobile-title{color:#fff}
+            html[data-theme="dark"] .employee-communication-mobile-compose{background:#242424;color:#f8fafc}
+            html[data-theme="dark"] .employee-communication-mobile-search input{border-color:#242424;background:#242424;color:#fff}
+            html[data-theme="dark"] .employee-communication-mobile-avatar{box-shadow:0 0 0 2px #050505,0 0 0 3px #334155}
+            html[data-theme="dark"] .employee-communication-mobile-avatar::after{border-color:#050505}
+            html[data-theme="dark"] .employee-communication-mobile-person p{color:#cbd5e1}
+            html[data-theme="dark"] .directory-filter{border-color:#303030!important;background:#202020!important;color:#e5e7eb!important}
+            html[data-theme="dark"] .directory-card:active{background:#171717!important}
+            html[data-theme="dark"] [data-employee-admin-name-row] h4{color:#f8fafc!important}
+        }
     </style>
 </head>
 <body class="bg-[radial-gradient(circle_at_top,_#f0fdf4,_#eff6ff_35%,_#f8fafc_75%)] text-slate-900">
@@ -44,6 +98,30 @@
     <main class="flex-1 ml-16 transition-all duration-300">
         @include('components.employeeHeader.communicationHeader')
         <div id="employee-communication-page" class="px-4 pb-8 pt-6 md:px-8 md:pb-10">
+            <header class="employee-communication-mobile-header">
+                <div class="employee-communication-mobile-title-row">
+                    <h1 class="employee-communication-mobile-title">Messages</h1>
+                    <span class="employee-communication-mobile-compose" aria-hidden="true"><i class="fa-regular fa-pen-to-square"></i></span>
+                </div>
+                <label class="employee-communication-mobile-search">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <input id="employee-communication-mobile-search" type="search" placeholder="Search conversations" autocomplete="off" aria-label="Search conversations">
+                </label>
+            </header>
+            @if ($directoryMembers->isNotEmpty())
+                <div class="employee-communication-mobile-people" aria-label="Administrator shortcuts">
+                    @foreach ($directoryMembers->take(10) as $mobileAdmin)
+                        @php
+                            $mobileAdminName = trim(implode(' ', array_filter([$mobileAdmin->first_name ?? null, $mobileAdmin->last_name ?? null]))) ?: ($mobileAdmin->email ?? 'Administrator');
+                            $mobileAdminInitials = strtoupper(substr(trim((string) ($mobileAdmin->first_name ?? 'A')), 0, 1).substr(trim((string) ($mobileAdmin->last_name ?? '')), 0, 1));
+                        @endphp
+                        <a href="{{ route('employee.employeeCommunication', array_filter(['user' => $mobileAdmin->id, 'tab_session' => request()->query('tab_session')])) }}#chat-panel" data-chat-connect class="employee-communication-mobile-person">
+                            <span class="employee-communication-mobile-avatar">{{ $mobileAdminInitials ?: 'AD' }}</span>
+                            <p>{{ $mobileAdminName }}</p>
+                        </a>
+                    @endforeach
+                </div>
+            @endif
             @if (session('success'))
                 <div class="employee-communication-reveal mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700" style="--employee-communication-delay: 0ms;">{{ session('success') }}</div>
             @endif
@@ -278,9 +356,9 @@
 <script>
 const initEmployeeCommunicationAnimation=()=>{const page=document.getElementById('employee-communication-page');if(!page)return;const animatedItems=page.querySelectorAll('.employee-communication-reveal');if(!('IntersectionObserver'in window)){animatedItems.forEach((item)=>item.classList.add('is-visible'));return}const observer=new IntersectionObserver((entries)=>{entries.forEach((entry)=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');observer.unobserve(entry.target)}})},{threshold:.14,rootMargin:'0px 0px -40px 0px'});animatedItems.forEach((item)=>observer.observe(item))};if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',initEmployeeCommunicationAnimation,{once:true})}else{initEmployeeCommunicationAnimation()}
 const sidebar=document.querySelector('aside');const main=document.querySelector('main');if(sidebar&&main){sidebar.addEventListener('mouseenter',function(){main.classList.remove('ml-16');main.classList.add('ml-56')});sidebar.addEventListener('mouseleave',function(){main.classList.remove('ml-56');main.classList.add('ml-16')})}
-const searchInput=document.getElementById('directory-search');const filterButtons=Array.from(document.querySelectorAll('.directory-filter'));const directoryCards=Array.from(document.querySelectorAll('.directory-card'));const resultsCount=document.getElementById('directory-results-count');const resultsPlural=document.getElementById('directory-results-plural');let activeFilter='all';
+const searchInput=document.getElementById('directory-search');const mobileSearchInput=document.getElementById('employee-communication-mobile-search');const filterButtons=Array.from(document.querySelectorAll('.directory-filter'));const directoryCards=Array.from(document.querySelectorAll('.directory-card'));const resultsCount=document.getElementById('directory-results-count');const resultsPlural=document.getElementById('directory-results-plural');let activeFilter='all';
 function applyDirectoryFilters(){const query=(searchInput?.value||'').trim().toLowerCase();let visibleCount=0;directoryCards.forEach((card)=>{const name=card.dataset.name||'';const role=card.dataset.role||'';const status=card.dataset.status||'';const matchesQuery=query===''||name.includes(query)||role.includes(query);const matchesStatus=activeFilter==='all'||status===activeFilter;const isVisible=matchesQuery&&matchesStatus;card.classList.toggle('hidden',!isVisible);if(isVisible){visibleCount+=1}});if(resultsCount){resultsCount.textContent=String(visibleCount)}if(resultsPlural){resultsPlural.textContent=visibleCount===1?'':'s'}}
-filterButtons.forEach((button)=>{button.addEventListener('click',function(){activeFilter=button.dataset.filter||'all';filterButtons.forEach((item)=>{item.classList.remove('bg-slate-900','text-white','bg-emerald-600');item.classList.add('bg-slate-100','text-slate-600')});if(activeFilter==='available'){button.classList.remove('bg-slate-100','text-slate-600','bg-emerald-50','text-emerald-700');button.classList.add('bg-emerald-600','text-white')}else{button.classList.remove('bg-slate-100','text-slate-600');button.classList.add('bg-slate-900','text-white')}filterButtons.forEach((item)=>{if(item!==button&&item.dataset.filter==='available'){item.classList.remove('bg-emerald-600','text-white');item.classList.add('bg-emerald-50','text-emerald-700')}});applyDirectoryFilters()})});if(searchInput){searchInput.addEventListener('input',applyDirectoryFilters)}applyDirectoryFilters();
+ filterButtons.forEach((button)=>{button.addEventListener('click',function(){activeFilter=button.dataset.filter||'all';filterButtons.forEach((item)=>{item.classList.remove('bg-slate-900','text-white','bg-emerald-600');item.classList.add('bg-slate-100','text-slate-600')});if(activeFilter==='available'){button.classList.remove('bg-slate-100','text-slate-600','bg-emerald-50','text-emerald-700');button.classList.add('bg-emerald-600','text-white')}else{button.classList.remove('bg-slate-100','text-slate-600');button.classList.add('bg-slate-900','text-white')}filterButtons.forEach((item)=>{if(item!==button&&item.dataset.filter==='available'){item.classList.remove('bg-emerald-600','text-white');item.classList.add('bg-emerald-50','text-emerald-700')}});applyDirectoryFilters()})});if(searchInput){searchInput.addEventListener('input',applyDirectoryFilters)}if(mobileSearchInput){mobileSearchInput.addEventListener('input',()=>{if(searchInput)searchInput.value=mobileSearchInput.value;applyDirectoryFilters()})}applyDirectoryFilters();
  function initializeEmployeeChatPanel() {
      const thread = document.getElementById('message-thread');
      if (thread) {
