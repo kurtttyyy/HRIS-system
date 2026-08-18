@@ -104,6 +104,29 @@
         margin-top: 0.625rem;
         font-size: 1.5rem;
       }
+      #admin-reports-page .report-card {
+        min-width: 0;
+      }
+      #admin-reports-page .report-card > div:first-child {
+        gap: 0.375rem;
+      }
+      #admin-reports-page .report-card > div:first-child > span:first-child {
+        width: 2.25rem;
+        height: 2.25rem;
+        flex: 0 0 auto;
+        border-radius: 0.75rem;
+      }
+      #admin-reports-page .report-card > div:first-child > span:last-child {
+        min-width: 0;
+        padding: 0.25rem 0.45rem;
+        font-size: 0.6rem;
+        overflow-wrap: anywhere;
+      }
+      #admin-reports-page .report-card > p:last-child {
+        font-size: 0.7rem;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+      }
       #admin-reports-page h2 {
         font-size: 1rem;
         line-height: 1.35;
@@ -168,7 +191,7 @@
         </form>
       </section>
 
-      <section class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section class="grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-4">
         <div class="report-card rounded-2xl border border-white bg-white p-5 shadow-sm">
           <div class="flex items-center justify-between"><span class="grid h-11 w-11 place-items-center rounded-xl bg-sky-100 text-sky-700"><i class="fa-solid fa-users"></i></span><span class="rounded-full bg-sky-50 px-3 py-1 text-xs font-bold text-sky-700">Employees</span></div>
           <p class="mt-5 text-3xl font-black text-slate-950">{{ number_format($totalEmployees) }}</p>
