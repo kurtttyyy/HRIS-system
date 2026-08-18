@@ -66,6 +66,67 @@
       transform: translateY(-1px);
       box-shadow: 0 10px 24px rgba(2, 6, 23, .28);
     }
+
+    @media screen and (max-width: 767px) {
+      #admin-reports-page {
+        padding: 4.75rem 0.75rem 1rem !important;
+      }
+      #admin-reports-page > section + section {
+        margin-top: 0.875rem !important;
+      }
+      #admin-reports-page > section {
+        gap: 0.75rem !important;
+      }
+      #admin-reports-page h1 {
+        margin-top: 0.25rem;
+        font-size: 1.5rem;
+        line-height: 1.25;
+      }
+      #admin-reports-page > section:first-child {
+        gap: 0.75rem !important;
+      }
+      #admin-reports-page > section:first-child form {
+        gap: 0.375rem;
+        padding: 0.375rem;
+        border-radius: 0.875rem;
+      }
+      #admin-reports-page > section:first-child form input {
+        min-width: 0;
+        flex: 1 1 9rem;
+        padding: 0.5rem 0.625rem;
+      }
+      #admin-reports-page .report-card,
+      #admin-reports-page > section:not(:first-child) > div {
+        padding: 0.875rem !important;
+        border-radius: 1rem !important;
+      }
+      #admin-reports-page .report-card p.mt-5 {
+        margin-top: 0.625rem;
+        font-size: 1.5rem;
+      }
+      #admin-reports-page h2 {
+        font-size: 1rem;
+        line-height: 1.35;
+      }
+      #admin-reports-page [class~="mt-6"] {
+        margin-top: 0.875rem;
+      }
+      #admin-reports-page svg.h-72,
+      #admin-reports-page div.h-72 {
+        height: 12rem;
+      }
+      #admin-reports-page .h-44.w-44 {
+        width: 8.5rem;
+        height: 8.5rem;
+      }
+      #admin-reports-page .h-44.w-44 > .h-28.w-28 {
+        width: 5.5rem;
+        height: 5.5rem;
+      }
+      #admin-reports-page .grid-cols-2 > div[class*="p-4"] {
+        padding: 0.75rem;
+      }
+    }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800">

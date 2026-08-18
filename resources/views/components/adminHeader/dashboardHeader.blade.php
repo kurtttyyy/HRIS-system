@@ -196,16 +196,18 @@
         }
 
         .admin-header-card {
-            flex-direction: row;
-            align-items: flex-end;
-            justify-content: space-between;
-            gap: 0.75rem;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+            gap: 1rem;
             border-radius: 1.25rem;
             padding: 1rem;
         }
 
         .admin-header-content {
+            width: 100%;
             min-width: 0;
+            padding-left: 3rem;
         }
 
         .admin-header-content > .admin-header-meta:first-child {
@@ -219,6 +221,7 @@
         }
 
         .admin-header-subtitle {
+            max-width: 100%;
             line-height: 1.35;
         }
 
@@ -229,16 +232,29 @@
         }
 
         .admin-header-actions {
-            width: auto;
-            flex: 0 0 auto;
+            width: 100%;
+            min-width: 0;
             flex-direction: row;
             align-items: center;
             gap: 0.5rem;
         }
 
+        .admin-header-search {
+            min-width: 0;
+            flex: 1 1 auto;
+            padding: 0.7rem 0.85rem;
+            border-radius: 0.9rem;
+        }
+
         .admin-header-action-row {
+            flex: 0 0 auto;
             flex-wrap: nowrap;
             gap: 0.5rem;
+        }
+
+        .admin-header-action-row .group > div {
+            right: 0;
+            width: min(21rem, calc(100vw - 1.5rem));
         }
 
         .admin-header-actions .admin-notification-trigger {

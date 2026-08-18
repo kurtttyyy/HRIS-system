@@ -1034,10 +1034,18 @@
             inset 0 -8px 14px rgba(148, 163, 184, 0.22),
             0 0 0 4px rgba(255, 255, 255, 0.88);
         color: #0f172a;
-        cursor: pointer;
+        cursor: grab;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-user-drag: none;
         animation: nc-chatbot-float 2.8s ease-in-out infinite;
         overflow: hidden;
         transform-style: preserve-3d;
+    }
+
+    .nc-chatbot.is-dragging .nc-chatbot-launcher {
+        animation: none;
     }
 
     .nc-chatbot-launcher::before {
@@ -1657,14 +1665,12 @@
         .nc-chatbot {
             right: 1.1rem;
             bottom: 1.1rem;
-            width: 5.1rem;
+            width: 4.5rem;
         }
 
         .nc-chatbot-launcher {
-            width: 5.2rem;
-            height: 5.2rem;
-            scale: 0.72;
-            transform-origin: bottom right;
+            width: 4.5rem;
+            height: 4.5rem;
         }
 
         .nc-chatbot-launcher-label {

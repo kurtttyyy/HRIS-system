@@ -426,9 +426,14 @@
       .matrix-print-wrapper tbody td::before { color: #64748b; font-size: .58rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
       .matrix-print-wrapper tbody td:first-child { display: block; padding: .8rem .75rem .65rem !important; background: #f8fafc; }
       .matrix-print-wrapper tbody td:first-child::before { display: none; }
-      .matrix-print-wrapper tbody td:nth-child(n+4) { display: none !important; }
+      .matrix-print-wrapper tbody td:last-child { border-bottom: 0 !important; }
       .matrix-name-button { font-size: .85rem !important; color: #0f172a !important; }
-      #school-administrator-matrix td:nth-child(2)::before { content: "Education"; }\n      #school-administrator-matrix td:nth-child(3)::before { content: "Position"; }
+      #school-administrator-matrix td:nth-child(2)::before { content: "Education"; }
+      #school-administrator-matrix td:nth-child(3)::before { content: "Position"; }
+      #school-administrator-matrix td:nth-child(4)::before { content: "Employment status"; }
+      #school-administrator-matrix td:nth-child(5)::before { content: "Monthly salary"; }
+      #school-administrator-matrix td:nth-child(6)::before { content: "Benefits"; }
+      #school-administrator-matrix td:nth-child(7)::before { content: "Experience"; }
       .matrix-employee-modal { padding: .5rem !important; }
       .matrix-employee-card { max-height: 96dvh; border-radius: .9rem; }
       .matrix-employee-card-header { padding: .8rem 1rem; }

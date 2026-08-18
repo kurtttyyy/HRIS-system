@@ -965,7 +965,7 @@ window.displayEmployeeId = function displayEmployeeId(employee, emptyValue = '-'
       width: 100%;
       padding: 1rem !important;
       border-radius: 1.25rem;
-      background-size: contain !important;
+      background-image: none !important;
       overflow: hidden;
     }
 

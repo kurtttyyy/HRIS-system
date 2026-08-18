@@ -42,6 +42,195 @@
       border-radius: 9999px;
     }
     .payslip-employee-list::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    @media screen and (max-width: 767px) {
+      main {
+        min-width: 0;
+      }
+      main > .container {
+        width: 100%;
+        padding: 0.5rem 0.75rem 1rem !important;
+      }
+      #payslip-review-hero {
+        padding: 1rem !important;
+        border-radius: 1.25rem !important;
+      }
+      #payslip-review-hero h1 {
+        margin-top: 0.75rem;
+        font-size: 1.5rem;
+        line-height: 1.2;
+      }
+      #payslip-review-hero p {
+        line-height: 1.5;
+      }
+      #payslip-review-hero .relative.flex {
+        gap: 1rem;
+      }
+      #payslip-review-hero .relative.flex > div:first-child > div:first-child {
+        max-width: calc(100% - 3rem);
+        margin-left: 3rem;
+        padding-left: 0.65rem;
+        padding-right: 0.65rem;
+        font-size: 0.6rem;
+        letter-spacing: 0.14em;
+      }
+      #payslip-review-hero .mt-4.flex.flex-wrap {
+        gap: 0.5rem;
+      }
+      #payslip-review-hero .mt-4.flex.flex-wrap > span {
+        padding: 0.35rem 0.65rem;
+        font-size: 0.68rem;
+      }
+      #payslip-review-hero a {
+        width: 100%;
+        padding: 0.7rem 1rem;
+      }
+      #payslip-review-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+      }
+      #payslip-review-summary > div {
+        min-width: 0;
+        padding: 0.875rem;
+        border-radius: 1rem;
+      }
+      #payslip-review-summary > div > span {
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 0.75rem;
+      }
+      #payslip-review-summary p.mt-4 {
+        margin-top: 0.75rem;
+        font-size: 0.65rem;
+        letter-spacing: 0.08em;
+      }
+      #payslip-review-summary p.text-2xl {
+        overflow-wrap: anywhere;
+        font-size: 1.25rem;
+      }
+      #payslip-review-queue {
+        padding: 1rem;
+        border-radius: 1.25rem;
+      }
+      #payslip-review-queue .payslip-employee-list {
+        max-height: 34rem;
+        padding-right: 0.15rem;
+      }
+      #payslip-selected-meta {
+        grid-template-areas: "date record" "account account";
+        gap: 0.5rem;
+      }
+      #payslip-review-preview > * + * {
+        margin-top: 0.75rem;
+      }
+      #payslip-selected-meta > div {
+        padding: 0.75rem;
+        border-radius: 0.875rem;
+        box-shadow: none;
+      }
+      #payslip-selected-meta > div:nth-child(1) { grid-area: date; }
+      #payslip-selected-meta > div:nth-child(2) { grid-area: account; }
+      #payslip-selected-meta > div:nth-child(3) { grid-area: record; }
+      #payslip-selected-meta p:first-child {
+        font-size: 0.58rem;
+        letter-spacing: 0.1em;
+      }
+      #payslip-selected-meta p:last-child {
+        margin-top: 0.25rem;
+        overflow-wrap: anywhere;
+        font-size: 0.85rem;
+      }
+      #payslip-document-panel {
+        padding: 1rem;
+        border-radius: 1.25rem;
+        box-shadow: none;
+      }
+      #payslip-document-heading {
+        margin-bottom: 0.875rem;
+      }
+      #payslip-document-heading h2 {
+        margin-top: 0.5rem;
+        font-size: 1.25rem;
+        line-height: 1.25;
+      }
+      #payslip-document-heading p {
+        font-size: 0.75rem;
+        line-height: 1.4;
+      }
+      #payslip-document-heading > span {
+        display: none;
+      }
+      .payslip-paper { border-radius: 1rem; box-shadow: none; }
+      .payslip-paper > div:first-child { padding: 1rem 0.75rem 0.75rem; }
+      .payslip-paper > div:first-child img { width: 15rem; }
+      .payslip-paper > div:first-child p { margin-top: 0.5rem; font-size: 0.65rem; letter-spacing: 0.16em; }
+      .payslip-paper > div:nth-child(2) { padding: 0.75rem; }
+      .payslip-paper > div:nth-child(2) > .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }
+      .payslip-paper > div:nth-child(2) > .grid > div { padding: 0.6rem; border-radius: 0.75rem; }
+      .payslip-paper > div:nth-child(2) > .grid > div:nth-child(3) { grid-column: 1 / -1; }
+      .payslip-paper > div:nth-child(2) p { overflow-wrap: anywhere; }
+      .payslip-paper > div:nth-child(2) .mt-4 { margin-top: 0.5rem; padding: 0.65rem; border-radius: 0.75rem; }
+      .payslip-paper > div:nth-child(2) .text-lg { margin-top: 0.25rem; font-size: 0.9rem; }
+      .payslip-paper > div:nth-child(3) { padding: 0.75rem; }
+      .payslip-paper > div:nth-child(3) > .grid { gap: 0.75rem; }
+      .payslip-paper .border-emerald-200,
+      .payslip-paper .border-rose-200 { padding: 0.875rem; border-radius: 1rem; }
+      .payslip-paper .border-emerald-200 > .flex,
+      .payslip-paper .border-rose-200 > .flex { gap: 0.65rem; }
+      .payslip-paper .border-emerald-200 > .flex > div:first-child,
+      .payslip-paper .border-rose-200 > .flex > div:first-child { width: 2.25rem; height: 2.25rem; border-radius: 0.75rem; }
+      .payslip-paper .border-emerald-200 .mt-6,
+      .payslip-paper .border-rose-200 .mt-6 { margin-top: 0.75rem; }
+      .payslip-paper .border-emerald-200 .space-y-2,
+      .payslip-paper .border-rose-200 .space-y-2 { font-size: 0.75rem; }
+      .payslip-paper .border-emerald-200 .space-y-2 > div,
+      .payslip-paper .border-rose-200 .space-y-2 > div { gap: 0.75rem; }
+      .payslip-paper .payslip-empty-line { display: none; }
+      .payslip-paper .border-emerald-200 .mt-5,
+      .payslip-paper .border-rose-200 .mt-5 { margin-top: 0.75rem; padding-top: 0.75rem; }
+      .payslip-paper .border-emerald-200 .text-2xl,
+      .payslip-paper .border-rose-200 .text-2xl { font-size: 1.25rem; }
+      #payslip-net-pay {
+        width: 100%;
+        margin-top: 0.75rem;
+        padding: 0.75rem;
+        border-radius: 0.875rem;
+        background: #f5f7ff;
+      }
+      #payslip-net-pay p:last-child {
+        max-width: 8rem;
+        font-size: 0.68rem;
+        line-height: 1.35;
+      }
+      #payslip-net-pay span {
+        font-size: 1.15rem;
+      }
+      #payslip-signatures {
+        padding: 0.75rem;
+      }
+      #payslip-signatures > .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+      }
+      #payslip-signatures .mt-10 {
+        margin-top: 1.25rem;
+      }
+      #payslip-signatures p {
+        font-size: 0.65rem;
+        line-height: 1.35;
+      }
+      #payslip-signatures p.mt-2 {
+        margin-top: 0.35rem;
+        overflow-wrap: anywhere;
+      }
+      #payslip-acknowledgement {
+        padding: 0.75rem;
+        text-align: left;
+        font-size: 0.65rem;
+        line-height: 1.45;
+        color: #64748b;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_45%,#f8fafc_100%)] text-slate-800">
@@ -54,6 +243,7 @@
   $money = function ($value) {
       return is_null($value) || $value === '' ? '-' : number_format((float) $value, 2);
   };
+  $isBlankAmount = fn ($value) => is_null($value) || $value === '';
   $employeeName = $selectedRecord?->employee_name ?: '-';
   $employeeId = $selectedRecord?->employee_id ?: '-';
   $payDateText = $selectedRecord?->pay_date ? $selectedRecord->pay_date->format('m/d/Y') : ($selectedRecord?->pay_date_text ?: '-');
@@ -114,8 +304,8 @@
       'headerSearchPlaceholder' => 'Search employees...'
     ])
 
-    <div class="container mx-auto max-w-7xl p-4 md:p-8 pt-10 space-y-6">
-      <section id="payslip-review-hero" class="relative overflow-hidden rounded-[2rem] border border-emerald-950/70 bg-[linear-gradient(135deg,_#020617_0%,_#020617_42%,_#111827_68%,_#064e3b_100%)] px-6 py-6 shadow-[0_24px_60px_rgba(3,19,29,0.34)] md:px-8">
+    <div class="container mx-auto max-w-7xl space-y-4 px-3 pb-4 pt-2 md:space-y-6 md:p-8">
+      <section id="payslip-review-hero" class="relative overflow-hidden rounded-[1.25rem] border border-emerald-950/70 bg-[linear-gradient(135deg,_#020617_0%,_#020617_42%,_#111827_68%,_#064e3b_100%)] px-4 py-4 shadow-[0_24px_60px_rgba(3,19,29,0.34)] md:rounded-[2rem] md:px-8 md:py-6">
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.14),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(110,231,183,0.14),_transparent_32%)]"></div>
         <div class="absolute -left-8 top-6 h-24 w-24 rounded-full bg-cyan-300/10 blur-3xl"></div>
         <div class="absolute right-0 top-0 h-32 w-32 translate-x-10 -translate-y-8 rounded-full bg-emerald-300/20 blur-3xl"></div>
@@ -125,7 +315,7 @@
               <span class="h-2 w-2 rounded-full bg-cyan-300"></span>
               Payroll Review Desk
             </div>
-            <h1 class="mt-4 text-3xl font-black tracking-tight text-white md:text-4xl">{{ $selectedRecord ? $employeeName : 'Payslip File View' }}</h1>
+            <h1 class="mt-3 text-2xl font-black tracking-tight text-white md:mt-4 md:text-4xl">{{ $selectedRecord ? $employeeName : 'Payslip File View' }}</h1>
             <p class="mt-2 max-w-2xl text-sm leading-6 text-emerald-50/85 md:text-base">
               {{ $selectedRecord
                   ? 'Inspect the selected employee payroll record, verify earnings and deductions, and review the final net pay in one document-style view.'
@@ -149,70 +339,70 @@
         </div>
       </section>
 
-      <div id="payslip-review-summary" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div class="rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur">
-          <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-100 text-sky-600">
+      <div id="payslip-review-summary" class="grid grid-cols-2 gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-4">
+        <div class="min-w-0 rounded-2xl border border-white/80 bg-white/90 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur md:rounded-[1.75rem] md:p-5">
+          <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100 text-sky-600 md:h-12 md:w-12 md:rounded-2xl">
             <i class="fa-solid fa-id-card text-lg"></i>
           </span>
-          <p class="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Employee ID</p>
-          <p class="mt-2 text-2xl font-black tracking-tight text-slate-900">{{ $employeeId }}</p>
+          <p class="mt-3 text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 md:mt-4 md:text-xs md:tracking-[0.18em]">Employee ID</p>
+          <p class="mt-1 text-xl font-black tracking-tight text-slate-900 md:mt-2 md:text-2xl">{{ $employeeId }}</p>
           <p class="mt-1 text-sm text-slate-500">Selected payroll record</p>
         </div>
 
-        <div class="rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur">
-          <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
+        <div class="min-w-0 rounded-2xl border border-white/80 bg-white/90 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur md:rounded-[1.75rem] md:p-5">
+          <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 md:h-12 md:w-12 md:rounded-2xl">
             <i class="fa-solid fa-wallet text-lg"></i>
           </span>
-          <p class="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Total Earnings</p>
-          <p class="mt-2 text-2xl font-black tracking-tight text-emerald-700">{{ $money($displayTotalSalary) }}</p>
+          <p class="mt-3 text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 md:mt-4 md:text-xs md:tracking-[0.18em]">Total Earnings</p>
+          <p class="mt-1 text-xl font-black tracking-tight text-emerald-700 md:mt-2 md:text-2xl">{{ $money($displayTotalSalary) }}</p>
           <p class="mt-1 text-sm text-slate-500">Combined salary and income</p>
         </div>
 
-        <div class="rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur">
-          <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
+        <div class="min-w-0 rounded-2xl border border-white/80 bg-white/90 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur md:rounded-[1.75rem] md:p-5">
+          <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-rose-100 text-rose-600 md:h-12 md:w-12 md:rounded-2xl">
             <i class="fa-solid fa-receipt text-lg"></i>
           </span>
-          <p class="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Total Deductions</p>
-          <p class="mt-2 text-2xl font-black tracking-tight text-rose-700">{{ $money($displayTotalDeduction) }}</p>
+          <p class="mt-3 text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 md:mt-4 md:text-xs md:tracking-[0.18em]">Total Deductions</p>
+          <p class="mt-1 text-xl font-black tracking-tight text-rose-700 md:mt-2 md:text-2xl">{{ $money($displayTotalDeduction) }}</p>
           <p class="mt-1 text-sm text-slate-500">Loans, taxes, and premiums</p>
         </div>
 
-        <div class="rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur">
-          <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600">
+        <div class="min-w-0 rounded-2xl border border-white/80 bg-white/90 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur md:rounded-[1.75rem] md:p-5">
+          <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 md:h-12 md:w-12 md:rounded-2xl">
             <i class="fa-solid fa-money-bill-wave text-lg"></i>
           </span>
-          <p class="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Net Pay</p>
-          <p class="mt-2 text-2xl font-black tracking-tight text-indigo-700">{{ $money($selectedRecord?->net_pay) }}</p>
+          <p class="mt-3 text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 md:mt-4 md:text-xs md:tracking-[0.18em]">Net Pay</p>
+          <p class="mt-1 text-xl font-black tracking-tight text-indigo-700 md:mt-2 md:text-2xl">{{ $money($selectedRecord?->net_pay) }}</p>
           <p class="mt-1 text-sm text-slate-500">Final payroll amount</p>
         </div>
       </div>
 
       <div class="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.35fr)]">
-        <section id="payslip-review-queue" class="overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/90 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur">
-          <div class="flex items-center justify-between gap-4">
+        <section id="payslip-review-queue" class="overflow-hidden rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm backdrop-blur md:rounded-[1.75rem] md:p-6 md:shadow-[0_20px_50px_rgba(15,23,42,0.08)]">
+          <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <div>
               <div class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
                 Employee Queue
               </div>
-              <h2 class="mt-4 text-2xl font-black tracking-tight text-slate-900">Scanned employees</h2>
-              <p class="mt-2 text-sm leading-6 text-slate-500">Choose a record to update the preview on the right.</p>
+              <h2 class="mt-3 text-xl font-black tracking-tight text-slate-900 md:mt-4 md:text-2xl">Scanned employees</h2>
+              <p class="mt-1 text-sm leading-5 text-slate-500 md:mt-2 md:leading-6">Choose an employee to view the payslip.</p>
             </div>
             <span class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-500">{{ $scannedCount }} record(s)</span>
           </div>
 
-          <div class="mt-5">
-            <label class="group flex items-center gap-3 rounded-[1.25rem] border border-slate-200 bg-slate-50 px-4 py-3 transition focus-within:border-emerald-300 focus-within:bg-white focus-within:shadow-sm">
+          <div class="mt-4 md:mt-5">
+            <label class="group flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 transition focus-within:border-emerald-300 focus-within:bg-white focus-within:shadow-sm md:gap-3 md:rounded-[1.25rem] md:px-4 md:py-3">
               <i class="fa-solid fa-magnifying-glass text-slate-400 transition group-focus-within:text-emerald-600"></i>
               <input
                 id="employee_queue_search"
                 type="text"
-                placeholder="Search employee ID, name, pay date, or scanned date..."
+                placeholder="Search employees..."
                 class="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
               />
             </label>
           </div>
 
-          <div class="payslip-employee-list mt-6 grid grid-cols-1 gap-4">
+          <div class="payslip-employee-list mt-4 grid grid-cols-1 gap-2.5 md:mt-6 md:gap-4">
             @forelse ($recordItems as $record)
               @php
                 $isSelected = $selectedRecord && (int) $selectedRecord->id === (int) $record->id;
@@ -223,25 +413,25 @@
               @endphp
               <a
                 href="{{ $isSelected ? route('admin.adminPaySlipView', ['upload_id' => ($uploadId ?? $record->payslip_upload_id)]) : route('admin.adminPaySlipView', ['upload_id' => ($uploadId ?? $record->payslip_upload_id), 'record_id' => $record->id]) }}"
-                class="employee-card text-left rounded-[1.5rem] border p-5 transition {{ $isSelected ? 'border-emerald-300 bg-emerald-50/80 shadow-sm' : 'bg-white border-slate-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md' }}"
+                class="employee-card rounded-xl border p-3 text-left transition md:rounded-[1.5rem] md:p-5 {{ $isSelected ? 'border-emerald-300 bg-emerald-50/80' : 'bg-white border-slate-200 hover:border-emerald-200' }}"
                 data-employee-name="{{ $searchName }}"
                 data-employee-id="{{ $searchId }}"
                 data-pay-date="{{ strtolower(trim((string) $recordPayDate)) }}"
                 data-scanned-at="{{ $searchScannedAt }}"
               >
-                <div class="flex items-start justify-between gap-4">
-                  <div>
+                <div class="flex items-start justify-between gap-3 md:gap-4">
+                  <div class="min-w-0">
                     <div class="flex flex-wrap items-center gap-2">
-                      <p class="text-base font-semibold text-slate-800">{{ $record->employee_name ?: 'Employee' }}</p>
-                      <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] {{ $isSelected ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500' }}">
+                      <p class="break-words text-sm font-semibold leading-5 text-slate-800 md:text-base">{{ $record->employee_name ?: 'Employee' }}</p>
+                      <span class="hidden rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] sm:inline-flex {{ $isSelected ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500' }}">
                         {{ $isSelected ? 'Selected' : 'Preview' }}
                       </span>
                     </div>
-                    <p class="mt-1 text-sm text-slate-500">ID: {{ $record->employee_id ?: '-' }}</p>
-                    <p class="text-sm text-slate-500">Pay Date: {{ $recordPayDate }}</p>
-                    <p class="mt-2 text-xs text-slate-400">{{ optional($record->scanned_at)->format('M d, Y h:i A') ?: 'Scanned' }}</p>
+                    <p class="mt-1 text-xs text-slate-500 md:text-sm">ID: {{ $record->employee_id ?: '-' }}</p>
+                    <p class="text-xs text-slate-500 md:text-sm">Pay Date: {{ $recordPayDate }}</p>
+                    <p class="mt-1 text-[11px] text-slate-400 md:mt-2 md:text-xs">{{ optional($record->scanned_at)->format('M d, Y h:i A') ?: 'Scanned' }}</p>
                   </div>
-                  <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl {{ $isSelected ? 'bg-emerald-100 text-emerald-600' : 'bg-sky-100 text-sky-600' }}">
+                  <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm md:h-11 md:w-11 md:rounded-2xl {{ $isSelected ? 'bg-emerald-100 text-emerald-600' : 'bg-sky-50 text-sky-600' }}">
                     <i class="fa-solid {{ $isSelected ? 'fa-check' : 'fa-eye' }}"></i>
                   </span>
                 </div>
@@ -265,7 +455,7 @@
 
         <section id="payslip-review-preview" class="space-y-6">
           @if ($selectedRecord)
-          <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div id="payslip-selected-meta" class="grid grid-cols-2 gap-2 md:grid-cols-3 md:gap-4">
             <div class="rounded-[1.5rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
               <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Payroll Date</p>
               <p class="mt-2 text-base font-semibold text-slate-800">{{ $payDateText }}</p>
@@ -280,8 +470,8 @@
             </div>
           </div>
 
-          <div class="overflow-hidden rounded-[2rem] border border-white/80 bg-white/92 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur">
-            <div class="mb-5 flex items-center justify-between gap-4">
+          <div id="payslip-document-panel" class="overflow-hidden rounded-[2rem] border border-white/80 bg-white/92 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur">
+            <div id="payslip-document-heading" class="mb-5 flex items-center justify-between gap-4">
               <div>
                 <div class="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
                   Payroll Document
@@ -332,10 +522,10 @@
                       </div>
                     </div>
                     <div class="mt-6 space-y-2 text-sm text-slate-800">
-                      <div class="flex justify-between"><span>Basic Salary</span><span>{{ $money($selectedRecord->basic_salary) }}</span></div>
-                      <div class="flex justify-between"><span>Living Allowance</span><span>{{ $money($selectedRecord->living_allowance) }}</span></div>
-                      <div class="flex justify-between"><span>Extra Load</span><span>{{ $money($selectedRecord->extra_load) }}</span></div>
-                      <div class="flex justify-between"><span>Other Income</span><span>{{ $money($selectedRecord->other_income) }}</span></div>
+                      <div class="flex justify-between {{ $isBlankAmount($selectedRecord->basic_salary) ? 'payslip-empty-line' : '' }}"><span>Basic Salary</span><span>{{ $money($selectedRecord->basic_salary) }}</span></div>
+                      <div class="flex justify-between {{ $isBlankAmount($selectedRecord->living_allowance) ? 'payslip-empty-line' : '' }}"><span>Living Allowance</span><span>{{ $money($selectedRecord->living_allowance) }}</span></div>
+                      <div class="flex justify-between {{ $isBlankAmount($selectedRecord->extra_load) ? 'payslip-empty-line' : '' }}"><span>Extra Load</span><span>{{ $money($selectedRecord->extra_load) }}</span></div>
+                      <div class="flex justify-between {{ $isBlankAmount($selectedRecord->other_income) ? 'payslip-empty-line' : '' }}"><span>Other Income</span><span>{{ $money($selectedRecord->other_income) }}</span></div>
                     </div>
                     <div class="mt-5 border-t border-emerald-100 pt-4">
                       <div class="flex items-center justify-between gap-4">
@@ -359,17 +549,17 @@
                       </div>
                     </div>
                     <div class="mt-6 space-y-2 text-sm text-slate-800">
-                      <div class="flex justify-between"><span>Absences Amount</span><span>{{ $money($selectedRecord->absences_amount) }}</span></div>
-                      <div class="flex justify-between"><span>Withholding Tax</span><span>{{ $money($selectedRecord->withholding_tax) }}</span></div>
-                      <div class="flex justify-between"><span>Salary Vale</span><span>{{ $money($selectedRecord->salary_vale) }}</span></div>
-                      <div class="flex justify-between"><span>Pag-ibig Loan</span><span>{{ $money($selectedRecord->pag_ibig_loan) }}</span></div>
-                      <div class="flex justify-between"><span>Pag-ibig Premium</span><span>{{ $money($selectedRecord->pag_ibig_premium) }}</span></div>
-                      <div class="flex justify-between"><span>SSS Loan</span><span>{{ $money($selectedRecord->sss_loan) }}</span></div>
-                      <div class="flex justify-between"><span>SSS Premium</span><span>{{ $money($selectedRecord->sss_premium) }}</span></div>
-                      <div class="flex justify-between"><span>PERAA Loan</span><span>{{ $money($selectedRecord->peraa_loan) }}</span></div>
-                      <div class="flex justify-between"><span>PERAA Premium</span><span>{{ $money($selectedRecord->peraa_premium) }}</span></div>
-                      <div class="flex justify-between"><span>Philhealth Premium</span><span>{{ $money($selectedRecord->philhealth_premium) }}</span></div>
-                      <div class="flex justify-between"><span>Other Deduction</span><span>{{ $money($selectedRecord->other_deduction) }}</span></div>
+                      <div class="flex justify-between {{ $isBlankAmount($selectedRecord->absences_amount) ? 'payslip-empty-line' : '' }}"><span>Absences Amount</span><span>{{ $money($selectedRecord->absences_amount) }}</span></div>
+                      <div class="flex justify-between {{ $isBlankAmount($selectedRecord->withholding_tax) ? 'payslip-empty-line' : '' }}"><span>Withholding Tax</span><span>{{ $money($selectedRecord->withholding_tax) }}</span></div>
+                      <div class="flex justify-between {{ $isBlankAmount($selectedRecord->salary_vale) ? 'payslip-empty-line' : '' }}"><span>Salary Vale</span><span>{{ $money($selectedRecord->salary_vale) }}</span></div>
+                      <div class="flex justify-between {{ $isBlankAmount($selectedRecord->pag_ibig_loan) ? 'payslip-empty-line' : '' }}"><span>Pag-ibig Loan</span><span>{{ $money($selectedRecord->pag_ibig_loan) }}</span></div>
+                      <div class="flex justify-between {{ $isBlankAmount($selectedRecord->pag_ibig_premium) ? 'payslip-empty-line' : '' }}"><span>Pag-ibig Premium</span><span>{{ $money($selectedRecord->pag_ibig_premium) }}</span></div>
+                      <div class="flex justify-between {{ $isBlankAmount($selectedRecord->sss_loan) ? 'payslip-empty-line' : '' }}"><span>SSS Loan</span><span>{{ $money($selectedRecord->sss_loan) }}</span></div>
+                      <div class="flex justify-between {{ $isBlankAmount($selectedRecord->sss_premium) ? 'payslip-empty-line' : '' }}"><span>SSS Premium</span><span>{{ $money($selectedRecord->sss_premium) }}</span></div>
+                      <div class="flex justify-between {{ $isBlankAmount($selectedRecord->peraa_loan) ? 'payslip-empty-line' : '' }}"><span>PERAA Loan</span><span>{{ $money($selectedRecord->peraa_loan) }}</span></div>
+                      <div class="flex justify-between {{ $isBlankAmount($selectedRecord->peraa_premium) ? 'payslip-empty-line' : '' }}"><span>PERAA Premium</span><span>{{ $money($selectedRecord->peraa_premium) }}</span></div>
+                      <div class="flex justify-between {{ $isBlankAmount($selectedRecord->philhealth_premium) ? 'payslip-empty-line' : '' }}"><span>Philhealth Premium</span><span>{{ $money($selectedRecord->philhealth_premium) }}</span></div>
+                      <div class="flex justify-between {{ $isBlankAmount($selectedRecord->other_deduction) ? 'payslip-empty-line' : '' }}"><span>Other Deduction</span><span>{{ $money($selectedRecord->other_deduction) }}</span></div>
                     </div>
                     <div class="mt-5 border-t border-rose-100 pt-4">
                       <div class="flex items-center justify-between gap-4">
@@ -383,7 +573,7 @@
                   </div>
                 </div>
 
-                <div class="mt-6 lg:ml-auto lg:w-[360px] rounded-[1.5rem] border border-indigo-100 bg-[linear-gradient(135deg,rgba(99,102,241,0.10),rgba(14,165,233,0.10),rgba(255,255,255,0.96))] px-5 py-4">
+                <div id="payslip-net-pay" class="mt-6 lg:ml-auto lg:w-[360px] rounded-[1.5rem] border border-indigo-100 bg-[linear-gradient(135deg,rgba(99,102,241,0.10),rgba(14,165,233,0.10),rgba(255,255,255,0.96))] px-5 py-4">
                   <div class="flex items-center justify-between gap-4">
                     <div>
                       <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-indigo-700">Net Pay</p>
@@ -394,7 +584,7 @@
                 </div>
               </div>
 
-              <div class="px-8 py-5 section-line text-sm text-slate-800">
+              <div id="payslip-signatures" class="px-8 py-5 section-line text-sm text-slate-800">
                 <div class="grid grid-cols-1 gap-8 md:grid-cols-2 text-left">
                   <div>
                     <p class="font-medium text-slate-700">Prepared by:</p>
@@ -409,7 +599,7 @@
                 </div>
               </div>
 
-              <div class="px-8 py-6 text-center text-sm leading-6 text-slate-700">
+              <div id="payslip-acknowledgement" class="px-8 py-6 text-center text-sm leading-6 text-slate-700">
                 I hereby acknowledge to have receive from the Treasurer of Northeastern College, Inc the sums herein specified, the same being full compensation of my services rendered during the period stated above, the correctness of which I hereby certify.
               </div>
             </div>

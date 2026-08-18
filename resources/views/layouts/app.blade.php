@@ -73,9 +73,11 @@
                     pointerX: event.clientX,
                     pointerY: event.clientY,
                     left: rect.left,
-                    top: rect.top
+                    top: rect.top,
+                    threshold: event.pointerType === 'touch' ? 2 : 5
                 };
                 dragged = false;
+                chatbot.classList.add('is-dragging');
                 launcher.setPointerCapture(event.pointerId);
                 launcher.style.cursor = 'grabbing';
             });
@@ -84,7 +86,7 @@
                 if (!dragStart) return;
                 const offsetX = event.clientX - dragStart.pointerX;
                 const offsetY = event.clientY - dragStart.pointerY;
-                if (Math.abs(offsetX) > 5 || Math.abs(offsetY) > 5) {
+                if (Math.abs(offsetX) > dragStart.threshold || Math.abs(offsetY) > dragStart.threshold) {
                     dragged = true;
                     event.preventDefault();
                     setPosition(dragStart.left + offsetX, dragStart.top + offsetY, false);
@@ -95,6 +97,7 @@
                 if (!dragStart) return;
                 if (launcher.hasPointerCapture(event.pointerId)) launcher.releasePointerCapture(event.pointerId);
                 launcher.style.cursor = '';
+                chatbot.classList.remove('is-dragging');
                 if (dragged) {
                     const rect = chatbot.getBoundingClientRect();
                     setPosition(rect.left, rect.top, true);

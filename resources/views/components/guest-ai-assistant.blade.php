@@ -25,9 +25,16 @@
         color: #0f172a;
         cursor: grab;
         touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-user-drag: none;
         animation: nc-chatbot-float 2.8s ease-in-out infinite;
         overflow: hidden;
         transform-style: preserve-3d;
+    }
+
+    .nc-chatbot.is-dragging .nc-chatbot-launcher {
+        animation: none;
     }
 
     .nc-chatbot-launcher::before {
@@ -370,8 +377,8 @@
     }
 
     @media (max-width: 991.98px) {
-        .nc-chatbot { right: 1.1rem; bottom: 1.1rem; width: 5.1rem; }
-        .nc-chatbot-launcher { width: 5.2rem; height: 5.2rem; scale: 0.72; transform-origin: bottom right; }
+        .nc-chatbot { right: 1.1rem; bottom: 1.1rem; width: 4.5rem; }
+        .nc-chatbot-launcher { width: 4.5rem; height: 4.5rem; }
         .nc-chatbot-launcher-label { display: none; }
         .nc-chatbot-help-hint { display: none; }
         .nc-chatbot-panel { right: -0.2rem; width: min(23rem, calc(100vw - 1rem)); bottom: 4.8rem; }
