@@ -94,6 +94,75 @@
         padding: 0.875rem !important;
         border-radius: 1.25rem !important;
       }
+      #admin-calendar-page > section:first-of-type {
+        padding: 1rem !important;
+        border-radius: 1.25rem !important;
+      }
+      #admin-calendar-page > section:first-of-type > div:last-child,
+      #admin-calendar-page > section:first-of-type > div:last-child > div,
+      #admin-calendar-page .calendar-spotlight,
+      #admin-calendar-page .calendar-spotlight * {
+        min-width: 0;
+      }
+      #admin-calendar-page .calendar-spotlight {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+        padding: 1rem !important;
+        border-radius: 1rem !important;
+      }
+      #admin-calendar-page .calendar-spotlight h2 {
+        margin-top: 0.25rem;
+        font-size: 1.35rem;
+        line-height: 1.6rem;
+      }
+      #admin-calendar-page .calendar-spotlight > div:first-child > div:last-child {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.75rem;
+      }
+      #admin-calendar-page .calendar-spotlight #selectedDateLabel {
+        margin-top: 0.75rem;
+        font-size: 0.75rem;
+        line-height: 1.25rem;
+      }
+      #admin-calendar-page .calendar-spotlight #selectedDateLabel + div {
+        margin-top: 0.75rem;
+        gap: 0.5rem;
+      }
+      #admin-calendar-page .calendar-spotlight #selectedDateLabel + div > div {
+        padding: 0.65rem 0.75rem;
+        border-radius: 0.75rem;
+      }
+      #admin-calendar-page .calendar-spotlight #selectedDateLabel + div p:first-child {
+        font-size: 0.55rem;
+        letter-spacing: 0.12em;
+      }
+      #admin-calendar-page .calendar-spotlight #selectedDateLabel + div p:last-child {
+        margin-top: 0.25rem;
+        font-size: 1.15rem;
+      }
+      #admin-calendar-page .calendar-spotlight > div:last-child {
+        margin-top: 0.875rem;
+      }
+      #admin-calendar-page .calendar-spotlight #selectedDateItems > div {
+        gap: 0.65rem;
+        padding: 0.65rem;
+        border-radius: 0.75rem;
+      }
+      #admin-calendar-page .calendar-spotlight #selectedDateItems > div > span:first-child {
+        width: 2.25rem;
+        height: 2.25rem;
+        flex: 0 0 2.25rem;
+        border-radius: 0.65rem;
+      }
+      #admin-calendar-page .calendar-spotlight #selectedDateItems > div > span:last-child {
+        overflow: visible;
+        white-space: normal;
+        text-overflow: clip;
+        overflow-wrap: anywhere;
+        line-height: 1.25rem;
+      }
       #admin-calendar-page .calendar-toolbar {
         gap: 0.75rem;
         padding-bottom: 0.875rem;
@@ -152,11 +221,23 @@
       #admin-calendar-page #calendarGrid {
         margin-top: 0.35rem;
         gap: 0.25rem;
+        grid-auto-rows: 3.35rem;
       }
-      #admin-calendar-page .calendar-day {
-        min-height: 3.35rem !important;
+      #admin-calendar-page .calendar-day,
+      #admin-calendar-page .calendar-outside-day {
+        height: 3.35rem !important;
+        min-height: 0 !important;
         padding: 0.3rem !important;
         border-radius: 0.65rem !important;
+        align-self: stretch;
+      }
+      #admin-calendar-page .calendar-outside-day {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #admin-calendar-page .calendar-outside-day > div {
+        font-size: 0.7rem;
       }
       #admin-calendar-page .calendar-day > div:first-child {
         align-items: center;
@@ -190,6 +271,68 @@
       }
       #admin-calendar-page .calendar-status > div:last-child {
         display: none;
+      }
+      #admin-calendar-page .calendar-actions-sidebar {
+        gap: 0.75rem;
+      }
+      #admin-calendar-page .calendar-action-panel {
+        padding: 0.875rem !important;
+        border-radius: 1rem !important;
+        box-shadow: none !important;
+      }
+      #admin-calendar-page .calendar-action-panel > div:first-child {
+        align-items: center;
+      }
+      #admin-calendar-page .calendar-action-panel > div:first-child .admin-kicker {
+        font-size: 0.55rem;
+        letter-spacing: 0.16em;
+      }
+      #admin-calendar-page .calendar-action-panel > div:first-child h3 {
+        margin-top: 0.1rem;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 1.05rem;
+        font-weight: 700;
+        letter-spacing: 0;
+      }
+      #admin-calendar-page .calendar-action-panel > div:first-child > div:last-child {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.6rem;
+        font-size: 0.8rem;
+      }
+      #admin-calendar-page .calendar-action-list {
+        margin-top: 0.75rem;
+        gap: 0.45rem;
+      }
+      #admin-calendar-page .calendar-action {
+        min-height: 2.9rem;
+        padding: 0.45rem 0.65rem !important;
+        border-color: #e2e8f0 !important;
+        border-radius: 0.75rem !important;
+        background: #f8fafc !important;
+        color: #334155 !important;
+        font-size: 0.72rem;
+        box-shadow: none !important;
+      }
+      #admin-calendar-page .calendar-action > span:first-child {
+        min-width: 0;
+        gap: 0.55rem;
+      }
+      #admin-calendar-page .calendar-action > span:first-child > span {
+        width: 2rem;
+        height: 2rem;
+        flex: 0 0 2rem;
+        border-radius: 0.6rem;
+        font-size: 0.72rem;
+      }
+      #admin-calendar-page .calendar-action > i:last-child {
+        color: #94a3b8 !important;
+        font-size: 0.65rem;
+      }
+      #admin-calendar-page .calendar-action:disabled {
+        background: #f8fafc !important;
+        color: #94a3b8 !important;
+        opacity: 0.62 !important;
       }
     }
     @keyframes calendar-fade-up {
@@ -273,7 +416,7 @@
             </div>
           </div>
 
-          <div class="calendar-card-motion calendar-reveal rounded-[1.75rem] border border-white/10 bg-white/10 p-5 backdrop-blur-sm" style="--calendar-delay: 120ms;">
+          <div class="calendar-spotlight calendar-card-motion calendar-reveal rounded-[1.75rem] border border-white/10 bg-white/10 p-5 backdrop-blur-sm" style="--calendar-delay: 120ms;">
             <div class="flex items-center justify-between gap-3">
               <div>
                 <p class="admin-kicker text-xs font-semibold uppercase text-sky-100">Selected Date</p>
@@ -376,8 +519,8 @@
           </div>
         </div>
 
-        <aside class="space-y-6">
-          <section class="calendar-card-motion calendar-reveal rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm" style="--calendar-delay: 220ms;">
+        <aside class="calendar-actions-sidebar space-y-6">
+          <section class="calendar-action-panel calendar-card-motion calendar-reveal rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm" style="--calendar-delay: 220ms;">
             <div class="flex items-center justify-between gap-3">
               <div>
                 <p class="admin-kicker text-xs font-semibold uppercase text-sky-700">Quick Actions</p>
@@ -388,7 +531,7 @@
               </div>
             </div>
 
-            <div class="mt-5 grid gap-3">
+            <div class="calendar-action-list mt-5 grid gap-3">
               <button
                 id="addCustomEventBtn"
                 type="button"
@@ -436,7 +579,7 @@
             </div>
           </section>
 
-          <section class="calendar-card-motion calendar-reveal rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm" style="--calendar-delay: 260ms;">
+          <section class="calendar-action-panel calendar-card-motion calendar-reveal rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm" style="--calendar-delay: 260ms;">
             <div class="flex items-center justify-between gap-3">
               <div>
                 <p class="admin-kicker text-xs font-semibold uppercase text-amber-700">Management</p>
@@ -447,7 +590,7 @@
               </div>
             </div>
 
-            <div class="mt-5 grid gap-3">
+            <div class="calendar-action-list mt-5 grid gap-3">
               <button
                 id="convertEventToHolidayBtn"
                 type="button"
@@ -894,7 +1037,7 @@
 
     for (let i = firstDay - 1; i >= 0; i--) {
       const cell = document.createElement('div');
-      cell.className = 'min-h-[132px] rounded-[1.4rem] border border-slate-100 bg-slate-50 px-3 py-3 text-xs text-slate-300';
+      cell.className = 'calendar-outside-day min-h-[132px] rounded-[1.4rem] border border-slate-100 bg-slate-50 px-3 py-3 text-xs text-slate-300';
       cell.innerHTML = `<div class="text-right text-sm font-semibold">${String(daysInPrevMonth - i)}</div>`;
       grid.appendChild(cell);
     }
@@ -1013,7 +1156,7 @@
     const trailing = (7 - (totalCells % 7)) % 7;
     for (let day = 1; day <= trailing; day++) {
       const cell = document.createElement('div');
-      cell.className = 'min-h-[132px] rounded-[1.4rem] border border-slate-100 bg-slate-50 px-3 py-3 text-xs text-slate-300';
+      cell.className = 'calendar-outside-day min-h-[132px] rounded-[1.4rem] border border-slate-100 bg-slate-50 px-3 py-3 text-xs text-slate-300';
       cell.innerHTML = `<div class="text-right text-sm font-semibold">${String(day)}</div>`;
       grid.appendChild(cell);
     }

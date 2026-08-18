@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payslips | Employee Portal</title>
 
     <!-- Tailwind CDN -->
@@ -67,6 +68,61 @@
         #employee-payslip-page .employee-payslip-icon-pop.is-visible {
             opacity: 1;
             transform: scale(1) rotate(0deg);
+        }
+
+        @media screen and (max-width: 767px) {
+            html, body {
+                width: 100%;
+                max-width: 100%;
+                overflow-x: hidden;
+            }
+            aside ~ main {
+                width: 100% !important;
+                min-width: 0 !important;
+                margin-left: 0 !important;
+            }
+            #employee-payslip-page {
+                padding: 0.75rem !important;
+                gap: 1rem;
+            }
+            #employee-payslip-page .employee-payslip-summary-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.6rem;
+            }
+            #employee-payslip-page .employee-payslip-summary-grid > article {
+                min-width: 0;
+                padding: 0.75rem !important;
+                border-radius: 0.9rem !important;
+                box-shadow: none;
+            }
+            #employee-payslip-page .employee-payslip-summary-grid > article > div:first-child > div {
+                width: 2.1rem;
+                height: 2.1rem;
+                border-radius: 0.6rem;
+            }
+            #employee-payslip-page .employee-payslip-summary-grid > article > div:first-child > div i {
+                font-size: 0.8rem;
+            }
+            #employee-payslip-page .employee-payslip-summary-grid > article > div:first-child > span {
+                max-width: calc(100% - 2.3rem);
+                overflow: hidden;
+                padding: 0.25rem 0.4rem;
+                font-size: 0.5rem;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            #employee-payslip-page .employee-payslip-summary-grid > article > h3 {
+                margin-top: 0.7rem;
+                font-size: 0.95rem;
+                line-height: 1.2rem;
+                overflow-wrap: anywhere;
+            }
+            #employee-payslip-page .employee-payslip-summary-grid > article > h3 + p {
+                font-size: 0.65rem;
+            }
+            #employee-payslip-page .employee-payslip-summary-grid > article > p:last-child {
+                display: none;
+            }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -199,7 +255,7 @@
             </div>
         </section>
 
-        <section class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <section class="employee-payslip-summary-grid grid grid-cols-2 gap-5 xl:grid-cols-4">
             <article class="employee-payslip-card-motion employee-payslip-reveal rounded-[1.75rem] border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-6 shadow-sm" style="--employee-payslip-delay: 120ms;">
                 <div class="flex items-start justify-between gap-4">
                     <div class="employee-payslip-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/20" style="--employee-payslip-delay: 180ms;">

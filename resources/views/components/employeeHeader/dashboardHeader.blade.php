@@ -109,6 +109,82 @@
         opacity: 0.55;
         transform: scale(0.9);
     }
+
+    @media (max-width: 767px) {
+        .employee-dashboard-header {
+            position: relative !important;
+            top: auto !important;
+            padding: 0.75rem !important;
+            backdrop-filter: none;
+        }
+        .employee-dashboard-header__card,
+        .employee-dashboard-header.is-scrolled .employee-dashboard-header__card {
+            min-height: 7.25rem;
+            padding: 0.875rem 0.875rem 0.875rem 4rem !important;
+            border-radius: 1rem !important;
+            background: rgba(255, 255, 255, 0.96) !important;
+            box-shadow: 0 6px 20px rgba(15, 23, 42, 0.07) !important;
+            transform: none !important;
+        }
+        .employee-dashboard-header__card > div:last-child {
+            gap: 0.45rem;
+        }
+        .employee-dashboard-header__badge {
+            padding: 0.2rem 0.5rem;
+            font-size: 0.52rem;
+            letter-spacing: 0.14em;
+        }
+        .employee-dashboard-header__title,
+        .employee-dashboard-header.is-scrolled .employee-dashboard-header__title {
+            margin-top: 0.4rem;
+            padding-right: 4.5rem;
+            font-size: 1.1rem !important;
+            line-height: 1.35rem;
+            transform: none !important;
+        }
+        .employee-dashboard-header__subtitle {
+            display: none;
+        }
+        .employee-dashboard-header__card > div:last-child > div:last-child {
+            position: static;
+        }
+        .employee-dashboard-header__chips {
+            margin-top: 0.25rem;
+            gap: 0.35rem;
+            font-size: 0.52rem;
+            letter-spacing: 0.1em;
+            transform: none !important;
+        }
+        .employee-dashboard-header__chips span {
+            padding: 0.3rem 0.5rem;
+        }
+        .employee-dashboard-header__chips span:first-child {
+            display: none;
+        }
+        .employee-dashboard-header__card > div:last-child > div:last-child > div:last-child {
+            position: absolute;
+            right: 0.75rem;
+            bottom: 0.75rem;
+            gap: 0.35rem;
+        }
+        .employee-dashboard-header__card a[aria-label="Open notifications"] {
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: 0.7rem;
+        }
+        .employee-dashboard-header__card a[aria-label="Open notifications"] i {
+            font-size: 0.8rem;
+        }
+        .employee-dashboard-header__card .group > button {
+            padding: 0.35rem;
+        }
+        .employee-dashboard-header__card .group > button i {
+            font-size: 1.25rem;
+        }
+        .employee-header-orb {
+            display: none;
+        }
+    }
 </style>
 
 <header id="employee-dashboard-header" class="employee-dashboard-header sticky top-0 z-40 border-b border-transparent bg-transparent px-4 py-4 shadow-none backdrop-blur md:px-8">

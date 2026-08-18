@@ -128,6 +128,401 @@
             }
         }
 
+        @media screen and (max-width: 767px) {
+            #employee-leave-page {
+                padding: 0.75rem !important;
+                gap: 1rem;
+            }
+            #employee-leave-page .employee-leave-hero {
+                padding: 1rem !important;
+                border-radius: 1.25rem !important;
+                box-shadow: 0 10px 28px rgba(15, 23, 42, 0.14) !important;
+            }
+            #employee-leave-page .employee-leave-hero > div:last-child {
+                gap: 0.875rem;
+            }
+            #employee-leave-page .employee-leave-intro {
+                gap: 0.75rem;
+            }
+            #employee-leave-page .employee-leave-intro > div:first-child {
+                padding: 0.2rem 0.55rem;
+                font-size: 0.55rem;
+                letter-spacing: 0.16em;
+            }
+            #employee-leave-page .employee-leave-intro h3 {
+                padding-right: 0.25rem;
+                margin-top: 0 !important;
+                font-size: 0 !important;
+                line-height: 1.4rem;
+            }
+            #employee-leave-page .employee-leave-intro h3::after {
+                content: "Leave overview";
+                font-size: 1.1rem;
+                font-weight: 800;
+            }
+            #employee-leave-page .employee-leave-intro h3 + p {
+                display: none;
+            }
+            #employee-leave-page .employee-leave-stats {
+                gap: 0.4rem;
+            }
+            #employee-leave-page .employee-leave-stats > div {
+                display: flex;
+                min-height: 2.75rem;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0.6rem 0.7rem !important;
+                border-radius: 0.75rem !important;
+            }
+            #employee-leave-page .employee-leave-stats > div p:first-child {
+                font-size: 0.55rem;
+                letter-spacing: 0.06em;
+            }
+            #employee-leave-page .employee-leave-stats > div p:last-child {
+                margin-top: 0;
+                font-size: 1.1rem;
+            }
+            #employee-leave-page .employee-leave-month-filter {
+                padding: 0.75rem !important;
+                border-radius: 0.875rem !important;
+                background: rgba(255, 255, 255, 0.08) !important;
+            }
+            #employee-leave-page .employee-leave-month-filter > div:first-child > div:first-child p:first-child {
+                font-size: 0.55rem;
+                letter-spacing: 0.14em;
+            }
+            #employee-leave-page .employee-leave-month-filter h4 {
+                margin-top: 0.15rem;
+                font-size: 0.95rem;
+            }
+            #employee-leave-page .employee-leave-month-filter h4 + p,
+            #employee-leave-page .employee-leave-month-filter > div:first-child > div:last-child {
+                display: none;
+            }
+            #employee-leave-page .employee-leave-month-form {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                gap: 0.5rem;
+                margin-top: 0.6rem !important;
+            }
+            #employee-leave-page .employee-leave-month-form label {
+                display: none;
+            }
+            #employee-leave-page .employee-leave-month-form input[type="month"] {
+                min-width: 0;
+                height: 2.65rem;
+                padding: 0.45rem 0.65rem;
+                border-radius: 0.7rem;
+                font-size: 0.7rem;
+            }
+            #employee-leave-page .employee-leave-month-form button {
+                width: auto;
+                min-width: 4.75rem;
+                height: 2.65rem;
+                padding: 0.45rem 0.75rem;
+                border-radius: 0.7rem;
+                font-size: 0;
+            }
+            #employee-leave-page .employee-leave-month-form button::after {
+                content: "Apply";
+                font-size: 0.7rem;
+            }
+            #employee-leave-page .employee-leave-balance-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.6rem;
+            }
+            #employee-leave-page .employee-leave-balance-grid > article {
+                display: flex;
+                min-width: 0;
+                min-height: 8.75rem;
+                flex-direction: column;
+                padding: 0.75rem !important;
+                border-radius: 0.9rem !important;
+                box-shadow: none !important;
+            }
+            #employee-leave-page .employee-leave-balance-grid > article > div:first-child {
+                align-items: center;
+                gap: 0.35rem;
+            }
+            #employee-leave-page .employee-leave-balance-grid > article > div:first-child > div {
+                width: 2.1rem;
+                height: 2.1rem;
+                flex: 0 0 2.1rem;
+                border-radius: 0.65rem;
+                box-shadow: none;
+                font-size: 0.62rem;
+            }
+            #employee-leave-page .employee-leave-balance-grid > article > div:first-child > span {
+                max-width: calc(100% - 2.35rem);
+                overflow: hidden;
+                padding: 0.25rem 0.4rem;
+                border-radius: 999px;
+                font-size: 0.5rem;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            #employee-leave-page .employee-leave-balance-grid > article > h3 {
+                margin-top: 0.7rem;
+                font-size: 1.5rem;
+                line-height: 1.65rem;
+            }
+            #employee-leave-page .employee-leave-balance-grid > article > h3 + p {
+                margin-top: 0.1rem;
+                font-size: 0.68rem;
+                font-weight: 700;
+                line-height: 1rem;
+            }
+            #employee-leave-page .employee-leave-balance-grid > article > h3 + p + p {
+                display: none;
+            }
+            #employee-leave-page .employee-leave-balance-grid > article > div:last-child:not(:first-child) {
+                margin-top: auto;
+                height: 0.35rem;
+                border-radius: 999px;
+            }
+            #employee-leave-page .employee-leave-balance-grid > article:last-child > div:last-child {
+                display: none;
+            }
+            #employee-leave-page #leave-history-section {
+                border-radius: 1rem !important;
+                box-shadow: none;
+            }
+            #employee-leave-page #leave-history-section > div:first-child {
+                gap: 0.75rem;
+                padding: 0.875rem !important;
+            }
+            #employee-leave-page #leave-history-section > div:first-child > div:first-child p:first-child {
+                font-size: 0.55rem;
+                letter-spacing: 0.14em;
+            }
+            #employee-leave-page #leave-history-section > div:first-child h3 {
+                margin-top: 0.2rem;
+                font-size: 1.1rem;
+            }
+            #employee-leave-page #leave-history-section > div:first-child h3 + p {
+                margin-top: 0.15rem;
+                font-size: 0.62rem;
+            }
+            #employee-leave-page #leave-history-section > div:first-child > div:last-child {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 0.35rem;
+            }
+            #employee-leave-page #leave-history-section [data-leave-status-filter] {
+                min-width: 0;
+                padding: 0.5rem 0.25rem;
+                border-radius: 0.65rem;
+                text-align: center;
+            }
+            #employee-leave-page #leave-history-section [data-leave-status-filter] p:first-child {
+                overflow: hidden;
+                font-size: 0.5rem;
+                letter-spacing: 0.02em;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            #employee-leave-page #leave-history-section [data-leave-status-filter] p:last-child {
+                margin-top: 0.15rem;
+                font-size: 0.9rem;
+            }
+            #employee-leave-page .employee-leave-date-filter {
+                gap: 0.6rem;
+                padding: 0.75rem !important;
+            }
+            #employee-leave-page .employee-leave-date-filter > div:first-child p:first-child {
+                font-size: 0.55rem;
+                letter-spacing: 0.12em;
+            }
+            #employee-leave-page .employee-leave-date-filter > div:first-child p:last-child {
+                display: none;
+            }
+            #employee-leave-page .employee-leave-date-controls {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.45rem;
+            }
+            #employee-leave-page .employee-leave-date-controls label {
+                min-width: 0;
+                font-size: 0.55rem;
+            }
+            #employee-leave-page .employee-leave-date-controls input {
+                width: 100%;
+                min-width: 0;
+                height: 2.35rem;
+                padding: 0.35rem 0.45rem;
+                border-radius: 0.6rem;
+                font-size: 0.6rem;
+            }
+            #employee-leave-page .employee-leave-date-controls button {
+                grid-column: 1 / -1;
+                height: 2.2rem;
+                padding: 0.35rem;
+                border-radius: 0.6rem;
+                font-size: 0.62rem;
+            }
+            #employee-leave-page #leave-history-section > div:nth-child(3) {
+                padding: 0.6rem 0.75rem 0 !important;
+                font-size: 0.6rem;
+            }
+            #employee-leave-page [data-leave-history-list] {
+                padding: 0.6rem 0.75rem 0.75rem !important;
+            }
+            #employee-leave-page .employee-leave-empty-state {
+                min-height: 0;
+                padding: 1rem !important;
+                border-radius: 0.75rem !important;
+            }
+            #employee-leave-page .employee-leave-empty-state > div:first-child {
+                width: 2.5rem;
+                height: 2.5rem;
+                border-radius: 0.65rem;
+                font-size: 0.65rem;
+            }
+            #employee-leave-page .employee-leave-empty-state h4 {
+                margin-top: 0.65rem;
+                font-size: 0.85rem;
+            }
+            #employee-leave-page .employee-leave-empty-state p {
+                margin-top: 0.25rem;
+                font-size: 0.62rem;
+                line-height: 1rem;
+            }
+            #employee-leave-page .employee-leave-empty-state a {
+                margin-top: 0.65rem;
+                padding: 0.5rem 0.75rem;
+                border-radius: 0.6rem;
+                font-size: 0.62rem;
+            }
+            #employee-leave-page #employee-form-panel {
+                padding: 0.75rem !important;
+                border-radius: 1rem !important;
+                box-shadow: none;
+            }
+            #employee-leave-page #employee-form-panel > div:first-child {
+                margin-bottom: 0.75rem;
+                gap: 0.25rem;
+            }
+            #employee-leave-page #employee-form-panel > div:first-child p:first-child {
+                font-size: 0.55rem;
+                letter-spacing: 0.14em;
+            }
+            #employee-leave-page #employee-form-panel > div:first-child h3 {
+                margin-top: 0.15rem;
+                font-size: 1.1rem;
+            }
+            #employee-leave-page #employee-form-panel > div:first-child h3 + p,
+            #employee-leave-page #employee-form-panel > div:first-child > p:last-child {
+                display: none;
+            }
+            #employee-leave-page .employee-form-layout {
+                gap: 0.65rem;
+            }
+            #employee-leave-page .employee-form-selector {
+                padding: 0.5rem !important;
+                border-radius: 0.75rem !important;
+            }
+            #employee-leave-page .employee-form-selector h4 {
+                display: none;
+            }
+            #employee-leave-page .employee-form-selector > div {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.4rem;
+                margin-top: 0 !important;
+            }
+            #employee-leave-page .employee-form-selector a {
+                min-width: 0;
+                padding: 0.55rem !important;
+                border-radius: 0.65rem !important;
+                text-align: center;
+                font-size: 0.62rem;
+            }
+            #employee-leave-page .employee-form-selector a p:last-child {
+                display: none;
+            }
+            #employee-leave-page .employee-form-document {
+                overflow: visible !important;
+                padding: 0.75rem !important;
+                border-radius: 0.75rem !important;
+                font-size: 0.72rem !important;
+            }
+            #employee-leave-page .employee-form-document-header {
+                display: grid;
+                grid-template-columns: 2.75rem minmax(0, 1fr);
+                align-items: center;
+                gap: 0.65rem;
+                margin-bottom: 0.75rem !important;
+                padding-bottom: 0.65rem;
+                border-bottom: 1px solid #e2e8f0;
+                text-align: left !important;
+            }
+            #employee-leave-page .employee-form-document-header img {
+                width: 2.75rem;
+                height: 2.75rem;
+                flex: 0 0 2.75rem;
+                margin: 0 !important;
+                object-fit: contain;
+                grid-row: 1 / span 2;
+            }
+            #employee-leave-page .employee-form-document-header h3 {
+                font-size: 0.72rem;
+                line-height: 1rem;
+            }
+            #employee-leave-page .employee-form-document-header h3 + h3 {
+                color: #047857;
+                font-size: 0.65rem;
+            }
+            #employee-leave-page #leave-application-form {
+                gap: 0.75rem;
+            }
+            #employee-leave-page #leave-application-print-area {
+                padding: 0 !important;
+                border: 0 !important;
+                font-size: 0.68rem !important;
+            }
+            #employee-leave-page #leave-application-print-area .print-row-two,
+            #employee-leave-page #leave-application-print-area .print-row-three {
+                gap: 0.55rem;
+            }
+            #employee-leave-page #leave-application-print-area label,
+            #employee-leave-page #leave-application-print-area p {
+                font-size: 0.65rem;
+            }
+            #employee-leave-page #leave-application-print-area input:not([type="radio"]):not([type="checkbox"]),
+            #employee-leave-page #leave-application-print-area select,
+            #employee-leave-page #leave-application-print-area textarea {
+                min-height: 2.35rem;
+                padding: 0.4rem 0.55rem !important;
+                border: 1px solid #cbd5e1 !important;
+                border-radius: 0.55rem !important;
+                background: #f8fafc;
+                font-size: 0.7rem !important;
+            }
+            #employee-leave-page #leave-application-print-area section {
+                margin-top: 0.75rem;
+                padding-top: 0.75rem;
+                border-color: #e2e8f0;
+            }
+            #employee-leave-page #leave-application-print-area section > h5 {
+                margin-bottom: 0.75rem;
+                text-align: left;
+                color: #475569;
+                font-size: 0.58rem;
+                letter-spacing: 0.14em;
+            }
+            #employee-leave-page #leave-application-print-area .print-details-two {
+                gap: 0.75rem;
+            }
+            #employee-leave-page #leave-application-print-area .leave-details-right {
+                padding-top: 0.75rem;
+                padding-left: 0 !important;
+                border-top: 1px solid #e2e8f0;
+                border-left: 0 !important;
+            }
+            #employee-leave-page #leave-application-print-area .action-details-section {
+                display: none;
+            }
+        }
+
         @media print {
             body * {
                 visibility: hidden !important;
@@ -221,11 +616,11 @@
         $selectedMonthValue = $selectedMonth ?? now()->format('Y-m');
         $selectedMonthLabel = \Carbon\Carbon::createFromFormat('Y-m', $selectedMonthValue)->format('F Y');
     @endphp
-    <section class="employee-leave-reveal relative overflow-hidden rounded-[2rem] border border-emerald-950/40 bg-gradient-to-br from-slate-950 via-emerald-950 to-emerald-800 p-6 text-white shadow-xl md:p-8" style="--employee-leave-delay: 0ms;">
+    <section class="employee-leave-hero employee-leave-reveal relative overflow-hidden rounded-[2rem] border border-emerald-950/40 bg-gradient-to-br from-slate-950 via-emerald-950 to-emerald-800 p-6 text-white shadow-xl md:p-8" style="--employee-leave-delay: 0ms;">
         <div class="absolute -right-12 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl"></div>
         <div class="absolute bottom-0 left-1/3 h-28 w-28 rounded-full bg-emerald-300/10 blur-3xl"></div>
         <div class="relative grid gap-6 xl:grid-cols-[1.5fr_0.9fr] xl:items-end">
-            <div class="space-y-5">
+            <div class="employee-leave-intro space-y-5">
                 <div class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-emerald-100">
                     Leave Desk
                 </div>
@@ -235,7 +630,7 @@
                         Review your available credits for {{ $selectedMonthLabel }}, monitor request statuses, and switch between leave and official business forms in one place.
                     </p>
                 </div>
-                <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+                <div class="employee-leave-stats grid grid-cols-2 gap-3 md:grid-cols-4">
                     <div class="employee-leave-card-motion employee-leave-reveal rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm" style="--employee-leave-delay: 80ms;">
                         <p class="text-xs uppercase tracking-wide text-emerald-100">Total Requests</p>
                         <p data-leave-live="header-total" class="mt-2 text-2xl font-black">{{ $totalRequestCount }}</p>
@@ -255,7 +650,7 @@
                 </div>
             </div>
 
-            <div class="employee-leave-card-motion employee-leave-reveal rounded-[1.75rem] border border-white/10 bg-white/10 p-5 backdrop-blur-sm" style="--employee-leave-delay: 120ms;">
+            <div class="employee-leave-month-filter employee-leave-card-motion employee-leave-reveal rounded-[1.75rem] border border-white/10 bg-white/10 p-5 backdrop-blur-sm" style="--employee-leave-delay: 120ms;">
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-100">Month Filter</p>
@@ -294,7 +689,7 @@
                     </div>
                 </div>
 
-                <form method="GET" action="{{ route('employee.employeeLeave') }}" class="mt-5 space-y-3">
+                <form method="GET" action="{{ route('employee.employeeLeave') }}" class="employee-leave-month-form mt-5 space-y-3">
                     <label class="block text-sm font-medium text-emerald-50">Selected month</label>
                     <input
                         type="month"
@@ -311,7 +706,7 @@
         </div>
     </section>
 
-    <section data-leave-live-region="summary-cards" class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+    <section data-leave-live-region="summary-cards" class="employee-leave-balance-grid grid grid-cols-2 gap-5 xl:grid-cols-4">
         <article class="employee-leave-card-motion employee-leave-reveal rounded-[1.75rem] border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-6 shadow-sm" style="--employee-leave-delay: 120ms;">
             <div class="flex items-start justify-between gap-4">
                 <div class="employee-leave-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-500 text-white shadow-lg shadow-blue-500/20" style="--employee-leave-delay: 180ms;">
@@ -380,7 +775,7 @@
                 <h3 class="mt-2 text-2xl font-black text-slate-900">My Leave History</h3>
                 <p class="mt-1 text-sm text-slate-500">Records for {{ $selectedMonthLabel }} as of {{ now()->format('M d, Y') }}.</p>
             </div>
-            <div class="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
+            <div class="{{ $totalRequestCount === 0 ? 'hidden ' : '' }}grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
                 <button type="button" data-leave-status-filter="all" aria-pressed="true" class="rounded-2xl bg-slate-50 px-4 py-3 text-left focus:outline-none focus:ring-2 focus:ring-emerald-300">
                     <p class="text-xs uppercase tracking-wide text-slate-500">Total</p>
                     <p data-leave-live="history-total" class="mt-1 text-xl font-bold text-slate-900">{{ $totalRequestCount }}</p>
@@ -399,12 +794,12 @@
                 </button>
             </div>
         </div>
-        <div class="flex flex-col gap-4 border-b border-slate-200 bg-slate-50/70 px-6 py-4 lg:flex-row lg:items-end lg:justify-between">
+        <div class="employee-leave-date-filter {{ $totalRequestCount === 0 ? 'hidden ' : '' }}flex flex-col gap-4 border-b border-slate-200 bg-slate-50/70 px-6 py-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Filter Leave Dates</p>
                 <p class="mt-1 text-xs text-slate-400">Show requests that overlap your selected date range.</p>
             </div>
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div class="employee-leave-date-controls flex flex-col gap-3 sm:flex-row sm:items-end">
                 <label class="text-xs font-semibold text-slate-500">
                     From
                     <input data-leave-date-from type="date" class="mt-1 block rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-200">
@@ -418,7 +813,7 @@
                 </button>
             </div>
         </div>
-        <div class="flex items-center justify-between px-6 pt-4 text-xs text-slate-500">
+        <div class="{{ $totalRequestCount === 0 ? 'hidden ' : '' }}flex items-center justify-between px-6 pt-4 text-xs text-slate-500">
             <p data-leave-filter-count>Showing {{ $totalRequestCount }} of {{ $totalRequestCount }} request(s)</p>
         </div>
         <div data-leave-history-list class="max-h-96 overflow-y-auto px-6 py-4">
@@ -489,7 +884,7 @@
                 </div>
             </div>
         @empty
-            <div class="flex flex-col items-center justify-center rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-14 text-center">
+            <div class="employee-leave-empty-state flex flex-col items-center justify-center rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-14 text-center">
                 <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-200 text-slate-500">
                     <i class="fa fa-folder-open fa-2x"></i>
                 </div>
@@ -500,7 +895,7 @@
                 </a>
             </div>
         @endforelse
-            <div data-leave-filter-empty class="hidden flex-col items-center justify-center rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center">
+            <div data-leave-filter-empty class="employee-leave-empty-state hidden flex-col items-center justify-center rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center">
                 <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm">
                     <i class="fa fa-filter fa-lg"></i>
                 </div>
@@ -661,9 +1056,9 @@
             <p class="text-sm text-slate-500">Employee: {{ $employeeFormName !== '' ? $employeeFormName : 'Not available' }}{{ $employeeFormPosition !== '' ? ' • '.$employeeFormPosition : '' }}</p>
         </div>
 
-        <div class="flex flex-col gap-6 xl:flex-row">
+        <div class="employee-form-layout flex flex-col gap-6 xl:flex-row">
             <div class="w-full xl:w-[320px] xl:min-w-[320px]">
-                <div class="employee-leave-card-motion rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5">
+                <div class="employee-form-selector employee-leave-card-motion rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5">
                     <h4 class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Select Form</h4>
                     <div class="mt-4 space-y-3 text-sm">
                         <a
@@ -682,16 +1077,16 @@
                 </div>
             </div>
 
-            <div class="employee-leave-card-motion min-w-0 flex-1 overflow-x-auto rounded-[1.5rem] border border-slate-200 bg-white p-6 text-base md:p-8">
+            <div class="employee-form-document employee-leave-card-motion min-w-0 flex-1 overflow-x-auto rounded-[1.5rem] border border-slate-200 bg-white p-6 text-base md:p-8">
                 @if ($activeEmployeeForm === 'official')
-                    <div class="mb-6 text-center">
+                    <div class="employee-form-document-header mb-6 text-center">
                         <img src="{{ asset('images/logo.png') }}" alt="Logo" class="mx-auto mb-2 h-28 w-auto">
                         <h3 class="text-xl font-bold text-gray-900">OFFICE OF THE HUMAN RESOURCE</h3>
                         <h3 class="text-xl font-bold text-gray-900">APPLICATION FOR OFFICIAL BUSINESS / OFFICIAL TIME</h3>
                     </div>
                     @include('requestForm.applicationOBF')
                 @else
-                    <div class="mb-6 text-center">
+                    <div class="employee-form-document-header mb-6 text-center">
                         <img src="{{ asset('images/logo.png') }}" alt="Logo" class="mx-auto mb-2 h-28 w-auto">
                         <h3 class="text-xl font-bold text-gray-900">OFFICE OF THE HUMAN RESOURCE</h3>
                         <h3 class="text-xl font-bold text-gray-900">LEAVE APPLICATION FORM</h3>

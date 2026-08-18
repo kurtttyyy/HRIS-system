@@ -347,6 +347,35 @@
         .admin-header-shell.is-profile-page [data-theme-toggle] > span:nth-child(3) { display: none; }
         .admin-header-shell.is-profile-page .admin-notification-trigger { width: 2.25rem; height: 2.25rem; border-color: #e2e8f0; background: #f8fafc; color: #475569; }
         .admin-header-shell.is-profile-page .admin-header-profile-button > div { width: 1.85rem; height: 1.85rem; }
+
+        .admin-notification-popover {
+            position: fixed !important;
+            left: 0.75rem !important;
+            right: 0.75rem !important;
+            top: 13rem !important;
+            width: auto !important;
+            max-width: 24rem;
+            margin: 0.75rem auto 0 !important;
+            box-sizing: border-box;
+            border-radius: 1rem !important;
+        }
+
+        .admin-notification-popover > div:first-child {
+            padding: 0.75rem 0.875rem;
+        }
+
+        .admin-notification-popover > div:first-child > div > div {
+            min-width: 0;
+        }
+
+        .admin-notification-popover > div:first-child p {
+            white-space: normal;
+        }
+
+        .admin-notification-popover > div:last-child {
+            padding-left: 0.875rem;
+            padding-right: 0.875rem;
+        }
     }
 </style>
 
@@ -391,7 +420,7 @@
                         <i class="admin-notification-bell fa-regular fa-bell text-lg"></i>
                     </a>
 
-                    <div class="invisible absolute right-0 z-50 mt-3 w-[21rem] overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white opacity-0 shadow-2xl transition-all duration-200 group-hover:visible group-hover:opacity-100">
+                    <div class="admin-notification-popover invisible absolute right-0 z-50 mt-3 w-[21rem] overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white opacity-0 shadow-2xl transition-all duration-200 group-hover:visible group-hover:opacity-100">
                         <div class="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
                             <div class="flex items-center justify-between gap-3">
                                 <div>

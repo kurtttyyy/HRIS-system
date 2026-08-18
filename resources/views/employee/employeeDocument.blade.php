@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Documents</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -72,6 +73,85 @@
 
         #employee-document-page .employee-document-progress-fill.is-visible {
             transform: scaleX(1);
+        }
+
+        @media screen and (max-width: 767px) {
+            html, body {
+                width: 100%;
+                max-width: 100%;
+                overflow-x: hidden;
+            }
+            aside ~ main {
+                width: 100% !important;
+                min-width: 0 !important;
+                margin-left: 0 !important;
+            }
+            #employee-document-page {
+                padding: 0.75rem !important;
+                gap: 1rem;
+            }
+            #employee-document-page > section:first-of-type {
+                padding: 1rem !important;
+                border-radius: 1.25rem !important;
+                box-shadow: 0 10px 28px rgba(15, 23, 42, 0.14) !important;
+            }
+            #employee-document-page > section:first-of-type h3 {
+                font-size: 1.25rem;
+                line-height: 1.55rem;
+            }
+            #employee-document-page > section:first-of-type h3 + p {
+                display: none;
+            }
+            #employee-document-page > section:first-of-type .grid.grid-cols-2 {
+                gap: 0.4rem;
+            }
+            #employee-document-page > section:first-of-type .grid.grid-cols-2 > div {
+                padding: 0.6rem !important;
+                border-radius: 0.75rem !important;
+            }
+            #employee-document-page > section:first-of-type .grid.grid-cols-2 > div p:first-child {
+                font-size: 0.52rem;
+            }
+            #employee-document-page > section:first-of-type .grid.grid-cols-2 > div p:last-child {
+                margin-top: 0.2rem;
+                font-size: 1rem;
+            }
+            #employee-document-page .employee-document-summary-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.6rem;
+            }
+            #employee-document-page .employee-document-summary-grid > article {
+                min-width: 0;
+                padding: 0.75rem !important;
+                border-radius: 0.9rem !important;
+                box-shadow: none;
+            }
+            #employee-document-page .employee-document-summary-grid > article > div:first-child > div {
+                width: 2.1rem;
+                height: 2.1rem;
+                border-radius: 0.6rem;
+            }
+            #employee-document-page .employee-document-summary-grid > article > div:first-child > div i {
+                font-size: 0.8rem;
+            }
+            #employee-document-page .employee-document-summary-grid > article > div:first-child > span {
+                max-width: calc(100% - 2.3rem);
+                overflow: hidden;
+                padding: 0.25rem 0.4rem;
+                font-size: 0.5rem;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            #employee-document-page .employee-document-summary-grid > article > h3 {
+                margin-top: 0.7rem;
+                font-size: 1.2rem;
+            }
+            #employee-document-page .employee-document-summary-grid > article > h3 + p {
+                font-size: 0.65rem;
+            }
+            #employee-document-page .employee-document-summary-grid > article > p:last-child {
+                display: none;
+            }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -194,7 +274,7 @@
             </div>
         </section>
 
-        <section class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <section class="employee-document-summary-grid grid grid-cols-2 gap-5 xl:grid-cols-4">
             <article class="employee-document-card-motion employee-document-reveal rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm" style="--employee-document-delay: 120ms;">
                 <div class="flex items-start justify-between gap-4">
                     <div class="employee-document-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-lg shadow-slate-900/20" style="--employee-document-delay: 180ms;">

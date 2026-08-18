@@ -65,6 +65,107 @@
             from { transform: scaleX(0); }
             to { transform: scaleX(1); }
         }
+        @media (max-width: 767px) {
+            #employee-dashboard-page {
+                padding-top: 0.75rem !important;
+            }
+            .employee-welcome-overlay {
+                align-items: center !important;
+                padding: 0.5rem !important;
+            }
+            .employee-welcome-dialog {
+                display: flex;
+                max-height: calc(100dvh - 1rem);
+                width: 100%;
+                max-width: 26rem;
+                flex-direction: column;
+                border-radius: 1rem !important;
+            }
+            .employee-welcome-hero {
+                flex: 0 0 auto;
+                padding: 0.85rem 1rem !important;
+            }
+            .employee-welcome-hero > div {
+                flex-direction: row !important;
+                justify-content: center;
+                gap: 0.75rem;
+                text-align: left !important;
+            }
+            .employee-welcome-hero > div > div:first-child {
+                width: 2.75rem;
+                height: 2.75rem;
+                flex: 0 0 2.75rem;
+                border-radius: 0.75rem;
+                padding: 0.4rem;
+            }
+            .employee-welcome-hero p {
+                display: none;
+            }
+            .employee-welcome-hero h2 {
+                margin-top: 0 !important;
+                max-width: 17rem;
+                font-size: 1.2rem !important;
+                line-height: 1.45rem;
+            }
+            .employee-welcome-body {
+                min-height: 0;
+                overflow-y: auto;
+                padding: 0.875rem !important;
+            }
+            .employee-welcome-intro {
+                font-size: 0.75rem;
+                line-height: 1.2rem;
+            }
+            .employee-welcome-links {
+                margin-top: 0.75rem !important;
+                padding: 0.5rem !important;
+                border-radius: 0.875rem !important;
+            }
+            .employee-welcome-links > div {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.5rem;
+            }
+            .employee-welcome-links a {
+                min-width: 0;
+                gap: 0.5rem;
+                padding: 0.55rem !important;
+                border-radius: 0.7rem !important;
+                font-size: 0.68rem;
+                line-height: 1rem;
+            }
+            .employee-welcome-links a > span:first-child {
+                width: 2rem;
+                height: 2rem;
+                flex: 0 0 2rem;
+                border-radius: 0.55rem;
+                font-size: 0.72rem;
+            }
+            .employee-welcome-links a > span:last-child {
+                min-width: 0;
+            }
+            .employee-welcome-links a span span {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                font-size: 0.55rem;
+            }
+            .employee-welcome-actions {
+                margin-top: 0.75rem !important;
+                display: grid !important;
+                grid-template-columns: 1fr 1.35fr;
+                gap: 0.5rem !important;
+            }
+            .employee-welcome-actions > * {
+                min-height: 2.65rem;
+                padding: 0.55rem 0.7rem !important;
+                font-size: 0.68rem !important;
+            }
+            .employee-welcome-note {
+                margin-top: 0.65rem !important;
+                font-size: 0.6rem !important;
+                line-height: 0.95rem;
+            }
+        }
         @media (prefers-reduced-motion: reduce) {
             .employee-dashboard-reveal,
             .employee-dashboard-icon-pop,
@@ -360,12 +461,12 @@
 @if ($showEmployeeWelcome)
     <div
         id="employeeWelcomeModal"
-        class="fixed inset-0 z-[90] hidden items-center justify-center bg-slate-950/55 px-4 py-6 backdrop-blur-md"
+        class="employee-welcome-overlay fixed inset-0 z-[90] hidden items-center justify-center bg-slate-950/55 px-4 py-6 backdrop-blur-md"
         data-employee-welcome-modal
         data-dismiss-key="employee_welcome_seen_{{ (int) ($welcomeUser?->id ?? 0) }}"
     >
-        <div class="w-full max-w-[40rem] overflow-hidden rounded-[2rem] bg-white shadow-2xl shadow-slate-950/30">
-            <div class="relative overflow-hidden bg-gradient-to-br from-slate-950 via-emerald-950 to-emerald-800 px-6 pb-9 pt-7 text-white md:px-8">
+        <div class="employee-welcome-dialog w-full max-w-[40rem] overflow-hidden rounded-[2rem] bg-white shadow-2xl shadow-slate-950/30">
+            <div class="employee-welcome-hero relative overflow-hidden bg-gradient-to-br from-slate-950 via-emerald-950 to-emerald-800 px-6 pb-9 pt-7 text-white md:px-8">
                 <div class="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-emerald-300/10 blur-3xl"></div>
                 <div class="relative flex flex-col items-center text-center">
                     <div class="flex h-16 w-16 items-center justify-center rounded-[1.25rem] border border-white/20 bg-white/10 p-2.5 shadow-lg shadow-slate-950/25 backdrop-blur-sm">
@@ -376,12 +477,12 @@
                 </div>
             </div>
 
-            <div class="px-6 py-6 md:px-8">
-                <p class="mx-auto max-w-2xl text-sm leading-6 text-slate-600">
+            <div class="employee-welcome-body px-6 py-6 md:px-8">
+                <p class="employee-welcome-intro mx-auto max-w-2xl text-sm leading-6 text-slate-600">
                     Start with the <span class="font-bold text-emerald-800">Staff Guide</span> to understand how the HRIS works, how to check your records, submit documents, file leave, review payslips, and follow HR updates.
                 </p>
 
-                <div class="mt-5 rounded-[1.5rem] border border-emerald-200 bg-emerald-50/80 p-3.5 shadow-inner shadow-emerald-900/5">
+                <div class="employee-welcome-links mt-5 rounded-[1.5rem] border border-emerald-200 bg-emerald-50/80 p-3.5 shadow-inner shadow-emerald-900/5">
                     <div class="grid gap-3 sm:grid-cols-2">
                         <a href="{{ route('employee.employeeHome') }}" class="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm font-bold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
                             <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-700 text-white shadow-lg shadow-emerald-700/20"><i class="fa fa-dashboard"></i></span>
@@ -414,7 +515,7 @@
                     </div>
                 </div>
 
-                <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+                <div class="employee-welcome-actions mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
                     <button
                         type="button"
                         class="rounded-xl px-5 py-3 text-sm font-black text-emerald-700 transition hover:bg-emerald-50"
@@ -432,7 +533,7 @@
                     </a>
                 </div>
 
-                <p class="mt-6 flex items-start gap-2 text-sm font-medium text-rose-600">
+                <p class="employee-welcome-note mt-6 flex items-start gap-2 text-sm font-medium text-rose-600">
                     <i class="fa fa-info-circle mt-0.5"></i>
                     <span>This message will not appear again after you dismiss it or open the Staff Guide.</span>
                 </p>

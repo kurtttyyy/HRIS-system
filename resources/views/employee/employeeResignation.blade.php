@@ -64,6 +64,115 @@
             transform: scaleX(1);
         }
 
+        @media screen and (max-width: 767px) {
+            html, body { max-width: 100%; overflow-x: hidden; }
+            aside ~ main {
+                width: 100% !important;
+                min-width: 0 !important;
+                margin-left: 0 !important;
+            }
+            #employee-resignation-page {
+                padding: 0.75rem !important;
+                gap: 1rem;
+            }
+            #employee-resignation-page .employee-resignation-form-card {
+                padding: 0.875rem !important;
+                border-radius: 1rem !important;
+                box-shadow: none;
+            }
+            #employee-resignation-page .employee-resignation-form-card > div:first-child {
+                align-items: center;
+                gap: 0.65rem;
+            }
+            #employee-resignation-page .employee-resignation-form-card > div:first-child p:first-child {
+                font-size: 0.55rem;
+                letter-spacing: 0.14em;
+            }
+            #employee-resignation-page .employee-resignation-form-card > div:first-child h2 {
+                margin-top: 0.15rem;
+                font-size: 1.15rem;
+            }
+            #employee-resignation-page .employee-resignation-form-card > div:first-child h2 + p {
+                display: none;
+            }
+            #employee-resignation-page .employee-resignation-form-card > div:first-child > div:last-child {
+                width: 2.4rem;
+                height: 2.4rem;
+                flex: 0 0 2.4rem;
+                border-radius: 0.7rem;
+                font-size: 0.65rem;
+            }
+            #employee-resignation-page .employee-resignation-guidance {
+                margin-top: 0.75rem !important;
+                padding: 0.65rem !important;
+                border-radius: 0.75rem !important;
+            }
+            #employee-resignation-page .employee-resignation-guidance > div {
+                gap: 0.5rem;
+            }
+            #employee-resignation-page .employee-resignation-guidance p:first-child {
+                font-size: 0.68rem;
+            }
+            #employee-resignation-page .employee-resignation-guidance p:last-child {
+                margin-top: 0.15rem;
+                font-size: 0.58rem;
+                line-height: 0.9rem;
+            }
+            #employee-resignation-page .employee-resignation-guidance span {
+                padding: 0.25rem 0.45rem;
+                font-size: 0.52rem;
+                white-space: nowrap;
+            }
+            #employee-resignation-page #employee-resignation-form {
+                margin-top: 0.75rem !important;
+                gap: 0.75rem;
+            }
+            #employee-resignation-page #employee-resignation-form > div:first-of-type {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.5rem;
+            }
+            #employee-resignation-page #employee-resignation-form label {
+                font-size: 0.62rem;
+            }
+            #employee-resignation-page #employee-resignation-form input[type="date"] {
+                min-width: 0;
+                height: 2.55rem;
+                padding: 0.4rem 0.55rem;
+                border-radius: 0.65rem;
+                font-size: 0.65rem;
+            }
+            #employee-resignation-page .employee-resignation-upload {
+                min-height: 5rem;
+                padding: 0.75rem !important;
+                border-radius: 0.7rem !important;
+            }
+            #employee-resignation-page .employee-resignation-upload > i {
+                font-size: 1rem;
+            }
+            #employee-resignation-page .employee-resignation-upload > span:nth-of-type(1) {
+                margin-top: 0.35rem;
+                font-size: 0.65rem;
+            }
+            #employee-resignation-page .employee-resignation-upload > span:nth-of-type(2) {
+                display: none;
+            }
+            #employee-resignation-page .employee-resignation-upload [data-resignation-file-name] {
+                margin-top: 0.35rem;
+                max-width: 100%;
+                overflow: hidden;
+                padding: 0.25rem 0.5rem;
+                font-size: 0.52rem;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            #employee-resignation-page #employee-resignation-form > button {
+                height: 2.65rem;
+                padding: 0.5rem;
+                border-radius: 0.7rem;
+                font-size: 0.68rem;
+            }
+        }
+
         @media (prefers-reduced-motion: reduce) {
             #employee-resignation-page .employee-resignation-reveal,
             #employee-resignation-page .employee-resignation-icon-pop,
@@ -273,7 +382,7 @@
             </section>
 
             <section class="grid grid-cols-1 gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-                <div class="employee-resignation-reveal rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8" style="--employee-resignation-delay: 280ms;">
+                <div class="employee-resignation-form-card employee-resignation-reveal rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8" style="--employee-resignation-delay: 280ms;">
                     <div class="flex items-start justify-between gap-4">
                         <div>
                             <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Submit Request</p>
@@ -287,7 +396,7 @@
                         </div>
                     </div>
 
-                    <div class="employee-resignation-card-motion mt-6 rounded-[1.5rem] border border-emerald-100 bg-gradient-to-r from-emerald-50 to-white p-4">
+                    <div class="employee-resignation-guidance employee-resignation-card-motion mt-6 rounded-[1.5rem] border border-emerald-100 bg-gradient-to-r from-emerald-50 to-white p-4">
                         <div class="flex items-center justify-between gap-4">
                             <div>
                                 <p class="text-sm font-semibold text-emerald-900">Before you submit</p>
@@ -327,7 +436,7 @@
 
                         <div>
                             <label class="mb-1 block text-sm font-medium text-slate-700">Upload File</label>
-                            <label class="flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center transition hover:border-emerald-300 hover:bg-emerald-50/50">
+                            <label class="employee-resignation-upload flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center transition hover:border-emerald-300 hover:bg-emerald-50/50">
                                 <i class="fa fa-cloud-upload text-2xl text-emerald-600"></i>
                                 <span class="mt-3 text-sm font-semibold text-slate-800">Upload resignation letter</span>
                                 <span class="mt-1 text-xs text-slate-500">Accepted formats: PDF, DOC, DOCX. Maximum size: 10MB.</span>
