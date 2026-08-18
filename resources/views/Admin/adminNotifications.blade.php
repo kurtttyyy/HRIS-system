@@ -50,6 +50,56 @@
             filter: none !important;
             transform: none !important;
         }
+        @media (max-width: 767px) {
+            html, body { max-width: 100%; overflow-x: hidden; }
+            aside ~ main {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                margin-left: 0 !important;
+            }
+            main > div:last-of-type {
+                width: 100%;
+                padding: .75rem !important;
+                padding-top: .5rem !important;
+            }
+            #admin-notification-inbox {
+                width: 100%;
+                max-width: 100%;
+                border-radius: 1.25rem;
+                box-shadow: none;
+            }
+            #admin-notification-inbox > div { min-width: 0; }
+            #admin-notification-inbox > div > aside {
+                min-width: 0;
+                padding: .875rem;
+            }
+            #admin-notification-inbox > div > aside > div:first-child {
+                padding: .75rem;
+                border-radius: .875rem;
+                box-shadow: none;
+            }
+            #admin-notification-inbox > div > aside > div:nth-child(2) {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: .4rem;
+                margin-top: .75rem;
+            }
+            #admin-notification-inbox .notification-filter {
+                min-width: 0;
+                justify-content: center;
+                gap: .25rem;
+                padding: .55rem .35rem;
+                border-radius: .7rem;
+                font-size: .62rem;
+            }
+            #admin-notification-inbox .notification-filter i { margin-right: .2rem; }
+            #admin-notification-inbox > div > aside > div:last-child { display: none; }
+            #admin-notification-inbox #notification-empty-state,
+            #admin-notification-inbox #notification-filter-empty {
+                padding: 2rem .875rem;
+            }
+        }
     </style>
 </head>
 <body class="bg-[radial-gradient(circle_at_top,_#f8fafc,_#eef2ff_40%,_#f8fafc_100%)] text-slate-900">

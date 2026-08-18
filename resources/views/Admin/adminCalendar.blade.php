@@ -85,6 +85,113 @@
       animation: calendar-pop-in 0.65s cubic-bezier(0.22, 0.9, 0.2, 1) both;
       animation-delay: var(--calendar-delay, 0ms);
     }
+    @media (max-width: 767px) {
+      #admin-calendar-page {
+        padding: 4.75rem 0.75rem 1.5rem !important;
+        gap: 1rem;
+      }
+      #admin-calendar-page .calendar-panel {
+        padding: 0.875rem !important;
+        border-radius: 1.25rem !important;
+      }
+      #admin-calendar-page .calendar-toolbar {
+        gap: 0.75rem;
+        padding-bottom: 0.875rem;
+      }
+      #admin-calendar-page .calendar-month-controls {
+        width: 100%;
+        justify-content: space-between;
+      }
+      #admin-calendar-page .calendar-month-controls button {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.75rem;
+      }
+      #admin-calendar-page .calendar-month-heading {
+        flex: 1;
+        text-align: center;
+      }
+      #admin-calendar-page .calendar-month-heading .admin-kicker {
+        font-size: 0.625rem;
+        letter-spacing: 0.16em;
+      }
+      #admin-calendar-page #calendarMonthLabel {
+        margin-top: 0.125rem;
+        font-size: 1.25rem;
+        line-height: 1.5rem;
+      }
+      #admin-calendar-page .calendar-legend {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        width: 100%;
+        gap: 0.375rem;
+      }
+      #admin-calendar-page .calendar-legend > span {
+        min-width: 0;
+        justify-content: center;
+        gap: 0.3rem;
+        padding: 0.4rem 0.25rem;
+        font-size: 0.625rem;
+        white-space: nowrap;
+      }
+      #admin-calendar-page .calendar-legend > span > span {
+        width: 0.4rem;
+        height: 0.4rem;
+        flex: 0 0 auto;
+      }
+      #admin-calendar-page .calendar-weekdays {
+        margin-top: 0.875rem;
+        gap: 0.25rem;
+        font-size: 0.55rem;
+        letter-spacing: 0.08em;
+      }
+      #admin-calendar-page .calendar-weekdays > div {
+        padding: 0.45rem 0;
+        border-radius: 0.5rem;
+      }
+      #admin-calendar-page #calendarGrid {
+        margin-top: 0.35rem;
+        gap: 0.25rem;
+      }
+      #admin-calendar-page .calendar-day {
+        min-height: 3.35rem !important;
+        padding: 0.3rem !important;
+        border-radius: 0.65rem !important;
+      }
+      #admin-calendar-page .calendar-day > div:first-child {
+        align-items: center;
+        justify-content: center;
+      }
+      #admin-calendar-page .calendar-day > div:first-child > div {
+        position: absolute;
+        display: flex;
+        gap: 0.15rem;
+        margin-top: 2.25rem;
+        padding: 0;
+        background: transparent;
+      }
+      #admin-calendar-page .calendar-day > div:first-child > div > span {
+        width: 0.3rem;
+        height: 0.3rem;
+      }
+      #admin-calendar-page .calendar-day > div:first-child > span {
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: 0.55rem;
+        font-size: 0.7rem;
+      }
+      #admin-calendar-page .calendar-day > div:nth-child(2) {
+        display: none;
+      }
+      #admin-calendar-page .calendar-status {
+        margin-top: 0.875rem;
+        padding: 0.75rem;
+        border-radius: 0.875rem;
+      }
+      #admin-calendar-page .calendar-status > div:last-child {
+        display: none;
+      }
+    }
     @keyframes calendar-fade-up {
       to {
         opacity: 1;
@@ -209,13 +316,13 @@
       </section>
 
       <section class="grid grid-cols-1 gap-6 xl:grid-cols-[1.45fr_0.75fr]">
-        <div class="calendar-reveal rounded-[2rem] border border-slate-200 bg-white/90 p-5 shadow-sm backdrop-blur-sm md:p-6" style="--calendar-delay: 180ms;">
-          <div class="flex flex-col gap-4 border-b border-slate-200 pb-5 md:flex-row md:items-center md:justify-between">
-            <div class="flex items-center gap-3">
+        <div class="calendar-panel calendar-reveal rounded-[2rem] border border-slate-200 bg-white/90 p-5 shadow-sm backdrop-blur-sm md:p-6" style="--calendar-delay: 180ms;">
+          <div class="calendar-toolbar flex flex-col gap-4 border-b border-slate-200 pb-5 md:flex-row md:items-center md:justify-between">
+            <div class="calendar-month-controls flex items-center gap-3">
               <button id="calendarPrevBtn" type="button" class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 transition hover:-translate-y-0.5 hover:border-sky-200 hover:text-sky-700 hover:shadow-sm">
                 <i class="fa-solid fa-chevron-left"></i>
               </button>
-              <div>
+              <div class="calendar-month-heading">
                 <p class="admin-kicker text-xs font-semibold uppercase text-sky-700">Monthly View</p>
                 <h3 id="calendarMonthLabel" class="admin-display mt-1 text-2xl text-slate-900"></h3>
               </div>
@@ -224,7 +331,7 @@
               </button>
             </div>
 
-            <div class="flex flex-wrap items-center gap-2 text-xs font-semibold">
+            <div class="calendar-legend flex flex-wrap items-center gap-2 text-xs font-semibold">
               <span class="inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-2 text-rose-700">
                 <span class="inline-block h-2.5 w-2.5 rounded-full bg-rose-500"></span>
                 Holiday
@@ -248,7 +355,7 @@
             </div>
           </div>
 
-          <div class="mt-5 grid grid-cols-7 gap-2 text-center text-[11px] font-bold uppercase tracking-[0.25em] text-slate-400 md:text-xs">
+          <div class="calendar-weekdays mt-5 grid grid-cols-7 gap-2 text-center text-[11px] font-bold uppercase tracking-[0.25em] text-slate-400 md:text-xs">
             <div class="rounded-2xl bg-slate-50 py-3">Sun</div>
             <div class="rounded-2xl bg-slate-50 py-3">Mon</div>
             <div class="rounded-2xl bg-slate-50 py-3">Tue</div>
@@ -260,7 +367,7 @@
 
           <div id="calendarGrid" class="mt-3 grid grid-cols-7 gap-3"></div>
 
-          <div class="mt-5 flex flex-col gap-3 rounded-[1.5rem] border border-slate-200 bg-slate-50/80 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div class="calendar-status mt-5 flex flex-col gap-3 rounded-[1.5rem] border border-slate-200 bg-slate-50/80 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p class="text-sm font-semibold text-slate-700">Holiday sync status</p>
               <p id="holidayStatus" class="text-xs text-slate-500">Ready to load holidays</p>

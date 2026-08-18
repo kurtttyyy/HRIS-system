@@ -96,6 +96,7 @@ class AdministratorPageController extends Controller
         $admin->loadMissing(['employee', 'government', 'license']);
 
         $adminAccounts = User::query()
+            ->with('employee')
             ->whereIn(DB::raw('LOWER(TRIM(role))'), ['admin', 'administrator'])
             ->orderBy('first_name')
             ->orderBy('last_name')
@@ -150,7 +151,10 @@ class AdministratorPageController extends Controller
             'admin_first_name' => ['required', 'string', 'max:100'],
             'admin_middle_name' => ['nullable', 'string', 'max:100'],
             'admin_last_name' => ['required', 'string', 'max:100'],
-            'admin_email' => ['required', 'email', 'max:150', 'unique:users,email'],
+            'admin_employee_id' => ['required', 'string', 'max:50', function ($attribute, $value, $fail) {
+                $exists = Employee::query()->whereRaw('LOWER(TRIM(employee_id)) = ?', [strtolower(trim((string) $value))])->exists();
+                if ($exists) $fail('This ID number is already in use.');
+            }],
             'admin_position' => ['required', 'string', 'max:150'],
             'admin_department' => ['required', 'string', 'max:150'],
             'admin_password' => ['required', 'string', 'min:8', 'confirmed'],
@@ -167,25 +171,45 @@ class AdministratorPageController extends Controller
             return back()->withErrors(['admin_permissions' => 'Select at least one module for a limited administrator.'], 'createAdmin')->withInput();
         }
 
-        $newAdmin = User::query()->create([
-            'first_name' => trim($validated['admin_first_name']),
-            'middle_name' => trim((string) ($validated['admin_middle_name'] ?? '')) ?: 'N/A',
-            'last_name' => trim($validated['admin_last_name']),
-            'email' => strtolower(trim($validated['admin_email'])),
-            'password' => Hash::make($validated['admin_password']),
-            'role' => 'Admin',
-            'admin_permissions' => $permissions,
-            'job_role' => trim($validated['admin_position']),
-            'position' => trim($validated['admin_position']),
-            'department' => trim($validated['admin_department']),
-            'account_status' => 'Active',
-            'status' => 'Approved',
-        ]);
+        $employeeId = trim($validated['admin_employee_id']);
+        $newAdmin = DB::transaction(function () use ($validated, $permissions, $employeeId) {
+            $newAdmin = User::query()->create([
+                'first_name' => trim($validated['admin_first_name']),
+                'middle_name' => trim((string) ($validated['admin_middle_name'] ?? '')) ?: 'N/A',
+                'last_name' => trim($validated['admin_last_name']),
+                'email' => 'admin-'.substr(hash('sha256', strtolower($employeeId)), 0, 24).'@hris.local',
+                'password' => Hash::make($validated['admin_password']),
+                'role' => 'Admin',
+                'admin_permissions' => $permissions,
+                'job_role' => trim($validated['admin_position']),
+                'position' => trim($validated['admin_position']),
+                'department' => trim($validated['admin_department']),
+                'account_status' => 'Active',
+                'status' => 'Approved',
+            ]);
+
+            Employee::query()->create([
+                'user_id' => $newAdmin->id,
+                'employee_id' => $employeeId,
+                'employement_date' => now()->toDateString(),
+                'birthday' => now()->subYears(18)->toDateString(),
+                'account_number' => 'N/A',
+                'sex' => 'Unspecified',
+                'civil_status' => 'N/A',
+                'contact_number' => 'N/A',
+                'address' => 'N/A',
+                'department' => trim($validated['admin_department']),
+                'position' => trim($validated['admin_position']),
+                'classification' => 'Administrator',
+            ]);
+
+            return $newAdmin;
+        });
 
         ActivityChangeLogger::created($newAdmin);
 
         return redirect()->route('admin.myProfile', array_filter(['tab_session' => $request->query('tab_session') ?: $request->input('tab_session')]))
-            ->with('success', 'Admin account created successfully. The staff member can now sign in with the assigned email and password.');
+            ->with('success', 'Admin account created successfully. The staff member can now sign in with the assigned ID number and password.');
     }
 
     public function update_admin_account(Request $request, User $account)
@@ -203,7 +227,13 @@ class AdministratorPageController extends Controller
             'edit_admin_first_name' => ['required', 'string', 'max:100'],
             'edit_admin_middle_name' => ['nullable', 'string', 'max:100'],
             'edit_admin_last_name' => ['required', 'string', 'max:100'],
-            'edit_admin_email' => ['required', 'email', 'max:150', 'unique:users,email,'.$account->id],
+            'edit_admin_employee_id' => ['required', 'string', 'max:50', function ($attribute, $value, $fail) use ($account) {
+                $exists = Employee::query()
+                    ->whereRaw('LOWER(TRIM(employee_id)) = ?', [strtolower(trim((string) $value))])
+                    ->where('user_id', '!=', $account->id)
+                    ->exists();
+                if ($exists) $fail('This ID number is already in use.');
+            }],
             'edit_admin_position' => ['required', 'string', 'max:150'],
             'edit_admin_department' => ['required', 'string', 'max:150'],
             'edit_admin_password' => ['nullable', 'string', 'min:8', 'confirmed'],
@@ -227,7 +257,6 @@ class AdministratorPageController extends Controller
             'first_name' => trim($validated['edit_admin_first_name']),
             'middle_name' => trim((string) ($validated['edit_admin_middle_name'] ?? '')) ?: 'N/A',
             'last_name' => trim($validated['edit_admin_last_name']),
-            'email' => strtolower(trim($validated['edit_admin_email'])),
             'job_role' => trim($validated['edit_admin_position']),
             'position' => trim($validated['edit_admin_position']),
             'department' => trim($validated['edit_admin_department']),
@@ -237,7 +266,25 @@ class AdministratorPageController extends Controller
             $changes['password'] = Hash::make($validated['edit_admin_password']);
         }
 
-        $account->update($changes);
+        DB::transaction(function () use ($account, $changes, $validated) {
+            $account->update($changes);
+            Employee::query()->updateOrCreate(
+                ['user_id' => $account->id],
+                [
+                    'employee_id' => trim($validated['edit_admin_employee_id']),
+                    'employement_date' => $account->employee?->employement_date ?? now()->toDateString(),
+                    'birthday' => $account->employee?->birthday ?? now()->subYears(18)->toDateString(),
+                    'account_number' => $account->employee?->account_number ?? 'N/A',
+                    'sex' => $account->employee?->sex ?? 'Unspecified',
+                    'civil_status' => $account->employee?->civil_status ?? 'N/A',
+                    'contact_number' => $account->employee?->contact_number ?? 'N/A',
+                    'address' => $account->employee?->address ?? 'N/A',
+                    'department' => trim($validated['edit_admin_department']),
+                    'position' => trim($validated['edit_admin_position']),
+                    'classification' => $account->employee?->classification ?? 'Administrator',
+                ]
+            );
+        });
 
         return redirect()->route('admin.myProfile', array_filter([
             'tab_session' => $request->query('tab_session') ?: $request->input('tab_session'),
