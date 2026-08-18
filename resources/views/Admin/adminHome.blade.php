@@ -299,7 +299,7 @@
   @include('components.adminSideBar')
 
   <main class="flex-1 ml-16 transition-all duration-300">
-    @include('components.adminHeader.dashboardHeader')
+    @include('components.adminHeader.dashboardHeader', ['compactMobileHeader' => true])
 
     <div class="admin-home-content space-y-6 p-4 pt-20 md:p-8">
       <section class="admin-command-header dashboard-reveal relative overflow-hidden rounded-[2rem] border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 px-6 py-6 text-white shadow-[0_24px_60px_rgba(15,23,42,0.18)] md:px-8">

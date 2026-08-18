@@ -5,6 +5,8 @@
     $headerSearchInputId = trim((string) ($headerSearchInputId ?? 'admin-header-search-input'));
     $showHeaderSearch = $headerSearchPlaceholder !== '';
     $showThemeToggle = (bool) ($showThemeToggle ?? false);
+    $compactMobileHeader = (bool) ($compactMobileHeader ?? false);
+    $profileMobileHeader = (bool) ($profileMobileHeader ?? false);
     $adminUser = auth()->user();
     $adminName = trim(implode(' ', array_filter([
         $adminUser?->first_name ?? null,
@@ -278,12 +280,79 @@
         .admin-header-profile-button > i {
             display: none;
         }
+
+        .admin-header-shell.is-dashboard-home .admin-header-card {
+            position: relative;
+            min-height: 8.25rem;
+            gap: 0.5rem;
+            padding: 0.875rem;
+        }
+
+        .admin-header-shell.is-dashboard-home .admin-header-content {
+            padding-right: 0;
+        }
+
+        .admin-header-shell.is-dashboard-home .admin-header-title {
+            font-size: 1.3rem;
+        }
+
+        .admin-header-shell.is-dashboard-home .admin-header-subtitle {
+            margin-top: 0.25rem;
+            max-width: 18rem;
+            font-size: 0.72rem;
+            line-height: 1.35;
+        }
+
+        .admin-header-shell.is-dashboard-home .admin-header-content > .admin-header-meta:last-child {
+            margin-top: 0.45rem;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.58rem;
+        }
+
+        .admin-header-shell.is-dashboard-home .admin-header-actions {
+            position: absolute;
+            right: 0.875rem;
+            bottom: 0.875rem;
+            width: auto;
+        }
+
+        .admin-header-shell.is-dashboard-home .admin-header-actions .admin-notification-trigger {
+            width: 2.25rem;
+            height: 2.25rem;
+        }
+
+        .admin-header-shell.is-dashboard-home .admin-header-profile-button > div {
+            width: 1.85rem;
+            height: 1.85rem;
+        }
+
+        .admin-header-shell.is-profile-page .admin-header-card {
+            position: relative;
+            min-height: 7.5rem;
+            gap: 0.5rem;
+            padding: 0.875rem;
+            border-color: #e2e8f0 !important;
+            background: rgba(255, 255, 255, 0.97) !important;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06) !important;
+        }
+
+        .admin-header-shell.is-profile-page .admin-header-content { padding-right: 0; }
+        .admin-header-shell.is-profile-page .admin-header-title { font-size: 1.25rem; color: #0f172a !important; }
+        .admin-header-shell.is-profile-page .admin-header-subtitle { margin-top: 0.2rem; max-width: 17rem; font-size: 0.68rem; line-height: 1.35; color: #64748b !important; }
+        .admin-header-shell.is-profile-page .admin-header-content > .admin-header-meta:last-child { margin-top: 0.4rem; padding: 0.2rem 0.5rem; border-color: #e2e8f0; background: #f8fafc; color: #64748b; font-size: 0.58rem; }
+        .admin-header-shell.is-profile-page .admin-header-actions { position: absolute; right: 0.875rem; bottom: 0.875rem; width: auto; }
+        .admin-header-shell.is-profile-page [data-theme-toggle] { width: 2.25rem; min-width: 2.25rem; height: 2.25rem; justify-content: center; padding: 0; border-radius: 0.75rem; }
+        .admin-header-shell.is-profile-page [data-theme-toggle] > span:first-child { width: 1.75rem; height: 1.75rem; }
+        .admin-header-shell.is-profile-page [data-theme-toggle] > span:nth-child(2),
+        .admin-header-shell.is-profile-page [data-theme-toggle] > span:nth-child(3) { display: none; }
+        .admin-header-shell.is-profile-page .admin-notification-trigger { width: 2.25rem; height: 2.25rem; border-color: #e2e8f0; background: #f8fafc; color: #475569; }
+        .admin-header-shell.is-profile-page .admin-header-profile-button > div { width: 1.85rem; height: 1.85rem; }
     }
 </style>
 
 @include('components.adminHeader.scrollBehavior')
 
-<header id="admin-dashboard-header" data-admin-scroll-header class="admin-header-shell relative z-40 px-4 py-4 md:px-8 md:py-5">
+<header id="admin-dashboard-header" data-admin-scroll-header class="admin-header-shell {{ $compactMobileHeader ? 'is-dashboard-home' : '' }} {{ $profileMobileHeader ? 'is-profile-page' : '' }} relative z-40 px-4 py-4 md:px-8 md:py-5">
     <div data-admin-scroll-card class="admin-header-card relative flex w-full min-w-0 flex-col gap-5 overflow-visible rounded-[1.75rem] border border-emerald-950/70 bg-[linear-gradient(135deg,_#020617_0%,_#020617_42%,_#111827_68%,_#064e3b_100%)] px-5 py-5 shadow-[0_24px_60px_rgba(3,19,29,0.34)] backdrop-blur-xl lg:flex-row lg:items-center lg:justify-between md:px-7">
         <div class="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.14),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(110,231,183,0.14),_transparent_32%)]"></div>

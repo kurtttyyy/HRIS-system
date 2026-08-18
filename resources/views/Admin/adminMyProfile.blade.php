@@ -48,6 +48,57 @@
         }
         @keyframes profile-rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
         @media(prefers-reduced-motion:reduce){.profile-reveal{animation:none}.profile-card{transition:none}.profile-card:hover{transform:none}}
+        @media(max-width:767px){
+            .admin-profile-content{padding:.5rem .75rem 1rem!important}
+            .admin-profile-hero{border:1px solid #e2e8f0;background:#fff!important;color:#0f172a!important;border-radius:1.25rem!important;box-shadow:none!important}
+            .admin-profile-hero>.absolute{display:none}
+            .admin-profile-hero-inner{gap:.75rem!important;padding:1rem!important}
+            .admin-profile-identity{display:grid!important;grid-template-columns:3rem minmax(0,1fr);align-items:center;gap:.75rem!important}
+            .admin-profile-avatar{width:3rem!important;height:3rem!important;border-radius:.85rem!important;border:0!important;font-size:1rem!important;box-shadow:none!important;--tw-ring-shadow:none!important}
+            .admin-profile-avatar+span{width:.8rem!important;height:.8rem!important;border-width:2px!important;border-color:#fff!important}
+            .admin-profile-name-row{gap:.4rem!important}
+            .admin-profile-name{font-size:1.1rem!important;line-height:1.25!important}
+            .admin-profile-status{padding:.2rem .45rem!important;background:#ecfdf5!important;color:#047857!important;font-size:.58rem!important;box-shadow:none!important}
+            .admin-profile-role{margin-top:.25rem!important;color:#047857!important;font-size:.72rem!important}
+            .admin-profile-badges{display:none!important}
+            .admin-profile-actions{grid-column:1/-1;margin-top:.25rem!important;gap:.5rem!important}
+            .admin-profile-actions button{justify-content:center;padding:.5rem .65rem!important;border:1px solid #d1fae5!important;background:#ecfdf5!important;color:#047857!important;box-shadow:none!important;font-size:.68rem!important}
+            .admin-profile-actions button:nth-child(n+2){display:none!important}
+            .admin-profile-stats{display:none!important}
+            .admin-profile-information{padding:1rem!important;border-radius:1.25rem!important;box-shadow:none!important}
+            .admin-profile-information-heading{gap:.5rem!important}
+            .admin-profile-information-heading>div:first-child{padding-left:3.25rem}
+            .admin-profile-information-heading h2{margin-top:.25rem!important;font-size:1.15rem!important;line-height:1.25!important}
+            .admin-profile-information-heading p:first-child{font-size:.55rem!important;letter-spacing:.12em!important}
+            .admin-profile-information-heading p:last-child{margin-top:.2rem!important;font-size:.68rem!important;line-height:1.4!important}
+            .admin-profile-information-heading>span{padding:.25rem .5rem!important;font-size:.58rem!important}
+            .admin-profile-details{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:.5rem!important;margin-top:.75rem!important}
+            .admin-profile-detail{min-width:0;padding:.65rem!important;border-radius:.85rem!important}
+            .admin-profile-detail:first-child{grid-column:1/-1}
+            .admin-profile-detail>div:first-child{width:2rem!important;height:2rem!important;border-radius:.6rem!important;font-size:.75rem!important}
+            .admin-profile-detail>p:nth-child(2){margin-top:.45rem!important;font-size:.5rem!important;letter-spacing:.1em!important}
+            .admin-profile-detail>p:last-child{margin-top:.15rem!important;font-size:.7rem!important;line-height:1.35!important;overflow-wrap:anywhere}
+            .admin-profile-side{gap:.75rem!important}
+            .admin-profile-security,.admin-profile-quick-access,.admin-profile-team{padding:1rem!important;border-radius:1.25rem!important;box-shadow:none!important}
+            .admin-profile-security>div:first-child>div{display:none!important}
+            .admin-profile-security>div:first-child>span{margin-left:auto;padding:.2rem .45rem!important;font-size:.5rem!important}
+            .admin-profile-security h3{margin-top:.35rem!important;font-size:.9rem!important}
+            .admin-profile-security>p{margin-top:.25rem!important;font-size:.65rem!important;line-height:1.4!important}
+            .admin-profile-security>a{margin-top:.65rem!important;padding:.6rem!important;border-radius:.75rem!important;font-size:.68rem!important;box-shadow:none!important}
+            .admin-profile-quick-access>p{font-size:.55rem!important;letter-spacing:.12em!important}
+            .admin-profile-quick-links{margin-top:.5rem!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:.4rem!important}
+            .admin-profile-quick-links a{justify-content:center!important;padding:.6rem .35rem!important;border:1px solid #e2e8f0!important;border-radius:.75rem!important;font-size:.62rem!important;text-align:center}
+            .admin-profile-quick-links a span i{display:block;margin:0 auto .25rem!important}
+            .admin-profile-quick-links a>i{display:none}
+            .admin-profile-team-heading{gap:.65rem!important}
+            .admin-profile-team-heading>div p:first-child{font-size:.55rem!important;letter-spacing:.12em!important}
+            .admin-profile-team-heading h2{margin-top:.25rem!important;font-size:1.15rem!important}
+            .admin-profile-team-heading>div p:last-child{margin-top:.2rem!important;font-size:.68rem!important;line-height:1.4!important}
+            .admin-profile-team-heading>button{padding:.55rem .7rem!important;border-radius:.75rem!important;font-size:.65rem!important}
+            .admin-profile-team-grid{margin-top:.75rem!important;gap:.5rem!important}
+            .admin-profile-team-grid .admin-account-card{gap:.65rem!important;padding:.65rem!important;border-radius:.85rem!important}
+            .admin-profile-team-grid .admin-account-card>div:first-child{width:2.25rem!important;height:2.25rem!important;border-radius:.65rem!important;font-size:.68rem!important}
+        }
     </style>
 </head>
 <body class="bg-[radial-gradient(circle_at_top,_#ecfdf5,_#eff6ff_38%,_#f8fafc_75%)] text-slate-900">
@@ -75,42 +126,43 @@
             'headerTitle' => 'My Profile',
             'headerSubtitle' => 'Review your administrator identity and account information.',
             'showThemeToggle' => true,
+            'profileMobileHeader' => true,
         ])
 
-        <div class="mx-auto max-w-[1450px] space-y-6 p-4 pt-20 md:p-8">
+        <div class="admin-profile-content mx-auto max-w-[1450px] space-y-6 p-4 pt-20 md:p-8">
             @if(session('success'))
                 <div class="profile-reveal rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-700"><i class="fa-solid fa-circle-check mr-2"></i>{{ session('success') }}</div>
             @endif
             @if($errors->any())
                 <div class="profile-reveal rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700"><p class="font-bold">Your changes could not be saved.</p><p class="mt-1">{{ $errors->first() }}</p></div>
             @endif
-            <section class="profile-reveal relative overflow-hidden rounded-[2.25rem] bg-slate-950 text-white shadow-[0_30px_90px_rgba(15,23,42,.22)]" style="--delay:0ms">
+            <section class="admin-profile-hero profile-reveal relative overflow-hidden rounded-[2.25rem] bg-slate-950 text-white shadow-[0_30px_90px_rgba(15,23,42,.22)]" style="--delay:0ms">
                 <div class="absolute -right-24 -top-28 h-80 w-80 rounded-full bg-emerald-500/25 blur-3xl"></div>
                 <div class="absolute bottom-0 left-1/3 h-52 w-52 rounded-full bg-cyan-500/15 blur-3xl"></div>
-                <div class="relative grid gap-8 px-7 py-9 md:px-10 lg:grid-cols-[1fr_auto] lg:items-center">
-                    <div class="flex flex-col gap-6 sm:flex-row sm:items-center">
+                <div class="admin-profile-hero-inner relative grid gap-8 px-7 py-9 md:px-10 lg:grid-cols-[1fr_auto] lg:items-center">
+                    <div class="admin-profile-identity flex flex-col gap-6 sm:flex-row sm:items-center">
                         <div class="relative">
-                            <div class="flex h-28 w-28 shrink-0 items-center justify-center rounded-[2rem] border border-white/40 bg-gradient-to-br from-emerald-400 to-cyan-500 text-3xl font-black shadow-[0_18px_50px_rgba(16,185,129,.3)] ring-4 ring-white/10">{{ $initials }}</div>
+                            <div class="admin-profile-avatar flex h-28 w-28 shrink-0 items-center justify-center rounded-[2rem] border border-white/40 bg-gradient-to-br from-emerald-400 to-cyan-500 text-3xl font-black shadow-[0_18px_50px_rgba(16,185,129,.3)] ring-4 ring-white/10">{{ $initials }}</div>
                             <span class="absolute -bottom-1 -right-1 h-7 w-7 rounded-full border-4 border-slate-950 bg-emerald-400"></span>
                         </div>
                         <div class="min-w-0">
-                            <div class="flex flex-wrap items-center gap-3">
-                                <h1 class="text-3xl font-black tracking-tight md:text-4xl">{{ $fullName }}</h1>
-                                <span class="inline-flex items-center gap-2 rounded-full bg-emerald-400/15 px-3 py-1 text-xs font-bold text-emerald-200 ring-1 ring-emerald-300/25"><span class="h-2 w-2 rounded-full bg-emerald-300"></span>{{ $status }}</span>
+                            <div class="admin-profile-name-row flex flex-wrap items-center gap-3">
+                                <h1 class="admin-profile-name text-3xl font-black tracking-tight md:text-4xl">{{ $fullName }}</h1>
+                                <span class="admin-profile-status inline-flex items-center gap-2 rounded-full bg-emerald-400/15 px-3 py-1 text-xs font-bold text-emerald-200 ring-1 ring-emerald-300/25"><span class="h-2 w-2 rounded-full bg-emerald-300"></span>{{ $status }}</span>
                             </div>
-                            <p class="mt-2 text-base font-semibold text-emerald-200">{{ $admin->job_role ?: 'System Administrator' }}</p>
-                            <div class="mt-4 flex flex-wrap gap-2 text-xs text-white/70">
+                            <p class="admin-profile-role mt-2 text-base font-semibold text-emerald-200">{{ $admin->job_role ?: 'System Administrator' }}</p>
+                            <div class="admin-profile-badges mt-4 flex flex-wrap gap-2 text-xs text-white/70">
                                 <span class="rounded-full border border-white/10 bg-white/5 px-3 py-1.5"><i class="fa-solid fa-shield-halved mr-1.5 text-emerald-300"></i>{{ ucfirst((string) $admin->role) }} access</span>
                                 <span class="rounded-full border border-white/10 bg-white/5 px-3 py-1.5"><i class="fa-solid fa-hashtag mr-1.5 text-cyan-300"></i>Account {{ $admin->id }}</span>
                                 <span class="rounded-full border border-white/10 bg-white/5 px-3 py-1.5"><i class="fa-solid fa-building mr-1.5 text-sky-300"></i>{{ $admin->department ?: 'No department' }}</span>
                             </div>
-                            <div class="mt-5 flex flex-wrap gap-3">
+                            <div class="admin-profile-actions mt-5 flex flex-wrap gap-3">
                                 <button type="button" onclick="document.getElementById('admin-profile-editor').showModal()" class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-900 shadow-lg transition hover:bg-emerald-100"><i class="fa-solid fa-pen-to-square text-emerald-600"></i>Edit Information</button>
                                 @if($admin->hasAdminPermission('manage_admins'))<button type="button" onclick="document.getElementById('create-admin-account').showModal()" class="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/20"><i class="fa-solid fa-user-shield text-emerald-300"></i>Create Admin Account</button>@endif
                             </div>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:w-[27rem]">
+                    <div class="admin-profile-stats grid grid-cols-2 gap-3 sm:grid-cols-3 lg:w-[27rem]">
                         <div class="rounded-2xl border border-white/10 bg-white/[.07] p-4 backdrop-blur"><p class="text-[10px] font-bold uppercase tracking-[.18em] text-white/50">Profile</p><p class="mt-2 text-2xl font-black">{{ $profileCompletion }}%</p><p class="mt-1 text-xs text-emerald-200">Complete</p></div>
                         <div class="rounded-2xl border border-white/10 bg-white/[.07] p-4 backdrop-blur"><p class="text-[10px] font-bold uppercase tracking-[.18em] text-white/50">Access</p><p class="mt-2 text-lg font-black">Admin</p><p class="mt-1 text-xs text-cyan-200">Full portal</p></div>
                         <div class="col-span-2 rounded-2xl border border-white/10 bg-white/[.07] p-4 backdrop-blur sm:col-span-1"><p class="text-[10px] font-bold uppercase tracking-[.18em] text-white/50">Member since</p><p class="mt-2 text-sm font-black">{{ optional($admin->created_at)->format('M Y') ?: 'Unknown' }}</p><p class="mt-1 text-xs text-sky-200">Verified account</p></div>
@@ -119,14 +171,14 @@
             </section>
 
             <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_21rem]">
-                <section class="profile-reveal rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-[0_20px_60px_rgba(15,23,42,.08)] backdrop-blur md:p-8" style="--delay:90ms">
-                    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <section class="admin-profile-information profile-reveal rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-[0_20px_60px_rgba(15,23,42,.08)] backdrop-blur md:p-8" style="--delay:90ms">
+                    <div class="admin-profile-information-heading flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                         <div><p class="text-xs font-bold uppercase tracking-[.22em] text-emerald-700">Personal record</p><h2 class="mt-2 text-2xl font-black">Account information</h2><p class="mt-1 text-sm text-slate-500">Your administrator identity and workplace details.</p></div>
                         <span class="w-fit rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-500">Updated {{ optional($admin->updated_at)->diffForHumans() ?: 'recently' }}</span>
                     </div>
-                    <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="admin-profile-details mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         @foreach($details as $detail)
-                            <div class="profile-card rounded-2xl border border-slate-200 bg-slate-50/80 p-5">
+                            <div class="admin-profile-detail profile-card rounded-2xl border border-slate-200 bg-slate-50/80 p-5">
                                 <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-emerald-600 shadow-sm ring-1 ring-slate-100"><i class="fa-solid {{ $detail['icon'] }}"></i></div>
                                 <p class="mt-4 text-[10px] font-bold uppercase tracking-[.18em] text-slate-400">{{ $detail['label'] }}</p>
                                 <p class="mt-1 break-words text-sm font-bold text-slate-800">{{ trim((string) $detail['value']) !== '' ? $detail['value'] : 'Not provided' }}</p>
@@ -135,17 +187,17 @@
                     </div>
                 </section>
 
-                <div class="space-y-6">
-                    <section class="profile-reveal rounded-[2rem] border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-6 shadow-sm" style="--delay:150ms">
+                <div class="admin-profile-side space-y-6">
+                    <section class="admin-profile-security profile-reveal rounded-[2rem] border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-6 shadow-sm" style="--delay:150ms">
                         <div class="flex items-center justify-between"><div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-600/20"><i class="fa-solid fa-shield-halved"></i></div><span class="rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700">Protected</span></div>
                         <h3 class="mt-5 text-lg font-black">Account security</h3>
                         <p class="mt-2 text-sm leading-6 text-slate-600">Use a unique password and sign out whenever you use a shared device.</p>
                         <a href="{{ route('password.request') }}" class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-bold text-white transition hover:bg-emerald-700"><i class="fa-solid fa-key"></i>Change Password</a>
                     </section>
 
-                    <section class="profile-reveal rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm" style="--delay:210ms">
+                    <section class="admin-profile-quick-access profile-reveal rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm" style="--delay:210ms">
                         <p class="text-xs font-bold uppercase tracking-[.2em] text-slate-400">Quick access</p>
-                        <div class="mt-4 space-y-2">
+                        <div class="admin-profile-quick-links mt-4 space-y-2">
                             @if($admin->hasAdminPermission('dashboard'))<a href="{{ route('admin.adminHome', array_filter(['tab_session' => request()->query('tab_session')])) }}" class="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700"><span><i class="fa-solid fa-house mr-3 w-4"></i>Dashboard</span><i class="fa-solid fa-arrow-right text-xs"></i></a>@endif
                             @if($admin->hasAdminPermission('communication'))<a href="{{ route('admin.adminCommunication', array_filter(['tab_session' => request()->query('tab_session')])) }}" class="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700"><span><i class="fa-solid fa-comments mr-3 w-4"></i>Messages</span><i class="fa-solid fa-arrow-right text-xs"></i></a>@endif
                             @if($admin->hasAdminPermission('logs'))<a href="{{ route('admin.activityLogs', array_filter(['tab_session' => request()->query('tab_session')])) }}" class="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700"><span><i class="fa-solid fa-clock-rotate-left mr-3 w-4"></i>Activity logs</span><i class="fa-solid fa-arrow-right text-xs"></i></a>@endif
@@ -155,12 +207,12 @@
                 </div>
             </div>
 
-            <section class="profile-reveal rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8" style="--delay:260ms">
-                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <section class="admin-profile-team profile-reveal rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8" style="--delay:260ms">
+                <div class="admin-profile-team-heading flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div><p class="text-xs font-bold uppercase tracking-[.22em] text-emerald-700">Access management</p><h2 class="mt-2 text-2xl font-black">Administrator team</h2><p class="mt-1 text-sm text-slate-500">Accounts with permission to enter the admin portal.</p></div>
                     @if($admin->hasAdminPermission('manage_admins'))<button type="button" onclick="document.getElementById('create-admin-account').showModal()" class="inline-flex w-fit items-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-emerald-700"><i class="fa-solid fa-user-plus"></i>Add Administrator</button>@endif
                 </div>
-                <div class="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <div class="admin-profile-team-grid mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                     @foreach($adminAccounts as $account)
                         @php
                             $accountName = trim(implode(' ', array_filter([$account->first_name, $account->middle_name, $account->last_name])));
