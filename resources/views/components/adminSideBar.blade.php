@@ -383,6 +383,15 @@
       transform: none !important;
     }
   }
+
+  /* Prevent iOS from zooming the page when a mobile search field receives focus. */
+  @media (max-width: 767px) {
+    input[type="search"],
+    input[data-admin-header-search],
+    input[placeholder*="search" i] {
+      font-size: 16px !important;
+    }
+  }
 </style>
 
 <button

@@ -496,8 +496,11 @@
                 <span class="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-sky-600 shadow-sm">
                   <i class="fa-solid fa-file-invoice-dollar text-2xl"></i>
                 </span>
-                <p class="mt-5 text-base font-semibold text-slate-800">Browse payslip file to upload</p>
-                <p class="mt-2 text-sm text-slate-500">Accepted formats: `.xlsx` and `.csv`.</p>
+                <p class="mt-5 text-base font-semibold text-slate-800">
+                  <span class="text-sky-700 underline decoration-sky-300 decoration-2 underline-offset-4 transition group-hover:text-sky-800">Click here to upload a file</span>
+                </p>
+                <p class="mt-2 text-sm text-slate-500">Choose a payslip spreadsheet from your device.</p>
+                <p class="mt-1 text-sm text-slate-500">Accepted formats: `.xlsx` and `.csv`.</p>
                 <div class="payslip-upload-steps mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-500">
                   <span class="rounded-full border border-slate-200 bg-white px-3 py-1">1. Upload</span>
                   <span class="rounded-full border border-slate-200 bg-white px-3 py-1">2. Select</span>

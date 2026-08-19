@@ -45,10 +45,14 @@
       box-shadow: inset 3px 0 0 rgba(14, 165, 233, 0.55);
     }
     .applicant-modal-shell {
+      display: flex;
+      flex-direction: column;
       max-height: min(88vh, 860px);
     }
     .applicant-modal-body {
-      max-height: calc(min(88vh, 860px) - 82px);
+      flex: 1 1 auto;
+      min-height: 0;
+      max-height: none;
     }
     .applicant-doc-list {
       max-height: 360px;
@@ -134,6 +138,99 @@
       }
     }
     @media (max-width: 767px) {
+      #applicantModal {
+        align-items: flex-start;
+        padding: max(0.5rem, env(safe-area-inset-top)) 0.5rem max(0.5rem, env(safe-area-inset-bottom));
+      }
+      .applicant-modal-shell {
+        width: 100%;
+        height: calc(100dvh - max(1rem, env(safe-area-inset-top) + env(safe-area-inset-bottom)));
+        max-height: none;
+        border-radius: 1.25rem;
+      }
+      .applicant-modal-body {
+        padding: 0.75rem !important;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+      }
+      .applicant-modal-header {
+        flex: 0 0 auto;
+        padding: 0.85rem 1rem !important;
+      }
+      .applicant-modal-header h2 {
+        margin-top: 0.2rem !important;
+        font-size: 1.35rem !important;
+        line-height: 1.15;
+      }
+      .applicant-modal-header p {
+        font-size: 0.62rem !important;
+      }
+      .applicant-modal-header button {
+        width: 2.5rem !important;
+        height: 2.5rem !important;
+        flex-shrink: 0;
+      }
+      .applicant-modal-body > #applicantReviewPanel,
+      .applicant-modal-body > #applicantInterviewPanel {
+        min-width: 0;
+      }
+      #applicantInterviewPanel > .grid {
+        gap: 0.75rem;
+      }
+      .interview-setup-summary {
+        min-height: 0 !important;
+        padding: 1rem !important;
+        border-radius: 1rem !important;
+      }
+      .interview-setup-summary h3 {
+        margin-top: 0.4rem !important;
+        font-size: 1.35rem !important;
+        line-height: 1.2;
+      }
+      .interview-candidate-card {
+        margin-top: 0.85rem !important;
+        padding: 0.85rem !important;
+      }
+      .interview-back-actions {
+        margin-top: 0.85rem !important;
+        padding-top: 0 !important;
+      }
+      .interview-back-actions button {
+        width: 100%;
+        padding-top: 0.7rem !important;
+        padding-bottom: 0.7rem !important;
+      }
+      #applicantInterviewPanelForm {
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
+        padding: 1rem !important;
+        border-radius: 1rem !important;
+      }
+      #applicantInterviewPanelForm .grid,
+      #applicantInterviewPanelForm .grid > div,
+      #applicantInterviewPanelForm label {
+        min-width: 0;
+        max-width: 100%;
+      }
+      #applicantInterviewPanelForm input,
+      #applicantInterviewPanelForm select,
+      #applicantInterviewPanelForm textarea {
+        display: block;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+        font-size: 16px !important;
+      }
+      #applicantInterviewPanelForm input[type="date"],
+      #applicantInterviewPanelForm input[type="time"] {
+        appearance: auto;
+        -webkit-appearance: auto;
+      }
+      #saveInterviewButton {
+        width: 100%;
+      }
       #admin-applicant-page {
         padding: 0.75rem !important;
       }
@@ -333,7 +430,7 @@
 
 <div id="applicantModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/45 px-4 py-6 backdrop-blur-sm">
   <div class="applicant-modal-shell relative w-full max-w-7xl overflow-hidden rounded-[1.5rem] border border-white/70 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.18)]">
-    <div class="border-b border-slate-200 bg-[linear-gradient(135deg,rgba(14,165,233,0.08),rgba(16,185,129,0.08))] px-6 py-4">
+    <div class="applicant-modal-header border-b border-slate-200 bg-[linear-gradient(135deg,rgba(14,165,233,0.08),rgba(16,185,129,0.08))] px-6 py-4">
       <div class="flex items-center justify-between gap-4">
         <div>
           <p class="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Applicant Profile</p>
@@ -354,16 +451,16 @@
                 <div class="flex h-16 w-16 shrink-0 aspect-square items-center justify-center rounded-full bg-[linear-gradient(135deg,#0ea5e9,#2563eb)] text-xl font-bold text-white" id="applicantInitials">
                   AP
                 </div>
-                <div>
+                <div class="min-w-0 flex-1">
                   <h3 class="text-2xl font-black tracking-tight text-slate-900" id="name"></h3>
-                  <p class="mt-1 text-sm text-slate-500" id="email"></p>
+                  <p class="mt-1 break-all text-sm text-slate-500" id="email"></p>
                   <div class="mt-3 flex flex-wrap gap-2">
                     <span class="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700" id="title"></span>
                     <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600" id="status"></span>
                   </div>
                   <div class="mt-4 flex flex-wrap gap-4 text-sm text-slate-500">
                     <span class="inline-flex items-center gap-2"><i class="fa-regular fa-calendar text-sky-500"></i><span id="one"></span></span>
-                    <span class="inline-flex items-center gap-2"><i class="fa-solid fa-location-dot text-emerald-500"></i><span id="location"></span></span>
+                    <span class="inline-flex min-w-0 items-start gap-2"><i class="mt-0.5 shrink-0 fa-solid fa-location-dot text-emerald-500"></i><span class="break-words" id="location"></span></span>
                   </div>
                 </div>
               </div>
@@ -467,11 +564,11 @@
 
       <div id="applicantInterviewPanel" class="hidden">
         <div class="grid gap-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-          <div class="flex min-h-[520px] flex-col rounded-[1.35rem] border border-sky-200 bg-sky-50/80 p-5">
+          <div class="interview-setup-summary flex min-h-[520px] flex-col rounded-[1.35rem] border border-sky-200 bg-sky-50/80 p-5">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Interview Setup</p>
               <h3 id="interviewSetupTitle" class="mt-3 text-2xl font-black text-slate-900">Set Initial Interview</h3>
-              <div class="mt-5 rounded-[1.1rem] border border-sky-100 bg-white/75 p-4">
+              <div class="interview-candidate-card mt-5 rounded-[1.1rem] border border-sky-100 bg-white/90 p-4 shadow-sm">
                 <div class="flex items-center gap-4">
                   <div class="flex h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center rounded-[1rem] bg-[linear-gradient(135deg,#0ea5e9,#2563eb)] text-base font-bold text-white" id="interviewPanelInitials">AP</div>
                   <div class="min-w-0">
@@ -499,8 +596,8 @@
                 <p id="interviewDecisionHint" class="mt-2 text-xs font-semibold text-slate-500">Finish the required stage before proceeding.</p>
               </div>
             </div>
-            <div class="mt-auto flex flex-wrap items-center justify-start gap-3 pt-6">
-              <button type="button" onclick="showApplicantReviewPanel()" class="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900">Back</button>
+            <div class="interview-back-actions mt-auto flex flex-wrap items-center justify-start gap-3 pt-6">
+              <button type="button" onclick="showApplicantReviewPanel()" class="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900"><i class="fa-solid fa-arrow-left text-xs"></i> Back to profile</button>
             </div>
           </div>
 
@@ -508,6 +605,14 @@
             @csrf
             <input type="hidden" id="panel_applicants_id" name="applicants_id">
             <input type="hidden" id="panel_next_interview_confirmed" name="next_interview_confirmed" value="0">
+
+            <div class="mb-5 flex items-start gap-3 border-b border-slate-100 pb-4">
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-100 text-sky-700"><i class="fa-regular fa-calendar-check"></i></span>
+              <div>
+                <h4 class="font-black text-slate-900">Schedule details</h4>
+                <p class="mt-1 text-xs leading-5 text-slate-500">Choose the interview type, date, and meeting information.</p>
+              </div>
+            </div>
 
             <div class="grid gap-4 sm:grid-cols-2">
               <div class="sm:col-span-2">

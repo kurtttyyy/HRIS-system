@@ -315,7 +315,7 @@
                 <div class="mt-5 grid gap-3">
                   @forelse ($responsibilityLines as $line)
                     <div class="flex gap-3 rounded-[1.25rem] border border-slate-200 bg-white p-4 shadow-sm">
-                      <span class="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+                      <span class="mt-0.5 flex h-8 w-8 shrink-0 aspect-square items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
                         <i class="fa-solid fa-check text-xs"></i>
                       </span>
                       <p class="text-sm leading-6 text-slate-600">{{ $line }}</p>
@@ -339,7 +339,7 @@
                 <div class="mt-5 grid gap-3">
                   @forelse ($requirementLines as $line)
                     <div class="flex gap-3 rounded-[1.25rem] border border-slate-200 bg-white p-4 shadow-sm">
-                      <span class="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                      <span class="mt-0.5 flex h-8 w-8 shrink-0 aspect-square items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
                         <i class="fa-solid fa-check text-xs"></i>
                       </span>
                       <p class="text-sm leading-6 text-slate-600">{{ $line }}</p>

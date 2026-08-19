@@ -321,7 +321,7 @@
                                 <p class="mt-2 text-sm text-slate-500">{{ $open->department }} | {{ $open->employment }} | {{ $open->job_type }}</p>
                             </div>
 
-                            <div class="flex h-14 w-14 items-center justify-center rounded-[1.35rem] {{ $open->deleted_at ? 'bg-rose-100 text-rose-600 group-hover:bg-rose-600' : 'bg-sky-100 text-sky-600 group-hover:bg-sky-600' }} transition group-hover:text-white">
+                            <div class="flex h-14 w-14 shrink-0 aspect-square items-center justify-center rounded-2xl {{ $open->deleted_at ? 'bg-rose-100 text-rose-600 group-hover:bg-rose-600' : 'bg-sky-100 text-sky-600 group-hover:bg-sky-600' }} transition group-hover:text-white">
                                 <i class="fa-solid fa-briefcase text-lg"></i>
                             </div>
                         </div>

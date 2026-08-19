@@ -140,8 +140,10 @@
     }
 
     .admin-notification-trigger .admin-notification-bell {
+        display: inline-block;
         transform-origin: 50% 8%;
         transition: transform 0.2s ease, color 0.2s ease;
+        will-change: transform;
     }
 
     .admin-notification-trigger:hover .admin-notification-bell,
@@ -193,6 +195,19 @@
     }
 
     @media (max-width: 767px) {
+        /* Messenger's iOS browser can report reduced motion; keep the alert visible. */
+        .admin-notification-trigger.has-notifications .admin-notification-bell {
+            animation: admin-bell-ring 1.45s ease-in-out infinite !important;
+        }
+
+        .admin-notification-trigger.has-notifications::after {
+            animation: admin-bell-halo 1.8s ease-out infinite !important;
+        }
+
+        [data-admin-notification-badge]:not(.hidden) {
+            animation: admin-badge-pulse 1.4s ease-in-out infinite !important;
+        }
+
         .admin-header-shell {
             padding: 0.75rem;
         }
