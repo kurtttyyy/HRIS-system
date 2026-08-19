@@ -790,7 +790,25 @@
   const payslipScanUrlBase = @json(url('admin/payslip/update-status'));
   const payslipDeleteUrlBase = @json(url('system/payslip/delete'));
   let scanInProgress = false;
+  let payslipScanRunId = 0;
+  let payslipScanController = null;
   let payslipUploadStageTimers = [];
+
+  const cancelActivePayslipScan = () => {
+    payslipScanRunId += 1;
+    payslipScanController?.abort();
+    payslipScanController = null;
+    scanInProgress = false;
+    if (scanPayslipBtn) {
+      scanPayslipBtn.disabled = false;
+      scanPayslipBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+      scanPayslipBtn.innerHTML = '<i class="fa-solid fa-barcode"></i> Scan';
+    }
+    if (uploadPayslipBtn) {
+      uploadPayslipBtn.disabled = !(payslipInput?.files && payslipInput.files.length);
+      uploadPayslipBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+    }
+  };
 
   const clearPayslipUploadStages = () => {
     payslipUploadStageTimers.forEach((timer) => window.clearTimeout(timer));
@@ -870,7 +888,11 @@
       }
     });
 
+    cancelActivePayslipScan();
     payslipFileList.innerHTML = nextFileList.innerHTML;
+    document.querySelectorAll('input[name="selected_payslip_file"]').forEach((radio) => {
+      radio.checked = false;
+    });
   };
 
   if (payslipInput && payslipName && uploadPayslipBtn && scanPayslipBtn) {
@@ -967,6 +989,7 @@
       const previousProgressText = progressText.textContent;
       const previousBarWidth = bar.style.width;
       const originalScanButtonHtml = scanPayslipBtn.innerHTML;
+      const currentScanRunId = ++payslipScanRunId;
 
       scanInProgress = true;
       scanPayslipBtn.disabled = true;
@@ -983,6 +1006,9 @@
       const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
       const animate = (now) => {
+        if (currentScanRunId !== payslipScanRunId || !row?.isConnected || !selected.isConnected) {
+          return;
+        }
         const elapsed = now - startTime;
         const progress = Math.min(elapsed / durationMs, 1);
         const eased = easeOutCubic(progress);
@@ -996,8 +1022,10 @@
           return;
         }
 
+        payslipScanController = new AbortController();
         fetch(`${payslipScanUrlBase}/${fileId}`, {
           method: 'POST',
+          signal: payslipScanController.signal,
           headers: {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('#payslip_upload_form input[name="_token"]')?.value || '',
@@ -1029,6 +1057,7 @@
             showPayslipMessage(`File scanned and saved successfully. Matched rows: ${rows}.`);
           })
           .catch((error) => {
+            if (error.name === 'AbortError' || currentScanRunId !== payslipScanRunId) return;
             console.error(error);
             status.textContent = previousStatusText;
             progressText.textContent = previousProgressText;
@@ -1036,6 +1065,8 @@
             showPayslipMessage(error.message || 'Failed to scan and save file data.', 'error');
           })
           .finally(() => {
+            if (currentScanRunId !== payslipScanRunId) return;
+            payslipScanController = null;
             scanPayslipBtn.disabled = false;
             uploadPayslipBtn.disabled = !(payslipInput.files && payslipInput.files.length);
             scanPayslipBtn.classList.remove('opacity-60', 'cursor-not-allowed');
@@ -1065,6 +1096,7 @@
       const fileName = deleteButton.dataset.fileName || 'this file';
       if (!fileId || !window.confirm(`Remove “${fileName}”? This cannot be undone.`)) return;
 
+      cancelActivePayslipScan();
       deleteButton.disabled = true;
       deleteButton.classList.add('opacity-60', 'cursor-not-allowed');
       deleteButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';

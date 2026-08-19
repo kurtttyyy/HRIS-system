@@ -1309,10 +1309,19 @@ class AdministratorStoreController extends Controller
             $fallbackPayDate = optional($payslipFile->uploaded_at)->format('Y-m-d') ?: now()->toDateString();
             $records = $this->buildPayslipRecords($rows, (int) $payslipFile->id, $fallbackPayDate);
             $processedRows = 0;
+            $persistedPayslipFile = null;
 
-            DB::transaction(function () use ($payslipFile, $status, $records, &$processedRows) {
+            DB::transaction(function () use ($payslipFile, $status, $records, &$processedRows, &$persistedPayslipFile) {
+                $persistedPayslipFile = PayslipUpload::query()
+                    ->lockForUpdate()
+                    ->find((int) $payslipFile->id);
+
+                if (!$persistedPayslipFile) {
+                    throw new \RuntimeException('The selected payslip file was removed before scanning completed.');
+                }
+
                 PayslipRecord::query()
-                    ->where('payslip_upload_id', (int) $payslipFile->id)
+                    ->where('payslip_upload_id', (int) $persistedPayslipFile->id)
                     ->delete();
 
                 if (!empty($records)) {
@@ -1320,19 +1329,19 @@ class AdministratorStoreController extends Controller
                 }
 
                 $processedRows = count($records);
-                $payslipFile->update([
+                $persistedPayslipFile->update([
                     'status' => $status,
                     'processed_rows' => $processedRows,
                 ]);
             });
 
-            ActivityChangeLogger::scannedFile($payslipFile->fresh(), $processedRows, 'Payslip File');
+            ActivityChangeLogger::scannedFile($persistedPayslipFile->fresh(), $processedRows, 'Payslip File');
 
             return response()->json([
                 'success' => true,
                 'message' => 'Payslip file scanned successfully.',
-                'status' => $payslipFile->status,
-                'upload_id' => $payslipFile->id,
+                'status' => $persistedPayslipFile->status,
+                'upload_id' => $persistedPayslipFile->id,
                 'processed_rows' => $processedRows,
             ]);
         } catch (\Exception $e) {
