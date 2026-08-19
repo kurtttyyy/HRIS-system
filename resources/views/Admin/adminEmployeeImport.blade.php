@@ -7,6 +7,37 @@
   <title>PeopleHub - Insert Employees</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    .employee-import-icon { position: relative; isolation: isolate; }
+    .employee-import-icon-ring { position: absolute; inset: -7px; border: 3px solid transparent; border-top-color: #10b981; border-right-color: #a7f3d0; border-radius: 999px; opacity: 0; }
+    .employee-import-icon i { position: absolute; left: 50%; top: 50%; opacity: 0; transform: translate(-50%, -50%) scale(.65); transition: opacity .2s ease, transform .3s cubic-bezier(.22,.9,.2,1); }
+    .employee-import-icon .employee-import-idle { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    .employee-import-zone.has-file .employee-import-idle,
+    .employee-import-zone.is-importing .employee-import-icon i { opacity: 0; transform: translate(-50%, -50%) scale(.65); }
+    .employee-import-zone.has-file:not(.is-importing) .employee-import-file,
+    .employee-import-zone.stage-validating .employee-import-check,
+    .employee-import-zone.stage-reading .employee-import-reading,
+    .employee-import-zone.stage-importing .employee-import-users,
+    .employee-import-zone.stage-saving .employee-import-saving { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    .employee-import-zone.is-importing .employee-import-icon-ring { opacity: 1; animation: employee-import-spin .9s linear infinite; }
+    .employee-import-zone.stage-reading .employee-import-reading { animation: employee-import-pulse .9s ease-in-out infinite; }
+    .employee-import-progress-bar { transition: width .6s cubic-bezier(.22,.9,.2,1); }
+    @keyframes employee-import-spin { to { transform: rotate(360deg); } }
+    @keyframes employee-import-pulse { 50% { transform: translate(-50%, -50%) scale(1.12); } }
+    @media (max-width: 640px) {
+      .employee-import-zone { min-height: 0 !important; padding: 1rem !important; }
+      .employee-import-zone-content { display: grid; grid-template-columns: 2.75rem minmax(0,1fr); gap: .2rem .85rem; width: 100%; text-align: left; }
+      .employee-import-icon { grid-row: 1 / 4; width: 2.75rem !important; height: 2.75rem !important; border-radius: .8rem !important; }
+      .employee-import-title, .employee-import-help, [data-employee-file-name] { grid-column: 2; margin-top: 0 !important; }
+      .employee-import-title { font-size: .9rem !important; }
+      .employee-import-help { font-size: .75rem !important; }
+      .employee-import-progress { margin-top: .85rem !important; }
+      .employee-import-submit { width: 100%; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .employee-import-icon-ring, .employee-import-icon i, .employee-import-progress-bar { animation: none !important; transition: none !important; }
+    }
+  </style>
 </head>
 <body class="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#f7fafc_50%,#eefbf6_100%)] text-slate-800">
   <div class="flex min-h-screen">
@@ -99,24 +130,42 @@
             </div>
           </div>
 
-          <form method="POST" action="{{ route('admin.employeeImport.upload') }}" enctype="multipart/form-data" class="mt-7">
+          <form id="employee_import_form" method="POST" action="{{ route('admin.employeeImport.upload') }}" enctype="multipart/form-data" class="mt-7">
             @csrf
             @if (request()->filled('tab_session'))
               <input type="hidden" name="tab_session" value="{{ request()->query('tab_session') }}">
             @endif
 
-            <label for="employee_file" class="group relative flex min-h-72 cursor-pointer flex-col items-center justify-center rounded-[1.75rem] border-2 border-dashed border-emerald-200 bg-emerald-50/50 px-6 py-10 text-center transition hover:border-emerald-400 hover:bg-emerald-50">
-              <span class="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-2xl text-emerald-700 transition group-hover:scale-105">
-                <i class="fa-solid fa-file-arrow-up"></i>
+            <label for="employee_file" class="employee-import-zone group relative flex min-h-72 cursor-pointer flex-col items-center justify-center rounded-[1.75rem] border-2 border-dashed border-emerald-200 bg-emerald-50/50 px-6 py-10 text-center transition hover:border-emerald-400 hover:bg-emerald-50">
+              <span class="employee-import-zone-content flex flex-col items-center">
+                <span class="employee-import-icon flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-2xl text-emerald-700 transition group-hover:scale-105">
+                  <span class="employee-import-icon-ring"></span>
+                  <i class="employee-import-idle fa-solid fa-file-arrow-up"></i>
+                  <i class="employee-import-file fa-solid fa-file-excel"></i>
+                  <i class="employee-import-check fa-solid fa-list-check"></i>
+                  <i class="employee-import-reading fa-solid fa-magnifying-glass-chart"></i>
+                  <i class="employee-import-users fa-solid fa-users-gear"></i>
+                  <i class="employee-import-saving fa-solid fa-shield-halved"></i>
+                </span>
+                <span class="employee-import-title mt-5 text-lg font-black text-slate-900">Drop your Excel file here</span>
+                <span class="employee-import-help mt-2 text-sm text-slate-500">or click to browse from your computer</span>
+                <span data-employee-file-name class="mt-4 hidden max-w-full truncate rounded-full bg-white px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm"></span>
               </span>
-              <span class="mt-5 text-lg font-black text-slate-900">Drop your Excel file here</span>
-              <span class="mt-2 text-sm text-slate-500">or click to browse from your computer</span>
-              <span data-employee-file-name class="mt-4 hidden rounded-full bg-white px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm"></span>
+              <div id="employee_import_progress" class="employee-import-progress mt-6 hidden w-full max-w-lg rounded-2xl border border-emerald-100 bg-white/95 p-4 text-left shadow-sm" aria-live="polite">
+                <div class="flex items-center justify-between gap-3 text-xs font-bold">
+                  <span id="employee_import_status" class="text-slate-700">Ready to import</span>
+                  <span id="employee_import_percent" class="tabular-nums text-emerald-700">0%</span>
+                </div>
+                <div class="mt-2 h-2.5 overflow-hidden rounded-full bg-slate-100">
+                  <div id="employee_import_progress_bar" class="employee-import-progress-bar h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400" style="width:0%"></div>
+                </div>
+                <p id="employee_import_detail" class="mt-2 text-xs text-slate-500">Keep this page open while employee records are processed.</p>
+              </div>
               <input id="employee_file" name="employee_file" type="file" accept=".xlsx,.csv" required data-required-base="{{ $requiredEmployeeFileBase }}" class="absolute inset-0 cursor-pointer opacity-0">
             </label>
 
             <div class="mt-6 flex justify-end">
-              <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:-translate-y-0.5 hover:bg-emerald-700">
+              <button id="employee_import_submit" type="submit" class="employee-import-submit inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:-translate-y-0.5 hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60">
                 <i class="fa-solid fa-cloud-arrow-up"></i>
                 Upload Employee File
               </button>
@@ -128,11 +177,54 @@
   </div>
 
   <script>
+    const employeeImportForm = document.getElementById('employee_import_form');
     const employeeFileInput = document.getElementById('employee_file');
     const employeeFileName = document.querySelector('[data-employee-file-name]');
+    const employeeImportZone = document.querySelector('.employee-import-zone');
+    const employeeImportProgress = document.getElementById('employee_import_progress');
+    const employeeImportStatus = document.getElementById('employee_import_status');
+    const employeeImportPercent = document.getElementById('employee_import_percent');
+    const employeeImportProgressBar = document.getElementById('employee_import_progress_bar');
+    const employeeImportDetail = document.getElementById('employee_import_detail');
+    const employeeImportSubmit = document.getElementById('employee_import_submit');
+    let employeeImportStarted = false;
+    let employeeImportTimers = [];
+
+    const clearEmployeeImportTimers = () => {
+      employeeImportTimers.forEach((timer) => window.clearTimeout(timer));
+      employeeImportTimers = [];
+    };
+
+    const setEmployeeImportStage = (stage, status, percent, detail) => {
+      employeeImportZone?.classList.remove('stage-validating', 'stage-reading', 'stage-importing', 'stage-saving');
+      if (stage) employeeImportZone?.classList.add(stage);
+      employeeImportProgress?.classList.remove('hidden');
+      if (employeeImportStatus) employeeImportStatus.textContent = status;
+      if (employeeImportPercent) employeeImportPercent.textContent = `${percent}%`;
+      if (employeeImportProgressBar) employeeImportProgressBar.style.width = `${percent}%`;
+      if (employeeImportDetail) employeeImportDetail.textContent = detail;
+    };
+
+    const queueEmployeeImportStage = (delay, stage, status, percent, detail) => {
+      employeeImportTimers.push(window.setTimeout(
+        () => setEmployeeImportStage(stage, status, percent, detail),
+        delay
+      ));
+    };
+
     employeeFileInput?.addEventListener('change', () => {
       const file = employeeFileInput.files?.[0];
       if (!employeeFileName) return;
+      clearEmployeeImportTimers();
+      employeeImportStarted = false;
+      employeeImportZone?.classList.remove('is-importing', 'stage-validating', 'stage-reading', 'stage-importing', 'stage-saving');
+      employeeImportZone?.classList.toggle('has-file', Boolean(file));
+      employeeImportProgress?.classList.add('hidden');
+      if (employeeImportProgressBar) employeeImportProgressBar.style.width = '0%';
+      if (employeeImportSubmit) {
+        employeeImportSubmit.disabled = false;
+        employeeImportSubmit.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Upload Employee File';
+      }
       const requiredBase = employeeFileInput.dataset.requiredBase || '';
       const uploadedBase = file ? file.name.replace(/\.[^.]+$/, '') : '';
       const isValidName = !file || uploadedBase.toLowerCase() === requiredBase.toLowerCase();
@@ -143,6 +235,26 @@
       employeeFileName.classList.toggle('text-rose-700', !isValidName);
       employeeFileName.classList.toggle('text-emerald-700', isValidName);
       employeeFileName.classList.toggle('hidden', !file);
+    });
+
+    employeeImportForm?.addEventListener('submit', (event) => {
+      if (employeeImportStarted) {
+        event.preventDefault();
+        return;
+      }
+
+      if (!employeeImportForm.checkValidity()) return;
+      employeeImportStarted = true;
+      clearEmployeeImportTimers();
+      employeeImportZone?.classList.add('is-importing');
+      employeeImportSubmit.disabled = true;
+      employeeImportSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Importing employees...';
+
+      setEmployeeImportStage('stage-validating', 'Validating spreadsheet', 12, 'Checking the filename, format, and required columns.');
+      queueEmployeeImportStage(550, 'stage-reading', 'Reading worksheet', 34, 'Opening the employee worksheet and mapping its columns.');
+      queueEmployeeImportStage(1450, 'stage-importing', 'Importing employee records', 62, 'Creating or updating valid employee accounts row by row.');
+      queueEmployeeImportStage(3000, 'stage-importing', 'Importing employee records', 78, 'Processing employee, government, salary, license, and education details.');
+      queueEmployeeImportStage(5200, 'stage-saving', 'Saving import results', 92, 'Finalizing records and securely storing the source spreadsheet.');
     });
   </script>
 </body>

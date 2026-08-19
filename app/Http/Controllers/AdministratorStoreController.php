@@ -780,6 +780,17 @@ class AdministratorStoreController extends Controller
 
         $department = $pick(['department', 'office_department', 'office', 'unit', 'cit']);
         $position = $pick(['position', 'job_position', 'job_title', 'designation']);
+        $importedDepartmentHead = trim((string) ($pick(['department_head', 'head_of_department']) ?? ''));
+        $approvedDepartmentHeadValues = ['approved', 'head', 'yes', 'true', '1'];
+        if ($importedDepartmentHead !== '') {
+            $departmentHeadStatus = in_array(strtolower($importedDepartmentHead), $approvedDepartmentHeadValues, true)
+                ? 'Approved'
+                : $importedDepartmentHead;
+        } else {
+            $departmentHeadStatus = $this->shouldAutoApproveDepartmentHead($position)
+                ? 'Approved'
+                : null;
+        }
         $resignedDateRaw = trim((string) ($pick(['date_resigned', 'resignation_date']) ?? ''));
         if ($resignedDateRaw === '-') {
             $resignedDateRaw = '';
@@ -802,7 +813,7 @@ class AdministratorStoreController extends Controller
             'job_role' => $position ?: 'Employee',
             'position' => $position ?: 'Employee',
             'department' => $department ?: 'Unassigned',
-            'department_head' => $pick(['department_head', 'head_of_department']),
+            'department_head' => $departmentHeadStatus,
             'status' => 'Not Approved',
             'account_status' => 'Inactive',
         ];
@@ -2986,7 +2997,15 @@ class AdministratorStoreController extends Controller
     {
         foreach ($positionCandidates as $positionCandidate) {
             $position = strtolower(trim((string) ($positionCandidate ?? '')));
-            if ($position !== '' && str_contains($position, 'director')) {
+            if ($position === '') {
+                continue;
+            }
+
+            if (
+                preg_match('/\b(president|vice[\s-]*president|dean|director|head|chairperson|chairman|chief)\b/i', $position) === 1
+                || str_contains($position, 'department chair')
+                || str_contains($position, 'program chair')
+            ) {
                 return true;
             }
         }
