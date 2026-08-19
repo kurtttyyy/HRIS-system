@@ -333,60 +333,69 @@
             .tree-manager-grid {
                 position: relative;
                 margin-top: .8rem !important;
-                margin-left: .65rem;
-                width: calc(100% - .65rem);
+                margin-left: 0;
+                width: 100%;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
                 gap: .75rem;
-                border-left: 2px solid #6ee7b7;
-                padding-left: 1rem;
+                border-left: 0;
+                padding: 1.45rem 0 0;
+            }
+            .tree-manager-grid::before {
+                content: "";
+                position: absolute;
+                left: 25%;
+                right: 25%;
+                top: 0;
+                height: 2px;
+                background: #6ee7b7;
+            }
+            .tree-manager-grid.single-node::before {
+                left: 50%;
+                right: 50%;
             }
             .tree-manager-branch {
                 padding-left: 0;
                 border-left: 0;
             }
             .tree-manager-branch::before {
-                left: -1rem;
-                top: 1.7rem;
-                width: 1rem;
+                left: 50%;
+                top: -1.45rem;
+                width: 2px;
+                height: 1.45rem;
             }
             .tree-employee-button {
-                display: grid;
-                grid-template-columns: 2.75rem minmax(0, 1fr) auto;
+                display: flex;
+                flex-direction: column;
                 align-items: center;
-                gap: .18rem .75rem;
-                padding: .85rem !important;
+                gap: .2rem;
+                min-height: 9.2rem;
+                padding: .8rem .55rem !important;
                 border-width: 1px !important;
                 border-radius: .95rem !important;
-                text-align: left !important;
+                text-align: center !important;
                 box-shadow: 0 8px 22px rgba(15,118,110,.08) !important;
             }
             .tree-employee-button > :first-child {
-                grid-column: 1;
-                grid-row: 1 / 4;
-                width: 2.75rem !important;
-                height: 2.75rem !important;
+                width: 2.5rem !important;
+                height: 2.5rem !important;
                 margin: 0 !important;
                 font-size: .78rem !important;
             }
             .tree-employee-button h3,
             .tree-employee-button h4 {
-                grid-column: 2 / 4;
-                margin-top: 0 !important;
-                font-size: .82rem !important;
+                margin-top: .25rem !important;
+                font-size: .72rem !important;
                 line-height: 1.25 !important;
             }
             .tree-employee-button .tree-role-badge {
-                grid-column: 3;
-                grid-row: 2 / 4;
-                align-self: center;
                 margin-top: 0 !important;
                 padding: .22rem .42rem;
-                font-size: .48rem;
+                font-size: .44rem;
                 white-space: nowrap;
             }
             .tree-employee-button p {
-                grid-column: 2;
                 margin-top: 0 !important;
-                font-size: .64rem !important;
+                font-size: .58rem !important;
                 line-height: 1.25;
             }
             .tree-staff-grid {
@@ -458,7 +467,7 @@
 
                 @if ($managerNodes->isNotEmpty())
                     <div class="mt-8 text-center lg:mt-0">
-                        <div class="tree-level-label"><i class="fa fa-sitemap"></i><span class="hidden sm:inline">Level 2 - Managers &amp; Team Leads</span><span class="sm:hidden">Level 2 - Team Leads</span></div>
+                        <div class="tree-level-label"><i class="fa fa-sitemap"></i><span class="hidden sm:inline">Level 2 - {{ $hasActualManagers ? 'Managers & Team Leads' : 'Direct Reports' }}</span><span class="sm:hidden">Level 2 - {{ $hasActualManagers ? 'Team Leads' : 'Direct Reports' }}</span></div>
                     </div>
                     <div class="mx-auto hidden w-fit flex-col items-center lg:flex">
                         <div class="tree-line-v h-5"></div>
@@ -472,7 +481,7 @@
                         </div>
                     </div>
 
-                    <div class="tree-manager-grid {{ $managerGridClass }} mt-0">
+                    <div class="tree-manager-grid {{ $managerGridClass }} {{ $managerNodes->count() === 1 ? 'single-node' : '' }} mt-0">
                         @foreach ($managerNodes as $managerNode)
                             @php
                                 $staffCountValue = max($managerNode['employees']->count(), 1);
@@ -497,7 +506,7 @@
                                             </div>
                                         @endif
                                         <h3 class="mt-4 text-[0.92rem] font-black leading-snug text-slate-900">{{ $managerNode['name'] }}</h3>
-                                        <span class="tree-role-badge mt-2 bg-sky-50 text-sky-700">Team Lead</span>
+                                        <span class="tree-role-badge mt-2 {{ $managerNode['is_manager'] ? 'bg-sky-50 text-sky-700' : 'bg-emerald-50 text-emerald-700' }}">{{ $managerNode['is_manager'] ? 'Team Lead' : 'Staff' }}</span>
                                         <p class="mt-1 text-[0.72rem] text-slate-700">{{ $managerNode['title'] }}</p>
                                         <p class="mt-1.5 text-[0.72rem] font-semibold text-emerald-700">{{ $managerNode['team'] }}</p>
                                     </article>

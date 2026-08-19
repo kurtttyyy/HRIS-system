@@ -257,17 +257,20 @@ class EmployeePageController extends Controller
             ->sortByDesc(fn (User $employeeUser) => $this->hierarchyManagerScore($employeeUser))
             ->values();
 
+        $hasActualManagers = $managerCandidates->isNotEmpty();
         if ($managerCandidates->isEmpty() && $remainingEmployees->isNotEmpty()) {
-            $managerCandidates = $remainingEmployees->take(min(3, $remainingEmployees->count()))->values();
+            $managerCandidates = $remainingEmployees->values();
         }
 
-        $staffPool = $remainingEmployees
-            ->reject(function (User $employeeUser) use ($managerCandidates) {
-                return $managerCandidates->contains(fn (User $manager) => (int) $manager->id === (int) $employeeUser->id);
-            })
-            ->values();
+        $staffPool = $hasActualManagers
+            ? $remainingEmployees
+                ->reject(function (User $employeeUser) use ($managerCandidates) {
+                    return $managerCandidates->contains(fn (User $manager) => (int) $manager->id === (int) $employeeUser->id);
+                })
+                ->values()
+            : collect();
 
-        $managerNodes = $managerCandidates->map(function (User $manager) {
+        $managerNodes = $managerCandidates->map(function (User $manager) use ($hasActualManagers) {
             return [
                 'id' => (int) $manager->id,
                 'name' => $this->buildHierarchyDisplayName($manager),
@@ -278,6 +281,7 @@ class EmployeePageController extends Controller
                 'employee_id' => $this->resolveHierarchyEmployeeId($manager),
                 'email' => $this->resolveHierarchyEmployeeEmail($manager),
                 'status' => $this->resolveHierarchyEmploymentStatus($manager),
+                'is_manager' => $hasActualManagers,
                 'employees' => collect(),
             ];
         })->values();
@@ -325,6 +329,7 @@ class EmployeePageController extends Controller
             'departmentEmployeeCount' => (int) $departmentEmployees->count(),
             'managerCount' => (int) $managerNodes->count(),
             'staffCount' => (int) $staffPool->count(),
+            'hasActualManagers' => $hasActualManagers,
         ]);
     }
 
