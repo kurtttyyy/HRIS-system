@@ -195,7 +195,7 @@
 
 <aside
     id="employee-sidebar"
-    class="employee-sidebar group fixed left-0 top-0 h-screen bg-gray-900 border-r border-gray-700
+    class="employee-sidebar group fixed left-0 top-0 flex h-screen h-[100dvh] flex-col bg-gray-900 border-r border-gray-700
            w-16 hover:w-56 transition-all duration-300 overflow-hidden z-50"
 >
 
@@ -223,7 +223,7 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="p-2 space-y-2">
+    <nav class="min-h-0 flex-1 space-y-2 overflow-y-auto p-2">
         <!-- Main -->
         <div class="hidden px-4 pt-2 text-[10px] font-bold uppercase tracking-[0.22em] text-gray-500 opacity-0 transition-opacity duration-300 group-hover:block group-hover:opacity-100 employee-sidebar-label">
             Main
@@ -407,6 +407,19 @@
         @endif
 
     </nav>
+
+    <div class="shrink-0 border-t border-gray-700 p-2">
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            @if (request()->filled('tab_session'))
+                <input type="hidden" name="tab_session" value="{{ request()->query('tab_session') }}">
+            @endif
+            <button type="submit" class="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 font-medium text-gray-300 transition hover:bg-rose-600 hover:text-white">
+                <i class="fa fa-sign-out w-6 shrink-0 text-center text-lg"></i>
+                <span class="whitespace-nowrap opacity-0 transition-opacity duration-300 group-hover:opacity-100 employee-sidebar-label">Logout</span>
+            </button>
+        </form>
+    </div>
 
 </aside>
 

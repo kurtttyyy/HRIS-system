@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -22,6 +23,24 @@ use Illuminate\Support\Str;
 class EmployeePageController extends Controller
 {
     private const FOLDER_TYPE = '__FOLDER__';
+
+    public function communication_typing(Request $request)
+    {
+        $userId = (int) Auth::id();
+        $conversationId = (int) $request->integer('conversation_id');
+        $conversation = Conversation::query()->forUser($userId)->findOrFail($conversationId);
+        $otherUserId = (int) ($conversation->user_one_id === $userId ? $conversation->user_two_id : $conversation->user_one_id);
+
+        if ($request->isMethod('post')) {
+            $isTyping = $request->boolean('is_typing');
+            $key = "communication_typing:{$conversationId}:{$userId}";
+            $isTyping ? Cache::put($key, now()->addSeconds(5)->timestamp, 5) : Cache::forget($key);
+        }
+
+        $otherExpiresAt = (int) Cache::get("communication_typing:{$conversationId}:{$otherUserId}", 0);
+
+        return response()->json(['typing' => $otherExpiresAt > now()->timestamp]);
+    }
 
     public function display_home(){  // Employee Home page
         $user = Auth::user();

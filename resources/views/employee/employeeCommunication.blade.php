@@ -29,6 +29,7 @@
         @media (max-width:1279px){#chat-panel{position:fixed;inset:1rem;z-index:80;height:calc(100vh - 2rem)!important;min-height:0!important}}
         .employee-communication-mobile-header,.employee-communication-mobile-people{display:none}
         @media (max-width:767px){
+            [data-chat-message-form] textarea[name="body"]{font-size:16px!important}
             body{background:#f8fafc!important;color:#0f172a}
             aside~main,aside:not(:hover)~main,aside:hover~main{width:100%!important;min-width:0;margin-left:0!important}
             .employee-communication-header{display:none!important}
@@ -81,7 +82,12 @@
             html[data-theme="dark"] .directory-card:active{background:#171717!important}
             html[data-theme="dark"] [data-employee-admin-name-row] h4{color:#f8fafc!important}
         }
-    </style>
+        .chat-typing-indicator{display:flex;align-items:center;gap:.55rem;border-top:1px solid #e2e8f0;background:#f8fafc;padding:.5rem 1.25rem;font-size:.72rem;font-weight:600;color:#64748b}
+        .chat-typing-dots{display:inline-flex;align-items:center;gap:.2rem;border-radius:999px;background:#e2e8f0;padding:.45rem .6rem}
+        .chat-typing-dots span{width:.35rem;height:.35rem;border-radius:999px;background:#64748b;animation:chat-typing-bounce 1.15s ease-in-out infinite}
+        .chat-typing-dots span:nth-child(2){animation-delay:.15s}.chat-typing-dots span:nth-child(3){animation-delay:.3s}
+        @keyframes chat-typing-bounce{0%,60%,100%{transform:translateY(0);opacity:.45}30%{transform:translateY(-.25rem);opacity:1}}
+</style>
 </head>
 <body class="bg-[radial-gradient(circle_at_top,_#f0fdf4,_#eff6ff_35%,_#f8fafc_75%)] text-slate-900">
 @php
@@ -297,6 +303,10 @@
                                         </div>
                                     </div>
                                 @endforelse
+                            </div>
+                            <div id="employee-chat-typing-indicator" class="chat-typing-indicator hidden" role="status" aria-live="polite">
+                                <span class="chat-typing-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+                                <span>{{ $selectedParticipant->first_name ?? 'The administrator' }} is typing...</span>
                             </div>
                              <form method="POST" action="{{ route('employee.communication.send') }}" data-chat-message-form class="border-t border-slate-200 bg-white px-4 py-3">
                                 @csrf
@@ -775,5 +785,6 @@ function applyDirectoryFilters(){const query=(searchInput?.value||'').trim().toL
 </script>
 @include('components.chatImageUploadScript')
 @include('components.chatEmojiPickerScript')
+@include('components.chatTypingIndicatorScript', ['typingRoute' => route('employee.communication.typing'), 'typingFormSelector' => '[data-chat-message-form]', 'typingIndicatorId' => 'employee-chat-typing-indicator'])
 </body>
 </html>

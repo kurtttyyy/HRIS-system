@@ -144,6 +144,62 @@
         padding: 0.2rem 0.45rem !important;
         font-size: 0.58rem !important;
       }
+      .interview-empty-state {
+        padding: 1.25rem !important;
+        border-radius: 1rem !important;
+      }
+      .interview-empty-state > div:first-child {
+        width: 2.5rem !important;
+        height: 2.5rem !important;
+      }
+      .interview-empty-state p {
+        margin-top: 0.65rem !important;
+        font-size: 0.8rem !important;
+      }
+      .completed-interviews-panel {
+        padding: 0.85rem !important;
+        border-radius: 1rem !important;
+        background: rgba(255,255,255,0.96) !important;
+      }
+      .completed-interviews-header {
+        margin-bottom: 0.75rem !important;
+        align-items: center !important;
+      }
+      .completed-interviews-header h3 {
+        font-size: 1.05rem !important;
+      }
+      .completed-interviews-header p {
+        font-size: 0.58rem !important;
+      }
+      .completed-interviews-label {
+        display: none !important;
+      }
+      .completed-table-button {
+        padding: 0.55rem 0.75rem !important;
+        border-radius: 0.7rem !important;
+      }
+      #completedInterviewList {
+        max-height: none !important;
+        padding-right: 0 !important;
+      }
+      .completed-card {
+        padding: 0.85rem !important;
+        border-radius: 0.9rem !important;
+        opacity: 1 !important;
+        box-shadow: 0 5px 16px rgba(15,23,42,0.06) !important;
+      }
+      .completed-card-time {
+        padding: 0.45rem 0.65rem !important;
+        border-radius: 0.65rem !important;
+      }
+      .completed-card-time span:first-child {
+        font-size: 0.95rem !important;
+      }
+      .completed-card-avatar {
+        width: 2.5rem !important;
+        height: 2.5rem !important;
+        border-radius: 0.75rem !important;
+      }
     }
   </style>
 </head>
@@ -385,20 +441,20 @@
             </div>
           </section>
 
-          <section class="interview-list-panel interview-reveal rounded-[1.75rem] border border-emerald-100 bg-[linear-gradient(180deg,rgba(236,253,245,0.9),rgba(255,255,255,0.96))] p-5 md:p-6" style="--interview-delay: 320ms;">
-            <div class="mb-5 flex items-center justify-between gap-3">
+          <section class="completed-interviews-panel interview-list-panel interview-reveal rounded-[1.75rem] border border-emerald-100 bg-[linear-gradient(180deg,rgba(236,253,245,0.9),rgba(255,255,255,0.96))] p-5 md:p-6" style="--interview-delay: 320ms;">
+            <div class="completed-interviews-header mb-5 flex items-center justify-between gap-3">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-500">Archive</p>
                 <h3 class="mt-1 text-xl font-black tracking-tight text-slate-900">Completed Interviews</h3>
               </div>
               <div class="flex flex-wrap items-center justify-end gap-2">
-                <span class="inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-semibold text-emerald-700 shadow-sm">
+                <span class="completed-interviews-label inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-semibold text-emerald-700 shadow-sm">
                   Finished sessions
                 </span>
                 <button
                   type="button"
                   onclick="openCompletedInterviewTableModal()"
-                  class="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+                  class="completed-table-button inline-flex items-center gap-2 rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700"
                 >
                   <i class="fa-solid fa-table-list text-[11px]"></i>
                   View table
@@ -420,53 +476,33 @@
                   data-scheduled-time="{{ \Carbon\Carbon::parse($inter->time)->format('H:i:s') }}"
                   data-duration-minutes="{{ (int) filter_var($inter->duration, FILTER_SANITIZE_NUMBER_INT) }}"
                 >
-                  <div class="absolute inset-y-5 left-0 w-1 rounded-r-full bg-[linear-gradient(180deg,#10b981,#34d399)]"></div>
-
-                  <div class="flex flex-col gap-4 pl-3 lg:flex-row lg:items-start lg:justify-between">
-                    <div class="flex gap-4">
-                      <div class="flex min-w-[82px] flex-col items-center justify-center rounded-[1.25rem] bg-emerald-50 px-3 py-4 text-center">
-                        <span class="text-2xl font-black leading-none text-emerald-700">{{ \Carbon\Carbon::parse($inter->time)->format('h:i') }}</span>
-                        <span class="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-500">{{ \Carbon\Carbon::parse($inter->time)->format('A') }}</span>
+                  <div class="flex items-center justify-between gap-3">
+                    <div class="flex min-w-0 items-center gap-2">
+                      <div class="completed-card-time flex shrink-0 items-baseline gap-1 rounded-xl bg-emerald-50 px-3 py-2 text-emerald-700">
+                        <span class="font-black">{{ \Carbon\Carbon::parse($inter->time)->format('h:i') }}</span>
+                        <span class="text-[10px] font-bold uppercase">{{ \Carbon\Carbon::parse($inter->time)->format('A') }}</span>
                       </div>
-
-                      <div class="min-w-0">
-                        <div class="flex flex-wrap items-center gap-2">
-                          <span class="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700">
-                            {{ $inter->interview_type }}
-                          </span>
-                          <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600">
-                            Completed
-                          </span>
-                        </div>
-
-                        <div class="mt-4 flex items-start gap-3">
-                          <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-sm font-bold text-white">
-                            {{ $initials !== '' ? $initials : 'NA' }}
-                          </div>
-                          <div class="min-w-0">
-                            <h4 class="text-lg font-black tracking-tight text-slate-900">{{ $firstName }} {{ $lastName }}</h4>
-                            <p class="text-sm text-slate-500">{{ $positionTitle }}</p>
-                          </div>
-                        </div>
-
-                        <div class="mt-4 flex flex-wrap gap-2">
-                          <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600">
-                            <i class="fa-regular fa-hourglass-half text-slate-400"></i>
-                            {{ $inter->duration }}
-                          </span>
-                          <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600">
-                            <i class="fa-solid fa-user-group text-slate-400"></i>
-                            {{ $inter->interviewers }}
-                          </span>
-                        </div>
-
-                        <p class="mt-3 text-xs font-semibold text-emerald-700">Completed</p>
-                      </div>
+                      <span class="truncate text-xs font-bold uppercase tracking-[0.08em] text-emerald-700">{{ $inter->interview_type }}</span>
                     </div>
+                    <span class="shrink-0 rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-bold text-emerald-700">Completed</span>
+                  </div>
 
-                    <span class="h-fit rounded-full bg-emerald-100 px-4 py-1.5 text-sm font-semibold text-emerald-700">
-                      Completed
-                    </span>
+                  <div class="mt-3 flex min-w-0 items-center gap-3">
+                    <div class="completed-card-avatar flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-sm font-bold text-white">{{ $initials !== '' ? $initials : 'NA' }}</div>
+                    <div class="min-w-0 flex-1">
+                      <h4 class="truncate text-base font-black tracking-tight text-slate-900">{{ $firstName }} {{ $lastName }}</h4>
+                      <p class="truncate text-xs text-slate-500">{{ $positionTitle }}</p>
+                    </div>
+                  </div>
+
+                  <div class="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-600">
+                    <span class="inline-flex min-w-0 items-center gap-2 rounded-lg bg-slate-50 px-2.5 py-2"><i class="fa-regular fa-hourglass-half shrink-0 text-slate-400"></i><span class="truncate">{{ $inter->duration }}</span></span>
+                    <span class="inline-flex min-w-0 items-center gap-2 rounded-lg bg-slate-50 px-2.5 py-2"><i class="fa-solid fa-user-group shrink-0 text-slate-400"></i><span class="truncate">{{ $inter->interviewers }}</span></span>
+                  </div>
+
+                  <div class="mt-3 flex items-center gap-2 border-t border-slate-100 pt-3 text-xs font-medium text-slate-500">
+                    <i class="fa-regular fa-calendar-check text-emerald-600"></i>
+                    {{ $inter->date->format('M j, Y') }}
                   </div>
                 </article>
               @empty

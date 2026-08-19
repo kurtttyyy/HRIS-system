@@ -237,7 +237,16 @@
 
                     <div>
                         <label class="mb-1 block font-medium">Inclusive Dates</label>
-                        <input id="leave-inclusive-dates" name="inclusive_dates" type="text" class="w-full rounded border border-black px-3 py-1 text-base leading-tight" readonly>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="text-xs text-slate-600">Start Date
+                                <input id="leave-start-date" type="date" class="mt-1 w-full rounded border border-black px-2 py-1 text-base leading-tight">
+                            </label>
+                            <label class="text-xs text-slate-600">End Date
+                                <input id="leave-end-date" type="date" class="mt-1 w-full rounded border border-black px-2 py-1 text-base leading-tight">
+                            </label>
+                        </div>
+                        <input id="leave-inclusive-dates" name="inclusive_dates" type="hidden">
+                        <p id="leave-inclusive-dates-preview" class="mt-1 min-h-5 text-xs font-medium text-slate-700"></p>
                     </div>
                 </div>
 
@@ -654,23 +663,46 @@
     function updateInclusiveDatesFromRequestedDays() {
         const requestedDaysInput = document.getElementById('leave-days-requested');
         const inclusiveDatesInput = document.getElementById('leave-inclusive-dates');
-        if (!requestedDaysInput || !inclusiveDatesInput) {
+        const inclusiveDatesPreview = document.getElementById('leave-inclusive-dates-preview');
+        const startDateInput = document.getElementById('leave-start-date');
+        const endDateInput = document.getElementById('leave-end-date');
+        if (!requestedDaysInput || !inclusiveDatesInput || !startDateInput || !endDateInput) {
             return;
         }
 
-        const requestedDays = parseFloat(requestedDaysInput.value || '0');
-        if (!Number.isFinite(requestedDays) || requestedDays <= 0) {
+        if (!startDateInput.value) {
             inclusiveDatesInput.value = '';
+            if (inclusiveDatesPreview) inclusiveDatesPreview.textContent = 'Select the first day of leave.';
             return;
         }
 
-        const wholeDays = Math.max(1, Math.ceil(requestedDays));
-        const today = new Date();
-        const startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        const endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + (wholeDays - 1));
+        const parseLocalDate = (value) => {
+            const [year, month, day] = value.split('-').map(Number);
+            return new Date(year, month - 1, day);
+        };
+        const startDate = parseLocalDate(startDateInput.value);
+        endDateInput.min = startDateInput.value;
+
+        let endDate;
+        if (endDateInput.value) {
+            endDate = parseLocalDate(endDateInput.value);
+            if (endDate < startDate) {
+                endDateInput.value = startDateInput.value;
+                endDate = new Date(startDate);
+            }
+        } else {
+            const requestedDays = parseFloat(requestedDaysInput.value || '0');
+            const wholeDays = Number.isFinite(requestedDays) && requestedDays > 0 ? Math.max(1, Math.ceil(requestedDays)) : 1;
+            endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + (wholeDays - 1));
+            const year = endDate.getFullYear();
+            const month = String(endDate.getMonth() + 1).padStart(2, '0');
+            const day = String(endDate.getDate()).padStart(2, '0');
+            endDateInput.value = `${year}-${month}-${day}`;
+        }
 
         inclusiveDatesInput.value = formatInclusiveDateRange(startDate, endDate);
+        if (inclusiveDatesPreview) inclusiveDatesPreview.textContent = inclusiveDatesInput.value;
     }
 
     document.getElementById('leave-type-vacation')?.addEventListener('change', validateLeaveRequestBalance);
@@ -683,8 +715,22 @@
     document.getElementById('leave-medical-certificate')?.addEventListener('change', updateLeaveMedicalCertificateName);
     document.getElementById('leave-days-requested')?.addEventListener('input', function () {
         validateLeaveRequestBalance();
+        const endDateInput = document.getElementById('leave-end-date');
+        if (endDateInput && endDateInput.dataset.manual !== 'true') endDateInput.value = '';
         updateInclusiveDatesFromRequestedDays();
         updateLeaveSummaryTable();
+    });
+    document.getElementById('leave-start-date')?.addEventListener('change', function () {
+        const endDateInput = document.getElementById('leave-end-date');
+        if (endDateInput) {
+            endDateInput.value = '';
+            delete endDateInput.dataset.manual;
+        }
+        updateInclusiveDatesFromRequestedDays();
+    });
+    document.getElementById('leave-end-date')?.addEventListener('change', function () {
+        this.dataset.manual = 'true';
+        updateInclusiveDatesFromRequestedDays();
     });
     updateInclusiveDatesFromRequestedDays();
     updateLeaveSummaryTable();

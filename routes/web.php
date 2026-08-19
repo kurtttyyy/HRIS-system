@@ -72,6 +72,7 @@ Route::controller(EmployeePageController::class)->group(function () {
     Route::get('employee/leave/{leave}/medical-receipt', 'view_leave_medical_receipt')->name('employee.leave.medicalReceipt');
     Route::get('employee/profile', 'display_profile')->name('employee.employeeProfile');
     Route::get('employee/communication', 'display_communication')->name('employee.employeeCommunication');
+    Route::match(['get', 'post'], 'employee/communication/typing', 'communication_typing')->name('employee.communication.typing');
     Route::get('employee/communication/message/{message}/attachment', 'view_communication_attachment')->name('employee.communication.message.attachment');
     Route::get('employee/communication/attachment/{attachment}', 'view_communication_image')->name('employee.communication.attachment.view');
     Route::get('admin/communication/message/{message}/attachment', 'view_communication_attachment')->name('admin.communication.message.attachment');
@@ -112,6 +113,7 @@ Route::controller(AdministratorPageController::class)->group(function () {
     Route::get('system/notifications', 'display_notifications')->name('admin.adminNotifications');
     Route::get('system/notifications/summary', 'notification_summary')->name('admin.adminNotifications.summary');
     Route::get('system/communication', 'display_communication')->name('admin.adminCommunication');
+    Route::match(['get', 'post'], 'system/communication/typing', 'communication_typing')->name('admin.communication.typing');
     Route::get('system/communication/people', 'display_communication')->name('admin.communicationPeople');
     Route::get('system/communication/notifications', 'display_communication')->name('admin.communicationNotifications');
     Route::get('system/communication/unread-count', 'communication_unread_count')->name('admin.communicationUnreadCount');

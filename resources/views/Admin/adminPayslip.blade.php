@@ -102,6 +102,77 @@
         transform: none;
       }
     }
+    .payslip-folder-visual {
+      position: relative;
+      isolation: isolate;
+    }
+    .payslip-folder-icon {
+      font-size: 2.65rem;
+      color: #0ea5e9;
+      filter: drop-shadow(0 5px 8px rgba(14, 165, 233, 0.2));
+      transition: color 0.25s ease, transform 0.25s ease;
+    }
+    .payslip-folder-file {
+      position: absolute;
+      left: 50%;
+      top: 0.3rem;
+      z-index: -1;
+      color: #16a34a;
+      font-size: 1.15rem;
+      opacity: 0;
+      transform: translate(-50%, -0.9rem) scale(0.75);
+    }
+    .payslip-folder-check {
+      position: absolute;
+      right: -0.15rem;
+      bottom: 0.1rem;
+      display: grid;
+      width: 1.15rem;
+      height: 1.15rem;
+      place-items: center;
+      border: 2px solid white;
+      border-radius: 999px;
+      background: #22c55e;
+      color: white;
+      font-size: 0.55rem;
+      opacity: 0;
+      transform: scale(0.4);
+    }
+    .payslip-upload-zone.has-file .payslip-folder-file {
+      opacity: 1;
+      transform: translate(-50%, -0.45rem) scale(0.9);
+      transition: opacity 0.2s ease, transform 0.3s ease;
+    }
+    .payslip-upload-zone.is-uploading .payslip-folder-file {
+      animation: payslip-file-into-folder 1s cubic-bezier(0.22, 0.9, 0.2, 1) infinite;
+    }
+    .payslip-upload-zone.is-uploading .payslip-folder-icon {
+      animation: payslip-folder-breathe 1s ease-in-out infinite;
+    }
+    .payslip-upload-zone.upload-complete .payslip-folder-icon {
+      color: #10b981;
+      animation: payslip-folder-finish 0.55s cubic-bezier(0.22, 0.9, 0.2, 1) both;
+    }
+    .payslip-upload-zone.upload-complete .payslip-folder-check {
+      animation: payslip-folder-check-in 0.4s cubic-bezier(0.22, 0.9, 0.2, 1) 0.22s both;
+    }
+    @keyframes payslip-file-into-folder {
+      0% { opacity: 0; transform: translate(-50%, -1.1rem) scale(0.72); }
+      25% { opacity: 1; }
+      70%, 100% { opacity: 0; transform: translate(-50%, 0.7rem) scale(0.82); }
+    }
+    @keyframes payslip-folder-breathe {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+    }
+    @keyframes payslip-folder-finish {
+      0% { transform: scale(0.88); }
+      65% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    @keyframes payslip-folder-check-in {
+      to { opacity: 1; transform: scale(1); }
+    }
     @media (max-width: 767px) {
       main {
         margin-left: 0 !important;
@@ -240,15 +311,18 @@
         border-radius: 0.85rem !important;
         text-align: left !important;
       }
-      .payslip-upload-zone > span {
+      .payslip-upload-zone > .payslip-folder-visual {
         grid-column: 1;
         grid-row: 1 / 4;
         width: 2.5rem !important;
         height: 2.5rem !important;
         border-radius: 0.7rem !important;
       }
-      .payslip-upload-zone > span i {
-        font-size: 1rem !important;
+      .payslip-upload-zone .payslip-folder-icon {
+        font-size: 1.8rem !important;
+      }
+      .payslip-upload-zone .payslip-folder-file {
+        font-size: 0.8rem !important;
       }
       .payslip-upload-zone > p {
         grid-column: 2;
@@ -493,9 +567,11 @@
               @csrf
               <label for="payslip_file" class="payslip-upload-zone group relative flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[1.5rem] border-2 border-dashed border-sky-200 bg-[linear-gradient(180deg,rgba(239,246,255,0.9),rgba(255,255,255,0.95))] px-6 py-10 text-center transition hover:border-sky-300 hover:bg-sky-50">
                 <div class="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-sky-300 to-transparent"></div>
-                <span class="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-sky-600 shadow-sm">
-                  <i class="fa-solid fa-file-invoice-dollar text-2xl"></i>
-                </span>
+                <div class="payslip-folder-visual inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm" aria-hidden="true">
+                  <i class="payslip-folder-file fa-solid fa-file-excel"></i>
+                  <i class="payslip-folder-icon fa-solid fa-folder"></i>
+                  <i class="payslip-folder-check fa-solid fa-check"></i>
+                </div>
                 <p class="mt-5 text-base font-semibold text-slate-800">
                   <span class="text-sky-700 underline decoration-sky-300 decoration-2 underline-offset-4 transition group-hover:text-sky-800">Click here to upload a file</span>
                 </p>
@@ -676,6 +752,7 @@
   const main = document.querySelector('main');
   const payslipInput = document.getElementById('payslip_file');
   const payslipName = document.getElementById('selected_payslip_name');
+  const payslipUploadZone = document.querySelector('.payslip-upload-zone');
   const uploadPayslipBtn = document.getElementById('upload_payslip_btn');
   const scanPayslipBtn = document.getElementById('scan_payslip_btn');
   const payslipFileList = document.getElementById('payslip_file_list');
@@ -749,6 +826,8 @@
     payslipInput.addEventListener('change', function () {
       const hasFile = this.files && this.files.length > 0;
       payslipName.textContent = hasFile ? this.files[0].name : 'No file selected';
+      payslipUploadZone?.classList.toggle('has-file', hasFile);
+      payslipUploadZone?.classList.remove('is-uploading', 'upload-complete');
       uploadPayslipBtn.disabled = !hasFile;
     });
 
@@ -760,9 +839,12 @@
       }
 
       const originalButtonHtml = uploadPayslipBtn.innerHTML;
+      const uploadedFileName = payslipInput.files[0].name;
       uploadPayslipBtn.disabled = true;
       uploadPayslipBtn.classList.add('opacity-60', 'cursor-not-allowed');
       uploadPayslipBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
+      payslipUploadZone?.classList.remove('upload-complete');
+      payslipUploadZone?.classList.add('has-file', 'is-uploading');
 
       try {
         const response = await fetch(payslipUploadForm.action, {
@@ -783,12 +865,17 @@
         }
 
         payslipUploadForm.reset();
-        payslipName.textContent = 'No file selected';
+        payslipName.textContent = uploadedFileName;
+        payslipUploadZone?.classList.remove('has-file', 'is-uploading');
+        payslipUploadZone?.classList.add('upload-complete');
         await refreshAdminPayslipContent();
         showPayslipMessage(payload.message || 'Payslip file uploaded successfully.');
       } catch (error) {
+        payslipUploadZone?.classList.remove('is-uploading', 'upload-complete');
+        payslipUploadZone?.classList.add('has-file');
         showPayslipMessage(error.message || 'Unable to upload the payslip file.', 'error');
       } finally {
+        payslipUploadZone?.classList.remove('is-uploading');
         uploadPayslipBtn.disabled = !(payslipInput.files && payslipInput.files.length);
         uploadPayslipBtn.classList.remove('opacity-60', 'cursor-not-allowed');
         uploadPayslipBtn.innerHTML = originalButtonHtml;

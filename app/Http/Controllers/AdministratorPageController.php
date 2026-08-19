@@ -37,6 +37,23 @@ use Illuminate\Support\Str;
 
 class AdministratorPageController extends Controller
 {
+    public function communication_typing(Request $request)
+    {
+        $userId = (int) Auth::id();
+        $conversationId = (int) $request->integer('conversation_id');
+        $conversation = Conversation::query()->forUser($userId)->findOrFail($conversationId);
+        $otherUserId = (int) ($conversation->user_one_id === $userId ? $conversation->user_two_id : $conversation->user_one_id);
+
+        if ($request->isMethod('post')) {
+            $isTyping = $request->boolean('is_typing');
+            $key = "communication_typing:{$conversationId}:{$userId}";
+            $isTyping ? Cache::put($key, now()->addSeconds(5)->timestamp, 5) : Cache::forget($key);
+        }
+
+        $otherExpiresAt = (int) Cache::get("communication_typing:{$conversationId}:{$otherUserId}", 0);
+
+        return response()->json(['typing' => $otherExpiresAt > now()->timestamp]);
+    }
     private ?array $hiddenOfficialHolidayDatesCache = null;
     private ?array $calendarHolidayConfigCache = null;
     private array $holidayDateCheckCache = [];

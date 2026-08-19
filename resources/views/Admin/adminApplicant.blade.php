@@ -54,6 +54,12 @@
       min-height: 0;
       max-height: none;
     }
+    body.applicant-modal-open {
+      overflow: hidden;
+    }
+    body.applicant-modal-open [data-admin-sidebar-toggle] {
+      display: none !important;
+    }
     .applicant-doc-list {
       max-height: 360px;
       overflow-y: auto;
@@ -159,8 +165,11 @@
       }
       .applicant-modal-header h2 {
         margin-top: 0.2rem !important;
-        font-size: 1.35rem !important;
+        font-size: 1.2rem !important;
         line-height: 1.15;
+      }
+      .applicant-modal-title-suffix {
+        display: none;
       }
       .applicant-modal-header p {
         font-size: 0.62rem !important;
@@ -196,9 +205,27 @@
         padding-top: 0 !important;
       }
       .interview-back-actions button {
-        width: 100%;
-        padding-top: 0.7rem !important;
-        padding-bottom: 0.7rem !important;
+        width: auto;
+        border: 0 !important;
+        background: transparent !important;
+        padding: 0.5rem 0 !important;
+        box-shadow: none !important;
+      }
+      .interview-schedule-card {
+        border-radius: 1rem !important;
+      }
+      .interview-schedule-card-body {
+        padding: 0.9rem !important;
+      }
+      .interview-schedule-actions.flex {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .interview-schedule-actions button {
+        min-width: 0;
+        justify-content: center;
+        padding: 0.65rem 0.7rem !important;
+        border-radius: 0.75rem !important;
       }
       #applicantInterviewPanelForm {
         min-width: 0;
@@ -221,15 +248,83 @@
         min-width: 0 !important;
         max-width: 100% !important;
         box-sizing: border-box;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 0.85rem !important;
+        background-color: #fff !important;
+        color: #334155 !important;
         font-size: 16px !important;
       }
       #applicantInterviewPanelForm input[type="date"],
       #applicantInterviewPanelForm input[type="time"] {
-        appearance: auto;
-        -webkit-appearance: auto;
+        appearance: none;
+        -webkit-appearance: none;
+        min-height: 3rem;
+        padding: 0.75rem 0.9rem !important;
+        line-height: 1.25;
+      }
+      #applicantInterviewPanelForm input[type="date"]::-webkit-date-and-time-value,
+      #applicantInterviewPanelForm input[type="time"]::-webkit-date-and-time-value {
+        min-width: 0;
+        text-align: left;
+      }
+      #applicantInterviewPanelForm input[type="date"]::-webkit-calendar-picker-indicator,
+      #applicantInterviewPanelForm input[type="time"]::-webkit-calendar-picker-indicator {
+        margin: 0;
+        opacity: 0.65;
       }
       #saveInterviewButton {
         width: 100%;
+      }
+      .applicant-profile-card {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
+        padding: 0.9rem !important;
+      }
+      .applicant-profile-layout,
+      .applicant-identity-row,
+      .applicant-profile-copy {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+      }
+      .applicant-identity-row {
+        align-items: center !important;
+        gap: 0.75rem !important;
+      }
+      .applicant-profile-avatar {
+        width: 3rem !important;
+        height: 3rem !important;
+        font-size: 0.95rem !important;
+      }
+      .applicant-profile-copy h3 {
+        font-size: 1.25rem !important;
+        line-height: 1.2;
+      }
+      .applicant-profile-copy #email {
+        font-size: 0.78rem !important;
+        line-height: 1.25;
+      }
+      .applicant-profile-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.35rem !important;
+      }
+      .applicant-profile-meta > span {
+        width: 100%;
+        min-width: 0;
+      }
+      .applicant-profile-actions {
+        width: 100% !important;
+        min-width: 0;
+        grid-template-columns: 1fr !important;
+      }
+      .applicant-profile-actions button {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        white-space: normal;
       }
       #admin-applicant-page {
         padding: 0.75rem !important;
@@ -434,7 +529,7 @@
       <div class="flex items-center justify-between gap-4">
         <div>
           <p class="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Applicant Profile</p>
-          <h2 class="mt-1 text-2xl font-black tracking-tight text-slate-900">Candidate Review Desk</h2>
+          <h2 class="mt-1 text-2xl font-black tracking-tight text-slate-900">Candidate Review<span class="applicant-modal-title-suffix"> Desk</span></h2>
         </div>
         <button type="button" onclick="closeApplicantModal()" class="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:text-slate-900">
           <i class="fa-solid fa-xmark"></i>
@@ -445,27 +540,27 @@
     <div class="applicant-modal-body overflow-y-auto bg-slate-50/50 p-5">
       <div id="applicantReviewPanel" class="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.85fr)]">
         <div class="space-y-6">
-          <div class="rounded-[1.35rem] border border-slate-200 bg-white p-5 shadow-sm">
-            <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-              <div class="flex items-start gap-4">
-                <div class="flex h-16 w-16 shrink-0 aspect-square items-center justify-center rounded-full bg-[linear-gradient(135deg,#0ea5e9,#2563eb)] text-xl font-bold text-white" id="applicantInitials">
+          <div class="applicant-profile-card rounded-[1.35rem] border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="applicant-profile-layout flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+              <div class="applicant-identity-row flex items-start gap-4">
+                <div class="applicant-profile-avatar flex h-16 w-16 shrink-0 aspect-square items-center justify-center rounded-full bg-[linear-gradient(135deg,#0ea5e9,#2563eb)] text-xl font-bold text-white" id="applicantInitials">
                   AP
                 </div>
-                <div class="min-w-0 flex-1">
+                <div class="applicant-profile-copy min-w-0 flex-1">
                   <h3 class="text-2xl font-black tracking-tight text-slate-900" id="name"></h3>
                   <p class="mt-1 break-all text-sm text-slate-500" id="email"></p>
                   <div class="mt-3 flex flex-wrap gap-2">
                     <span class="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700" id="title"></span>
                     <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600" id="status"></span>
                   </div>
-                  <div class="mt-4 flex flex-wrap gap-4 text-sm text-slate-500">
+                  <div class="applicant-profile-meta mt-4 flex flex-wrap gap-4 text-sm text-slate-500">
                     <span class="inline-flex items-center gap-2"><i class="fa-regular fa-calendar text-sky-500"></i><span id="one"></span></span>
                     <span class="inline-flex min-w-0 items-start gap-2"><i class="mt-0.5 shrink-0 fa-solid fa-location-dot text-emerald-500"></i><span class="break-words" id="location"></span></span>
                   </div>
                 </div>
               </div>
 
-              <div class="grid w-full gap-3 sm:grid-cols-2 lg:w-[210px] lg:grid-cols-1">
+              <div class="applicant-profile-actions grid w-full gap-3 sm:grid-cols-2 lg:w-[210px] lg:grid-cols-1">
                 <button type="button" onclick="scheduleInterview()" class="inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
                   <i class="fa-regular fa-calendar"></i>
                   Schedule Interview
@@ -564,7 +659,7 @@
 
       <div id="applicantInterviewPanel" class="hidden">
         <div class="grid gap-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-          <div class="interview-setup-summary flex min-h-[520px] flex-col rounded-[1.35rem] border border-sky-200 bg-sky-50/80 p-5">
+          <div class="interview-setup-summary flex flex-col rounded-[1.35rem] border border-sky-200 bg-sky-50/80 p-5">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Interview Setup</p>
               <h3 id="interviewSetupTitle" class="mt-3 text-2xl font-black text-slate-900">Set Initial Interview</h3>
@@ -596,7 +691,7 @@
                 <p id="interviewDecisionHint" class="mt-2 text-xs font-semibold text-slate-500">Finish the required stage before proceeding.</p>
               </div>
             </div>
-            <div class="interview-back-actions mt-auto flex flex-wrap items-center justify-start gap-3 pt-6">
+            <div class="interview-back-actions mt-4 flex flex-wrap items-center justify-start gap-3">
               <button type="button" onclick="showApplicantReviewPanel()" class="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900"><i class="fa-solid fa-arrow-left text-xs"></i> Back to profile</button>
             </div>
           </div>
@@ -1225,12 +1320,16 @@
     const modal = document.getElementById(id);
     modal.classList.remove('hidden');
     modal.classList.add('flex');
+    document.body.classList.add('applicant-modal-open');
   }
 
   function hideFlexModal(id) {
     const modal = document.getElementById(id);
     modal.classList.add('hidden');
     modal.classList.remove('flex');
+    if (!document.querySelector('.fixed.flex[id$="Modal"]')) {
+      document.body.classList.remove('applicant-modal-open');
+    }
   }
 
   function scheduleInterview() {
@@ -1494,6 +1593,7 @@
 
   function focusInterviewForm() {
     const form = document.getElementById('applicantInterviewPanelForm');
+    form?.classList.remove('hidden');
     form?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     form?.querySelector('input[name="date"]')?.focus({ preventScroll: true });
   }
@@ -1968,9 +2068,12 @@
 
     if (!list || interviews.length === 0) {
       list?.classList.add('hidden');
+      document.getElementById('applicantInterviewPanelForm')?.classList.remove('hidden');
       updateInterviewDecisionActions(false);
       return;
     }
+
+    document.getElementById('applicantInterviewPanelForm')?.classList.add('hidden');
 
     list.innerHTML = interviews.map((item, index) => {
       const timeParts = getInterviewTimeParts(item.time);
@@ -1978,20 +2081,18 @@
 
       return `
         <div class="interview-schedule-card overflow-hidden rounded-[1.25rem] border ${isFinished ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200 bg-white'} shadow-sm transition" data-index="${index}" data-interview-id="${item.id || ''}" data-starts-at="${item.starts_at || `${item.date}T${item.time || '00:00'}`}" data-ends-at="${item.ended_at || item.ends_at || item.starts_at || `${item.date}T${item.time || '00:00'}`}" data-type="${item.interview_type || ''}">
-          <div class="flex">
-            <div class="interview-time-strip flex w-20 shrink-0 flex-col items-center justify-center ${isFinished ? 'bg-emerald-100' : 'bg-indigo-50'} px-2 py-5 text-center">
-              <p class="text-[1.35rem] font-black leading-none text-indigo-600">${timeParts.time}</p>
-              <p class="mt-1 text-xs font-bold uppercase text-indigo-500">${timeParts.meridiem}</p>
-            </div>
-            <div class="min-w-0 flex-1 p-4">
-              <div class="flex items-start justify-between gap-3">
+          <div class="interview-schedule-card-body p-4">
+              <div class="flex min-w-0 items-start justify-between gap-3">
                 <div class="min-w-0">
-                  <p class="truncate text-base font-black text-slate-900">${item.interview_type || 'Interview'}</p>
-                  <p class="mt-0.5 text-sm text-slate-500">${currentApplicantModalData?.title || 'Position not specified'}</p>
+                  <p class="text-base font-black text-slate-900">${item.interview_type || 'Interview'}</p>
+                  <p class="mt-0.5 break-words text-sm text-slate-500">${currentApplicantModalData?.title || 'Position not specified'}</p>
                 </div>
-                <span class="interview-state-badge ${isFinished ? '' : 'hidden'} shrink-0 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-emerald-700">Finished</span>
+                <div class="interview-time-strip shrink-0 rounded-xl ${isFinished ? 'bg-emerald-100' : 'bg-indigo-50'} px-3 py-2 text-center">
+                  <p class="text-base font-black leading-none text-indigo-600">${timeParts.time}</p>
+                  <p class="mt-1 text-[10px] font-bold uppercase text-indigo-500">${timeParts.meridiem}</p>
+                </div>
               </div>
-              <div class="mt-4 flex flex-wrap gap-2">
+              <div class="mt-3 flex flex-wrap gap-1.5">
                 <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
                   <i class="fa-regular fa-hourglass-half text-slate-400"></i>
                   ${item.duration || 'N/A'}
@@ -2004,8 +2105,9 @@
                   <i class="fa-regular fa-calendar text-amber-600"></i>
                   ${formatInterviewDateBadge(item.date)}
                 </span>
+                <span class="interview-state-badge ${isFinished ? '' : 'hidden'} rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-emerald-700">Finished</span>
               </div>
-              <p class="interview-countdown mt-3 text-xs font-semibold ${isFinished ? 'text-emerald-700' : 'text-indigo-600'}">Waiting for schedule</p>
+              <p class="interview-countdown mt-3 rounded-xl bg-indigo-50 px-3 py-2 text-xs font-semibold ${isFinished ? 'text-emerald-700' : 'text-indigo-600'}">Waiting for schedule</p>
               <div class="interview-schedule-actions mt-4 ${isFinished ? 'hidden' : 'flex'} flex-wrap gap-2">
                 <button type="button" onclick="focusInterviewForm()" class="interview-reschedule-button inline-flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-indigo-700">
                   <i class="fa-regular fa-pen-to-square"></i>
@@ -2024,7 +2126,6 @@
                   Cancel
                 </button>
               </div>
-            </div>
           </div>
         </div>
       `;

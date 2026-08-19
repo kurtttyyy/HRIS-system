@@ -202,9 +202,11 @@
             }
             #employee-leave-page .employee-leave-month-form {
                 display: grid;
-                grid-template-columns: minmax(0, 1fr) 4.75rem;
+                grid-template-columns: minmax(0, 1fr) 5.25rem;
+                align-items: stretch;
                 width: 100%;
-                gap: 0.4rem;
+                min-width: 0;
+                gap: 0.75rem;
                 margin-top: 0 !important;
             }
             #employee-leave-page .employee-leave-month-form label {
@@ -215,19 +217,30 @@
                 width: 100%;
                 max-width: 100%;
                 min-width: 0;
-                height: 2.65rem;
-                padding: 0.45rem 0.65rem;
-                border-radius: 0.7rem;
-                font-size: 0.7rem;
+                height: 3rem !important;
+                appearance: none;
+                -webkit-appearance: none;
+                padding: 0.65rem 0.75rem !important;
+                border-radius: 0.75rem !important;
+                font-size: 16px !important;
+                line-height: 1.25;
+                text-align: left;
+            }
+            #employee-leave-page .employee-leave-month-form input[type="month"]::-webkit-date-and-time-value {
+                min-width: 0;
+                text-align: left;
             }
             #employee-leave-page .employee-leave-month-form button {
                 box-sizing: border-box;
-                width: 4.75rem;
+                display: inline-flex;
+                width: 5.25rem;
                 min-width: 0;
-                max-width: 4.75rem;
-                height: 2.65rem;
-                padding: 0.45rem 0.75rem;
-                border-radius: 0.7rem;
+                max-width: 5.25rem;
+                height: 3rem !important;
+                align-items: center;
+                justify-content: center;
+                padding: 0.65rem 0.75rem !important;
+                border-radius: 0.75rem !important;
                 font-size: 0;
             }
             #employee-leave-page .employee-leave-month-form button::after {

@@ -181,6 +181,53 @@
         font-size: 0.85rem !important;
         line-height: 1.15;
       }
+      .pending-requests-panel {
+        padding: 0.9rem !important;
+        border-radius: 1rem !important;
+        box-shadow: 0 8px 24px rgba(15,23,42,0.05) !important;
+      }
+      .pending-requests-kicker {
+        display: none !important;
+      }
+      .pending-requests-header h2 {
+        margin-top: 0 !important;
+        font-size: 1.2rem !important;
+      }
+      .pending-requests-header p {
+        margin-top: 0.25rem !important;
+        font-size: 0.68rem !important;
+        line-height: 1.4;
+      }
+      #pending-requests-list {
+        margin-top: 0.85rem !important;
+        max-height: none !important;
+        padding-right: 0 !important;
+      }
+      .pending-request-card {
+        padding: 0.85rem !important;
+        border: 1px solid #e2e8f0 !important;
+        border-left: 3px solid #f59e0b !important;
+        border-radius: 0.9rem !important;
+        background: #fff !important;
+        box-shadow: 0 5px 16px rgba(15,23,42,0.05) !important;
+      }
+      .pending-request-avatar {
+        width: 2.5rem !important;
+        height: 2.5rem !important;
+        border-radius: 0.75rem !important;
+      }
+      .pending-request-name {
+        font-size: 0.95rem !important;
+        line-height: 1.25;
+      }
+      .pending-request-dates {
+        grid-template-columns: repeat(2,minmax(0,1fr));
+      }
+      .pending-request-actions button {
+        border-radius: 0.75rem !important;
+        padding: 0.65rem 0.75rem !important;
+        font-size: 0.78rem !important;
+      }
     }
   </style>
 </head>
@@ -305,10 +352,10 @@
       </section>
 
       <section class="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <div class="resignation-reveal rounded-[2rem] border border-white/80 bg-white/92 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur xl:col-span-1" style="--resignation-delay: 250ms;">
-          <div class="flex items-center justify-between gap-3">
+        <div class="pending-requests-panel resignation-reveal rounded-[2rem] border border-white/80 bg-white/92 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur xl:col-span-1" style="--resignation-delay: 250ms;">
+          <div class="pending-requests-header flex items-center justify-between gap-3">
             <div>
-              <div class="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-700">
+              <div class="pending-requests-kicker inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-700">
                 Attention Queue
               </div>
               <h2 class="mt-3 text-2xl font-black tracking-tight text-slate-900">Pending Requests</h2>
@@ -328,50 +375,34 @@
                   ->map(fn ($part) => strtoupper(substr($part, 0, 1)))
                   ->implode('');
               @endphp
-              <article class="resignation-card-motion rounded-[1.75rem] border border-amber-100 bg-[linear-gradient(180deg,rgba(255,251,235,0.95),rgba(255,255,255,0.98))] p-5 shadow-[0_12px_30px_rgba(245,158,11,0.08)]" data-pending-item="{{ $pending->id }}">
-                <div class="flex items-start gap-4">
-                  <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-sm font-bold text-white">
-                    {{ $initials !== '' ? $initials : 'NA' }}
-                  </div>
-                  <div class="min-w-0 flex-1">
-                    <div class="flex flex-wrap items-center gap-2">
-                      <h3 class="text-lg font-black tracking-tight text-slate-900">{{ $pending->employee_name }}</h3>
-                      <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-700">
-                        Pending
-                      </span>
-                    </div>
-
-                    <div class="mt-2 flex flex-wrap gap-2">
-                      <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-600">
-                        <i class="fa-regular fa-id-badge text-slate-400"></i>
-                        {{ $pending->employee_id ?: '-' }}
-                      </span>
-                      <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-600">
-                        <i class="fa-solid fa-building text-slate-400"></i>
-                        {{ $pending->department ?: 'N/A' }}
-                      </span>
-                    </div>
-
-                    <div class="mt-3 rounded-2xl bg-white/90 px-4 py-3 text-sm text-slate-600">
-                      <div class="flex flex-wrap gap-x-4 gap-y-2">
-                        <span><span class="font-semibold text-slate-700">Submitted:</span> {{ optional($pending->submitted_at)->format('M d, Y') ?? '-' }}</span>
-                        <span><span class="font-semibold text-slate-700">Effective:</span> {{ optional($pending->effective_date)->format('M d, Y') ?? '-' }}</span>
+              <article class="pending-request-card resignation-card-motion rounded-[1.75rem] border border-amber-100 bg-[linear-gradient(180deg,rgba(255,251,235,0.95),rgba(255,255,255,0.98))] p-5 shadow-[0_12px_30px_rgba(245,158,11,0.08)]" data-pending-item="{{ $pending->id }}">
+                    <div class="flex min-w-0 items-center gap-3">
+                      <div class="pending-request-avatar flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-sm font-bold text-white">{{ $initials !== '' ? $initials : 'NA' }}</div>
+                      <div class="min-w-0 flex-1">
+                        <h3 class="pending-request-name truncate text-lg font-black tracking-tight text-slate-900">{{ $pending->employee_name }}</h3>
+                        <p class="mt-0.5 truncate text-xs text-slate-500">{{ $pending->employee_id ?: '-' }} &middot; {{ $pending->department ?: 'N/A' }}</p>
                       </div>
+                      <span class="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-amber-700">Pending</span>
                     </div>
 
-                    <div class="mt-3 rounded-2xl bg-white/90 px-4 py-3 text-sm text-slate-600">
-                      <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">Uploaded File</p>
+                    <div class="pending-request-dates mt-3 grid gap-2 text-xs">
+                      <div class="rounded-lg bg-slate-50 px-3 py-2"><p class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Submitted</p><p class="mt-1 font-semibold text-slate-700">{{ optional($pending->submitted_at)->format('M d, Y') ?? '-' }}</p></div>
+                      <div class="rounded-lg bg-slate-50 px-3 py-2"><p class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Effective</p><p class="mt-1 font-semibold text-slate-700">{{ optional($pending->effective_date)->format('M d, Y') ?? '-' }}</p></div>
+                    </div>
+
+                    <div class="mt-3 border-t border-slate-100 pt-3 text-xs text-slate-600">
                       @if(!empty($pending->attachment_path))
-                        <a href="{{ route('admin.resignationAttachment.preview', $pending->id) }}" target="_blank" rel="noopener" class="mt-2 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100">
-                          <i class="fa-solid fa-file-lines"></i>
-                          {{ $pending->attachment_name ?: 'Open resignation file' }}
+                        <a href="{{ route('admin.resignationAttachment.preview', $pending->id) }}" target="_blank" rel="noopener" class="flex min-w-0 items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 font-semibold text-emerald-700 transition hover:bg-emerald-100">
+                          <i class="fa-solid fa-file-lines shrink-0"></i>
+                          <span class="truncate">{{ $pending->attachment_name ?: 'Open resignation file' }}</span>
+                          <i class="fa-solid fa-arrow-up-right-from-square ml-auto shrink-0 text-[10px]"></i>
                         </a>
                       @else
-                        <p class="mt-2 text-sm leading-6">{{ $pending->reason ?: 'No file uploaded.' }}</p>
+                        <p class="line-clamp-2 leading-5">{{ $pending->reason ?: 'No file uploaded.' }}</p>
                       @endif
                     </div>
 
-                    <div class="mt-4 grid grid-cols-2 gap-3">
+                    <div class="pending-request-actions mt-3 grid grid-cols-2 gap-2">
                       <form method="POST" action="{{ route('admin.updateResignationStatus', $pending->id) }}" class="js-pending-action-form">
                         @csrf
                         <input type="hidden" name="status" value="Approved">
@@ -391,8 +422,6 @@
                         </button>
                       </form>
                     </div>
-                  </div>
-                </div>
               </article>
             @empty
               <div id="pending-empty-state" class="rounded-[1.5rem] border border-dashed border-slate-300 bg-white/70 p-8 text-center text-sm text-slate-500">

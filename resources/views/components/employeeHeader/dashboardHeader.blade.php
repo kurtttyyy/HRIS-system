@@ -114,14 +114,14 @@
         .employee-dashboard-header {
             position: relative !important;
             top: auto !important;
-            padding: 0.75rem !important;
+            padding: 0.5rem 0.75rem !important;
             backdrop-filter: none;
         }
         .employee-dashboard-header__card,
         .employee-dashboard-header.is-scrolled .employee-dashboard-header__card {
-            min-height: 7.25rem;
-            padding: 0.875rem 0.875rem 0.875rem 4rem !important;
-            border-radius: 1rem !important;
+            min-height: 4.5rem;
+            padding: 0.75rem 0.75rem 0.75rem 4rem !important;
+            border-radius: 0.9rem !important;
             background: rgba(255, 255, 255, 0.96) !important;
             box-shadow: 0 6px 20px rgba(15, 23, 42, 0.07) !important;
             transform: none !important;
@@ -130,16 +130,18 @@
             gap: 0.45rem;
         }
         .employee-dashboard-header__badge {
-            padding: 0.2rem 0.5rem;
-            font-size: 0.52rem;
-            letter-spacing: 0.14em;
+            display: none !important;
         }
         .employee-dashboard-header__title,
         .employee-dashboard-header.is-scrolled .employee-dashboard-header__title {
-            margin-top: 0.4rem;
-            padding-right: 4.5rem;
-            font-size: 1.1rem !important;
-            line-height: 1.35rem;
+            margin-top: 0;
+            max-width: calc(100vw - 10rem);
+            overflow: hidden;
+            padding-right: 0;
+            font-size: 0.95rem !important;
+            line-height: 1.2rem;
+            text-overflow: ellipsis;
+            white-space: nowrap;
             transform: none !important;
         }
         .employee-dashboard-header__subtitle {
@@ -149,14 +151,14 @@
             position: static;
         }
         .employee-dashboard-header__chips {
-            margin-top: 0.25rem;
+            margin-top: 0.3rem;
             gap: 0.35rem;
             font-size: 0.52rem;
             letter-spacing: 0.1em;
             transform: none !important;
         }
         .employee-dashboard-header__chips span {
-            padding: 0.3rem 0.5rem;
+            padding: 0.2rem 0.45rem;
         }
         .employee-dashboard-header__chips span:first-child {
             display: none;
@@ -164,7 +166,9 @@
         .employee-dashboard-header__card > div:last-child > div:last-child > div:last-child {
             position: absolute;
             right: 0.75rem;
-            bottom: 0.75rem;
+            top: 50%;
+            bottom: auto;
+            transform: translateY(-50%);
             gap: 0.35rem;
         }
         .employee-dashboard-header__card a[aria-label="Open notifications"] {
@@ -176,10 +180,21 @@
             font-size: 0.8rem;
         }
         .employee-dashboard-header__card .group > button {
-            padding: 0.35rem;
+            display: flex;
+            width: 2.25rem;
+            height: 2.25rem;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.7rem;
+            background: #fff;
+            padding: 0;
         }
         .employee-dashboard-header__card .group > button i {
-            font-size: 1.25rem;
+            font-size: 0.85rem;
+        }
+        .employee-hand-wave {
+            display: none !important;
         }
         .employee-header-orb {
             display: none;
