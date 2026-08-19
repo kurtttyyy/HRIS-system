@@ -301,10 +301,112 @@
             .tree-shell-header h1 { font-size: 1.65rem !important; line-height: 1.15 !important; }
             .tree-shell-header p { font-size: 0.82rem !important; line-height: 1.5; }
             .tree-root { margin-top: 2rem !important; }
-            .tree-head-card { padding: 1.25rem !important; border-radius: 1.25rem !important; }
-            .tree-manager-grid { margin-top: 1rem !important; gap: 1rem; }
-            .tree-card { border-width: 1px !important; border-radius: 1rem !important; }
-            .tree-card-popover { border-radius: 0.9rem; box-shadow: 0 12px 30px rgba(15,23,42,.1); }
+            .tree-level-label { padding: .32rem .65rem; font-size: .58rem; letter-spacing: .1em; }
+            .tree-head-card {
+                display: grid;
+                grid-template-columns: 3.25rem minmax(0, 1fr);
+                align-items: center;
+                gap: .25rem .85rem;
+                padding: 1rem !important;
+                border-radius: 1.15rem !important;
+                text-align: left !important;
+                box-shadow: 0 14px 34px rgba(6,95,70,.18) !important;
+            }
+            .tree-head-card > :first-child {
+                grid-column: 1;
+                grid-row: 1 / 5;
+                width: 3.25rem !important;
+                height: 3.25rem !important;
+                margin: 0 !important;
+                font-size: .9rem !important;
+            }
+            .tree-head-card h2,
+            .tree-head-card p,
+            .tree-head-card .tree-role-badge {
+                grid-column: 2;
+                margin-top: 0 !important;
+            }
+            .tree-head-card h2 { font-size: .92rem !important; }
+            .tree-head-card p { font-size: .68rem !important; }
+            .tree-head-card .tree-role-badge { justify-self: start; font-size: .52rem; }
+            .tree-root > .tree-line-v { height: 1.4rem !important; }
+            .tree-manager-grid {
+                position: relative;
+                margin-top: .8rem !important;
+                margin-left: .65rem;
+                width: calc(100% - .65rem);
+                gap: .75rem;
+                border-left: 2px solid #6ee7b7;
+                padding-left: 1rem;
+            }
+            .tree-manager-branch {
+                padding-left: 0;
+                border-left: 0;
+            }
+            .tree-manager-branch::before {
+                left: -1rem;
+                top: 1.7rem;
+                width: 1rem;
+            }
+            .tree-employee-button {
+                display: grid;
+                grid-template-columns: 2.75rem minmax(0, 1fr) auto;
+                align-items: center;
+                gap: .18rem .75rem;
+                padding: .85rem !important;
+                border-width: 1px !important;
+                border-radius: .95rem !important;
+                text-align: left !important;
+                box-shadow: 0 8px 22px rgba(15,118,110,.08) !important;
+            }
+            .tree-employee-button > :first-child {
+                grid-column: 1;
+                grid-row: 1 / 4;
+                width: 2.75rem !important;
+                height: 2.75rem !important;
+                margin: 0 !important;
+                font-size: .78rem !important;
+            }
+            .tree-employee-button h3,
+            .tree-employee-button h4 {
+                grid-column: 2 / 4;
+                margin-top: 0 !important;
+                font-size: .82rem !important;
+                line-height: 1.25 !important;
+            }
+            .tree-employee-button .tree-role-badge {
+                grid-column: 3;
+                grid-row: 2 / 4;
+                align-self: center;
+                margin-top: 0 !important;
+                padding: .22rem .42rem;
+                font-size: .48rem;
+                white-space: nowrap;
+            }
+            .tree-employee-button p {
+                grid-column: 2;
+                margin-top: 0 !important;
+                font-size: .64rem !important;
+                line-height: 1.25;
+            }
+            .tree-staff-grid {
+                margin-left: .65rem;
+                width: calc(100% - .65rem);
+                gap: .6rem;
+                padding-left: .8rem;
+            }
+            .tree-staff-item::before { left: -.8rem; width: .8rem; top: 1.65rem; }
+            .tree-staff-item .tree-employee-button { background: rgba(255,255,255,.8); }
+            .tree-card-popover {
+                margin-top: .45rem;
+                padding: .75rem;
+                border-radius: .8rem;
+                box-shadow: 0 10px 24px rgba(15,23,42,.08);
+            }
+            .tree-card-popover > div { display: grid; grid-template-columns: 5.5rem minmax(0,1fr); gap: .5rem; }
+            .tree-card-popover > div + div { margin-top: .5rem !important; }
+            .tree-card-popover__label,
+            .tree-card-popover__value { margin-top: 0; font-size: .62rem; }
         }
     </style>
 </head>
@@ -331,7 +433,7 @@
 
                 @if ($headNode)
                     <div class="tree-root mt-16 flex flex-col items-center">
-                        <div class="tree-level-label mb-3"><i class="fa fa-star"></i> Level 1 - Department Head</div>
+                        <div class="tree-level-label mb-3"><i class="fa fa-star"></i><span class="hidden sm:inline">Level 1 - Department Head</span><span class="sm:hidden">Level 1 - Head</span></div>
                         <article class="tree-head-card rounded-[1.1rem] bg-gradient-to-br from-emerald-900 via-emerald-800 to-green-600 px-4 py-5 text-center text-white shadow-[0_22px_60px_rgba(34,139,34,0.22)]">
                             @if (!empty($headNode['photo_url']))
                                 <div class="tree-avatar mx-auto h-[3.85rem] w-[3.85rem] rounded-full ring-8 ring-white/8">
@@ -356,7 +458,7 @@
 
                 @if ($managerNodes->isNotEmpty())
                     <div class="mt-8 text-center lg:mt-0">
-                        <div class="tree-level-label"><i class="fa fa-sitemap"></i> Level 2 - Managers &amp; Team Leads</div>
+                        <div class="tree-level-label"><i class="fa fa-sitemap"></i><span class="hidden sm:inline">Level 2 - Managers &amp; Team Leads</span><span class="sm:hidden">Level 2 - Team Leads</span></div>
                     </div>
                     <div class="mx-auto hidden w-fit flex-col items-center lg:flex">
                         <div class="tree-line-v h-5"></div>
@@ -418,6 +520,7 @@
 
                                 @if ($managerNode['employees']->isNotEmpty())
                                     <div class="tree-line-v desktop-line h-7"></div>
+                                    <div class="tree-level-label ml-4 mt-3 self-start lg:hidden"><i class="fa fa-users"></i> Level 3 - Team Members</div>
                                     <div class="hidden lg:flex lg:flex-col lg:items-center">
                                         <div class="tree-line-h" style="width: calc({{ max($managerNode['employees']->count() - 1, 0) }} * (13rem + 1.25rem));"></div>
                                         <div class="tree-staff-grid {{ $staffGridClass }} mt-0">
