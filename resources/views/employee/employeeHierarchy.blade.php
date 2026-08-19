@@ -35,13 +35,13 @@
         }
 
         .tree-head-card {
-            width: 11.25rem;
-            min-height: 10.2rem;
+            width: 20rem;
+            min-height: 11rem;
         }
 
         .tree-card {
-            width: 11.25rem;
-            min-height: 10.4rem;
+            width: 15rem;
+            min-height: 11rem;
         }
 
         .tree-line-v {
@@ -57,13 +57,39 @@
         .tree-manager-grid {
             display: grid;
             justify-content: center;
-            gap: 2rem 4.5rem;
+            gap: 2rem 3rem;
         }
 
         .tree-staff-grid {
             display: grid;
             justify-content: center;
             gap: 1.25rem;
+        }
+
+        .tree-level-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.88);
+            padding: 0.38rem 0.75rem;
+            color: #047857;
+            font-size: 0.64rem;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            box-shadow: 0 8px 24px rgba(15, 118, 110, 0.08);
+        }
+
+        .tree-role-badge {
+            display: inline-flex;
+            border-radius: 999px;
+            padding: 0.25rem 0.6rem;
+            font-size: 0.6rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
         }
 
         .tree-avatar {
@@ -78,6 +104,10 @@
 
         .tree-employee-card {
             position: relative;
+        }
+
+        .tree-staff-item .tree-card {
+            width: 13rem;
         }
 
         .tree-employee-button {
@@ -153,23 +183,23 @@
 
         @media (min-width: 1024px) {
             .tree-manager-grid.cols-1 {
-                grid-template-columns: repeat(1, 11.25rem);
+                grid-template-columns: repeat(1, 15rem);
             }
 
             .tree-manager-grid.cols-2 {
-                grid-template-columns: repeat(2, 11.25rem);
+                grid-template-columns: repeat(2, 15rem);
             }
 
             .tree-manager-grid.cols-3 {
-                grid-template-columns: repeat(3, 11.25rem);
+                grid-template-columns: repeat(3, 15rem);
             }
 
             .tree-staff-grid.cols-1 {
-                grid-template-columns: repeat(1, 11.25rem);
+                grid-template-columns: repeat(1, 13rem);
             }
 
             .tree-staff-grid.cols-2 {
-                grid-template-columns: repeat(2, 11.25rem);
+                grid-template-columns: repeat(2, 13rem);
             }
         }
 
@@ -183,24 +213,98 @@
             .tree-manager-grid,
             .tree-staff-grid {
                 grid-template-columns: 1fr;
-                justify-items: center;
+                justify-items: stretch;
+                width: 100%;
             }
 
             .tree-head-card,
             .tree-card {
-                width: min(100%, 18rem);
+                width: 100%;
+                min-height: 0;
+            }
+
+            .tree-employee-card,
+            .tree-staff-item .tree-card {
+                width: 100%;
             }
 
             .tree-card-popover {
+                display: none;
                 position: static;
-                width: min(100%, 18rem);
+                width: 100%;
                 margin-top: 0.85rem;
                 transform: none;
+            }
+
+            .tree-employee-card.is-open .tree-card-popover {
+                display: block;
+                opacity: 1;
+                pointer-events: auto;
             }
 
             .tree-card-popover::before {
                 display: none;
             }
+
+            .tree-manager-branch {
+                position: relative;
+                padding-left: 1.15rem;
+                border-left: 2px solid #6ee7b7;
+            }
+
+            .tree-manager-branch::before,
+            .tree-staff-item::before {
+                content: "";
+                position: absolute;
+                left: -1.15rem;
+                top: 2rem;
+                width: 1.15rem;
+                height: 2px;
+                background: #6ee7b7;
+            }
+
+            .tree-staff-grid {
+                position: relative;
+                margin-top: 1rem !important;
+                margin-left: 1rem;
+                width: calc(100% - 1rem);
+                gap: 0.75rem;
+                border-left: 2px solid #a7f3d0;
+                padding-left: 1rem;
+            }
+
+            .tree-staff-item {
+                position: relative;
+            }
+
+            .tree-staff-item::before {
+                left: -1rem;
+                width: 1rem;
+                background: #a7f3d0;
+            }
+
+            .tree-employee-button {
+                padding: 1rem !important;
+            }
+
+            .tree-employee-button:hover,
+            .tree-employee-button:focus-visible,
+            .tree-employee-card.is-open .tree-employee-button {
+                transform: none;
+            }
+        }
+
+        @media (max-width: 640px) {
+            main { margin-left: 0 !important; }
+            .tree-page-content { padding: 5.25rem 0.9rem 2rem !important; }
+            .tree-shell-header { text-align: left !important; padding: 0 0.25rem; }
+            .tree-shell-header h1 { font-size: 1.65rem !important; line-height: 1.15 !important; }
+            .tree-shell-header p { font-size: 0.82rem !important; line-height: 1.5; }
+            .tree-root { margin-top: 2rem !important; }
+            .tree-head-card { padding: 1.25rem !important; border-radius: 1.25rem !important; }
+            .tree-manager-grid { margin-top: 1rem !important; gap: 1rem; }
+            .tree-card { border-width: 1px !important; border-radius: 1rem !important; }
+            .tree-card-popover { border-radius: 0.9rem; box-shadow: 0 12px 30px rgba(15,23,42,.1); }
         }
     </style>
 </head>
@@ -209,14 +313,14 @@
     @include('components.employeeSideBar')
 
     <main class="flex-1 ml-16 transition-all duration-300">
-        <div class="px-4 pb-10 pt-20 md:px-8">
+        <div class="tree-page-content px-4 pb-10 pt-20 md:px-8">
             @php
                 $managerCountValue = max($managerNodes->count(), 1);
                 $managerGridClass = 'cols-'.min($managerCountValue, 3);
             @endphp
 
             <section class="tree-shell">
-                <div class="text-center">
+                <div class="tree-shell-header text-center">
                     <h1 class="text-3xl font-black tracking-tight text-emerald-900 md:text-5xl">
                         {{ $departmentName }} Employee Hierarchy
                     </h1>
@@ -226,7 +330,8 @@
                 </div>
 
                 @if ($headNode)
-                    <div class="mt-16 flex flex-col items-center">
+                    <div class="tree-root mt-16 flex flex-col items-center">
+                        <div class="tree-level-label mb-3"><i class="fa fa-star"></i> Level 1 - Department Head</div>
                         <article class="tree-head-card rounded-[1.1rem] bg-gradient-to-br from-emerald-900 via-emerald-800 to-green-600 px-4 py-5 text-center text-white shadow-[0_22px_60px_rgba(34,139,34,0.22)]">
                             @if (!empty($headNode['photo_url']))
                                 <div class="tree-avatar mx-auto h-[3.85rem] w-[3.85rem] rounded-full ring-8 ring-white/8">
@@ -238,6 +343,7 @@
                                 </div>
                             @endif
                             <h2 class="mt-4 text-[0.95rem] font-black leading-snug">{{ $headNode['name'] }}</h2>
+                            <span class="tree-role-badge mt-2 bg-white/15 text-emerald-50">Department Leader</span>
                             <p class="mt-1 text-[0.72rem] text-emerald-50">{{ $headNode['title'] }}</p>
                             <p class="mt-1.5 text-[0.72rem] font-semibold text-white">{{ $headNode['team'] }}</p>
                         </article>
@@ -249,8 +355,12 @@
                 @endif
 
                 @if ($managerNodes->isNotEmpty())
+                    <div class="mt-8 text-center lg:mt-0">
+                        <div class="tree-level-label"><i class="fa fa-sitemap"></i> Level 2 - Managers &amp; Team Leads</div>
+                    </div>
                     <div class="mx-auto hidden w-fit flex-col items-center lg:flex">
-                        <div class="tree-line-h" style="width: calc({{ max($managerNodes->count() - 1, 0) }} * (11.25rem + 4.5rem));"></div>
+                        <div class="tree-line-v h-5"></div>
+                        <div class="tree-line-h" style="width: calc({{ max($managerNodes->count() - 1, 0) }} * (15rem + 3rem));"></div>
                         <div class="tree-manager-grid {{ $managerGridClass }}" style="margin-top: 0;">
                             @foreach ($managerNodes as $managerNode)
                                 <div class="flex flex-col items-center">
@@ -267,7 +377,7 @@
                                 $staffGridClass = 'cols-'.min($staffCountValue, 2);
                             @endphp
 
-                            <div class="flex flex-col items-center">
+                            <div class="tree-manager-branch flex flex-col items-center">
                                 <div class="tree-employee-card" data-tree-employee-card>
                                     <article
                                         tabindex="0"
@@ -285,6 +395,7 @@
                                             </div>
                                         @endif
                                         <h3 class="mt-4 text-[0.92rem] font-black leading-snug text-slate-900">{{ $managerNode['name'] }}</h3>
+                                        <span class="tree-role-badge mt-2 bg-sky-50 text-sky-700">Team Lead</span>
                                         <p class="mt-1 text-[0.72rem] text-slate-700">{{ $managerNode['title'] }}</p>
                                         <p class="mt-1.5 text-[0.72rem] font-semibold text-emerald-700">{{ $managerNode['team'] }}</p>
                                     </article>
@@ -308,7 +419,7 @@
                                 @if ($managerNode['employees']->isNotEmpty())
                                     <div class="tree-line-v desktop-line h-7"></div>
                                     <div class="hidden lg:flex lg:flex-col lg:items-center">
-                                        <div class="tree-line-h" style="width: calc({{ max($managerNode['employees']->count() - 1, 0) }} * (11.25rem + 1.25rem));"></div>
+                                        <div class="tree-line-h" style="width: calc({{ max($managerNode['employees']->count() - 1, 0) }} * (13rem + 1.25rem));"></div>
                                         <div class="tree-staff-grid {{ $staffGridClass }} mt-0">
                                             @foreach ($managerNode['employees'] as $employeeNode)
                                                 <div class="flex flex-col items-center">
@@ -320,7 +431,7 @@
 
                                     <div class="tree-staff-grid {{ $staffGridClass }} mt-0">
                                         @foreach ($managerNode['employees'] as $employeeNode)
-                                            <div class="tree-employee-card" data-tree-employee-card>
+                                            <div class="tree-employee-card tree-staff-item" data-tree-employee-card>
                                                 <article
                                                     tabindex="0"
                                                     role="button"
@@ -337,6 +448,7 @@
                                                         </div>
                                                     @endif
                                                     <h4 class="mt-4 text-[0.92rem] font-black leading-snug text-slate-900">{{ $employeeNode['name'] }}</h4>
+                                                    <span class="tree-role-badge mt-2 bg-emerald-50 text-emerald-700">Team Member</span>
                                                     <p class="mt-1 text-[0.72rem] text-slate-700">{{ $employeeNode['title'] }}</p>
                                                     <p class="mt-1.5 text-[0.72rem] font-semibold text-emerald-700">{{ $employeeNode['team'] }}</p>
                                                 </article>

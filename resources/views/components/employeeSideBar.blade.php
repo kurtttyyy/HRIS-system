@@ -481,6 +481,17 @@
         pointer-events: auto;
     }
 
+    [data-employee-sidebar-toggle] {
+        transition: opacity 160ms ease, transform 160ms ease, visibility 160ms ease;
+    }
+
+    [data-employee-sidebar-toggle].is-hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: scale(0.82);
+    }
+
     @media (max-width: 1024px) {
         .employee-sidebar {
             width: 16rem !important;
@@ -737,7 +748,9 @@
 
             sidebar.classList.remove('is-open');
             sidebarOverlay.classList.remove('is-visible');
+            sidebarToggle.classList.remove('is-hidden');
             sidebarToggle.setAttribute('aria-expanded', 'false');
+            sidebarToggle.setAttribute('aria-label', 'Open employee menu');
         };
 
         const openSidebar = () => {
@@ -747,7 +760,9 @@
 
             sidebar.classList.add('is-open');
             sidebarOverlay.classList.add('is-visible');
+            sidebarToggle.classList.add('is-hidden');
             sidebarToggle.setAttribute('aria-expanded', 'true');
+            sidebarToggle.setAttribute('aria-label', 'Close employee menu');
         };
 
         if (sidebarToggle && sidebar && sidebarOverlay) {
@@ -765,6 +780,13 @@
             });
 
             sidebarOverlay.addEventListener('click', closeSidebar);
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && sidebar.classList.contains('is-open')) {
+                    closeSidebar();
+                    sidebarToggle.focus({ preventScroll: true });
+                }
+            });
 
             window.addEventListener('resize', () => {
                 if (!isCompactViewport()) {
