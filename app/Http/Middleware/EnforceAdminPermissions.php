@@ -41,7 +41,7 @@ class EnforceAdminPermissions
             Str::is(['admin.adminHome', 'admin.adminNotifications', 'admin.adminNotifications.*'], $routeName) => 'dashboard',
             Str::is(['admin.adminEmployee*', 'admin.employee*', 'admin.PersonalDetail.*', 'admin.addDocument', 'admin.saveRequiredDocuments', 'admin.updateEmployee', 'admin.updateBio', 'admin.updateGeneralProfile', 'admin.markEmployeePermanent', 'admin.destroyEmployee'], $routeName) => 'employees',
             Str::is(['admin.adminLeaveManagement', 'admin.leaveManagement.*', 'admin.updateLeaveRequestStatus'], $routeName) => 'leave',
-            Str::is(['admin.adminPayslip*', 'admin.uploadPayslipFile', 'admin.scanPayslipFile'], $routeName) => 'payslip',
+            Str::is(['admin.adminPayslip*', 'admin.uploadPayslipFile', 'admin.scanPayslipFile', 'admin.deletePayslipFile'], $routeName) => 'payslip',
             Str::is(['admin.adminCommunication', 'admin.communication*'], $routeName) => 'communication',
             Str::is(['admin.adminReports'], $routeName) => 'reports',
             Str::is(['admin.activityLogs*'], $routeName) => 'logs',

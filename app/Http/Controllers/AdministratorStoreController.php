@@ -1345,6 +1345,32 @@ class AdministratorStoreController extends Controller
         }
     }
 
+    public function delete_payslip_file($id, Request $request)
+    {
+        $payslipFile = PayslipUpload::findOrFail($id);
+        $filePath = (string) $payslipFile->file_path;
+
+        DB::transaction(function () use ($payslipFile) {
+            PayslipRecord::query()
+                ->where('payslip_upload_id', (int) $payslipFile->id)
+                ->delete();
+            $payslipFile->delete();
+        });
+
+        if ($filePath !== '' && Storage::disk('public')->exists($filePath)) {
+            Storage::disk('public')->delete($filePath);
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Payslip file removed successfully.',
+            ]);
+        }
+
+        return back()->with('success', 'Payslip file removed successfully.');
+    }
+
     private function extractRowsFromExcel(
         string $absolutePath,
         string $extension,

@@ -194,6 +194,7 @@ Route::controller(AdministratorStoreController::class)->group(function () {
     Route::post('system/calendar/hidden-official-holidays/sync', 'sync_hidden_official_holidays')->name('admin.syncHiddenOfficialHolidays');
     Route::post('system/logs/{activityLog}/note', 'update_activity_log_note')->name('admin.activityLogs.note');
     Route::post('admin/payslip/update-status/{id}', 'scan_payslip_file')->name('admin.scanPayslipFile');
+    Route::post('system/payslip/delete/{id}', 'delete_payslip_file')->name('admin.deletePayslipFile');
     Route::post('system/loads/delete/{id}', 'delete_loads_file')->name('admin.deleteLoadsFile');
     Route::post('system/loads/update-status/{id}', 'scan_loads_file')->name('admin.scanLoadsFile');
 
