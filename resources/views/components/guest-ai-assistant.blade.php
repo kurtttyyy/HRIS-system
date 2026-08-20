@@ -285,6 +285,11 @@
     .nc-bubble.bot { background: #fff; color: #0f172a; border: 1px solid #dbe2ea; }
     .nc-chatbot-chips { display: flex; flex-wrap: wrap; gap: 0.45rem; padding: 0.65rem 0.85rem 0.4rem; background: #f1f5f9; border-top: 1px solid #e2e8f0; }
     .nc-chatbot-chip { border: 1px solid #cbd5e1; background: #fff; border-radius: 999px; font-size: 0.73rem; font-weight: 600; padding: 0.42rem 0.6rem; color: #334155; }
+    .nc-chatbot-form { display: flex; gap: 0.5rem; padding: 0.65rem 0.85rem 0.8rem; background: #f1f5f9; }
+    .nc-chatbot-input { min-width: 0; flex: 1; border: 1px solid #cbd5e1; border-radius: 0.75rem; padding: 0.65rem 0.75rem; background: #fff; color: #0f172a; font-size: 0.84rem; outline: none; }
+    .nc-chatbot-input:focus { border-color: #198754; box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.14); }
+    .nc-chatbot-send { flex: 0 0 auto; border: 0; border-radius: 0.75rem; padding: 0.65rem 0.85rem; background: #157347; color: #fff; font-size: 0.8rem; font-weight: 700; }
+    .nc-chatbot-send:disabled { cursor: wait; opacity: 0.65; }
 
     @keyframes nc-dot {
         0%, 80%, 100% { transform: translateY(0); opacity: 0.45; }
@@ -410,6 +415,10 @@
             <button class="nc-chatbot-chip" type="button" data-msg="Show available jobs">Show available jobs</button>
             <button class="nc-chatbot-chip" type="button" data-msg="How to apply">How to apply</button>
         </div>
+        <form class="nc-chatbot-form" id="ncChatForm">
+            <input class="nc-chatbot-input" id="ncChatInput" type="text" maxlength="500" placeholder="Ask about careers or this website..." aria-label="Ask the career assistant" autocomplete="off" required>
+            <button class="nc-chatbot-send" id="ncChatSend" type="submit">Send</button>
+        </form>
     </section>
 </div>
 
@@ -425,6 +434,9 @@
         const closeBtn = document.getElementById('ncChatClose');
         const messagesEl = document.getElementById('ncChatMessages');
         const chipsEl = document.getElementById('ncChatChips');
+        const chatForm = document.getElementById('ncChatForm');
+        const chatInput = document.getElementById('ncChatInput');
+        const chatSend = document.getElementById('ncChatSend');
         const helpHint = document.getElementById('ncChatHelpHint');
         const robotHead = chatbotRoot.querySelector('.nc-robot');
         const robotEyes = Array.from(chatbotRoot.querySelectorAll('.nc-robot-eye'));
@@ -439,6 +451,18 @@
             el.textContent = text;
             messagesEl.appendChild(el);
             messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+
+        function setQuickChips(items) {
+            chipsEl.innerHTML = '';
+            (items || []).slice(0, 6).forEach((label) => {
+                const button = document.createElement('button');
+                button.className = 'nc-chatbot-chip';
+                button.type = 'button';
+                button.dataset.msg = label;
+                button.textContent = label;
+                chipsEl.appendChild(button);
+            });
         }
 
         function showHint(text, hideMs) {
@@ -461,8 +485,9 @@
             chatbotRoot.classList.remove('rolling-back', 'dizzy');
             chatbotRoot.classList.add('is-open');
             if (messagesEl.children.length === 0) {
-                addBubble('bot', 'Hi. I can explain everything on this website and help you apply.');
+                addBubble('bot', 'Hi. Ask me about current jobs, qualifications, applications, interviews, resumes, policies, or anything on this website.');
             }
+            window.setTimeout(() => chatInput?.focus(), 100);
         }
 
         function closePanel() {
@@ -488,6 +513,8 @@
             const message = (text || '').trim();
             if (!message) return;
             addBubble('user', message);
+            chatInput.value = '';
+            chatSend.disabled = true;
             try {
                 const res = await fetch(endpoint, {
                     method: 'POST',
@@ -500,8 +527,12 @@
                 });
                 const data = await res.json();
                 addBubble('bot', data.reply || 'I can help with this page.');
+                setQuickChips(data.suggestions || []);
             } catch (_) {
                 addBubble('bot', 'I could not connect right now. Please try again.');
+            } finally {
+                chatSend.disabled = false;
+                chatInput.focus();
             }
         }
 
@@ -556,6 +587,10 @@
         chipsEl.addEventListener('click', (e) => {
             const btn = e.target.closest('.nc-chatbot-chip');
             if (btn) sendMessage(btn.dataset.msg || btn.textContent || '');
+        });
+        chatForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            sendMessage(chatInput.value);
         });
 
         showHint('Click me if you need help', 5000);

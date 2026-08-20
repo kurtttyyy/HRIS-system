@@ -332,17 +332,33 @@ class GuestPageController extends Controller
             return null;
         }
 
-        $openJobs = OpenPosition::publicVacancies()->latest('id')->take(4)->get(['title', 'department']);
+        $openJobs = OpenPosition::publicVacancies()->latest('id')->take(10)->get([
+            'title', 'department', 'employment', 'work_mode', 'experience_level',
+            'location', 'requirements', 'skills', 'benifits',
+        ]);
         $jobSummary = $openJobs->isEmpty()
             ? 'No open positions currently.'
-            : $openJobs->map(fn ($job) => "{$job->title} ({$job->department})")->implode(', ');
+            : $openJobs->map(function ($job) {
+                return collect([
+                    "Title: {$job->title}",
+                    $job->department ? "department: {$job->department}" : null,
+                    $job->employment ? "employment: {$job->employment}" : null,
+                    $job->work_mode ? "work mode: {$job->work_mode}" : null,
+                    $job->experience_level ? "experience: {$job->experience_level}" : null,
+                    $job->location ? "location: {$job->location}" : null,
+                    $job->requirements ? "requirements: {$job->requirements}" : null,
+                    $job->skills ? "skills: {$job->skills}" : null,
+                    $job->benifits ? "benefits: {$job->benifits}" : null,
+                ])->filter()->implode('; ');
+            })->implode(' | ');
 
         $systemPrompt = "You are NC Careers Assistant for Northeastern College HR recruitment website. ".
-            "Answer briefly and clearly in a friendly tone. ".
+            "Answer clearly in a friendly tone and give enough detail to be useful. ".
             "You can explain the whole website experience including: Home page, Job Vacancies, About, Application flow, Login/Register, ".
             "Privacy Policy, Terms of Service, Cookie Policy, and footer contact links. ".
+            "You may also answer general career questions such as resumes, interviews, qualifications, skills, and job-search advice. ".
             "When the user asks where to find something, give direct navigation steps using the page/section names used on this site. ".
-            "If asked about jobs, application, policy, terms, cookie policy, or contact, respond with practical steps. ".
+            "Use the vacancy context below for questions about current positions and never invent missing vacancy details. ".
             "Never fabricate employee-private data or internal admin-only information. ".
             "Current quick context: Open jobs snapshot: {$jobSummary}";
 
@@ -352,7 +368,7 @@ class GuestPageController extends Controller
                 ->post('https://api.openai.com/v1/chat/completions', [
                     'model' => (string) (config('services.openai.model') ?: env('OPENAI_MODEL', 'gpt-4o-mini')),
                     'temperature' => 0.5,
-                    'max_tokens' => 240,
+                    'max_tokens' => 500,
                     'messages' => [
                         ['role' => 'system', 'content' => $systemPrompt],
                         ['role' => 'user', 'content' => $message],
@@ -384,20 +400,31 @@ class GuestPageController extends Controller
                 "What would you like to check first?";
         }
 
-        if (Str::contains($text, ['job', 'vacancy', 'opening', 'position', 'hiring'])) {
-            return $jobsCount > 0
-                ? "We currently have {$jobsCount} open position(s). You can open Job Vacancies from the home page and filter by department, employment type, and location."
-                : "There are no open positions right now. Please check back soon, as new listings are posted on the home page.";
+        if (Str::contains($text, ['track', 'tracking number', 'application status', 'screening', 'shortlist', 'rejected', 'accepted'])) {
+            return "Use the Application Status button and enter the tracking number issued after you submitted. The same number is also sent to your application email. ".
+                "The status page shows your submitted role and recruitment updates. If you were rejected, this site allows another application for that position after the three-month waiting period.";
         }
 
         if (Str::contains($text, ['apply', 'application', 'how to apply'])) {
             return "To apply: open a vacancy, click 'View Details & Apply', complete the application form, and submit your required details/documents. ".
-                "After submission, wait for HR updates regarding screening and interview.";
+                "Save the tracking number shown after submission and sent to your email. Use the Application Status button to check screening, interview, or decision updates.";
         }
 
         if (Str::contains($text, ['requirement', 'document', 'resume', 'cv'])) {
-            return "Common requirements include personal details, contact information, and supporting documents like resume/CV. ".
-                "Specific requirements may vary by position, so please read the selected job post carefully before submitting.";
+            return "The application asks for personal and contact details, education, experience, key skills, and the required supporting documents. ".
+                "Uploaded documents must be PDF, DOC, or DOCX and each file can be up to 5 MB. Read the selected vacancy's Requirements section because role-specific documents and qualifications may differ.";
+        }
+
+        if (Str::contains($text, ['interview', 'interviewer', 'schedule'])) {
+            return "If HR schedules an interview, review the date, time, and instructions in your application update or notification. Prepare examples that show how your education, skills, and experience match the vacancy, and keep your contact details available for follow-up.";
+        }
+
+        if (Str::contains($text, ['resume', 'cv', 'cover letter'])) {
+            return "Tailor your resume to the position title and its listed requirements. Put your most relevant education, experience, and skills first, use clear achievement-focused descriptions, check your contact details, and upload the requested file format. Never claim experience or credentials you do not have.";
+        }
+
+        if (Str::contains($text, ['qualification', 'qualified', 'eligible', 'experience', 'skill'])) {
+            return "Open the vacancy and compare your background with its Requirements, Experience Level, and Skills sections. You may still apply as a fresh graduate where appropriate, but the information you submit must be complete and accurate. HR makes the final screening decision.";
         }
 
         if (Str::contains($text, ['website', 'site', 'explain', 'guide', 'navigation', 'how this works'])) {
@@ -410,6 +437,14 @@ class GuestPageController extends Controller
         if (Str::contains($text, ['account', 'register', 'sign up', 'login', 'log in', 'applicant login'])) {
             return "To access applicant features, use 'Create Account' to register first, then use 'Applicant Login' from quick links. ".
                 "If you already have credentials, go directly to login and continue your application process.";
+        }
+
+        if (Str::contains($text, ['salary', 'pay', 'compensation'])) {
+            return "Salary is not published in the current public vacancy details. Please review the selected posting and ask HR during the recruitment process rather than relying on an estimate.";
+        }
+
+        if (Str::contains($text, ['benefit', 'employment type', 'full-time', 'part-time', 'work mode', 'remote', 'onsite', 'on-site'])) {
+            return "Employment type, work mode, and benefits vary by position. Open Job Vacancies, select a role, and review its details. If a detail is not listed, confirm it with HR during screening or interview.";
         }
 
         if (Str::contains($text, ['about', 'department', 'filter', 'home'])) {
@@ -433,8 +468,16 @@ class GuestPageController extends Controller
             return "You can reach Northeastern College through the footer contact links: Villasis, Santiago City, Isabela 3311, the NC Facebook page, and SIAS Online.";
         }
 
-        return "I can explain the whole site, including vacancies, application flow, accounts/login, policies, and contact links. ".
-            "Try asking: 'Explain this website' or 'How do I apply?'.";
+        if (Str::contains($text, ['job', 'vacancy', 'opening', 'position', 'hiring', 'available'])) {
+            if ($jobsCount === 0) {
+                return "There are no open positions right now. Please check back soon, as new listings are posted on the home page.";
+            }
+
+            $titles = OpenPosition::publicVacancies()->latest('id')->pluck('title')->filter()->take(8)->implode(', ');
+            return "We currently have {$jobsCount} open position(s): {$titles}. Open Job Vacancies to search by position title and select a role for its department, description, requirements, skills, work setup, and application action.";
+        }
+
+        return "I can help with current vacancies, role requirements, application steps, documents, tracking and status, accounts, interviews, resumes, career preparation, policies, and contact information. Please add a little more detail to your question so I can give the most relevant answer.";
     }
 
     private function fallbackSuggestions(string $message): array

@@ -849,12 +849,7 @@
         let visibleCount = 0;
 
         jobCards.forEach((card) => {
-            const searchableText = [
-                card.dataset.title || '',
-                card.dataset.department || '',
-                card.dataset.location || '',
-                card.dataset.description || '',
-            ].join(' ');
+            const searchableText = card.dataset.title || '';
 
             const isVisible = !searchTerm || searchableText.includes(searchTerm);
             card.classList.toggle('d-none', !isVisible);
@@ -1039,4 +1034,3 @@ function formatDate(dateString) {
 </script>
 
 @endsection
-
