@@ -37,7 +37,7 @@
 
         .employee-directory-quick-actions {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             margin-top: 0.8rem;
             gap: 0.5rem;
         }
@@ -166,6 +166,15 @@
                             <i class="fa-solid fa-plus text-[10px]"></i>
                             Insert
                         </a>
+                        <button
+                            type="button"
+                            onclick="window.downloadBlankBiometricForm?.()"
+                            class="inline-flex items-center gap-1.5 rounded-full border border-sky-300/30 bg-sky-300/15 px-3 py-1.5 text-emerald-50 transition hover:border-sky-300/60 hover:bg-sky-300/25"
+                            title="Download an empty biometric form for walk-in applicants"
+                        >
+                            <i class="fa-solid fa-file-arrow-down text-[10px]"></i>
+                            Blank Biometric Form
+                        </button>
                     </div>
                     </div>
                 </div>

@@ -193,97 +193,59 @@ window.displayEmployeeId = function displayEmployeeId(employee, emptyValue = '-'
       </div>
 
       <div class="border border-gray-500">
-        <div class="row row-split">
+        <div class="row row-split education-row">
           <span class="label split-label edu-label">Bachelor's Degree:</span>
           <span class="value split-value edu-value">
-            <template x-if="hasDegreeRows('bachelor')">
-              <span class="block space-y-1">
-                <template x-for="(row, idx) in degreeRows('bachelor')" :key="`bachelor-${row?.id ?? idx}`">
-                  <span class="block">
-                    <span class="block edu-title">
-                      <span x-text="formatGraduateDegreeTitle(row?.degree_name)"></span>
-                      <span x-show="degreeLevelIsNew('bachelor')" class="ml-2 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-700">New</span>
-                    </span>
-                    <span class="block text-[11px] text-gray-700 edu-meta" x-text="`${row?.school_name ?? 'School N/A'}, ${row?.year_finished ?? 'Year N/A'}`"></span>
-                  </span>
-                </template>
-              </span>
-            </template>
-            <template x-if="!hasDegreeRows('bachelor')">
-              <span class="block">
-                <span class="block edu-title">
-                  <span x-text="selectedEmployee?.education?.bachelor ?? '-'"></span>
-                  <span x-show="degreeLevelIsNew('bachelor')" class="ml-2 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-700">New</span>
-                </span>
-                <span
-                  class="block text-[11px] text-gray-700 edu-meta"
-                  x-text="`${selectedEmployee?.applicant?.bachelor_school_name ?? 'School N/A'}, ${selectedEmployee?.applicant?.bachelor_year_finished ?? 'Year N/A'}`"
-                ></span>
+            <template x-for="(row, idx) in (hasDegreeRows('bachelor') ? degreeRows('bachelor') : [{ degree_name: selectedEmployee?.education?.bachelor, school_name: selectedEmployee?.applicant?.bachelor_school_name, year_finished: selectedEmployee?.applicant?.bachelor_year_finished }])" :key="`bachelor-${row?.id ?? idx}`">
+              <span class="block edu-entry">
+                <span class="edu-field"><strong>Major:</strong> <span class="edu-title" x-text="formatGraduateDegreeTitle(row?.degree_name)"></span><span x-show="degreeLevelIsNew('bachelor')" class="ml-2 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-700">New</span></span>
+                <span class="edu-field"><strong>School Name:</strong> <span class="edu-school" x-text="row?.school_name || '-'"></span></span>
+                <span class="edu-field"><strong>Year Graduate:</strong> <span class="edu-year" x-text="row?.year_finished || '-'"></span></span>
               </span>
             </template>
           </span>
         </div>
-        <div class="row row-split">
+        <div class="row row-split education-row">
           <span class="label split-label edu-label">Master's Degree:</span>
           <span class="value split-value edu-value">
-            <template x-if="hasDegreeRows('master')">
-              <span class="block space-y-1">
-                <template x-for="(row, idx) in degreeRows('master')" :key="`master-${row?.id ?? idx}`">
-                  <span class="block">
-                    <span class="block edu-title">
-                      <span x-text="formatGraduateDegreeTitle(row?.degree_name)"></span>
-                      <span x-show="degreeLevelIsNew('master')" class="ml-2 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-700">New</span>
-                    </span>
-                    <span class="block text-[11px] text-gray-700 edu-meta" x-text="`${row?.school_name ?? 'School N/A'}, ${row?.year_finished ?? 'Year N/A'}`"></span>
-                  </span>
-                </template>
-              </span>
-            </template>
-            <template x-if="!hasDegreeRows('master')">
-              <span class="block">
-                <span class="block edu-title">
-                  <span x-text="formatGraduateDegreeTitle(selectedEmployee?.education?.master)"></span>
-                  <span x-show="degreeLevelIsNew('master')" class="ml-2 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-700">New</span>
-                </span>
-                <span
-                  class="block text-[11px] text-gray-700 edu-meta"
-                  x-text="`${selectedEmployee?.applicant?.master_school_name ?? 'School N/A'}, ${selectedEmployee?.applicant?.master_year_finished ?? 'Year N/A'}`"
-                ></span>
+            <template x-for="(row, idx) in (hasDegreeRows('master') ? degreeRows('master') : [{ degree_name: selectedEmployee?.education?.master, school_name: selectedEmployee?.applicant?.master_school_name, year_finished: selectedEmployee?.applicant?.master_year_finished }])" :key="`master-${row?.id ?? idx}`">
+              <span class="block edu-entry">
+                <span class="edu-field"><strong>Major:</strong> <span class="edu-title" x-text="formatGraduateDegreeTitle(row?.degree_name)"></span><span x-show="degreeLevelIsNew('master')" class="ml-2 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-700">New</span></span>
+                <span class="edu-field"><strong>School Name:</strong> <span class="edu-school" x-text="row?.school_name || '-'"></span></span>
+                <span class="edu-field"><strong>Year Graduate:</strong> <span class="edu-year" x-text="row?.year_finished || '-'"></span></span>
               </span>
             </template>
           </span>
         </div>
-        <div class="row row-split">
+        <div class="row row-split education-row">
           <span class="label split-label edu-label">Doctorate Degree:</span>
           <span class="value split-value edu-value">
-            <template x-if="hasDegreeRows('doctorate')">
-              <span class="block space-y-1">
-                <template x-for="(row, idx) in degreeRows('doctorate')" :key="`doctorate-${row?.id ?? idx}`">
-                  <span class="block">
-                    <span class="block edu-title">
-                      <span x-text="formatGraduateDegreeTitle(row?.degree_name)"></span>
-                      <span x-show="degreeLevelIsNew('doctorate')" class="ml-2 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-700">New</span>
-                    </span>
-                    <span class="block text-[11px] text-gray-700 edu-meta" x-text="`${row?.school_name ?? 'School N/A'}, ${row?.year_finished ?? 'Year N/A'}`"></span>
-                  </span>
-                </template>
-              </span>
-            </template>
-            <template x-if="!hasDegreeRows('doctorate')">
-              <span class="block">
-                <span class="block edu-title">
-                  <span x-text="formatGraduateDegreeTitle(selectedEmployee?.education?.doctorate)"></span>
-                  <span x-show="degreeLevelIsNew('doctorate')" class="ml-2 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-700">New</span>
-                </span>
-                <span
-                  class="block text-[11px] text-gray-700 edu-meta"
-                  x-text="`${selectedEmployee?.applicant?.doctoral_school_name ?? 'School N/A'}, ${selectedEmployee?.applicant?.doctoral_year_finished ?? 'Year N/A'}`"
-                ></span>
+            <template x-for="(row, idx) in (hasDegreeRows('doctorate') ? degreeRows('doctorate') : [{ degree_name: selectedEmployee?.education?.doctorate, school_name: selectedEmployee?.applicant?.doctoral_school_name, year_finished: selectedEmployee?.applicant?.doctoral_year_finished }])" :key="`doctorate-${row?.id ?? idx}`">
+              <span class="block edu-entry">
+                <span class="edu-field"><strong>Major:</strong> <span class="edu-title" x-text="formatGraduateDegreeTitle(row?.degree_name)"></span><span x-show="degreeLevelIsNew('doctorate')" class="ml-2 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-700">New</span></span>
+                <span class="edu-field"><strong>School Name:</strong> <span class="edu-school" x-text="row?.school_name || '-'"></span></span>
+                <span class="edu-field"><strong>Year Graduate:</strong> <span class="edu-year" x-text="row?.year_finished || '-'"></span></span>
               </span>
             </template>
           </span>
         </div>
       </div>
+
+  <!-- SALARY -->
+  <div class="biometric-profile-salary border border-gray-500 w-full">
+    <div class="row row-split">
+      <span class="label split-label">Basic Salary:</span>
+      <span class="value split-value" x-text="selectedEmployee?.salary?.salary ?? '-'"></span>
+    </div>
+    <div class="row row-split">
+      <span class="label split-label">Rate per Hour:</span>
+      <span class="value split-value" x-text="selectedEmployee?.salary?.rate_per_hour ?? '-'"></span>
+    </div>
+    <div class="row row-split">
+      <span class="label split-label">COLA:</span>
+      <span class="value split-value" x-text="selectedEmployee?.salary?.cola ?? '-'"></span>
+    </div>
+  </div>
 
     </div>
 
@@ -402,27 +364,6 @@ window.displayEmployeeId = function displayEmployeeId(employee, emptyValue = '-'
     </div>
   </div>
 
-  <!-- SALARY -->
-  <div
-    class="biometric-profile-salary border border-gray-500 w-[49%]"
-    :style="(() => {
-      const totalDegreeRows = degreeRows('bachelor').length + degreeRows('master').length + degreeRows('doctorate').length;
-      return totalDegreeRows > 3 ? 'margin-top: 0.75rem;' : 'margin-top: -102px;';
-    })()"
-  >
-    <div class="row row-split">
-      <span class="label split-label">Basic Salary:</span>
-      <span class="value split-value" x-text="selectedEmployee?.salary?.salary ?? '-'"></span>
-    </div>
-    <div class="row row-split">
-      <span class="label split-label">Rate per Hour:</span>
-      <span class="value split-value" x-text="selectedEmployee?.salary?.rate_per_hour ?? '-'"></span>
-    </div>
-    <div class="row row-split">
-      <span class="label split-label">COLA:</span>
-      <span class="value split-value" x-text="selectedEmployee?.salary?.cola ?? '-'"></span>
-    </div>
-  </div>
   <p class="mt-8 text-[13px] text-black italic">
     Disclaimer: This form contains confidential employee information intended solely for authorized administrative and human resource purposes. Unauthorized copying, disclosure, or distribution of any information contained herein is strictly prohibited.
   </p>
@@ -435,7 +376,7 @@ window.displayEmployeeId = function displayEmployeeId(employee, emptyValue = '-'
   <div class="border-t border-dashed border-black my-3"></div>
 
   <!-- EMPLOYEE DETAILS -->
-  <div class="row font-semibold bg-transparent mt-2">Employee ID Information – Office of EDP / NCIS. Official employee identification record.</div>
+  <div class="row font-semibold bg-transparent mt-2">Office of EDP / NCIS. Employee ID Information Official employee identification record at SIAS Account</div>
 
   <div class="row">
     <span class="label">Full Name:</span>
@@ -924,13 +865,19 @@ window.displayEmployeeId = function displayEmployeeId(employee, emptyValue = '-'
     padding: 0 !important;
   }
 
-  .edu-value .edu-title,
-  .edu-value .edu-meta {
-    display: block;
-    padding: 6px 8px;
+  .row.row-split.education-row {
+    grid-template-columns: 28% 72%;
   }
 
-  .edu-value .edu-meta {
+  .edu-value .edu-field {
+    display: block;
+    min-height: 31px;
+    padding: 6px 8px;
+    overflow-wrap: anywhere;
+  }
+
+  .edu-field + .edu-field,
+  .edu-entry + .edu-entry {
     border-top: 1px solid #000000;
   }
 
@@ -1043,7 +990,7 @@ window.displayEmployeeId = function displayEmployeeId(employee, emptyValue = '-'
 
     .biometric-profile-salary {
       width: 100% !important;
-      margin-top: 1rem !important;
+      margin-top: 0.75rem !important;
     }
 
     #profile-form > .mt-8 {
@@ -1134,7 +1081,8 @@ function resetBiometricPhotoEditor(src) {
   setBiometricPhotoPreview((src || '').trim());
 }
 
-async function downloadProfileDOCX() {
+async function downloadProfileDOCX(options = {}) {
+  const blankForm = options.blank === true;
   const docxLib = window.docx;
   if (!docxLib || typeof window.saveAs !== 'function') {
     alert('Word export library failed to load. Please refresh and try again.');
@@ -1158,6 +1106,7 @@ async function downloadProfileDOCX() {
     HorizontalPositionRelativeFrom,
     VerticalPositionRelativeFrom,
     TextWrappingType,
+    CheckBox,
   } = docxLib;
 
   const normalize = (text) => (text || '')
@@ -1177,7 +1126,7 @@ async function downloadProfileDOCX() {
     rowMap[key] = { value, row };
   });
 
-  const getValue = (label) => rowMap[normalize(label)]?.value || '-';
+  const getValue = (label) => blankForm ? '' : (rowMap[normalize(label)]?.value || '-');
   const getRow = (label) => rowMap[normalize(label)]?.row || null;
 
   const classificationRow = getRow('Classification');
@@ -1210,23 +1159,69 @@ async function downloadProfileDOCX() {
   })();
 
   let classificationValue = '☐ Full-time   ☐ Part-time   ☐ NT';
+  let classificationSelection = {
+    fullTime: false,
+    partTime: false,
+    nt: false,
+  };
 
-  if (classificationFromAlpine) {
+  if (!blankForm && classificationFromAlpine) {
+    classificationSelection = {
+      fullTime: classificationFromAlpine === 'full time',
+      partTime: classificationFromAlpine === 'part time',
+      nt: classificationFromAlpine === 'nt',
+    };
     classificationValue = `${classificationFromAlpine === 'full time' ? '☑' : '☐'} Full-time   ${classificationFromAlpine === 'part time' ? '☑' : '☐'} Part-time   ${classificationFromAlpine === 'nt' ? '☑' : '☐'} NT`;
-  } else {
+  } else if (!blankForm) {
     const rawClassificationText = getValue('Classification');
     const canonicalFromText = canonicalClassificationValue(rawClassificationText);
     if (canonicalFromText) {
+      classificationSelection = {
+        fullTime: canonicalFromText === 'full time',
+        partTime: canonicalFromText === 'part time',
+        nt: canonicalFromText === 'nt',
+      };
       classificationValue = `${canonicalFromText === 'full time' ? '☑' : '☐'} Full-time   ${canonicalFromText === 'part time' ? '☑' : '☐'} Part-time   ${canonicalFromText === 'nt' ? '☑' : '☐'} NT`;
     }
   }
 
-  if (classificationRow) {
+  if (!blankForm && classificationRow) {
     const checkboxes = Array.from(classificationRow.querySelectorAll('input[type="checkbox"]'));
     if (checkboxes.length >= 3 && !classificationFromAlpine) {
+      classificationSelection = {
+        fullTime: checkboxes[0].checked,
+        partTime: checkboxes[1].checked,
+        nt: checkboxes[2].checked,
+      };
       classificationValue = `${checkboxes[0].checked ? '☑' : '☐'} Full-time   ${checkboxes[1].checked ? '☑' : '☐'} Part-time   ${checkboxes[2].checked ? '☑' : '☐'} NT`;
     }
   }
+
+  const classificationControls = typeof CheckBox === 'function'
+    ? [
+        new CheckBox({
+          checked: classificationSelection.fullTime,
+          alias: 'Full-time',
+          checkedState: { value: '2611', font: 'MS Gothic' },
+          uncheckedState: { value: '2610', font: 'MS Gothic' },
+        }),
+        new TextRun({ text: ' Full-time   ', font: 'Aptos Display' }),
+        new CheckBox({
+          checked: classificationSelection.partTime,
+          alias: 'Part-time',
+          checkedState: { value: '2611', font: 'MS Gothic' },
+          uncheckedState: { value: '2610', font: 'MS Gothic' },
+        }),
+        new TextRun({ text: ' Part-time   ', font: 'Aptos Display' }),
+        new CheckBox({
+          checked: classificationSelection.nt,
+          alias: 'NT',
+          checkedState: { value: '2611', font: 'MS Gothic' },
+          uncheckedState: { value: '2610', font: 'MS Gothic' },
+        }),
+        new TextRun({ text: ' NT', font: 'Aptos Display' }),
+      ]
+    : [new TextRun({ text: classificationValue, font: 'Aptos Display' })];
 
   const border = {
     top: { style: BorderStyle.SINGLE, size: 4, color: '000000' },
@@ -1237,7 +1232,7 @@ async function downloadProfileDOCX() {
 
   const lineTable = (entries) => new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
-    rows: entries.map(({ label, value }) => new TableRow({
+    rows: entries.map(({ label, value, children }) => new TableRow({
       height: { value: 250, rule: HeightRule.ATLEAST },
       children: [
         new TableCell({
@@ -1259,7 +1254,7 @@ async function downloadProfileDOCX() {
           children: [
             new Paragraph({
               children: [
-                new TextRun({ text: value || '-', font: 'Aptos Display' }),
+                ...(children || [new TextRun({ text: value || (blankForm ? ' ' : '-'), font: 'Aptos Display' })]),
               ],
             }),
           ],
@@ -1318,7 +1313,7 @@ async function downloadProfileDOCX() {
     });
   }
 
-  let watermarkParagraph = new Paragraph('');
+  let watermarkParagraph = new Paragraph({ spacing: { before: 0, after: 0, line: 20 } });
   try {
     const bgResponse = await fetch(profileFormDesignUrl);
     const bgBlob = await bgResponse.blob();
@@ -1352,6 +1347,7 @@ async function downloadProfileDOCX() {
     }
 
     watermarkParagraph = new Paragraph({
+      spacing: { before: 0, after: 0, line: 20 },
       children: [
         new ImageRun({
           data: new Uint8Array(bgBuffer),
@@ -1374,7 +1370,7 @@ async function downloadProfileDOCX() {
       ],
     });
   } catch (e) {
-    watermarkParagraph = new Paragraph('');
+    watermarkParagraph = new Paragraph({ spacing: { before: 0, after: 0, line: 20 } });
   }
 
   let employeePhotoBuffer = null;
@@ -1388,9 +1384,6 @@ async function downloadProfileDOCX() {
     if (ctx) {
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(1, 1, canvas.width - 2, canvas.height - 2);
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = '#000000';
@@ -1407,7 +1400,7 @@ async function downloadProfileDOCX() {
   try {
     const photoEl = document.getElementById('biometric-photo-img');
     const photoSrc = (photoEl?.getAttribute('src') || photoEl?.src || '').trim();
-    if (photoSrc && !photoSrc.startsWith('data:image/svg+xml')) {
+    if (!blankForm && photoSrc && !photoSrc.startsWith('data:image/svg+xml')) {
       const photoResponse = await fetch(photoSrc);
       if (photoResponse.ok) {
         employeePhotoBuffer = await photoResponse.arrayBuffer();
@@ -1485,7 +1478,7 @@ async function downloadProfileDOCX() {
     { label: 'Employment Date', value: getValue('Employment Date') },
     { label: 'Position', value: getValue('Position') },
     { label: 'Department', value: getValue('Department') },
-    { label: 'Classification', value: classificationValue },
+    { label: 'Classification', value: classificationValue, children: classificationControls },
   ];
 
   const salaryRows = [
@@ -1496,19 +1489,14 @@ async function downloadProfileDOCX() {
 
   const getEducationEntries = (label) => {
     const row = getRow(label);
-    const titleNodes = row ? Array.from(row.querySelectorAll('.edu-title')) : [];
-    const metaNodes = row ? Array.from(row.querySelectorAll('.edu-meta')) : [];
-
-    if (!titleNodes.length) {
-      return [{
-        title: getValue(label) || '-',
-        meta: 'School N/A, Year N/A',
-      }];
+    const entries = row ? Array.from(row.querySelectorAll('.edu-entry')) : [];
+    if (blankForm || !entries.length) {
+      return [{ title: blankForm ? ' ' : '-', school: blankForm ? ' ' : '-', year: blankForm ? ' ' : '-' }];
     }
-
-    return titleNodes.map((titleNode, idx) => ({
-      title: titleNode?.textContent?.trim() || '-',
-      meta: metaNodes[idx]?.textContent?.trim() || 'School N/A, Year N/A',
+    return entries.map((entry) => ({
+      title: entry.querySelector('.edu-title')?.textContent?.trim() || '-',
+      school: entry.querySelector('.edu-school')?.textContent?.trim() || '-',
+      year: entry.querySelector('.edu-year')?.textContent?.trim() || '-',
     }));
   };
 
@@ -1519,65 +1507,46 @@ async function downloadProfileDOCX() {
   ];
 
   const totalDegreeItems = degreeEntries.reduce((sum, entry) => sum + entry.items.length, 0);
-  const hasExpandedDegrees = totalDegreeItems > 3;
   const extraDegreeItems = Math.max(totalDegreeItems - 3, 0);
-  const exportTighten = Math.min(extraDegreeItems * 220, 1200);
-  const postMainSpacer = Math.max(140, 1220 - exportTighten);
-  const disclaimerToFooterGap = Math.max(80, 420 - Math.floor(exportTighten * 0.25));
-  const formNoTopGap = Math.max(120, 500 - Math.floor(exportTighten * 0.2));
-  const dashedLineTopGap = Math.max(200, 1600 - exportTighten);
+  // Reserve room for all six ID/contact rows after the taller education table.
+  // Each additional degree adds three rows; absorb that height in blank spacing first.
+  const exportTighten = extraDegreeItems * 930;
+  const postMainSpacer = Math.max(40, 660 - exportTighten * 0.4);
+  const disclaimerToFooterGap = Math.max(0, 460 - exportTighten * 0.15);
+  const formNoTopGap = Math.max(0, 100 - exportTighten * 0.15);
 
   const degreeTable = new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
     rows: degreeEntries.flatMap(({ label, items }) => {
-      const safeItems = items.length ? items : [{ title: '-', meta: 'School N/A, Year N/A' }];
-      return safeItems.flatMap(({ title, meta }, idx) => ([
-        new TableRow({
-          height: { value: 250, rule: HeightRule.ATLEAST },
+      return items.flatMap(({ title, school, year }, idx) => (
+        [['Major', title], ['School Name', school], ['Year Graduate', year]].map(([field, value], fieldIndex) => new TableRow({
+          height: { value: 310, rule: HeightRule.ATLEAST },
           children: [
-            ...(idx === 0
-              ? [new TableCell({
-                  width: { size: 34, type: WidthType.PERCENTAGE },
-                  rowSpan: safeItems.length * 2,
-                  borders: border,
-                  margins: { top: 60, bottom: 60, left: 100, right: 100 },
-                  children: [
-                    new Paragraph({
-                      alignment: AlignmentType.CENTER,
-                      children: [new TextRun({ text: `${label}:`, bold: true, font: 'Aptos Display' })],
-                    }),
-                  ],
-                  verticalAlign: VerticalAlign.CENTER,
-                })]
-              : []),
+            ...(idx === 0 && fieldIndex === 0 ? [new TableCell({
+              width: { size: 28, type: WidthType.PERCENTAGE },
+              rowSpan: items.length * 3,
+              borders: border,
+              margins: { top: 60, bottom: 60, left: 100, right: 100 },
+              children: [new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [new TextRun({ text: `${label}:`, bold: true, font: 'Aptos Display' })],
+              })],
+              verticalAlign: VerticalAlign.CENTER,
+            })] : []),
             new TableCell({
-              width: { size: 66, type: WidthType.PERCENTAGE },
+              width: { size: 72, type: WidthType.PERCENTAGE },
               borders: border,
               margins: { top: 60, bottom: 60, left: 80, right: 100 },
-              children: [
-                new Paragraph({
-                  children: [new TextRun({ text: title || '-', font: 'Aptos Display' })],
-                }),
-              ],
+              children: [new Paragraph({
+                children: [
+                  new TextRun({ text: `${field}: `, bold: true, font: 'Aptos Display' }),
+                  new TextRun({ text: value, font: 'Aptos Display' }),
+                ],
+              })],
             }),
           ],
-        }),
-        new TableRow({
-          height: { value: 220, rule: HeightRule.ATLEAST },
-          children: [
-            new TableCell({
-              width: { size: 66, type: WidthType.PERCENTAGE },
-              borders: border,
-              margins: { top: 40, bottom: 40, left: 80, right: 100 },
-              children: [
-                new Paragraph({
-                  children: [new TextRun({ text: meta, font: 'Aptos Display', size: 18, color: '000000' })],
-                }),
-              ],
-            }),
-          ],
-        }),
-      ]));
+        }))
+      ));
     }),
   });
 
@@ -1650,7 +1619,7 @@ async function downloadProfileDOCX() {
 
   const leftTopRows = stackTable(
     [idRows, personalRows, degreeTable, salaryRows],
-    [0, 0, hasExpandedDegrees ? 10 : 1]
+    [0, 0, 0]
   );
   const rightTopRows = stackTable([photoTable, employmentRows, licenseRows, governmentRows], [0, 2, 0]);
 
@@ -1662,6 +1631,35 @@ async function downloadProfileDOCX() {
     { label: 'Address', value: getValue('Address') },
     { label: 'Cellphone Number', value: getValue('Cellphone Number') },
   ];
+
+  // A minimum-height upper row absorbs ordinary content changes as blank space.
+  // Keep the ID section in one normal-flow row, without floating-table pagination.
+  const employeeIdTop = 15680;
+  const noIdBorder = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
+  const fixedEmployeeIdBlock = new Table({
+    width: { size: 10800, type: WidthType.DXA },
+    rows: [new TableRow({
+      cantSplit: true,
+      children: [new TableCell({
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
+        borders: { top: noIdBorder, bottom: noIdBorder, left: noIdBorder, right: noIdBorder },
+        children: [
+          new Paragraph({
+            keepNext: true,
+            spacing: { before: 0, after: 0, line: 20 },
+            border: { bottom: { style: BorderStyle.DASHED, size: 4, color: '000000' } },
+          }),
+          new Paragraph({
+            keepNext: true,
+            spacing: { before: 40, after: 0, line: 200 },
+            children: [new TextRun({ text: 'Office of EDP / NCIS. Employee ID Information Official employee identification record at SIAS Account', bold: true, font: 'Aptos Display' })],
+          }),
+          lineTable(employeeDetails),
+          new Paragraph({ spacing: { before: 0, after: 0, line: 20 } }),
+        ],
+      })],
+    })],
+  });
 
   const doc = new Document({
     sections: [
@@ -1675,14 +1673,24 @@ async function downloadProfileDOCX() {
             margin: {
               top: 360,
               right: 720,
-              bottom: 0,
+              bottom: 240,
               left: 720,
-              footer: 0,
+              footer: 240,
             },
           },
         },
         children: [
           watermarkParagraph,
+          new Table({
+            width: { size: 10800, type: WidthType.DXA },
+            rows: [
+              new TableRow({
+                height: { value: employeeIdTop - 360 - 20, rule: HeightRule.ATLEAST },
+                children: [new TableCell({
+                  verticalAlign: VerticalAlign.TOP,
+                  margins: { top: 0, bottom: 0, left: 0, right: 0 },
+                  borders: { top: noIdBorder, bottom: noIdBorder, left: noIdBorder, right: noIdBorder },
+                  children: [
           logoParagraph,
           new Paragraph({
             alignment: AlignmentType.CENTER,
@@ -1697,7 +1705,7 @@ async function downloadProfileDOCX() {
           new Paragraph({ spacing: { before: 0, after: 35 } }),
           twoColumnSection(leftTopRows, rightTopRows),
           new Paragraph({
-            spacing: { before: 0, after: postMainSpacer },
+            spacing: { before: 0, after: postMainSpacer, line: 20 },
             children: [new TextRun({ text: '', font: 'Aptos Display' })],
           }),
           new Paragraph({
@@ -1713,23 +1721,30 @@ async function downloadProfileDOCX() {
             ],
           }),
           new Paragraph({
-            spacing: { before: 0, after: disclaimerToFooterGap },
+            spacing: { before: 0, after: disclaimerToFooterGap, line: 20 },
             children: [new TextRun({ text: '', font: 'Aptos Display' })],
           }),
           new Paragraph({
-            spacing: { before: formNoTopGap, after: 220 },
+            spacing: { before: formNoTopGap, after: 100 },
             children: [new TextRun({ text: 'NC HR Form No. 16a - Employees Profile Rev. 01', size: 22, color: '000000', font: 'Aptos Display' })],
           }),
-          new Paragraph({
-            spacing: { before: dashedLineTopGap, after: 0 },
-            border: { bottom: { style: BorderStyle.DASHED, size: 4, color: '000000' } },
+
+
+
+                  ],
+                })],
+              }),
+              new TableRow({
+                cantSplit: true,
+                children: [new TableCell({
+                  margins: { top: 0, bottom: 0, left: 0, right: 0 },
+                  borders: { top: noIdBorder, bottom: noIdBorder, left: noIdBorder, right: noIdBorder },
+                  children: [fixedEmployeeIdBlock, new Paragraph({ spacing: { before: 0, after: 0, line: 20 } })],
+                })],
+              }),
+            ],
           }),
-          new Paragraph({
-            spacing: { before: 40, after: 0, line: 200 },
-            children: [new TextRun({ text: 'Employee ID Information - Office of EDP / NCIS. Official employee identification record.', bold: true, font: 'Aptos Display' })],
-          }),
-          lineTable(employeeDetails),
-          new Paragraph(''),
+          new Paragraph({ spacing: { before: 0, after: 0, line: 20 } }),
         ],
       },
     ],
@@ -1737,13 +1752,19 @@ async function downloadProfileDOCX() {
 
   Packer.toBlob(doc)
     .then((blob) => {
-      const filename = `Employee_Profile_${Date.now()}.docx`;
+      const filename = blankForm
+        ? `Blank_Biometric_Form_${new Date().toISOString().slice(0, 10)}.docx`
+        : `Employee_Profile_${Date.now()}.docx`;
       window.saveAs(blob, filename);
     })
     .catch(() => {
       alert('Failed to export DOCX. Please try again.');
     });
 }
+
+window.downloadBlankBiometricForm = function downloadBlankBiometricForm() {
+  return downloadProfileDOCX({ blank: true });
+};
 
 function applyEmptyValueIndicators() {
   const profileForm = document.getElementById('profile-form');
