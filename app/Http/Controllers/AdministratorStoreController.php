@@ -791,11 +791,14 @@ class AdministratorStoreController extends Controller
                 ? 'Approved'
                 : null;
         }
-        $resignedDateRaw = trim((string) ($pick(['date_resigned', 'resignation_date']) ?? ''));
-        if ($resignedDateRaw === '-') {
+        $resignedDateRaw = trim((string) ($pick(['date_resigned', 'resignation_date', 'date_of_resignation']) ?? ''));
+        if (in_array(strtolower($resignedDateRaw), ['-', 'n/a', 'na', 'none', 'null'], true)) {
             $resignedDateRaw = '';
         }
         $resignedDate = $this->normalizeDate($resignedDateRaw);
+        if ($resignedDateRaw !== '' && !$resignedDate) {
+            throw new \RuntimeException('Date Resigned is invalid. Enter a valid date or leave it blank.');
+        }
         $rank = trim((string) ($pick(['rank', 'classification', 'employment_status']) ?? ''));
         $grade = trim((string) ($pick(['grade', 'classification_salary', 'salary_classification']) ?? ''));
         if ($grade !== '') {
@@ -904,8 +907,7 @@ class AdministratorStoreController extends Controller
         $this->saveEmployeeImportRelatedRecords($user, $pick);
 
         if ($resignedDate) {
-            Resignation::query()->create([
-                'user_id' => $user->id,
+            app(\App\Support\ImportedEmployeeResignation::class)->record($user, $resignedDate, [
                 'employee_id' => $employeeId,
                 'employee_name' => trim($firstName.' '.($middleName ? $middleName.' ' : '').$lastName),
                 'department' => $department,
@@ -3644,13 +3646,18 @@ class AdministratorStoreController extends Controller
             ->with('success', 'Leave request status updated.');
     }
 
+    public function home_leave_queue()
+    {
+        return response()->json($this->homeLeaveQueuePayload())
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    }
+
     private function homeLeaveQueuePayload(): array
     {
         $pendingQuery = $this->pendingLeaveRequestQuery();
 
         $pendingRequests = (clone $pendingQuery)
             ->orderByDesc('created_at')
-            ->take(3)
             ->get()
             ->map(fn (LeaveApplication $request) => $this->formatHomeLeaveRequest($request))
             ->values()
@@ -4398,7 +4405,7 @@ class AdministratorStoreController extends Controller
         }
 
         return $isNonTeaching
-            ? $joinDate->copy()->addMonths(6)
+            ? $joinDate->copy()->addYear()
             : $joinDate->copy()->addYears(3);
     }
 

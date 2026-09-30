@@ -437,7 +437,7 @@
             onclick="downloadLeaveApplicationWordFormV2()"
             class="rounded-lg bg-blue-600 px-6 py-2 text-white hover:bg-blue-700"
         >
-            Download Word Form
+            Submit and Download
         </button>
     </div>
 </form>
@@ -465,6 +465,43 @@
         earnedVacation: {{ json_encode($formEarnedVacationValue) }},
         earnedSick: {{ json_encode($formEarnedSickValue) }},
     };
+
+    function syncLeaveFormCredits(nextDocument) {
+        const fields = {
+            beginningVacation: 'beginning-vacation',
+            beginningSick: 'beginning-sick',
+            earnedVacation: 'earned-vacation',
+            earnedSick: 'earned-sick',
+        };
+        const nextState = {};
+        for (const [key, id] of Object.entries(fields)) {
+            const input = nextDocument.getElementById(`${id}-hidden`);
+            if (!input) return;
+            const value = Number(input.value);
+            if (!Number.isFinite(value) || value < 0) return;
+            nextState[key] = value;
+        }
+
+        Object.assign(leaveBalanceState, nextState, {
+            availableVacation: nextState.beginningVacation + nextState.earnedVacation,
+            availableSick: nextState.beginningSick + nextState.earnedSick,
+        });
+        const values = {
+            'beginning-vacation': nextState.beginningVacation,
+            'beginning-sick': nextState.beginningSick,
+            'beginning-total': nextState.beginningVacation + nextState.beginningSick,
+            'earned-vacation': nextState.earnedVacation,
+            'earned-sick': nextState.earnedSick,
+            'earned-total': nextState.earnedVacation + nextState.earnedSick,
+        };
+        for (const [id, value] of Object.entries(values)) {
+            const cell = document.getElementById(`${id}-balance`);
+            const input = document.getElementById(`${id}-hidden`);
+            if (cell) cell.textContent = formatDayValue(value);
+            if (input) input.value = value.toFixed(1);
+        }
+        updateLeaveSummaryTable();
+    }
 
     function formatDayValue(value) {
         const safeValue = Number.isFinite(value) ? Math.max(0, value) : 0;

@@ -342,7 +342,7 @@
         </span>
         <span
           class="text-gray-700"
-          x-text="isPermanentClassification(selectedEmployee?.employee?.classification) ? 'Permanent' : 'Probationary'"
+          x-text="selectedEmployeeContractType()"
         ></span>
       </div>
     </div>

@@ -7,6 +7,35 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
+        html body main .conversation-directory-card:hover,
+        html body main .conversation-directory-card:focus-within {
+            outline: 2px solid #6ee7b7;
+            outline-offset: -2px;
+        }
+
+
+        html #employee-communication-page [data-directory-avatar] {
+            width: 2.75rem;
+            height: 2.75rem;
+            border-radius: 50%;
+            background-color: #047857 !important;
+            background-image: linear-gradient(135deg, #047857, #0e7490) !important;
+            border: 2px solid #5eead4 !important;
+            color: #fff !important;
+        }
+
+        html #chat-panel [data-message-input-shell],
+        html #chat-panel textarea[name="body"] {
+            background-color: #fff !important;
+            color: #0f172a !important;
+            caret-color: #0f172a;
+            color-scheme: light;
+        }
+        html #chat-panel textarea[name="body"]::placeholder {
+            color: #64748b !important;
+            opacity: 1;
+        }
+
         body{font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif;transition:margin-left .3s ease}
         main{transition:margin-left .3s ease}
         aside:not(:hover)~main{margin-left:4rem}
@@ -180,9 +209,9 @@
                             $adminUnreadCount = (int) ($admin->unread_message_count ?? 0);
                             $adminHasUnreadMessages = (bool) ($admin->has_unread_messages ?? false);
                         @endphp
-                        <article class="directory-card employee-communication-card-motion employee-communication-reveal rounded-2xl border p-3 shadow-sm {{ (int) ($selectedParticipant?->id ?? 0) === (int) ($admin->id ?? 0) ? 'border-emerald-300 bg-emerald-50 ring-2 ring-emerald-100' : 'border-slate-200 bg-slate-50/70' }}" style="--employee-communication-delay: {{ 160 + (($loop->index % 6) * 40) }}ms;" data-admin-id="{{ (int) ($admin->id ?? 0) }}" data-name="{{ strtolower($fullName) }}" data-role="{{ strtolower($jobRole.' '.$role) }}" data-status="{{ $isAvailable ? 'available' : 'other' }}" data-unread="{{ $adminHasUnreadMessages ? 'true' : 'false' }}" data-unread-count="{{ $adminUnreadCount }}">
+                        <article class="directory-card employee-communication-card-motion employee-communication-reveal rounded-2xl border p-3 shadow-sm conversation-directory-card border-slate-200 bg-slate-50/70" style="--employee-communication-delay: {{ 160 + (($loop->index % 6) * 40) }}ms;" data-admin-id="{{ (int) ($admin->id ?? 0) }}" data-name="{{ strtolower($fullName) }}" data-role="{{ strtolower($jobRole.' '.$role) }}" data-status="{{ $isAvailable ? 'available' : 'other' }}" data-unread="{{ $adminHasUnreadMessages ? 'true' : 'false' }}" data-unread-count="{{ $adminUnreadCount }}">
                             <div class="flex items-center gap-3">
-                                    <div class="employee-communication-icon-pop flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 via-teal-500 to-sky-500 text-sm font-black text-white">{{ $initials !== '' ? $initials : 'AD' }}</div>
+                                    <div data-directory-avatar class="employee-communication-icon-pop flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 via-teal-500 to-sky-500 text-sm font-black text-white">{{ $initials !== '' ? $initials : 'AD' }}</div>
                                     <div class="min-w-0 flex-1">
                                       <div class="flex items-start justify-between gap-2">
                                        <div class="min-w-0">
@@ -194,7 +223,7 @@
                                         </div>
                                         <p class="truncate text-xs font-medium text-slate-500">{{ $jobRole }} - {{ $role !== '' ? $role : 'Admin' }}</p>
                                        </div>
-                                       <span class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full {{ $isAvailable ? 'bg-emerald-400 ring-2 ring-emerald-100' : 'bg-slate-400 ring-2 ring-slate-100' }}"></span>
+                                       <span data-chat-presence="directory-{{ $admin->id }}" title="{{ $admin->is_online ? 'Online' : 'Offline' }}" class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full {{ $admin->is_online ? 'bg-emerald-400 ring-2 ring-emerald-100' : 'bg-slate-400 ring-2 ring-slate-100' }}"></span>
                                       </div>
                                       <div class="mt-2 flex items-center justify-between gap-2">
                                         <p data-employee-message-preview class="truncate text-xs {{ $adminHasUnreadMessages ? 'font-semibold text-slate-700' : 'text-slate-400' }}">{{ $admin->latest_message_preview ?: ($email !== '' ? $email : 'No messages yet') }}</p>
@@ -222,11 +251,11 @@
                                 <div class="flex items-center justify-between gap-4">
                                     <div class="flex items-center gap-4">
                                         <div class="relative flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-slate-300 to-slate-500 text-sm font-black text-slate-950">{{ $participantInitials !== '' ? $participantInitials : 'AD' }}
-                                            <span class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-400"></span>
+                                            <span data-chat-presence="header-dot-{{ $selectedParticipant->id }}" title="{{ $selectedParticipant->is_online ? 'Online' : 'Offline' }}" class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white {{ $selectedParticipant->is_online ? 'bg-emerald-400' : 'bg-slate-400' }}"></span>
                                         </div>
                                         <div class="min-w-0">
                                             <p class="truncate text-xl font-bold text-slate-900">{{ $participantName }}</p>
-                                            <p class="text-sm text-slate-500">Active now</p>
+                                            <p data-chat-presence="header-label-{{ $selectedParticipant->id }}" class="text-sm text-slate-500">{{ $selectedParticipant->is_online ? 'Online' : 'Offline' }}</p>
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-3 text-violet-400">
@@ -328,7 +357,7 @@
                                          <i class="fa-regular fa-image"></i>
                                      </button>
                                      <input data-chat-image-input name="attachments[]" type="file" accept="image/jpeg,image/png,image/gif,image/webp" multiple class="hidden">
-                                     <div class="relative flex-1 rounded-full bg-slate-100 py-2 pl-4 pr-2 ring-1 ring-slate-200">
+                                     <div data-message-input-shell class="relative flex-1 rounded-full bg-white py-2 pl-4 pr-2 ring-1 ring-slate-200">
                                          <div class="flex items-center gap-2">
                                              <textarea name="body" rows="1" maxlength="4000" class="min-w-0 flex-1 resize-none bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400" placeholder="Aa">{{ old('body') }}</textarea>
                                              <button type="button" data-chat-emoji-trigger class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-fuchsia-500 transition hover:bg-fuchsia-500/15 hover:text-fuchsia-400" aria-label="Choose an emoji" aria-expanded="false">
@@ -767,6 +796,13 @@ function applyDirectoryFilters(){const query=(searchInput?.value||'').trim().toL
 
              const html = await response.text();
              const incomingDocument = new DOMParser().parseFromString(html, 'text/html');
+            document.querySelectorAll('[data-chat-presence]').forEach((current) => {
+                const incoming = incomingDocument.querySelector(`[data-chat-presence="${current.dataset.chatPresence}"]`);
+                if (!incoming) return;
+                current.className = incoming.className;
+                current.textContent = incoming.textContent;
+                current.title = incoming.title;
+            });
              synchronizeEmployeeSidebar(incomingDocument);
              synchronizeAdminCards(incomingDocument);
              synchronizeEmployeeThread(incomingDocument);

@@ -36,6 +36,13 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+    protected $appends = ['is_online'];
+
+    public function getIsOnlineAttribute(): bool
+    {
+        return app(\App\Support\EmployeePresence::class)->isOnline((int) $this->id);
+    }
+
     protected $fillable = [
         'first_name',
         'last_name',

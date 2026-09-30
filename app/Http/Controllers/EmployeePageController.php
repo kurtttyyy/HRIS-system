@@ -655,26 +655,12 @@ class EmployeePageController extends Controller
             ->map($mapApplicationToRecord)
             ->values();
 
-        $latestLeaveApplication = LeaveApplication::query()
-            ->where('user_id', $user?->id)
-            ->whereDate('created_at', '<=', $monthEnd->toDateString())
-            ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['approved'])
-            ->orderByDesc('created_at')
-            ->first();
-
-        if ($latestLeaveApplication) {
-            $beginningVacationBalance = (float) ($latestLeaveApplication->ending_vacation ?? 0);
-            $beginningSickBalance = (float) ($latestLeaveApplication->ending_sick ?? 0);
-        }
-
-        $hasExistingMonthApplication = LeaveApplication::query()
-            ->where('user_id', $user?->id)
-            ->whereBetween('created_at', [$monthStart->toDateTimeString(), $monthEnd->toDateTimeString()])
-            ->exists();
-
-        $equalHalfEarnedDays = round($totalEarnedDays / 2, 1);
-        $formEarnedVacation = $hasExistingMonthApplication ? 0.0 : $equalHalfEarnedDays;
-        $formEarnedSick = $hasExistingMonthApplication ? 0.0 : $equalHalfEarnedDays;
+        $credits = app(\App\Support\EmployeeLeaveCredits::class)->forMonth($user, $monthCursor);
+        $beginningVacationBalance = $credits['has_approved'] ? $credits['vacation'] : 0.0;
+        $beginningSickBalance = $credits['has_approved'] ? $credits['sick'] : 0.0;
+        $equalHalfEarnedDays = $credits['limit'];
+        $formEarnedVacation = $credits['has_approved'] ? 0.0 : $credits['vacation'];
+        $formEarnedSick = $credits['has_approved'] ? 0.0 : $credits['sick'];
         $formEarnedTotal = round($formEarnedVacation + $formEarnedSick, 1);
 
         $monthlyLeaveAllowances = collect($defaultLeaveAllowances)
@@ -714,16 +700,12 @@ class EmployeePageController extends Controller
             return (float) ($application->number_of_working_days ?? 0);
         }), 1);
 
-        if ($latestLeaveApplication) {
-            $annualLimit = round((float) ($latestLeaveApplication->beginning_vacation ?? 0) + (float) ($latestLeaveApplication->earned_vacation ?? 0), 1);
-            $annualUsed = round((float) ($latestLeaveApplication->applied_vacation ?? 0), 1);
-            $sickLimit = round((float) ($latestLeaveApplication->beginning_sick ?? 0) + (float) ($latestLeaveApplication->earned_sick ?? 0), 1);
-            $sickUsed = round((float) ($latestLeaveApplication->applied_sick ?? 0), 1);
-            $vacationCardAvailable = round((float) ($latestLeaveApplication->ending_vacation ?? 0), 1);
-            $sickCardAvailable = round((float) ($latestLeaveApplication->ending_sick ?? 0), 1);
-            $fallbackUsedDays = (float) ($latestLeaveApplication->applied_total ?? $totalDaysUsed);
-            $totalDaysUsedCard = round($monthUsageTotal > 0 ? $monthUsageTotal : $fallbackUsedDays, 1);
-        }
+        $annualLimit = $sickLimit = $credits['limit'];
+        $annualUsed = $credits['vacation_used'];
+        $sickUsed = $credits['sick_used'];
+        $vacationCardAvailable = $credits['vacation'];
+        $sickCardAvailable = $credits['sick'];
+        $totalDaysUsedCard = $monthUsageTotal;
 
         return view('employee.employeeLeave', compact(
             'selectedMonth',
@@ -2041,9 +2023,6 @@ class EmployeePageController extends Controller
                 return 'Permanent';
             }
 
-            if (str_contains($classification, 'probationary')) {
-                return 'Probationary';
-            }
         }
 
         $jobType = strtolower(trim((string) (
@@ -2058,7 +2037,7 @@ class EmployeePageController extends Controller
                 try {
                     $joinDate = Carbon::parse($rawJoinDate);
                     $threshold = $jobType === 'non-teaching'
-                        ? $joinDate->copy()->addMonths(6)
+                        ? $joinDate->copy()->addYear()
                         : $joinDate->copy()->addYears(3);
 
                     return now()->lt($threshold) ? 'Probationary' : 'Permanent';
@@ -2070,7 +2049,7 @@ class EmployeePageController extends Controller
             return 'Probationary';
         }
 
-        return 'Not set';
+        return str_contains($classification, 'probationary') ? 'Probationary' : 'Not set';
     }
 
     private function hierarchyManagerScore(?User $user): int
@@ -2280,21 +2259,12 @@ class EmployeePageController extends Controller
         $vacationCardAvailable = max($annualLimit - $annualUsed, 0);
         $sickCardAvailable = max($sickLimit - $sickUsed, 0);
 
-        $latestLeaveApplication = LeaveApplication::query()
-            ->where('user_id', $user?->id)
-            ->whereDate('created_at', '<=', $monthEnd->toDateString())
-            ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['approved'])
-            ->orderByDesc('created_at')
-            ->first();
-
-        if ($latestLeaveApplication) {
-            $annualLimit = round((float) ($latestLeaveApplication->beginning_vacation ?? 0) + (float) ($latestLeaveApplication->earned_vacation ?? 0), 1);
-            $annualUsed = round((float) ($latestLeaveApplication->applied_vacation ?? 0), 1);
-            $sickLimit = round((float) ($latestLeaveApplication->beginning_sick ?? 0) + (float) ($latestLeaveApplication->earned_sick ?? 0), 1);
-            $sickUsed = round((float) ($latestLeaveApplication->applied_sick ?? 0), 1);
-            $vacationCardAvailable = round((float) ($latestLeaveApplication->ending_vacation ?? 0), 1);
-            $sickCardAvailable = round((float) ($latestLeaveApplication->ending_sick ?? 0), 1);
-        }
+        $credits = app(\App\Support\EmployeeLeaveCredits::class)->forMonth($user, $monthCursor);
+        $annualLimit = $sickLimit = $credits['limit'];
+        $annualUsed = $credits['vacation_used'];
+        $sickUsed = $credits['sick_used'];
+        $vacationCardAvailable = $credits['vacation'];
+        $sickCardAvailable = $credits['sick'];
 
         // Keep Days Used consistent with employeeLeave summary logic.
         $monthApplications = LeaveApplication::query()
@@ -2335,11 +2305,6 @@ class EmployeePageController extends Controller
             ->sum('days_with_pay'), 1);
         $monthUsageTotal = round($monthAppliedTotal + $monthOfficialWithPayTotal, 1);
         $totalDaysUsedCard = $monthUsageTotal;
-
-        if ($latestLeaveApplication) {
-            $fallbackUsedDays = (float) ($latestLeaveApplication->applied_total ?? 0);
-            $totalDaysUsedCard = round($monthUsageTotal > 0 ? $monthUsageTotal : $fallbackUsedDays, 1);
-        }
 
         $combinedAvailable = round($vacationCardAvailable + $sickCardAvailable, 1);
         $combinedLimit = max(round($annualLimit + $sickLimit, 1), 0.0);

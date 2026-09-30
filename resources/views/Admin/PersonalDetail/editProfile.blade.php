@@ -55,8 +55,8 @@
                 <input name="employee_id" class="border rounded-md px-3 py-2" x-model="selectedEmployee.employee.employee_id">
                 <select class="border rounded-md px-3 py-2 bg-gray-50" :value="employmentClassificationLabel()" disabled>
                   <option value="">Classification</option>
-                  <option value="Full-time">Full-time</option>
-                  <option value="Part-time">Part-time</option>
+                  <option value="Not set">Not set</option>
+                  <option value="Teaching">Teaching</option>
                   <option value="Non-Teaching">Non-Teaching</option>
                 </select>
               </div>

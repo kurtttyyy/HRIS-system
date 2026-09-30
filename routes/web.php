@@ -10,6 +10,11 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\RegisterLoginController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/presence', function () {
+    abort_unless(auth()->check() && in_array(strtolower(trim((string) auth()->user()->role)), ['employee', 'admin', 'administrator'], true), 401);
+    return response()->noContent()->header('Cache-Control', 'no-store');
+})->name('employee.presence');
+
 Route::get('/csrf-token', function () {
     return response()
         ->json(['token' => csrf_token()])
@@ -165,6 +170,7 @@ Route::controller(AdministratorPageController::class)->group(function () {
 });
 
 Route::controller(AdministratorStoreController::class)->group(function () {
+    Route::get('system/dashboard/leave-queue', 'home_leave_queue')->name('admin.homeLeaveQueue');
 
     //STORE
     Route::post('system/store/new/position', 'store_new_position')->name('admin.createPositionStore');

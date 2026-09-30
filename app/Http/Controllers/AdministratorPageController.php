@@ -327,7 +327,7 @@ class AdministratorPageController extends Controller
         ])->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee'])
                         ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['approved'])
                         ->latest()
-                        ->paginate(5, ['*'], 'recent_page')
+                        ->paginate(10, ['*'], 'recent_page')
                         ->withQueryString();
         
         // Get department overview (prefer users.department as source of truth)
@@ -456,7 +456,6 @@ class AdministratorPageController extends Controller
                     ->orWhereRaw("LOWER(TRIM(status)) = ?", ['pending']);
             })
             ->orderByDesc('created_at')
-            ->take(3)
             ->get();
         $pendingResignationsForHome = Resignation::query()
             ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['pending'])
@@ -1022,12 +1021,17 @@ class AdministratorPageController extends Controller
         }
 
         return $isNonTeaching
-            ? $joinDate->copy()->addMonths(6)
+            ? $joinDate->copy()->addYear()
             : $joinDate->copy()->addYears(3);
     }
 
     public function display_employee(Request $request){
         app(EmployeeAccountStatusManager::class)->syncAllEmployeeStatuses();
+
+        $profileOnlyUserId = $request->boolean('profile_only') ? (int) $request->query('user_id', 0) : 0;
+        if ($request->boolean('profile_only') && $profileOnlyUserId <= 0) {
+            abort(404);
+        }
 
         $employee = User::with([
             'applicant',
@@ -1111,6 +1115,11 @@ class AdministratorPageController extends Controller
             ->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee'])
             ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) IN (?, ?)", ['approved', 'not approved'])
             ->get();
+
+        if ($profileOnlyUserId > 0) {
+            $employee = $employee->where('id', $profileOnlyUserId)->values();
+            abort_if($employee->isEmpty(), 404);
+        }
 
         $applicantIds = $employee
             ->pluck('applicant.id')
@@ -1244,7 +1253,8 @@ class AdministratorPageController extends Controller
                     return $hasMissingEmployeeInfo($emp);
                 }
 
-                return strcasecmp(trim((string) ($emp->account_status ?? 'Active')), $employeeStatus) === 0;
+                $displayStatus = trim((string) ($emp->account_status ?? 'Active'));
+                return strcasecmp($displayStatus, $employeeStatus) === 0;
             }
 
             return true;
@@ -1329,6 +1339,14 @@ class AdministratorPageController extends Controller
 
     public function sidebar_summary()
     {
+        $pendingLeaves = LeaveApplication::query()
+            ->where(function ($query) {
+                $query->whereNull('status')
+                    ->orWhereRaw("TRIM(status) = ''")
+                    ->orWhereRaw("LOWER(TRIM(status)) = ?", ['pending']);
+            })
+            ->count();
+
         $pendingApplicants = Applicant::query()
             ->where(function ($query) {
                 $query->whereNull('application_status')
@@ -1340,6 +1358,7 @@ class AdministratorPageController extends Controller
         return response()->json([
             'employee_count' => Employee::query()->count(),
             'pending_applicant_count' => $pendingApplicants,
+            'pending_leave_count' => $pendingLeaves,
         ])->header('Cache-Control', 'no-store, no-cache, must-revalidate');
     }
 
@@ -2292,6 +2311,7 @@ class AdministratorPageController extends Controller
                 $rangeDays = max((int) ceil($days), 1);
 
                 return [
+                    'application' => $application,
                     'employee_name' => $application->employee_name ?? '-',
                     'leave_type' => $application->leave_type ?: 'Leave',
                     'start_date_carbon' => $baseDate->copy(),
@@ -2667,14 +2687,13 @@ class AdministratorPageController extends Controller
         $monthStart = $monthCursor->copy()->startOfMonth();
         $monthEnd = $monthCursor->copy()->endOfMonth();
 
-        $approvedEmployees = User::query()
-            ->with('employee')
+        $reportEmployees = User::query()
+            ->with(['employee', 'applicant.position'])
             ->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee'])
-            ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['approved'])
             ->get();
 
-        $totalEmployees = $approvedEmployees->count();
-        $departmentCounts = $approvedEmployees
+        $totalEmployees = $reportEmployees->count();
+        $departmentCounts = $reportEmployees
             ->groupBy(function ($user) {
                 $department = trim((string) ($user->department ?? ''));
                 if ($department === '') {
@@ -2704,7 +2723,7 @@ class AdministratorPageController extends Controller
             return $this->normalizeJobType($normalized) ?? ucwords($normalized);
         };
 
-        $jobTypeCounts = $approvedEmployees
+        $jobTypeCounts = $reportEmployees
             ->groupBy(function ($user) use ($resolveReportJobType) {
                 $jobType = trim((string) ($user->employee?->job_type ?? ''));
                 if ($jobType === '') {
@@ -2717,43 +2736,33 @@ class AdministratorPageController extends Controller
             ->sortDesc();
 
         $genderCounts = [
-            'male' => $approvedEmployees
-                ->filter(fn ($user) => strcasecmp(trim((string) ($user->employee?->sex ?? '')), 'Male') === 0)
+            'male' => $reportEmployees
+                ->filter(fn ($user) => \App\Support\EmployeeReportClassification::gender($user) === 'male')
                 ->count(),
-            'female' => $approvedEmployees
-                ->filter(fn ($user) => strcasecmp(trim((string) ($user->employee?->sex ?? '')), 'Female') === 0)
+            'female' => $reportEmployees
+                ->filter(fn ($user) => \App\Support\EmployeeReportClassification::gender($user) === 'female')
                 ->count(),
         ];
-        $headUserIds = $approvedEmployees
-            ->filter(fn ($user) => strcasecmp(trim((string) ($user->department_head ?? '')), 'Approved') === 0)
-            ->pluck('id')
-            ->map(fn ($id) => (int) $id)
-            ->filter()
-            ->values();
-        $coordinatorUserIds = $approvedEmployees
-            ->filter(function ($user) {
-                $position = strtolower(trim((string) ($user->employee?->position ?? '')));
-                $classification = strtolower(trim((string) ($user->employee?->classification ?? '')));
-
-                return str_contains($position, 'coordinator') || str_contains($classification, 'coordinator');
-            })
-            ->pluck('id')
-            ->map(fn ($id) => (int) $id)
-            ->filter()
-            ->values();
-        $headOrCoordinatorUserIds = $headUserIds
-            ->concat($coordinatorUserIds)
-            ->unique()
-            ->values();
+        $staffingSummary = \App\Support\DepartmentStaffingSummary::forEmployees($reportEmployees);
         $roleGroupCounts = [
-            'heads' => $headUserIds->count(),
-            'coordinators' => $coordinatorUserIds->count(),
-            'staff' => max($totalEmployees - $headOrCoordinatorUserIds->count(), 0),
+            'heads' => $staffingSummary->sum('heads'),
+            'coordinators' => $staffingSummary->sum('coordinator'),
+            'staff' => $staffingSummary->sum('staff'),
             'teaching' => (int) ($jobTypeCounts->get('Teaching', 0) ?? 0),
             'non_teaching' => (int) ($jobTypeCounts->get('Non-Teaching', 0) ?? 0),
+            'substitute' => $reportEmployees->filter(function ($user) {
+                $role = implode(' ', [
+                    $user->job_role ?? '',
+                    $user->position ?? '',
+                    $user->employee?->position ?? '',
+                    $user->employee?->classification ?? '',
+                ]);
+
+                return preg_match('/\bsubstitute\b/i', $role) === 1;
+            })->count(),
         ];
 
-        $joinYearCounts = $approvedEmployees
+        $joinYearCounts = $reportEmployees
             ->map(function ($user) {
                 $joinDate = $user->employee?->employement_date;
                 if (empty($joinDate)) {
@@ -2811,6 +2820,7 @@ class AdministratorPageController extends Controller
             ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) IN (?, ?)", ['processed', 'scanned'])
             ->count();
         $payslipRecordCount = PayslipRecord::query()->count();
+        $employeesWithPayslips = app(\App\Support\PayslipCoverage::class)->countEmployees($reportEmployees);
         $openPositionCount = OpenPosition::query()->count();
         $conversationCount = Conversation::query()->count();
         $resignationCount = Resignation::query()->count();
@@ -2849,6 +2859,7 @@ class AdministratorPageController extends Controller
             'payslipUploadCount',
             'processedPayslipCount',
             'payslipRecordCount',
+            'employeesWithPayslips',
             'openPositionCount',
             'conversationCount',
             'resignationCount',

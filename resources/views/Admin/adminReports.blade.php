@@ -12,6 +12,105 @@
     aside ~ main { margin-left: 16rem; }
     .report-card { transition: transform 220ms ease, box-shadow 220ms ease; }
     .report-card:hover { transform: translateY(-3px); box-shadow: 0 22px 48px rgba(15, 23, 42, 0.10); }
+    @keyframes report-icon-float {
+      0%, 100% { translate: 0 0; }
+      50% { translate: 0 -4px; }
+    }
+    @keyframes report-ambient-drift {
+      0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.35; }
+      50% { transform: translate(-25px, 18px) scale(1.15); opacity: 0.65; }
+    }
+    @keyframes report-highlight-flow {
+      0%, 20% { transform: translateX(-110%); }
+      80%, 100% { transform: translateX(110%); }
+    }
+    #admin-reports-page .report-card {
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+    }
+    #admin-reports-page .report-card::before {
+      content: '';
+      position: absolute;
+      z-index: -1;
+      pointer-events: none;
+      top: -55px;
+      right: -40px;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.2), transparent 70%);
+      animation: report-ambient-drift 9s ease-in-out infinite;
+    }
+    #admin-reports-page .report-card:nth-child(2)::before {
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.2), transparent 70%);
+      animation-delay: -2s;
+    }
+    #admin-reports-page .report-card:nth-child(3)::before {
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.2), transparent 70%);
+      animation-delay: -4s;
+    }
+    #admin-reports-page .report-card:nth-child(4)::before {
+      background: radial-gradient(circle, rgba(244, 63, 94, 0.2), transparent 70%);
+      animation-delay: -6s;
+    }
+    #admin-reports-page .report-card > div:first-child > span:first-child {
+      animation: report-icon-float 4s ease-in-out infinite;
+    }
+    #admin-reports-page .report-card:nth-child(even) > div:first-child > span:first-child {
+      animation-delay: -2s;
+    }
+    #admin-reports-page [data-report-bar] {
+      position: relative;
+      overflow: hidden;
+    }
+    #admin-reports-page [data-report-bar]::after {
+      content: '';
+      position: absolute;
+      pointer-events: none;
+      inset: 0;
+      background: linear-gradient(100deg, transparent 20%, rgba(255,255,255,0.28) 50%, transparent 80%);
+      animation: report-highlight-flow 6s ease-in-out infinite;
+    }
+    #admin-reports-page.report-motion-paused *,
+    #admin-reports-page.report-motion-paused *::before,
+    #admin-reports-page.report-motion-paused *::after {
+      animation-play-state: paused !important;
+    }
+    @media print {
+      #admin-reports-page *, #admin-reports-page *::before, #admin-reports-page *::after {
+        animation: none !important;
+      }
+      #admin-reports-page .report-card::before,
+      #admin-reports-page [data-report-bar]::after { display: none; }
+    }
+    #admin-reports-page > section > .rounded-3xl {
+      transition: box-shadow 240ms ease, border-color 240ms ease;
+    }
+    #admin-reports-page button {
+      transition: transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+    }
+    #admin-reports-page button:active { transform: scale(0.97); }
+    #admin-reports-page input { transition: border-color 180ms ease, box-shadow 180ms ease; }
+    #admin-reports-page .report-card i { transition: transform 240ms ease; }
+    @media (hover: hover) and (pointer: fine) {
+      #admin-reports-page > section > .rounded-3xl:hover {
+        border-color: #a7f3d0;
+        box-shadow: 0 14px 32px rgba(15, 23, 42, 0.07);
+      }
+      #admin-reports-page .report-card:hover i { transform: translateY(-2px) rotate(-6deg); }
+      #admin-reports-page button:hover { transform: translateY(-2px); }
+      #admin-reports-page button:active { transform: scale(0.97); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #admin-reports-page *, #admin-reports-page *::before, #admin-reports-page *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+      #admin-reports-page .report-card:hover,
+      #admin-reports-page .report-card:hover i,
+      #admin-reports-page button { transform: none !important; }
+    }
     html[data-theme="dark"] #admin-reports-page [class*="bg-sky-50"] {
       background: #14283a !important;
       color: #7dd3fc !important;
@@ -165,7 +264,7 @@
       $maxLeaveDays = max((float) ($leaveTypeDays->max() ?? 0), 1);
       $totalLeaveStatuses = max((int) $leaveStatusCounts->sum(), 1);
       $totalResignationStatuses = max((int) $resignationStatusCounts->sum(), 1);
-      $payrollProcessedPercent = $payslipUploadCount > 0 ? round(($processedPayslipCount / $payslipUploadCount) * 100) : 0;
+      $payrollProcessedPercent = $totalEmployees > 0 ? round(($employeesWithPayslips / $totalEmployees) * 100) : 0;
       $maxJoinYear = max((int) ($joinYearCounts->max() ?? 0), 1);
       $joinYearPoints = $joinYearCounts->values()->map(function ($count, $index) use ($maxJoinYear) {
         $x = 28 + ($index * 52);
@@ -177,7 +276,10 @@
     <div id="admin-reports-page" class="min-w-0 space-y-6 p-4 pt-20 md:p-8">
       <section class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p class="text-xs font-bold uppercase tracking-[0.22em] text-emerald-700">Records Report</p>
+          <div class="flex flex-wrap items-center gap-3">
+            <p class="text-xs font-bold uppercase tracking-[0.22em] text-emerald-700">Records Report</p>
+            <button id="report-motion-toggle" type="button" aria-pressed="false" class="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">Pause motion</button>
+          </div>
           <h1 class="mt-2 text-3xl font-black tracking-tight text-slate-950">Whole HRIS data overview</h1>
           <p class="mt-1 max-w-3xl text-sm leading-6 text-slate-600">A full admin snapshot of employees, attendance, leave, documents, payslips, resignations, hiring, and communication records.</p>
         </div>
@@ -195,7 +297,7 @@
         <div class="report-card rounded-2xl border border-white bg-white p-5 shadow-sm">
           <div class="flex items-center justify-between"><span class="grid h-11 w-11 place-items-center rounded-xl bg-sky-100 text-sky-700"><i class="fa-solid fa-users"></i></span><span class="rounded-full bg-sky-50 px-3 py-1 text-xs font-bold text-sky-700">Employees</span></div>
           <p class="mt-5 text-3xl font-black text-slate-950">{{ number_format($totalEmployees) }}</p>
-          <p class="mt-1 text-sm font-semibold text-slate-600">Approved employee records</p>
+          <p class="mt-1 text-sm font-semibold text-slate-600">All employee records</p>
         </div>
         <div class="report-card rounded-2xl border border-white bg-white p-5 shadow-sm">
           <div class="flex items-center justify-between"><span class="grid h-11 w-11 place-items-center rounded-xl bg-emerald-100 text-emerald-700"><i class="fa-solid fa-circle-check"></i></span><span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">Attendance</span></div>
@@ -251,17 +353,18 @@
 
         <div class="rounded-3xl border border-white bg-white p-6 shadow-sm">
           <p class="text-xs font-bold uppercase tracking-[0.2em] text-cyan-700">Donut Chart</p>
-          <h2 class="mt-1 text-xl font-black text-slate-950">Payslip processing</h2>
+          <h2 class="mt-1 text-xl font-black text-slate-950">Employee payslip coverage</h2>
+          <p class="mt-2 text-sm text-slate-500">{{ number_format($employeesWithPayslips) }} of {{ number_format($totalEmployees) }} employees have at least one payslip. All time; each employee counts once.</p>
           <div class="mt-6 flex justify-center">
             <div class="grid h-44 w-44 place-items-center rounded-full" style="background: conic-gradient(#10b981 0 {{ $payrollProcessedPercent }}%, #e2e8f0 {{ $payrollProcessedPercent }}% 100%);">
               <div class="grid h-28 w-28 place-items-center rounded-full bg-white text-center">
-                <div><p class="text-3xl font-black text-slate-950">{{ $payrollProcessedPercent }}%</p><p class="text-xs font-bold text-slate-500">Processed</p></div>
+                <div><p class="text-3xl font-black text-slate-950">{{ $payrollProcessedPercent }}%</p><p class="text-xs font-bold text-slate-500">With payslips</p></div>
               </div>
             </div>
           </div>
           <div class="mt-6 grid grid-cols-2 gap-3">
-            <div class="rounded-2xl bg-slate-50 p-4"><p class="text-xl font-black">{{ number_format($payslipUploadCount) }}</p><p class="text-xs font-semibold text-slate-500">Uploads</p></div>
-            <div class="rounded-2xl bg-slate-50 p-4"><p class="text-xl font-black">{{ number_format($payslipRecordCount) }}</p><p class="text-xs font-semibold text-slate-500">Records</p></div>
+            <div class="rounded-2xl bg-slate-50 p-4"><p class="text-xl font-black">{{ number_format($employeesWithPayslips) }}</p><p class="text-xs font-semibold text-slate-500">Employees with payslips</p></div>
+            <div class="rounded-2xl bg-slate-50 p-4"><p class="text-xl font-black">{{ number_format(max($totalEmployees - $employeesWithPayslips, 0)) }}</p><p class="text-xs font-semibold text-slate-500">Employees without payslips</p></div>
           </div>
         </div>
       </section>
@@ -280,7 +383,7 @@
               @endphp
               <div>
                 <div class="flex justify-between gap-4 text-sm"><span class="font-bold text-slate-700">{{ $department }}</span><span class="font-black">{{ number_format($count) }}</span></div>
-                <div class="mt-2 h-3 rounded-full bg-slate-100"><div class="h-3 rounded-full" style="width: {{ max(5, round(($count / $maxDepartment) * 100)) }}%; background-color: {{ $departmentBarColor }};"></div></div>
+                <div class="mt-2 h-3 rounded-full bg-slate-100"><div data-report-bar="horizontal" class="h-3 rounded-full" style="width: {{ max(5, round(($count / $maxDepartment) * 100)) }}%; background-color: {{ $departmentBarColor }};"></div></div>
               </div>
             @empty
               <p class="rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-slate-500">No department records yet.</p>
@@ -295,7 +398,7 @@
             @foreach ($recordVolume as $label => $count)
               <div class="flex min-w-[5.5rem] flex-1 flex-col items-center justify-end gap-2">
                 <span class="text-xs font-black text-slate-900">{{ number_format($count) }}</span>
-                <div class="w-full rounded-t-2xl bg-orange-500" style="height: {{ max(14, round(($count / $maxVolume) * 210)) }}px;"></div>
+                <div data-report-bar="vertical" class="w-full rounded-t-2xl bg-orange-500" style="height: {{ max(14, round(($count / $maxVolume) * 210)) }}px;"></div>
                 <span class="text-center text-[11px] font-semibold leading-4 text-slate-500">{{ $label }}</span>
               </div>
             @endforeach
@@ -311,7 +414,7 @@
             @forelse ($leaveStatusCounts as $status => $count)
               <div>
                 <div class="flex justify-between text-sm"><span class="font-bold text-slate-700">{{ $status }}</span><span class="font-black">{{ $count }}</span></div>
-                <div class="mt-2 h-2.5 rounded-full bg-slate-100"><div class="h-2.5 rounded-full bg-amber-500" style="width: {{ max(6, round(($count / $totalLeaveStatuses) * 100)) }}%;"></div></div>
+                <div class="mt-2 h-2.5 rounded-full bg-slate-100"><div data-report-bar="horizontal" class="h-2.5 rounded-full bg-amber-500" style="width: {{ max(6, round(($count / $totalLeaveStatuses) * 100)) }}%;"></div></div>
               </div>
             @empty
               <p class="rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-slate-500">No leave requests this month.</p>
@@ -326,7 +429,7 @@
             @forelse ($leaveTypeDays as $type => $days)
               <div>
                 <div class="flex justify-between text-sm"><span class="font-bold text-slate-700">{{ $type }}</span><span class="font-black">{{ number_format($days, 1) }}</span></div>
-                <div class="mt-2 h-2.5 rounded-full bg-slate-100"><div class="h-2.5 rounded-full bg-emerald-500" style="width: {{ max(6, round(($days / $maxLeaveDays) * 100)) }}%;"></div></div>
+                <div class="mt-2 h-2.5 rounded-full bg-slate-100"><div data-report-bar="horizontal" class="h-2.5 rounded-full bg-emerald-500" style="width: {{ max(6, round(($days / $maxLeaveDays) * 100)) }}%;"></div></div>
               </div>
             @empty
               <p class="rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-slate-500">No leave day totals yet.</p>
@@ -343,7 +446,7 @@
                 <div class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-rose-50 text-sm font-black text-rose-700">{{ $count }}</div>
                 <div class="min-w-0 flex-1">
                   <div class="flex justify-between text-sm"><span class="font-bold text-slate-700">{{ $status }}</span><span class="font-semibold text-slate-500">{{ round(($count / $totalResignationStatuses) * 100) }}%</span></div>
-                  <div class="mt-2 h-2 rounded-full bg-slate-100"><div class="h-2 rounded-full bg-rose-500" style="width: {{ max(6, round(($count / $totalResignationStatuses) * 100)) }}%;"></div></div>
+                  <div class="mt-2 h-2 rounded-full bg-slate-100"><div data-report-bar="horizontal" class="h-2 rounded-full bg-rose-500" style="width: {{ max(6, round(($count / $totalResignationStatuses) * 100)) }}%;"></div></div>
                 </div>
               </div>
             @empty
@@ -362,12 +465,10 @@
             <div class="rounded-2xl bg-rose-50 p-4"><p class="text-2xl font-black">{{ number_format($genderCounts['female'] ?? 0) }}</p><p class="text-xs font-semibold text-slate-500">Female</p></div>
             <div class="rounded-2xl bg-emerald-50 p-4"><p class="text-2xl font-black">{{ number_format($roleGroupCounts['heads'] ?? 0) }}</p><p class="text-xs font-semibold text-slate-500">Heads</p></div>
             <div class="rounded-2xl bg-cyan-50 p-4"><p class="text-2xl font-black">{{ number_format($roleGroupCounts['coordinators'] ?? 0) }}</p><p class="text-xs font-semibold text-slate-500">Coordinators</p></div>
-            <div class="rounded-2xl bg-violet-50 p-4"><p class="text-2xl font-black">{{ number_format($roleGroupCounts['staff'] ?? 0) }}</p><p class="text-xs font-semibold text-slate-500">Staff</p></div>
             <div class="rounded-2xl bg-amber-50 p-4"><p class="text-2xl font-black">{{ number_format($roleGroupCounts['teaching'] ?? 0) }}</p><p class="text-xs font-semibold text-slate-500">Teaching</p></div>
             <div class="rounded-2xl bg-orange-50 p-4"><p class="text-2xl font-black">{{ number_format($roleGroupCounts['non_teaching'] ?? 0) }}</p><p class="text-xs font-semibold text-slate-500">Non-Teaching</p></div>
-            <div class="rounded-2xl bg-blue-50 p-4 text-blue-700"><p class="text-2xl font-black">{{ number_format($documentCount) }}</p><p class="text-xs font-semibold opacity-80">Documents</p></div>
+            <div class="rounded-2xl bg-blue-50 p-4 text-blue-700"><p class="text-2xl font-black">{{ number_format($roleGroupCounts['substitute'] ?? 0) }}</p><p class="text-xs font-semibold opacity-80">Substitute</p></div>
             <div class="rounded-2xl bg-lime-50 p-4 text-lime-700"><p class="text-2xl font-black">{{ number_format($openPositionCount) }}</p><p class="text-xs font-semibold opacity-80">Open Jobs</p></div>
-            <div class="rounded-2xl bg-teal-50 p-4 text-teal-700"><p class="text-2xl font-black">{{ number_format($conversationCount) }}</p><p class="text-xs font-semibold opacity-80">Conversations</p></div>
             <div class="rounded-2xl bg-red-50 p-4 text-red-700"><p class="text-2xl font-black">{{ number_format($resignationCount) }}</p><p class="text-xs font-semibold opacity-80">Resignations</p></div>
           </div>
         </div>
@@ -396,6 +497,75 @@
 </div>
 
 <script>
+  (() => {
+    const page = document.getElementById('admin-reports-page');
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const toggle = document.getElementById('report-motion-toggle');
+    let motionPaused = false;
+    const syncMotion = () => {
+      page?.classList.toggle('report-motion-paused', motionPaused || document.hidden || motionPreference.matches);
+      if (toggle) {
+        toggle.hidden = motionPreference.matches;
+        toggle.textContent = motionPaused ? 'Resume motion' : 'Pause motion';
+        toggle.setAttribute('aria-pressed', String(motionPaused));
+      }
+    };
+    toggle?.addEventListener('click', () => { motionPaused = !motionPaused; syncMotion(); });
+    document.addEventListener('visibilitychange', syncMotion);
+    motionPreference.addEventListener('change', syncMotion);
+    syncMotion();
+    if (!page || motionPreference.matches || !('IntersectionObserver' in window)
+        || typeof Element.prototype.animate !== 'function') return;
+
+    const activeAnimations = new Set();
+    const play = (element, frames, options) => {
+      const animation = element.animate(frames, options);
+      activeAnimations.add(animation);
+      animation.finished.catch(() => {}).finally(() => activeAnimations.delete(animation));
+    };
+    const observer = new IntersectionObserver((entries) => {
+      let visibleIndex = 0;
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        observer.unobserve(entry.target);
+        if (motionPreference.matches) return;
+        const panel = entry.target;
+        const delay = Math.min(visibleIndex++ * 65, 260);
+        play(panel, [
+          { opacity: 0, translate: '0 18px' },
+          { opacity: 1, translate: '0 0' },
+        ], { duration: 520, delay, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'backwards' });
+
+        panel.querySelectorAll('[data-report-bar]').forEach((bar, index) => {
+          const vertical = bar.dataset.reportBar === 'vertical';
+          play(bar, [
+            { transform: vertical ? 'scaleY(0)' : 'scaleX(0)', transformOrigin: vertical ? 'bottom' : 'left' },
+            { transform: 'scale(1)', transformOrigin: vertical ? 'bottom' : 'left' },
+          ], { duration: 750, delay: delay + Math.min(index * 45, 270), easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'backwards' });
+        });
+        panel.querySelectorAll('polyline').forEach((line) => {
+          const length = line.getTotalLength();
+          if (!length) return;
+          play(line, [
+            { strokeDasharray: `${length} ${length}`, strokeDashoffset: length },
+            { strokeDasharray: `${length} ${length}`, strokeDashoffset: 0 },
+          ], { duration: 1100, delay, easing: 'ease-out' });
+        });
+      });
+    }, { threshold: 0.08 });
+
+    page.querySelectorAll(':scope > section:first-child, :scope > section:not(:first-child) > div')
+      .forEach((panel) => observer.observe(panel));
+    const stopMotion = () => {
+      observer.disconnect();
+      activeAnimations.forEach((animation) => animation.cancel());
+      activeAnimations.clear();
+    };
+    motionPreference.addEventListener('change', (event) => { if (event.matches) stopMotion(); });
+    window.addEventListener('beforeprint', stopMotion);
+    window.addEventListener('pagehide', stopMotion, { once: true });
+  })();
+
   const sidebar = document.querySelector('aside');
   const main = document.querySelector('main');
   if (sidebar && main) {

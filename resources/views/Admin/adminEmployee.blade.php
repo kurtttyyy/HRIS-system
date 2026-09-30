@@ -452,6 +452,13 @@
 <main class="main-with-collapsed-sidebar min-w-0 transition-all duration-300"
       x-data="{
         openProfile:false,
+        closeEmployeeProfile() {
+          if (new URLSearchParams(window.location.search).get('profile_only') === '1') {
+            window.location.assign(@js(route('admin.adminHome')));
+            return;
+          }
+          this.openProfile = false;
+        },
         openEditProfile:false,
         modalTarget: '',
         tab:'overview',
@@ -509,17 +516,17 @@
               }
 
               if (this.employeeById[userId]) {
-                this.employeeById[userId].account_status = status;
+                this.employeeById[userId].account_status = employee.account_status;
                 this.employeeById[userId].status = employee.approval_status;
-                if (normalized === 'active' && this.normalize(employee.approval_status) === 'approved') {
+                if (this.normalize(employee.account_status) === 'active' && this.normalize(employee.approval_status) === 'approved') {
                   this.employeeById[userId].temporary_pin = null;
                 }
               }
 
               if (Number(this.selectedEmployee?.id) === userId) {
-                this.selectedEmployee.account_status = status;
+                this.selectedEmployee.account_status = employee.account_status;
                 this.selectedEmployee.status = employee.approval_status;
-                if (normalized === 'active' && this.normalize(employee.approval_status) === 'approved') {
+                if (this.normalize(employee.account_status) === 'active' && this.normalize(employee.approval_status) === 'approved') {
                   this.selectedEmployee.temporary_pin = null;
                 }
               }
@@ -1144,10 +1151,6 @@
             return 'On Leave';
           }
 
-          if (accountStatus.toLowerCase() === 'active') {
-            return 'Active';
-          }
-
           return 'Active';
         },
         latestApprovedResignationDate() {
@@ -1218,7 +1221,7 @@
           const regularizationDate = new Date(start.getTime());
 
           if (jobType === 'non teaching' || jobType === 'non-teaching' || jobType === 'nt' || jobType === 'nonteaching') {
-            regularizationDate.setMonth(regularizationDate.getMonth() + 6);
+            regularizationDate.setFullYear(regularizationDate.getFullYear() + 1);
             return regularizationDate;
           }
 
@@ -1228,6 +1231,15 @@
         isPermanentClassification(value = this.selectedEmployee?.employee?.classification) {
           const normalized = this.normalizeClassificationValue(value);
           return normalized.includes('permanent') || normalized.includes('regular');
+        },
+        selectedEmployeeContractType() {
+          if (this.isPermanentClassification()) return 'Permanent';
+          const regularizationDate = this.selectedEmployeeRegularizationDate();
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          return regularizationDate && today.getTime() >= regularizationDate.getTime()
+            ? 'Permanent'
+            : 'Probationary';
         },
         canMarkSelectedEmployeePermanent() {
           if (!this.selectedEmployee?.id || !this.selectedEmployee?.employee) return false;
@@ -1752,17 +1764,12 @@
             this.selectedEmployee?.employee?.classification
             || this.selectedEmployee?.applicant?.position?.employment
           );
-          if (classification.includes('part')) return 'Part-time';
-          if (
-            classification.includes('full')
-            || classification.includes('probationary')
-            || classification.includes('permanent')
-            || classification.includes('regular')
-          ) {
-            return 'Full-time';
+          if (['teaching', 't'].includes(jobType)) return 'Teaching';
+          if (['non teaching', 'nonteaching', 'nt'].includes(classification)) {
+            return 'Non-Teaching';
           }
-
-          return jobType.includes('part') ? 'Part-time' : 'Full-time';
+          if (['teaching', 't'].includes(classification)) return 'Teaching';
+          return 'Not set';
         },
         prepareGeneralProfileEdit() {
           if (!this.selectedEmployee) return;
@@ -2070,6 +2077,7 @@
       ); openEmployeeFromQuery(); startAccountStatusPolling()"
 >
 
+    <div @if(request()->boolean('profile_only')) hidden @endif>
     <!-- Header -->
     @php
       $employeeDirectory = collect($employeeDirectory ?? $employee);
@@ -2238,12 +2246,12 @@
             ?: data_get($emp, 'employee.employment_date')
             ?: ($emp->date_hired ?? ''));
         $isProbationaryEmployee = str_contains(strtolower($classValue), 'probationary');
-        if (!$isProbationaryEmployee && !empty($employmentDateRaw)) {
+        if (!preg_match('/permanent|regular/i', $classValue) && !empty($employmentDateRaw)) {
           try {
             $probationStart = \Carbon\Carbon::parse($employmentDateRaw);
             $isNonTeaching = in_array(trim(strtoupper($jobTypeValue)), ['NT', 'NON-TEACHING', 'NON TEACHING'], true);
             $probationEnd = $isNonTeaching
-              ? $probationStart->copy()->addMonths(6)
+              ? $probationStart->copy()->addYear()
               : $probationStart->copy()->addYears(3);
             $isProbationaryEmployee = now()->lt($probationEnd);
           } catch (\Throwable $e) {
@@ -2389,232 +2397,7 @@
         ->values();
       $departmentStaffingSummary = $employeeDirectory
         ->groupBy(fn ($emp) => ($resolveDepartment($emp) !== '' ? $resolveDepartment($emp) : 'Unassigned'))
-        ->map(function ($departmentEmployees, $department) {
-          $employeeFlags = $departmentEmployees->map(function ($emp) {
-            $jobRoleValue = trim((string) ($emp->job_role ?? ''));
-            $positionFieldValue = trim((string) (data_get($emp, 'employee.position') ?? ($emp->position ?? data_get($emp, 'applicant.position.title') ?? '')));
-            $positionTitle = trim((string) ($positionFieldValue !== '' ? $positionFieldValue : $jobRoleValue));
-            $rankValue = trim((string) (data_get($emp, 'employee.rank') ?: ($emp->rank ?? '')));
-            $jobTypeValue = trim((string) (data_get($emp, 'applicant.position.job_type') ?: data_get($emp, 'employee.job_type') ?: ($emp->job_type ?? '')));
-            $classificationValue = trim((string) (data_get($emp, 'employee.classification') ?: data_get($emp, 'applicant.position.employment') ?: ($emp->classification ?? '')));
-            $jobRoleText = strtolower($jobRoleValue);
-            $positionFieldText = strtolower($positionFieldValue);
-            $positionText = strtolower($positionTitle);
-            $rankText = strtolower($rankValue);
-            $jobTypeText = strtolower($jobTypeValue);
-            $classificationText = strtolower($classificationValue);
-            $combinedRoleText = trim($positionText.' '.$rankText);
-            $normalizedRoleText = preg_replace('/[^a-z0-9]+/i', ' ', $combinedRoleText);
-            $normalizedRoleText = trim((string) preg_replace('/\s+/', ' ', (string) $normalizedRoleText));
-            $serviceRecordRows = collect(is_array(data_get($emp, 'employee.service_record_rows')) ? data_get($emp, 'employee.service_record_rows') : []);
-            $isNonTeachingJobType = str_contains($jobTypeText, 'non-teaching')
-              || str_contains($jobTypeText, 'non teaching')
-              || trim($jobTypeText) === 'nt';
-            $isTeachingJobType = !$isNonTeachingJobType && (
-              str_contains($jobTypeText, 'teaching')
-              || str_contains($jobTypeText, 'faculty')
-              || trim($jobTypeText) === 't'
-            );
-
-            $containsRoleKeyword = static function (string $needle) use ($combinedRoleText, $normalizedRoleText): bool {
-              $needle = strtolower(trim($needle));
-              if ($needle === '') {
-                return false;
-              }
-
-              return str_contains($combinedRoleText, $needle) || str_contains($normalizedRoleText, str_replace('&', 'and', $needle));
-            };
-            $containsDeanKeyword = static function (?string $value): bool {
-              $text = strtolower(trim((string) ($value ?? '')));
-              if ($text === '') {
-                return false;
-              }
-
-              $normalized = trim((string) preg_replace('/\s+/', ' ', (string) preg_replace('/[^a-z0-9]+/i', ' ', $text)));
-              return str_contains($text, 'dean') || str_contains($normalized, 'dean');
-            };
-            $latestServiceRecordAction = $serviceRecordRows
-              ->reverse()
-              ->map(function ($row) use ($containsDeanKeyword) {
-                $designation = trim((string) (data_get($row, 'designation') ?? ''));
-                $remarks = trim((string) (data_get($row, 'remarks') ?? ''));
-                $action = null;
-                if (preg_match('/\bpromoted\b/i', $remarks) === 1) {
-                  $action = 'promoted';
-                } elseif (preg_match('/\b(resigned|resign)\b/i', $remarks) === 1) {
-                  $action = 'resigned';
-                }
-
-                return [
-                  'has_content' => $designation !== '' || $remarks !== '',
-                  'matches_dean' => $containsDeanKeyword($designation) || $containsDeanKeyword($remarks),
-                  'action' => $action,
-                ];
-              })
-              ->first(fn ($row) => $row['has_content'] ?? false);
-            $hasActiveDeanServiceRecord = ($latestServiceRecordAction['matches_dean'] ?? false)
-              && (($latestServiceRecordAction['action'] ?? null) !== 'resigned');
-
-            $isCoordinator = str_contains($combinedRoleText, 'coordinator') || str_contains($combinedRoleText, 'coor');
-            $isInstructorLike = str_contains($combinedRoleText, 'instructor')
-              || str_contains($combinedRoleText, 'faculty')
-              || str_contains($combinedRoleText, 'professor')
-              || str_contains($combinedRoleText, 'proffesor')
-              || str_contains($combinedRoleText, 'profesor')
-              || str_contains($combinedRoleText, 'lecturer')
-              || str_contains($combinedRoleText, 'teacher');
-            $isInstructor = $isInstructorLike && !$isNonTeachingJobType;
-            $isVicePresidentRole = preg_match('/\b(v\.?\s*p\.?|vice president)\b/i', $jobRoleValue) === 1;
-            $isTeachingTopHeadRole =
-              $containsRoleKeyword('dean')
-              || $containsRoleKeyword('college dean')
-              || $containsRoleKeyword('executive dean')
-              || $containsRoleKeyword('associate dean')
-              || $containsRoleKeyword('assistant dean')
-              || $containsRoleKeyword('program head')
-              || $containsRoleKeyword('department head')
-              || $containsRoleKeyword('head')
-              || $containsRoleKeyword('chairperson')
-              || $containsRoleKeyword('chairman')
-              || $containsRoleKeyword('department chair')
-              || $containsRoleKeyword('program chair')
-              || str_contains($combinedRoleText, 'chair ')
-              || str_ends_with($combinedRoleText, ' chair');
-            $isTeachingSubordinateRole =
-              $containsRoleKeyword('vice dean')
-              || $containsRoleKeyword('assistant dean')
-              || $containsRoleKeyword('associate dean')
-              || $containsRoleKeyword('coordinator')
-              || $containsRoleKeyword('coor');
-            $isNonTeachingHeadRole =
-              $containsRoleKeyword('dean')
-              || $containsRoleKeyword('legal counsel')
-              || $containsRoleKeyword('director')
-              || preg_match('/\b(o\.?\s*i\.?\s*c\.?|office in ?charge|office incharge)\b/i', $combinedRoleText) === 1
-              || $containsRoleKeyword('school treasurer')
-              || $containsRoleKeyword('school accountant')
-              || $containsRoleKeyword('chief librarian')
-              || $containsRoleKeyword('guidance counselor')
-              || $containsRoleKeyword('guidance counsellor')
-              || $containsRoleKeyword('focal person')
-              || $containsRoleKeyword('coordinator')
-              || $containsRoleKeyword('principal')
-              || $containsRoleKeyword('building property custodian')
-              || $containsRoleKeyword('building and property custodian')
-              || $containsRoleKeyword('building & property custodian')
-              || $containsRoleKeyword('supervisor');
-            $isTeachingTrack = $isInstructor
-              || str_contains($jobTypeText, 'teaching')
-              || str_contains($jobTypeText, 'faculty')
-              || $containsRoleKeyword('dean')
-              || $containsRoleKeyword('college dean')
-              || $containsRoleKeyword('executive dean')
-              || $containsRoleKeyword('associate dean')
-              || $containsRoleKeyword('assistant dean')
-              || $containsRoleKeyword('vice dean')
-              || $containsRoleKeyword('program head')
-              || $containsRoleKeyword('department head')
-              || $containsRoleKeyword('head')
-              || $containsRoleKeyword('chairperson')
-              || $containsRoleKeyword('chairman')
-              || $containsRoleKeyword('department chair')
-              || $containsRoleKeyword('program chair')
-              || str_contains($combinedRoleText, 'chair ')
-              || str_ends_with($combinedRoleText, ' chair');
-            $isDirectLeadershipHead = $jobRoleText === 'president'
-              || $positionFieldText === 'dean'
-              || $isVicePresidentRole
-              || $hasActiveDeanServiceRecord
-              || $isTeachingTopHeadRole
-              || $isNonTeachingHeadRole;
-            $isHead = $isDirectLeadershipHead || (!$isCoordinator && !$isInstructor && (
-              $containsRoleKeyword('head')
-              || $containsRoleKeyword('chief')
-              || $containsRoleKeyword('dean')
-              || $containsRoleKeyword('director')
-              || $containsRoleKeyword('president')
-              || preg_match('/\b(v\.?\s*p\.?|vice president)\b/i', $combinedRoleText) === 1
-              || $containsRoleKeyword('registrar')
-              || $containsRoleKeyword('chairperson')
-              || $containsRoleKeyword('chairman')
-              || str_contains($combinedRoleText, 'chair ')
-              || str_ends_with($combinedRoleText, ' chair')
-              || $containsRoleKeyword('legal counsel')
-              || preg_match('/\b(o\.?\s*i\.?\s*c\.?|office in ?charge|office incharge)\b/i', $combinedRoleText) === 1
-              || $containsRoleKeyword('school treasurer')
-              || $containsRoleKeyword('school accountant')
-              || $containsRoleKeyword('chief librarian')
-              || $containsRoleKeyword('guidance counselor')
-              || $containsRoleKeyword('guidance counsellor')
-              || $containsRoleKeyword('focal person')
-              || $containsRoleKeyword('coordinator')
-              || $containsRoleKeyword('principal')
-              || $containsRoleKeyword('building property custodian')
-              || $containsRoleKeyword('building and property custodian')
-              || $containsRoleKeyword('building & property custodian')
-              || $containsRoleKeyword('manager')
-              || $containsRoleKeyword('supervisor')
-            ));
-
-            return [
-              'classification_text' => $classificationText,
-              'is_coordinator' => $isCoordinator,
-              'is_instructor' => $isInstructor,
-              'is_teaching_track' => $isTeachingTrack,
-              'is_teaching_job_type' => $isTeachingJobType,
-              'is_teaching_top_head' => $isTeachingTopHeadRole || $jobRoleText === 'president' || $isVicePresidentRole,
-              'is_teaching_subordinate' => $isTeachingSubordinateRole,
-              'is_non_teaching_head' => $isNonTeachingHeadRole,
-              'is_head' => $isHead,
-            ];
-          })->values();
-
-          $hasHigherTeachingHeadInDepartment = $employeeFlags->contains(function ($flags) {
-            return ($flags['is_teaching_track'] ?? false) && ($flags['is_teaching_top_head'] ?? false);
-          });
-
-          $summary = [
-            'department' => $department,
-            'heads' => 0,
-            'coordinator' => 0,
-            'staff' => 0,
-            'instructors_ft' => 0,
-            'instructors_pt' => 0,
-            'total' => 0,
-            'is_teaching_department' => $employeeFlags->contains(function ($flags) {
-              return (bool) ($flags['is_teaching_job_type'] ?? false);
-            }),
-          ];
-
-          foreach ($employeeFlags as $flags) {
-            $shouldDowngradeTeachingRoleToCoordinator = $hasHigherTeachingHeadInDepartment
-              && ($flags['is_teaching_track'] ?? false)
-              && ($flags['is_teaching_subordinate'] ?? false)
-              && !($flags['is_non_teaching_head'] ?? false);
-
-            if (($flags['is_head'] ?? false) && !$shouldDowngradeTeachingRoleToCoordinator) {
-              $summary['heads']++;
-            } elseif (($flags['is_coordinator'] ?? false) || $shouldDowngradeTeachingRoleToCoordinator) {
-              $summary['coordinator']++;
-            } elseif ($flags['is_instructor'] ?? false) {
-              if (str_contains($flags['classification_text'] ?? '', 'part-time') || str_contains($flags['classification_text'] ?? '', 'part time')) {
-                $summary['instructors_pt']++;
-              } else {
-                $summary['instructors_ft']++;
-              }
-            } else {
-              $summary['staff']++;
-            }
-
-            $summary['total']++;
-          }
-
-          $summary['is_teaching_department'] = (bool) ($summary['is_teaching_department'] ?? false)
-            || (int) ($summary['instructors_ft'] ?? 0) > 0
-            || (int) ($summary['instructors_pt'] ?? 0) > 0;
-
-          return $summary;
-        })
+        ->map(fn ($departmentEmployees, $department) => \App\Support\DepartmentStaffingSummary::forDepartment($departmentEmployees, $department))
         ->sort(function ($a, $b) {
           $departmentA = strtolower(trim((string) ($a['department'] ?? '')));
           $departmentB = strtolower(trim((string) ($b['department'] ?? '')));
@@ -3427,10 +3210,11 @@
 
 
     <!-- ================= PROFILE MODAL ================= -->
+    </div>
     <div
       x-show="openProfile"
       x-transition
-      @click.self="openProfile=false"
+      @click.self="closeEmployeeProfile()"
       class="fixed inset-0 bg-black/50 flex items-center justify-center z-40"
       style="display:none"
     >
@@ -3441,7 +3225,7 @@
           class="p-6 text-white relative"
           :style="`background-image: linear-gradient(to right, ${selectedEmployee?.ui_theme?.header_start || 'rgb(168 85 247)'}, ${selectedEmployee?.ui_theme?.header_end || 'rgb(99 102 241)'})`"
         >
-          <button @click="openProfile=false" class="absolute top-4 right-4 text-2xl">&times;</button>
+          <button @click="closeEmployeeProfile()" aria-label="Close employee profile" class="absolute top-4 right-4 text-2xl">&times;</button>
 
           <div class="flex items-center gap-4">
             <div class="w-16 h-16 min-w-16 shrink-0 aspect-square rounded-full bg-white/20 flex items-center justify-center font-bold overflow-hidden">

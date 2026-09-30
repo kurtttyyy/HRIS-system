@@ -621,7 +621,9 @@
                 $authUser?->middle_name ?? null,
                 $authUser?->last_name ?? null,
             ])));
-        $employeeFormPosition = $authUser?->employee?->position
+        $employeeFormPosition = $authUser?->job_role
+            ?? $authUser?->employee?->position
+            ?? $authUser?->position
             ?? data_get($authUser, 'applicant.position.title')
             ?? '';
         $employeeFormQueryBase = array_filter([
@@ -1401,6 +1403,10 @@
             if (!response.ok) return false;
 
             const nextDocument = new DOMParser().parseFromString(await response.text(), 'text/html');
+            if (!nextDocument.getElementById('employee-leave-page')) return false;
+            if (typeof syncLeaveFormCredits === 'function') {
+                syncLeaveFormCredits(nextDocument);
+            }
 
             document.querySelectorAll('[data-leave-live]').forEach((current) => {
                 const key = current.dataset.leaveLive;

@@ -127,6 +127,36 @@
       transform: translateX(4px);
       box-shadow: inset 3px 0 0 rgba(16, 185, 129, 0.55);
     }
+    [data-recent-employees-card] {
+      background: linear-gradient(145deg, #f0fdf9 0, #fff 210px);
+      box-shadow: 0 16px 48px -32px rgba(15, 118, 110, .35);
+    }
+    .employee-directory-link {
+      display: inline-flex; align-items: center; gap: 9px; flex-shrink: 0;
+      border: 1px solid #cce7df; border-radius: 14px; padding: 11px 15px;
+      background: #fff; color: #047857; font-size: 12px; font-weight: 700;
+      transition: background .2s, box-shadow .2s;
+    }
+    .employee-directory-link:hover { background: #ecfdf5; box-shadow: 0 4px 12px #064e3b0d; }
+    .recent-employee-row { animation: employee-row-arrive .45s ease both; animation-delay: var(--row-delay, 0ms); }
+    .recent-employee-row td { transition: background .2s; }
+    .recent-employee-row:hover td, .recent-employee-row:focus-within td { background: #f0fdf9; }
+    .recent-employee-row:focus-within { box-shadow: inset 3px 0 #059669; }
+    .employee-profile-link { color: #0f172a; text-decoration: none; border-radius: 4px; }
+    .employee-profile-link:hover { color: #047857; }
+    .employee-profile-link:focus-visible, .employee-directory-link:focus-visible { outline: 3px solid #10b981; outline-offset: 5px; }
+    .recent-employee-avatar { box-shadow: 0 4px 10px -4px #2563eb60; transition: transform .25s, box-shadow .25s; }
+    .recent-employee-row:hover .recent-employee-avatar { transform: scale(1.08) rotate(-3deg); box-shadow: 0 6px 14px -5px #2563eb80; }
+    @keyframes employee-row-arrive { from { opacity: 0; } to { opacity: 1; } }
+    @media (max-width: 640px) {
+      [data-recent-employees-card] { padding: 16px; border-radius: 24px; }
+      .employee-directory-link { padding: 9px 12px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .recent-employee-row { animation: none; }
+      .recent-employee-row td, .recent-employee-avatar, .employee-directory-link { transition: none; }
+      .recent-employee-row:hover .recent-employee-avatar { transform: none; }
+    }
     .home-leave-approve-out {
       animation: home-leave-approve-out 0.48s cubic-bezier(0.2, 0.9, 0.2, 1) forwards;
       pointer-events: none;
@@ -374,20 +404,22 @@
         </div>
       </section>
 
-      <section class="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(22rem,0.8fr)]">
-        <div class="space-y-6">
-          <div data-recent-employees-card class="dashboard-reveal rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm transition duration-200" style="--dashboard-delay: 180ms;">
-            <div class="mb-5">
+      <section class="grid grid-cols-1 items-stretch gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(22rem,0.8fr)]">
+        <div class="min-w-0 self-start xl:flex">
+          <div data-recent-employees-card class="dashboard-reveal min-w-0 w-full rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm transition duration-200 xl:flex xl:flex-col" style="--dashboard-delay: 180ms;">
+            <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p class="admin-kicker text-xs font-semibold uppercase text-emerald-700">Workforce</p>
                 <h3 class="admin-display mt-2 text-2xl text-slate-900">Recent Employees</h3>
+                <p class="mt-2 text-sm text-slate-500">The people behind your organization. Select a name to explore their profile.</p>
               </div>
+              <a href="{{ route('admin.adminEmployee') }}" class="employee-directory-link">Employee directory <i class="fa-solid fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i></a>
             </div>
 
             <div class="overflow-x-auto rounded-[1.5rem] border border-slate-200">
               <table class="min-w-full text-sm">
                 <thead class="bg-slate-50 text-slate-500">
-                  <tr>
+                  <tr class="xl:h-14">
                     <th class="px-5 py-4 text-left font-semibold">Employee</th>
                     <th class="px-5 py-4 text-left font-semibold">Department</th>
                     <th class="px-5 py-4 text-left font-semibold">Status</th>
@@ -410,30 +442,32 @@
                         });
                     }
                     $profilePhotoUrl = $profilePhotoDocument?->filepath ? asset('storage/'.$profilePhotoDocument->filepath) : null;
+                    $employeeProfileUrl = route('admin.adminEmployee', ['user_id' => $acc->id, 'tab' => 'overview', 'profile_only' => 1]);
+                    $employeeDisplayName = trim($acc->first_name.' '.$acc->middle_name.' '.$acc->last_name);
                   @endphp
-                  <tr class="dashboard-table-row bg-white transition hover:bg-slate-50/80">
-                    <td class="px-5 py-4">
+                  <tr class="recent-employee-row dashboard-table-row bg-white" style="--row-delay: {{ $loop->index * 40 }}ms;">
+                    <td class="px-5 py-3 align-middle">
                       <div class="flex items-center gap-3">
-                        <div class="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 text-sm font-bold text-white">
+                        <div class="recent-employee-avatar flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 text-sm font-bold text-white">
                           @if($profilePhotoUrl)
-                            <img src="{{ $profilePhotoUrl }}" alt="Employee Photo" class="zoomable-profile-photo h-full w-full cursor-zoom-in object-cover" />
+                            <img src="{{ $profilePhotoUrl }}" alt="" loading="lazy" class="h-full w-full object-cover" />
                           @else
                             {{ $acc->initials }}
                           @endif
                         </div>
                         <div class="min-w-0">
-                          <p class="font-semibold text-slate-900">{{ trim($acc->first_name.' '.$acc->middle_name.' '.$acc->last_name) }}</p>
+                          <a data-employee-profile-link href="{{ $employeeProfileUrl }}" class="employee-profile-link font-semibold" aria-label="View profile for {{ $employeeDisplayName }}">{{ $employeeDisplayName }}</a>
                           <p class="truncate text-xs text-slate-500">{{ $acc->email }}</p>
                         </div>
                       </div>
                     </td>
-                    <td class="px-5 py-4 text-slate-600">{{ $acc->dashboard_department ?? 'Unassigned' }}</td>
-                    <td class="px-5 py-4"><span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Active</span></td>
-                    <td class="px-5 py-4 text-slate-600">{{ $acc->created_at_formatted ?? '-' }}</td>
+                    <td class="px-5 py-3 align-middle text-slate-600">{{ $acc->dashboard_department ?? 'Unassigned' }}</td>
+                    <td class="px-5 py-3 align-middle"><span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Active</span></td>
+                    <td class="whitespace-nowrap px-5 py-3 align-middle text-slate-600">{{ $acc->created_at_formatted ?? '-' }}</td>
                   </tr>
                   @empty
                   <tr>
-                    <td colspan="4" class="px-5 py-8 text-center text-slate-400">No recent employees found.</td>
+                    <td colspan="4" class="px-5 py-10 text-center text-slate-500"><i class="fa-solid fa-users mb-3 block text-2xl text-emerald-300" aria-hidden="true"></i>No recent employees found.</td>
                   </tr>
                   @endforelse
                 </tbody>
@@ -492,7 +526,7 @@
               <span data-home-leave-count class="flex h-9 min-w-[2.25rem] items-center justify-center rounded-full bg-rose-500 px-2 text-sm font-bold text-white">{{ (int) ($pendingLeaveRequestCount ?? 0) }}</span>
             </div>
 
-            <div data-home-leave-list class="space-y-4">
+            <div data-home-leave-list class="max-h-[26rem] space-y-4 overflow-y-auto pr-2" tabindex="0" role="region" aria-label="Pending leave requests">
               @forelse (($pendingLeaveRequestsForHome ?? collect()) as $request)
                 @php
                   $requestName = trim((string) ($request->employee_name ?? ''));
@@ -697,6 +731,8 @@
     replaceRecentEmployeesCard(pageLink.href);
   });
 
+
+
   window.addEventListener('popstate', () => {
     replaceRecentEmployeesCard(window.location.href, false);
   });
@@ -805,16 +841,54 @@
     });
   };
 
+  let leaveQueueSignature = null;
+  let leaveQueueRefreshing = false;
+  let leaveDecisionPending = false;
+  let leaveQueueRevision = 0;
+
   const renderLeaveQueue = (requests, pendingCount, previousPositions = new Map()) => {
     if (!leaveList) return;
+    leaveQueueSignature = JSON.stringify([requests, pendingCount]);
     setLeaveCount(pendingCount);
     if (!Array.isArray(requests) || requests.length === 0) {
       renderLeaveEmptyState(pendingCount);
       return;
     }
+    const scrollTop = leaveList.scrollTop;
     leaveList.innerHTML = requests.map(renderLeaveCard).join('');
+    leaveList.scrollTop = scrollTop;
     requestAnimationFrame(() => animateLeaveQueueMoveUp(previousPositions));
   };
+
+  const refreshHomeLeaveQueue = async () => {
+    if (!leaveList || document.hidden || leaveQueueRefreshing || leaveDecisionPending) return;
+    leaveQueueRefreshing = true;
+    const revision = leaveQueueRevision;
+    try {
+      const response = await fetch(@json(route('admin.homeLeaveQueue')), {
+        headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin',
+        cache: 'no-store',
+      });
+      if (!response.ok) return;
+      const data = await response.json();
+      if (leaveDecisionPending || revision !== leaveQueueRevision || !Array.isArray(data.pending_requests)) return;
+      const count = Number.parseInt(data.pending_count ?? '0', 10) || 0;
+      if (JSON.stringify([data.pending_requests, count]) === leaveQueueSignature) return;
+      // Preserve keyboard focus until the user finishes interacting with the queue.
+      if (leaveList.contains(document.activeElement)) return;
+      renderLeaveQueue(data.pending_requests, count, captureLeaveCardPositions());
+    } catch (error) {
+      // Keep the queue usable and retry on the next interval.
+    } finally {
+      leaveQueueRefreshing = false;
+    }
+  };
+
+  window.setInterval(refreshHomeLeaveQueue, 5000);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) refreshHomeLeaveQueue();
+  });
 
   const playLeaveDecisionAnimation = (card, decision) => new Promise((resolve) => {
     if (!card || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -835,6 +909,10 @@
     if (!form) return;
 
     event.preventDefault();
+
+    if (leaveDecisionPending) return;
+    leaveDecisionPending = true;
+    leaveQueueRevision += 1;
 
     const card = form.closest('[data-home-leave-card]');
     const buttons = Array.from(card?.querySelectorAll('button[type="submit"]') || []);
@@ -881,6 +959,8 @@
         submitButton.textContent = originalLabel;
       }
       alert(error.message || 'Unable to update leave request. Please try again.');
+    } finally {
+      leaveDecisionPending = false;
     }
   });
 

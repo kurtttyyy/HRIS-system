@@ -339,3 +339,18 @@
     })();
 </script>
 @endauth
+
+@auth
+
+<script>
+(() => {
+    const url = new URL(@json(route('employee.presence')), window.location.origin);
+    const tab = @json(request()->input('tab_session', ''));
+    if (tab) url.searchParams.set('tab_session', tab);
+    const heartbeat = () => fetch(url, { headers: { Accept: 'application/json' }, cache: 'no-store' }).catch(() => {});
+    heartbeat();
+    window.setInterval(heartbeat, 30000);
+})();
+</script>
+
+@endauth

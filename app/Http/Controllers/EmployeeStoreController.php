@@ -449,18 +449,12 @@ class EmployeeStoreController extends Controller
 
         $authUser->loadMissing('employee');
 
-        $latestLeaveApplication = LeaveApplication::query()
-            ->where('user_id', $authUser->id)
-            ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['approved'])
-            ->orderByDesc('created_at')
-            ->first();
-
-        $beginningVacation = round((float) ($latestLeaveApplication?->ending_vacation ?? $attrs['beginning_vacation'] ?? 0), 1);
-        $beginningSick = round((float) ($latestLeaveApplication?->ending_sick ?? $attrs['beginning_sick'] ?? 0), 1);
+        $credits = app(\App\Support\EmployeeLeaveCredits::class)->forMonth($authUser, now()->startOfMonth());
+        $beginningVacation = $credits['has_approved'] ? $credits['vacation'] : 0.0;
+        $beginningSick = $credits['has_approved'] ? $credits['sick'] : 0.0;
         $beginningTotal = round($beginningVacation + $beginningSick, 1);
-
-        $earnedVacation = round((float) ($attrs['earned_vacation'] ?? 0), 1);
-        $earnedSick = round((float) ($attrs['earned_sick'] ?? 0), 1);
+        $earnedVacation = $credits['has_approved'] ? 0.0 : $credits['vacation'];
+        $earnedSick = $credits['has_approved'] ? 0.0 : $credits['sick'];
         $earnedTotal = round($earnedVacation + $earnedSick, 1);
 
         $appliedVacation = round((float) ($attrs['applied_vacation'] ?? 0), 1);

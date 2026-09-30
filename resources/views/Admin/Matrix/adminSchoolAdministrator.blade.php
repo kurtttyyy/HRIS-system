@@ -640,7 +640,7 @@
                     try {
                       $joinDate = \Carbon\Carbon::parse($rawJoinDate);
                       $threshold = $jobType === 'non-teaching'
-                        ? $joinDate->copy()->addMonths(6)
+                        ? $joinDate->copy()->addYear()
                         : $joinDate->copy()->addYears(3);
                       $employmentStatus = now()->lt($threshold) ? 'Probationary' : 'Permanent';
                     } catch (\Throwable $e) {
@@ -653,7 +653,7 @@
                   try {
                     $joinDate = \Carbon\Carbon::parse($rawJoinDate);
                     $regularizationDateDisplay = ($jobType === 'non-teaching'
-                      ? $joinDate->copy()->addMonths(6)
+                      ? $joinDate->copy()->addYear()
                       : $joinDate->copy()->addYears(3))->format('m/d/Y');
                   } catch (\Throwable $e) {
                     $regularizationDateDisplay = '';

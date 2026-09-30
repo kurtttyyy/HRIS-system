@@ -1057,6 +1057,8 @@
     };
 
     const updateAdminSidebarSummary = (summary) => {
+      window.updateAdminPendingLeaveCount(summary?.pending_leave_count);
+
       const employeeCount = updateSidebarCount(
         '[data-admin-employee-count]',
         summary?.employee_count
@@ -1106,6 +1108,7 @@
     window.refreshAdminSidebarSummary = refreshAdminSidebarSummary;
     refreshAdminSidebarSummary();
     window.setInterval(refreshAdminSidebarSummary, 5000);
+    window.addEventListener('focus', refreshAdminSidebarSummary);
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) {
         refreshAdminSidebarSummary();
