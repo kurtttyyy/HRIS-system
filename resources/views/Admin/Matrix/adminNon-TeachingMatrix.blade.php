@@ -537,6 +537,7 @@
       }
     }
   </style>
+  @include('Admin.Matrix.partials.employeeModalStyle')
 </head>
 <body class="bg-[#f4f7fd]">
 
@@ -983,18 +984,7 @@
                   @endif
                 </td>
                 <td class="border border-stone-300 px-3 py-3">
-                  @if ($experienceLines->isNotEmpty() || $displayWorkDuration !== '')
-                    <div class="space-y-1">
-                      @foreach ($experienceLines as $line)
-                        <div>&bull; {{ $line }}</div>
-                        @if ($displayWorkDuration !== '')
-                          <div class="pl-4 text-stone-700">({{ $displayWorkDuration }})</div>
-                        @endif
-                      @endforeach
-                    </div>
-                  @else
-                    -
-                  @endif
+                  @include('Admin.Matrix.partials.relevantExperience', ['experienceUser' => $staff])
                 </td>
               </tr>
             @empty
@@ -1014,11 +1004,21 @@
 <div id="matrix-employee-modal" class="matrix-employee-modal" onclick="closeMatrixEmployeeModalOnBackdrop(event)">
   <div class="matrix-employee-card" role="dialog" aria-modal="true" aria-labelledby="matrix-employee-modal-title">
     <div class="matrix-employee-card-header">
-      <h3 id="matrix-employee-modal-title" class="matrix-employee-card-title">Employee Information</h3>
+      <div><p class="matrix-employee-eyebrow">Employee directory</p><h3 id="matrix-employee-modal-title" class="matrix-employee-card-title">Employee Information</h3></div>
       <button type="button" class="matrix-employee-close" onclick="closeMatrixEmployeeModal()" aria-label="Close modal">&times;</button>
     </div>
     <div class="matrix-employee-card-body">
-      <div id="matrix-employee-avatar" class="matrix-employee-avatar">NA</div>
+      <aside class="matrix-employee-profile">
+        <div id="matrix-employee-avatar" class="matrix-employee-avatar">NA</div>
+        <h4 id="matrix-employee-profile-name" class="matrix-employee-profile-name"></h4>
+        <p id="matrix-employee-profile-role" class="matrix-employee-profile-role"></p>
+        <nav class="matrix-employee-tabs" aria-label="Employee information sections">
+          <button type="button" class="matrix-employee-tab" data-employee-tab="0" onclick="matrixEmployeeSectionIndex=0;renderMatrixEmployeeSection()"><span>01</span>Personal</button>
+          <button type="button" class="matrix-employee-tab" data-employee-tab="1" onclick="matrixEmployeeSectionIndex=1;renderMatrixEmployeeSection()"><span>02</span>Employment</button>
+          <button type="button" class="matrix-employee-tab" data-employee-tab="2" onclick="matrixEmployeeSectionIndex=2;renderMatrixEmployeeSection()"><span>03</span>Education & pay</button>
+          <button type="button" class="matrix-employee-tab" data-employee-tab="3" onclick="matrixEmployeeSectionIndex=3;renderMatrixEmployeeSection()"><span>04</span>Government IDs</button>
+        </nav>
+      </aside>
       <div class="matrix-employee-fields">
         <div class="matrix-employee-carousel">
           <div class="matrix-employee-section is-active" data-matrix-employee-section>
@@ -1063,7 +1063,7 @@
             <div class="matrix-employee-field"><div class="matrix-employee-label">Pag-IBIG RTN:</div><div id="matrix-employee-pagibig-rtn" class="matrix-employee-value">-</div></div>
           </div>
           <div class="matrix-employee-carousel-footer">
-            <div id="matrix-employee-section-status" class="matrix-employee-carousel-status">Section 1 of 4</div>
+            <div><div id="matrix-employee-section-status" class="matrix-employee-carousel-status" aria-live="polite">Section 1 of 4</div><div class="matrix-employee-progress" aria-hidden="true"><span id="matrix-employee-progress-fill"></span></div></div>
             <div class="matrix-employee-carousel-actions">
               <button type="button" id="matrix-employee-prev-section" class="matrix-employee-carousel-button" onclick="changeMatrixEmployeeSection(-1)">Previous</button>
               <button type="button" id="matrix-employee-next-section" class="matrix-employee-carousel-button" onclick="changeMatrixEmployeeSection(1)">Next</button>
@@ -1154,10 +1154,18 @@
       section.classList.toggle('is-active', index === matrixEmployeeSectionIndex);
     });
 
+    modal.querySelectorAll('[data-employee-tab]').forEach(tab => {
+      tab.setAttribute('aria-selected', String(Number(tab.dataset.employeeTab) === matrixEmployeeSectionIndex));
+      tab.setAttribute('aria-current', Number(tab.dataset.employeeTab) === matrixEmployeeSectionIndex ? 'step' : 'false');
+    });
+
     const status = document.getElementById('matrix-employee-section-status');
     if (status) {
       status.textContent = `Section ${matrixEmployeeSectionIndex + 1} of ${sections.length}`;
     }
+
+    const progress = document.getElementById('matrix-employee-progress-fill');
+    if (progress) progress.style.width = `${((matrixEmployeeSectionIndex + 1) / sections.length) * 100}%`;
 
     const prevButton = document.getElementById('matrix-employee-prev-section');
     if (prevButton) {
@@ -1219,6 +1227,9 @@
         element.textContent = value || 'N/A';
       }
     });
+
+    document.getElementById('matrix-employee-profile-name').textContent = [employee.first_name, employee.middle_name, employee.last_name].filter(Boolean).join(' ');
+    document.getElementById('matrix-employee-profile-role').textContent = [employee.position, employee.department].filter(value => value && value !== 'N/A' && value !== '-').join(' ? ');
 
     const avatar = document.getElementById('matrix-employee-avatar');
     if (avatar) {

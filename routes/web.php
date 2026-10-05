@@ -9,6 +9,15 @@ use App\Http\Controllers\GuestPageController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\RegisterLoginController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PermanencyEvaluationController;
+
+Route::controller(PermanencyEvaluationController::class)->group(function () {
+    Route::get('system/employee-evaluation/customize', 'customize')->name('admin.employeeEvaluation.customize');
+    Route::post('system/employee-evaluation/customize', 'saveTemplate')->name('admin.employeeEvaluation.publish');
+    Route::get('employee/permanency-evaluation', 'index')->name('employee.permanencyEvaluation');
+    Route::post('employee/permanency-evaluation/{employee}', 'submit')->name('employee.permanencyEvaluation.submit');
+    Route::post('employee/evaluation/{employee}', 'submit')->name('employee.employeeEvaluation.submit');
+});
 
 Route::get('/presence', function () {
     abort_unless(auth()->check() && in_array(strtolower(trim((string) auth()->user()->role)), ['employee', 'admin', 'administrator'], true), 401);

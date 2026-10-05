@@ -33,6 +33,7 @@ class Employee extends Model
         'classification',
         'classification_salary',
         'job_type',
+        'class_code',
         'service_record_rows',
         'emergency_contact_name',
         'emergency_contact_relationship',

@@ -614,11 +614,7 @@ class AdministratorStoreController extends Controller
         try {
             $extension = strtolower((string) $file->getClientOriginalExtension());
             if ($extension === 'xlsx') {
-                $preferredSheet = $this->findXlsxWorksheetEntryBySheetName($file->getRealPath(), '201 file')
-                    ? '201 file'
-                    : ($this->findXlsxWorksheetEntryBySheetName($file->getRealPath(), 'Employee Information')
-                        ? 'Employee Information'
-                        : null);
+                $preferredSheet = $this->findEmployeeImportWorksheet($file->getRealPath());
                 $rawRows = $this->extractRawRowsFromXlsx($file->getRealPath(), $preferredSheet, false);
             } else {
                 $rawRows = $this->extractRawRowsFromCsv($file->getRealPath());
@@ -796,9 +792,9 @@ class AdministratorStoreController extends Controller
             $resignedDateRaw = '';
         }
         $resignedDate = $this->normalizeDate($resignedDateRaw);
-        if ($resignedDateRaw !== '' && !$resignedDate) {
-            throw new \RuntimeException('Date Resigned is invalid. Enter a valid date or leave it blank.');
-        }
+        // Some 201 files put employment notes in this date column. Preserve
+        // those notes without rejecting the employee or inventing a resignation.
+        $resignationNote = $resignedDateRaw !== '' && !$resignedDate ? $resignedDateRaw : '';
         $rank = trim((string) ($pick(['rank', 'classification', 'employment_status']) ?? ''));
         $grade = trim((string) ($pick(['grade', 'classification_salary', 'salary_classification']) ?? ''));
         if ($grade !== '') {
@@ -842,7 +838,8 @@ class AdministratorStoreController extends Controller
             'email' => null,
             'employement_date' => $this->normalizeDate($pick(['employment_date', 'employement_date', 'date_hired', 'hire_date'])),
             'birthday' => $this->normalizeDate($pick(['birthday', 'birth_date', 'date_of_birth'])),
-            'account_number' => $pick(['account_number', 'account_no', 'bank_account_number']),
+            // "Account #" normalizes to "account" because punctuation is removed.
+            'account_number' => $pick(['account_number', 'account_no', 'bank_account_number', 'account', 'acct_no', 'acct_number']),
             'sex' => $pick(['sex', 'gender']),
             'civil_status' => $pick(['civil_status', 'marital_status']),
             'contact_number' => $pick(['contact_number', 'contact_no', 'phone', 'phone_number', 'mobile_number']),
@@ -857,18 +854,24 @@ class AdministratorStoreController extends Controller
             'emergency_contact_number' => $pick(['emergency_contact_number', 'emergency_phone']),
         ];
         $employmentHistory = trim((string) ($pick(['employment_history', 'employement_history']) ?? ''));
+        if (Schema::hasColumn('employees', 'class_code')) {
+            $employeeValues['class_code'] = strtoupper((string) preg_replace('/\s+/', '', (string) ($pick(['class', 'class_code', 'class_cd']) ?? ''))) ?: null;
+        }
         if ($employmentHistory === '-') {
             $employmentHistory = '';
+        }
+        if ($resignationNote !== '') {
+            $employmentHistory = trim($employmentHistory."\n".$resignationNote);
         }
         if (($employmentHistory !== '' || $resignedDateRaw !== '') && Schema::hasColumn('employees', 'service_record_rows')) {
             $employeeValues['service_record_rows'] = [[
                 'from_date' => $employeeValues['employement_date'] ?? '',
-                'to_date' => $resignedDateRaw,
+                'to_date' => $resignedDate ?: '',
                 'designation' => $position ?: '',
                 'status' => $employeeValues['classification'] ?? '',
                 'salary' => $pick(['salary', 'monthly_salary', 'basic_salary']) ?: '',
                 'office' => $department ?: '',
-                'separation_date' => $resignedDateRaw,
+                'separation_date' => $resignedDate ?: '',
                 'separation_cause' => $resignedDate ? 'Resigned' : '',
                 'remarks' => $employmentHistory,
             ]];
@@ -1067,6 +1070,11 @@ class AdministratorStoreController extends Controller
 
         $employeeRows = array_slice($rows, $headerIndex);
         $headerRow = $employeeRows[0] ?? [];
+        foreach ($headerRow as $column => $headerText) {
+            if (in_array($this->normalizeHeader((string) $headerText), ['account', 'account_no', 'acct_no', 'acct_number', 'bank_account_number'], true)) {
+                $employeeRows[0][$column] = 'account_number';
+            }
+        }
         $salaryGroups = [];
 
         foreach ($headerRow as $column => $headerText) {
@@ -2221,6 +2229,34 @@ class AdministratorStoreController extends Controller
 
         sort($entries);
         return $entries;
+    }
+
+    private function findEmployeeImportWorksheet(string $absolutePath): ?string
+    {
+        $currentYear = (int) Carbon::now('Asia/Manila')->format('Y');
+        $candidates = ['Employees '.$currentYear, '201 file', 'Employee Information'];
+
+        // Older employee workbooks remain usable after the calendar year changes.
+        $workbookXml = $this->readXlsxEntry($absolutePath, 'xl/workbook.xml');
+        $workbook = $workbookXml !== false ? simplexml_load_string($workbookXml) : false;
+        $yearSheets = [];
+        foreach ($workbook ? ($workbook->xpath("//*[local-name()='sheet']") ?: []) : [] as $sheet) {
+            $name = trim((string) $sheet['name']);
+            if (preg_match('/^Employees\s+(\d{4})$/i', $name, $matches)
+                && (int) $matches[1] <= $currentYear) {
+                $yearSheets[$name] = (int) $matches[1];
+            }
+        }
+        arsort($yearSheets);
+        $candidates = array_unique(array_merge($candidates, array_keys($yearSheets)));
+
+        foreach ($candidates as $name) {
+            if ($this->findXlsxWorksheetEntryBySheetName($absolutePath, $name) !== null) {
+                return $name;
+            }
+        }
+
+        return null;
     }
 
     private function findXlsxWorksheetEntryBySheetName(string $absolutePath, string $sheetName): ?string
@@ -4405,7 +4441,7 @@ class AdministratorStoreController extends Controller
         }
 
         return $isNonTeaching
-            ? $joinDate->copy()->addYear()
+            ? $joinDate->copy()->addMonthsNoOverflow(6)
             : $joinDate->copy()->addYears(3);
     }
 

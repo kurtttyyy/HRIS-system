@@ -1,0 +1,56 @@
+/* Shared reference palette. Screen-only rules keep printed reports unchanged. */
+:root {
+    --hris-primary: #5042f0;
+    --hris-primary-hover: #4338ca;
+    --hris-canvas: #f7f9fc;
+    --hris-surface: #ffffff;
+    --hris-soft: #eef2ff;
+    --hris-border: #dfe6f3;
+    --hris-text: #141b2e;
+    --hris-muted: #687d9e;
+}
+@media screen {
+    html[data-theme="light"] body {
+        background: var(--hris-canvas) !important;
+        color: var(--hris-text);
+    }
+    html[data-theme="light"] main :is(.text-slate-900, .text-gray-900, .text-stone-900, .text-slate-800, .text-gray-800) { color: var(--hris-text) !important; }
+    html[data-theme="light"] main :is(.text-slate-500, .text-gray-500, .text-stone-500) { color: var(--hris-muted) !important; }
+    html[data-theme="light"] main :is(.bg-slate-50, .bg-gray-50, .bg-stone-50) { background-color: var(--hris-canvas) !important; }
+    html[data-theme="light"] main :is(.border-slate-200, .border-gray-200, .border-stone-200) { border-color: var(--hris-border) !important; }
+    :is(.bg-green-600, .bg-emerald-600, .bg-blue-600, .bg-indigo-600, .bg-violet-600, .bg-green-500, .bg-emerald-500):not(:where(.admin-sidebar, .employee-sidebar, .admin-sidebar *, .employee-sidebar *)) {
+        background-color: var(--hris-primary) !important;
+    }
+    :is(.hover\:bg-green-700, .hover\:bg-emerald-700, .hover\:bg-blue-700, .hover\:bg-indigo-700):not(:where(.admin-sidebar, .employee-sidebar, .admin-sidebar *, .employee-sidebar *)):hover { background-color: var(--hris-primary-hover) !important; }
+    :is(.text-indigo-600, .text-blue-600, .text-violet-600):not(:where(.admin-sidebar, .employee-sidebar, .admin-sidebar *, .employee-sidebar *)) { color: var(--hris-primary) !important; }
+    :is(.from-green-500, .from-green-600, .from-emerald-500, .from-emerald-600, .from-blue-600, .from-indigo-600):not(:where(.admin-sidebar, .employee-sidebar, .admin-sidebar *, .employee-sidebar *)) { --tw-gradient-from: #635cf2 var(--tw-gradient-from-position) !important; }
+    :is(.to-green-600, .to-green-700, .to-emerald-600, .to-emerald-700, .to-blue-700, .to-indigo-700):not(:where(.admin-sidebar, .employee-sidebar, .admin-sidebar *, .employee-sidebar *)) { --tw-gradient-to: #4338ca var(--tw-gradient-to-position) !important; }
+    html[data-theme="light"] .matrix-employee-modal { background: rgba(20, 27, 46, .55); backdrop-filter: blur(5px); }
+    html[data-theme="light"] .matrix-employee-card { border-color: var(--hris-border); border-radius: 24px; color: var(--hris-text); }
+    html[data-theme="light"] .matrix-employee-card-header { background: white; color: var(--hris-text); border-bottom: 1px solid var(--hris-border); padding: 24px 28px; }
+    html[data-theme="light"] .matrix-employee-eyebrow { color: var(--hris-primary); font-size: 10px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; margin-bottom: 8px; }
+    html[data-theme="light"] .matrix-employee-close { background: #f1f5f9; color: var(--hris-muted); border-radius: 12px; width: 38px; height: 38px; }
+    html[data-theme="light"] .matrix-employee-card-body { background: var(--hris-canvas); }
+    html[data-theme="light"] .matrix-employee-profile { background: linear-gradient(180deg, #eef2ff, #f7f9fc); border-radius: 16px; padding: 20px; }
+    html[data-theme="light"] .matrix-employee-avatar { background: linear-gradient(135deg, #635cf2, #4338ca); color: white; border: 4px solid white; border-radius: 28px; max-width: 100%; }
+    html[data-theme="light"] .matrix-employee-profile-name { color: var(--hris-text); font-weight: 700; margin-top: 20px; }
+    html[data-theme="light"] .matrix-employee-profile-role { color: var(--hris-muted); font-size: 12px; margin-top: 6px; }
+    html[data-theme="light"] .matrix-employee-section-title { color: var(--hris-text); border-color: var(--hris-border); }
+    html[data-theme="light"] .matrix-employee-label { color: var(--hris-muted); }
+    html[data-theme="light"] .matrix-employee-value { background: white; border-color: var(--hris-border); color: #26334b; border-radius: 12px; }
+    html[data-theme="light"] .matrix-employee-carousel-footer { border-color: var(--hris-border); }
+    html[data-theme="light"] .matrix-employee-carousel-status { color: var(--hris-muted); }
+    html[data-theme="light"] .matrix-employee-carousel-button { background: white; border-color: var(--hris-border); color: var(--hris-muted); border-radius: 12px; }
+    html[data-theme="light"] #matrix-employee-next-section { background: var(--hris-primary); border-color: var(--hris-primary); color: white; }
+    html[data-theme="light"] #matrix-employee-next-section:hover { background: var(--hris-primary-hover); }
+    html[data-theme="light"] .matrix-employee-carousel-button:disabled { background: white; border-color: var(--hris-border); color: var(--hris-muted); }
+    :is(input, select, textarea):not(:where(.admin-sidebar, .employee-sidebar, .admin-sidebar *, .employee-sidebar *)):focus-visible { outline: 2px solid var(--hris-primary); outline-offset: 2px; }
+    /* Wrapped fields show focus on their rounded container, not an inner box. */
+    label:has(> :is(input, select, textarea).outline-none):focus-within {
+        border-color: var(--hris-primary) !important;
+        box-shadow: 0 0 0 3px rgba(80, 66, 240, .12);
+    }
+    label > :is(input, select, textarea).outline-none:focus-visible {
+        outline: none;
+    }
+}

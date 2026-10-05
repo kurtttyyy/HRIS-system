@@ -376,6 +376,9 @@ class EmployeePageController extends Controller
             'departmentName' => $departmentName,
             'isDepartmentHead' => $isDepartmentHead,
             'evaluationEmployees' => $evaluationEmployees,
+            'evaluationTemplate' => \App\Models\PermanencyEvaluationTemplate::latest('id')->first(),
+            'evaluationReviews' => \App\Models\PermanencyEvaluation::with('template')
+                ->whereIn('employee_user_id', $evaluationEmployees->pluck('id'))->latest()->get(),
         ]);
     }
 
@@ -1644,10 +1647,7 @@ class EmployeePageController extends Controller
 
         $wordText = null;
         $wordImages = [];
-        if ($extension === 'docx') {
-            $wordText = $this->extractDocxText($disk->path($path));
-            $wordImages = $this->extractDocxImages($disk->path($path));
-        } elseif ($extension === 'doc') {
+        if ($extension === 'doc') {
             $wordText = $this->extractLegacyDocText($disk->path($path));
         }
 
@@ -1679,6 +1679,10 @@ class EmployeePageController extends Controller
         $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 
         $mimeType = (string) ($resignation->attachment_mime ?: $disk->mimeType($path) ?: '');
+        if (request()->query('preview') === 'pdf' && in_array($extension, ['doc', 'docx'], true)) {
+            return app(\App\Support\WordDocumentPreview::class)->response($disk->path($path));
+        }
+
         if ($mimeType === '' || $mimeType === 'application/octet-stream') {
             $mimeType = match ($extension) {
                 'pdf' => 'application/pdf',
@@ -2032,12 +2036,12 @@ class EmployeePageController extends Controller
         )));
         $rawJoinDate = $user?->applicant?->date_hired ?? $user?->employee?->employement_date;
 
-        if (in_array($jobType, ['non-teaching', 'teaching'], true)) {
+        if (in_array($jobType, ['non-teaching', 'non teaching', 'nt', 'nonteaching', 'teaching', 't'], true)) {
             if (!empty($rawJoinDate)) {
                 try {
                     $joinDate = Carbon::parse($rawJoinDate);
-                    $threshold = $jobType === 'non-teaching'
-                        ? $joinDate->copy()->addYear()
+                    $threshold = in_array($jobType, ['non-teaching', 'non teaching', 'nt', 'nonteaching'], true)
+                        ? $joinDate->copy()->addMonthsNoOverflow(6)
                         : $joinDate->copy()->addYears(3);
 
                     return now()->lt($threshold) ? 'Probationary' : 'Permanent';

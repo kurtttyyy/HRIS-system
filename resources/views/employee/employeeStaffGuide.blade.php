@@ -12,6 +12,10 @@
         aside:not(:hover) ~ main { margin-left: 4rem; }
         aside:hover ~ main { margin-left: 14rem; }
 
+        #employee-staff-guide-page .employee-staff-guide-header {
+            background-image: linear-gradient(135deg, #022c22 0%, #064e3b 55%, #047857 100%);
+        }
+
         #employee-staff-guide-page .employee-staff-guide-reveal {
             opacity: 1;
             transform: translateY(0);
@@ -349,7 +353,7 @@
                 ];
             @endphp
 
-            <section class="relative overflow-hidden rounded-[2rem] border border-emerald-950/40 bg-gradient-to-br from-slate-950 via-emerald-950 to-emerald-800 text-white shadow-2xl">
+            <section class="employee-staff-guide-header relative overflow-hidden rounded-[2rem] border border-emerald-950/40 text-white shadow-2xl">
                 <div class="absolute -bottom-20 left-12 h-56 w-56 rounded-full border border-white/15"></div>
                 <div class="absolute -bottom-28 left-44 h-72 w-72 rounded-full border border-white/10"></div>
                 <div class="relative p-6 md:p-8">
@@ -414,7 +418,7 @@
                         $procedureLayout = $loop->index % 4;
                     @endphp
                     <article id="{{ $section['id'] }}" class="overflow-hidden rounded-[2rem] border border-emerald-200 bg-white shadow-sm">
-                        <div class="relative overflow-hidden bg-gradient-to-br from-slate-950 via-emerald-950 to-emerald-700 px-6 py-5 text-white">
+                        <div class="employee-staff-guide-header relative overflow-hidden px-6 py-5 text-white">
                             <div class="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                                 <div class="flex items-center gap-4">
                                     <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-white/10 text-2xl font-black">

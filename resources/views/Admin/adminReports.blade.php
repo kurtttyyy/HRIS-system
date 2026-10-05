@@ -297,7 +297,7 @@
         <div class="report-card rounded-2xl border border-white bg-white p-5 shadow-sm">
           <div class="flex items-center justify-between"><span class="grid h-11 w-11 place-items-center rounded-xl bg-sky-100 text-sky-700"><i class="fa-solid fa-users"></i></span><span class="rounded-full bg-sky-50 px-3 py-1 text-xs font-bold text-sky-700">Employees</span></div>
           <p class="mt-5 text-3xl font-black text-slate-950">{{ number_format($totalEmployees) }}</p>
-          <p class="mt-1 text-sm font-semibold text-slate-600">All employee records</p>
+          <p class="mt-1 text-sm font-semibold text-slate-600">All employee records, including resigned employees</p>
         </div>
         <div class="report-card rounded-2xl border border-white bg-white p-5 shadow-sm">
           <div class="flex items-center justify-between"><span class="grid h-11 w-11 place-items-center rounded-xl bg-emerald-100 text-emerald-700"><i class="fa-solid fa-circle-check"></i></span><span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">Attendance</span></div>

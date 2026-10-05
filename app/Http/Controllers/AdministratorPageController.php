@@ -77,7 +77,7 @@ class AdministratorPageController extends Controller
             'Human Resources' => ['HUMAN-RESOURCES', 'HR', 'HRD'],
             'Accounting' => ['ACCOUNTING', 'ACCT', 'ACCOUNTING-OFFICE'],
             'Community Extension Program' => ['COMMUNITY-EXTENSION-PROGRAM', 'CEP'],
-            'GAD / Research Office' => ['GAD', 'GENDER-AND-DEVELOPMENT', 'RESEARCH-OFFICE/GAD', 'RESEARCH/GAD'],
+            'RESEARCH' => ['GAD', 'GENDER-AND-DEVELOPMENT', 'RESEARCH-OFFICE/GAD', 'RESEARCH/GAD', 'RESEARCH', 'GAD-/-RESEARCH-OFFICE'],
             'General Services' => ['GENERAL-SERVICES', 'GS', 'GSO'],
             'Guidance Office' => ['GUIDANCE-OFFICE', 'GUIDANCE'],
             'Laboratory Custodian' => ['LABORATORY-CUSTODIAN', 'LAB-CUSTODIAN'],
@@ -929,6 +929,36 @@ class AdministratorPageController extends Controller
             });
 
         $hiringNotifications = collect();
+        $recentApplications = Applicant::query()
+            ->with('position:id,title')
+            ->whereNotNull('open_position_id')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->limit(6)
+            ->get();
+
+        foreach ($recentApplications as $applicant) {
+            $applicantName = collect([
+                $applicant->first_name,
+                $applicant->middle_name,
+                $applicant->last_name,
+                $applicant->name_extension,
+            ])->map(fn ($part) => trim((string) $part))->filter()->implode(' ');
+            $positionTitle = trim((string) ($applicant->position?->title ?? ''));
+
+            $hiringNotifications->push([
+                'category' => 'Hiring',
+                'title' => 'Application form submitted',
+                'id' => 'application-submitted-'.$applicant->id,
+                'message' => ($applicantName !== '' ? $applicantName : 'An applicant')
+                    .' submitted an application form'.($positionTitle !== '' ? ' for '.$positionTitle : '').'.',
+                'date' => $applicant->created_at ? Carbon::parse($applicant->created_at)->setTimezone($appTimezone) : null,
+                'href' => route('admin.adminApplicant'),
+                'badge' => 'Submitted',
+                'tone' => 'sky',
+            ]);
+        }
+
         if ($openPositionApplicationsCount > 0) {
             $hiringNotifications->push([
                 'category' => 'Hiring',
@@ -971,7 +1001,7 @@ class AdministratorPageController extends Controller
             })
             ->values()
             ->map(function ($item) {
-                $item['id'] = md5(
+                $item['id'] = $item['id'] ?? md5(
                     ($item['category'] ?? 'update')
                     .'|'.($item['title'] ?? '')
                     .'|'.($item['message'] ?? '')
@@ -1021,7 +1051,7 @@ class AdministratorPageController extends Controller
         }
 
         return $isNonTeaching
-            ? $joinDate->copy()->addYear()
+            ? $joinDate->copy()->addMonthsNoOverflow(6)
             : $joinDate->copy()->addYears(3);
     }
 
@@ -1113,7 +1143,12 @@ class AdministratorPageController extends Controller
             },
             ])
             ->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee'])
-            ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) IN (?, ?)", ['approved', 'not approved'])
+            ->where(function ($query) {
+                $query->whereRaw("LOWER(TRIM(COALESCE(status, ''))) IN (?, ?)", ['approved', 'not approved'])
+                    ->orWhereHas('resignations', function ($resignations) {
+                        $resignations->whereRaw("LOWER(TRIM(COALESCE(status, ''))) IN (?, ?)", ['approved', 'completed']);
+                    });
+            })
             ->get();
 
         if ($profileOnlyUserId > 0) {
@@ -1178,10 +1213,16 @@ class AdministratorPageController extends Controller
         $employeeSearch = trim((string) $request->query('search', ''));
         $employeeDepartment = trim((string) $request->query('department', 'All'));
         $employeeStatus = trim((string) $request->query('status', 'All'));
+        $employeeCivilStatus = trim((string) $request->query('civil_status', 'All'));
+        $employeeClass = trim((string) $request->query('class', 'All'));
+        $employeeSex = strtoupper(trim((string) $request->query('sex', 'All')));
+        if (!in_array($employeeSex, ['FM', 'M'], true)) {
+            $employeeSex = 'All';
+        }
         $employeePerPageOption = strtolower(trim((string) $request->query('per_page', '10')));
         $showAllEmployees = $employeePerPageOption === 'all';
         $employeePerPage = (int) $employeePerPageOption;
-        if (!$showAllEmployees && !in_array($employeePerPage, [5, 10, 15, 25, 50], true)) {
+        if (!$showAllEmployees && !in_array($employeePerPage, [10, 30, 50, 100], true)) {
             $employeePerPage = 10;
         }
 
@@ -1238,9 +1279,28 @@ class AdministratorPageController extends Controller
                 || (int) data_get($emp, 'missing_required_documents_count', 0) > 0;
         };
 
-        $filteredEmployees = $employeeDirectory->filter(function ($emp) use ($employeeSearch, $employeeDepartment, $employeeStatus, $resolveEmployeeDepartment, $hasMissingEmployeeInfo) {
-            $name = trim(($emp->last_name ?? '').', '.trim(($emp->first_name ?? '').' '.($emp->middle_name ?? '')), ', ');
-            if ($employeeSearch !== '' && !str_contains(strtolower($name), strtolower($employeeSearch))) {
+        $filteredEmployees = $employeeDirectory->filter(function ($emp) use ($employeeSearch, $employeeDepartment, $employeeStatus, $employeeSex, $employeeCivilStatus, $employeeClass, $resolveEmployeeDepartment, $hasMissingEmployeeInfo) {
+            if ($employeeClass !== '' && strcasecmp($employeeClass, 'All') !== 0 && strcasecmp(\App\Support\EmployeeDirectoryClass::label($emp), $employeeClass) !== 0) {
+                return false;
+            }
+
+            $civilStatus = trim((string) (data_get($emp, 'employee.civil_status') ?: ($emp->civil_status ?? '')));
+            if ($employeeCivilStatus !== '' && strcasecmp($employeeCivilStatus, 'All') !== 0 && strcasecmp($civilStatus, $employeeCivilStatus) !== 0) {
+                return false;
+            }
+
+            $sex = strtoupper(trim((string) (data_get($emp, 'employee.sex') ?: data_get($emp, 'employee.gender') ?: ($emp->gender ?? ''))));
+            $sex = match ($sex) {
+                'F', 'FEMALE' => 'FM',
+                'MALE' => 'M',
+                default => $sex,
+            };
+            if ($employeeSex !== 'All' && $sex !== $employeeSex) {
+                return false;
+            }
+
+            $searchText = \App\Support\EmployeeDirectorySearch::text($emp);
+            if ($employeeSearch !== '' && !str_contains(strtolower($searchText), strtolower($employeeSearch))) {
                 return false;
             }
 
@@ -1281,6 +1341,9 @@ class AdministratorPageController extends Controller
             'search' => $employeeSearch,
             'department' => $employeeDepartment !== '' ? $employeeDepartment : 'All',
             'status' => $employeeStatus !== '' ? $employeeStatus : 'All',
+            'sex' => $employeeSex,
+            'civil_status' => $employeeCivilStatus !== '' ? $employeeCivilStatus : 'All',
+            'class' => $employeeClass !== '' ? $employeeClass : 'All',
             'per_page' => $showAllEmployees ? 'all' : $employeePerPage,
         ];
 
@@ -2910,6 +2973,9 @@ class AdministratorPageController extends Controller
 
         $relations = [
             'employee',
+            'positionHistories' => function ($query) {
+                $query->orderBy('changed_at')->orderBy('id');
+            },
             'education',
             'government',
             'license',
@@ -4058,11 +4124,7 @@ class AdministratorPageController extends Controller
         $wordText = null;
         $wordImages = [];
 
-        if ($extension === 'docx') {
-            $absolutePath = $disk->path($relativePath);
-            $wordText = $this->extractDocxText($absolutePath);
-            $wordImages = $this->extractDocxImages($absolutePath);
-        } elseif ($extension === 'doc') {
+        if ($extension === 'doc') {
             $wordText = $this->extractLegacyDocText($disk->path($relativePath));
         }
 
@@ -4093,6 +4155,10 @@ class AdministratorPageController extends Controller
         $safeFileName = str_replace('"', '', $fileName);
         $extension = strtolower((string) pathinfo($fileName, PATHINFO_EXTENSION));
         $mimeType = (string) ($resignation->attachment_mime ?: $disk->mimeType($relativePath) ?: '');
+
+        if (request()->query('preview') === 'pdf' && in_array($extension, ['doc', 'docx'], true)) {
+            return app(\App\Support\WordDocumentPreview::class)->response($absolutePath);
+        }
 
         if ($mimeType === '' || $mimeType === 'application/octet-stream') {
             $mimeType = match ($extension) {
@@ -4147,11 +4213,7 @@ class AdministratorPageController extends Controller
         $wordText = null;
         $wordImages = [];
 
-        if ($extension === 'docx') {
-            $absolutePath = $disk->path($relativePath);
-            $wordText = $this->extractDocxText($absolutePath);
-            $wordImages = $this->extractDocxImages($absolutePath);
-        } elseif ($extension === 'doc') {
+        if ($extension === 'doc') {
             $wordText = $this->extractLegacyDocText($disk->path($relativePath));
         }
 
@@ -4194,6 +4256,10 @@ class AdministratorPageController extends Controller
         $safeFileName = str_replace('"', '', $fileName);
         $extension = strtolower((string) pathinfo($fileName, PATHINFO_EXTENSION));
         $mimeType = (string) ($document->mime_type ?: $disk->mimeType($relativePath) ?: '');
+
+        if (request()->query('preview') === 'pdf' && in_array($extension, ['doc', 'docx'], true)) {
+            return app(\App\Support\WordDocumentPreview::class)->response($absolutePath);
+        }
 
         if ($mimeType === '' || $mimeType === 'application/octet-stream') {
             $mimeType = match ($extension) {

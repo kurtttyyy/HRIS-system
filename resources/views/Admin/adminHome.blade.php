@@ -463,7 +463,7 @@
                     </td>
                     <td class="px-5 py-3 align-middle text-slate-600">{{ $acc->dashboard_department ?? 'Unassigned' }}</td>
                     <td class="px-5 py-3 align-middle"><span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Active</span></td>
-                    <td class="whitespace-nowrap px-5 py-3 align-middle text-slate-600">{{ $acc->created_at_formatted ?? '-' }}</td>
+                    <td class="whitespace-nowrap px-5 py-3 align-middle text-slate-600">{{ $acc->employee?->formatted_employement_date ?? $acc->applicant?->formatted_date_hired ?? '-' }}</td>
                   </tr>
                   @empty
                   <tr>

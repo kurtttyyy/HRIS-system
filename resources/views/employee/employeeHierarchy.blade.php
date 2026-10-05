@@ -37,6 +37,8 @@
         .tree-head-card {
             width: 20rem;
             min-height: 11rem;
+            background-color: #064e3b;
+            background-image: none;
         }
 
         .tree-card {
@@ -443,7 +445,7 @@
                 @if ($headNode)
                     <div class="tree-root mt-16 flex flex-col items-center">
                         <div class="tree-level-label mb-3"><i class="fa fa-star"></i><span class="hidden sm:inline">Level 1 - Department Head</span><span class="sm:hidden">Level 1 - Head</span></div>
-                        <article class="tree-head-card rounded-[1.1rem] bg-gradient-to-br from-emerald-900 via-emerald-800 to-green-600 px-4 py-5 text-center text-white shadow-[0_22px_60px_rgba(34,139,34,0.22)]">
+                        <article class="tree-head-card rounded-[1.1rem] bg-emerald-900 px-4 py-5 text-center text-white shadow-[0_22px_60px_rgba(34,139,34,0.22)]">
                             @if (!empty($headNode['photo_url']))
                                 <div class="tree-avatar mx-auto h-[3.85rem] w-[3.85rem] rounded-full ring-8 ring-white/8">
                                     <img src="{{ $headNode['photo_url'] }}" alt="{{ $headNode['name'] }}">

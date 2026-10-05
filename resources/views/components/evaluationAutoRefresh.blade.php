@@ -1,0 +1,2 @@
+<p id="evaluation-refresh-notice" hidden role="status" class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">The evaluation form changed while you were editing. Your draft has been kept. <button type="button" onclick="window.location.reload()" class="font-semibold underline">Load the latest form (clears your draft)</button></p>
+<script src="{{ asset('js/evaluation-auto-refresh.js') }}" defer></script>

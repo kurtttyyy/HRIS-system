@@ -92,8 +92,8 @@
       scroll-snap-align: start;
     }
     .employee-page-reveal {
-      opacity: 0;
-      transform: translate3d(0, 22px, 0) scale(0.985);
+      opacity: 1;
+      transform: none;
       transition:
         opacity 680ms cubic-bezier(0.22, 0.9, 0.2, 1),
         transform 680ms cubic-bezier(0.22, 0.9, 0.2, 1);
@@ -102,7 +102,7 @@
       backface-visibility: hidden;
     }
     .employee-page-reveal.employee-reveal-from-top {
-      transform: translate3d(0, -22px, 0) scale(0.985);
+      transform: none;
     }
     .employee-page-reveal.employee-reveal-visible {
       opacity: 1;
@@ -152,7 +152,7 @@
     @media (max-width: 767px) {
       #admin-employee-page {
         padding: 0.75rem !important;
-        padding-top: 0.25rem !important;
+        padding-top: 0 !important;
         row-gap: 1rem;
       }
       .employee-status-legend-bar {
@@ -462,11 +462,21 @@
         openEditProfile:false,
         modalTarget: '',
         tab:'overview',
-        viewMode:'cards',
+        viewMode:new URLSearchParams(window.location.search).get('view') === 'table' ? 'table' : 'cards',
+        toggleEmployeeView() {
+          this.showDepartmentSummary = false;
+          this.viewMode = this.viewMode === 'table' ? 'cards' : 'table';
+          const url = new URL(window.location.href);
+          url.searchParams.set('view', this.viewMode);
+          window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+        },
         exportMenuOpen:false,
         showDepartmentSummary:false,
         department:@js($employeeFilters['department'] ?? 'All'),
         statusFilter:@js($employeeFilters['status'] ?? 'All'),
+        sexFilter:@js($employeeFilters['sex'] ?? 'All'),
+        civilStatusFilter:@js($employeeFilters['civil_status'] ?? 'All'),
+        classFilter:@js($employeeFilters['class'] ?? 'All'),
         searchInput:@js($employeeFilters['search'] ?? ''),
         search:@js($employeeFilters['search'] ?? ''),
         openImageZoom: false,
@@ -845,10 +855,10 @@
           if (this.department === 'All') return true;
           return this.normalize(empDepartment) === this.normalize(this.department);
         },
-        matchesSearch(empName) {
+        matchesSearch(searchText) {
           const query = this.normalize(this.search);
           if (!query) return true;
-          return this.normalize(empName).includes(query);
+          return this.normalize(searchText).includes(query);
         },
         matchesStatus(empStatus, empHasMissingInfo = false) {
           if (this.statusFilter === 'All') return true;
@@ -860,7 +870,7 @@
         hasVisibleEmployees() {
           return this.employeeIndex.some(emp =>
             this.matchesDepartment(emp.department) &&
-            this.matchesSearch(emp.name) &&
+            this.matchesSearch(emp.search_text) &&
             this.matchesStatus(emp.status, emp.has_missing_info)
           );
         },
@@ -875,10 +885,16 @@
           const search = (this.searchInput ?? '').toString().trim();
           const department = (this.department ?? 'All').toString().trim();
           const status = (this.statusFilter ?? 'All').toString().trim();
+          const sex = (this.sexFilter ?? 'All').toString().trim();
+          const civilStatus = (this.civilStatusFilter ?? 'All').toString().trim();
+          const employeeClass = (this.classFilter ?? 'All').toString().trim();
 
           search ? params.set('search', search) : params.delete('search');
           department && department !== 'All' ? params.set('department', department) : params.delete('department');
           status && status !== 'All' ? params.set('status', status) : params.delete('status');
+          sex && sex !== 'All' ? params.set('sex', sex) : params.delete('sex');
+          civilStatus && civilStatus !== 'All' ? params.set('civil_status', civilStatus) : params.delete('civil_status');
+          employeeClass && employeeClass !== 'All' ? params.set('class', employeeClass) : params.delete('class');
           params.delete('page');
 
           const query = params.toString();
@@ -887,6 +903,7 @@
         },
         async loadEmployeeDirectoryResults(url) {
           const targetUrl = new URL(url, window.location.origin);
+          targetUrl.searchParams.set('view', this.viewMode);
           const sequence = ++this.employeeFilterSequence;
 
           this.employeeFilterLoading = true;
@@ -922,6 +939,7 @@
             const parentDataStack = alpine?.closestDataStack?.(currentResults) ?? [];
 
             const replaceResults = () => {
+              const selectedViewMode = this.viewMode;
               Array.from(currentResults.children).forEach((child) => {
                 alpine?.destroyTree?.(child);
               });
@@ -941,6 +959,9 @@
               this.search = requestedSearch;
               this.department = targetUrl.searchParams.get('department') ?? 'All';
               this.statusFilter = targetUrl.searchParams.get('status') ?? 'All';
+              this.sexFilter = targetUrl.searchParams.get('sex') ?? 'All';
+              this.civilStatusFilter = targetUrl.searchParams.get('civil_status') ?? 'All';
+              this.classFilter = targetUrl.searchParams.get('class') ?? 'All';
 
               Array.from(currentResults.children).forEach((child) => {
                 // innerHTML does not inherit Alpine's component scope. Attach the
@@ -950,6 +971,7 @@
                 }
                 alpine?.initTree?.(child);
               });
+              this.viewMode = selectedViewMode;
 
               const newEmployeeCards = Array.from(
                 currentResults.querySelectorAll('.employee-directory-card')
@@ -977,6 +999,7 @@
               replaceResults();
             }
 
+            targetUrl.searchParams.set('view', this.viewMode);
             window.history.replaceState({}, '', `${targetUrl.pathname}${targetUrl.search}${targetUrl.hash}`);
           } catch (error) {
             console.error(error);
@@ -1221,7 +1244,12 @@
           const regularizationDate = new Date(start.getTime());
 
           if (jobType === 'non teaching' || jobType === 'non-teaching' || jobType === 'nt' || jobType === 'nonteaching') {
-            regularizationDate.setFullYear(regularizationDate.getFullYear() + 1);
+            const targetMonth = regularizationDate.getMonth() + 6;
+            const startDay = regularizationDate.getDate();
+            regularizationDate.setDate(1);
+            regularizationDate.setMonth(targetMonth);
+            const lastDay = new Date(regularizationDate.getFullYear(), regularizationDate.getMonth() + 1, 0).getDate();
+            regularizationDate.setDate(Math.min(startDay, lastDay));
             return regularizationDate;
           }
 
@@ -2049,6 +2077,7 @@
       x-init="employeeIndex = @js(
         $employeeDirectory->map(fn($emp) => [
           'id' => (int) ($emp->id ?? 0),
+          'search_text' => \App\Support\EmployeeDirectorySearch::text($emp),
           'name' => trim(($emp->last_name ?? '').', '.trim(($emp->first_name ?? '').' '.($emp->middle_name ?? '')), ', '),
           'department' => trim((string) (($emp->department ?? '') ?: data_get($emp, 'employee.department') ?: data_get($emp, 'applicant.position.department'))),
           'status' => $resolveDisplayAccountStatus($emp),
@@ -2081,6 +2110,12 @@
     <!-- Header -->
     @php
       $employeeDirectory = collect($employeeDirectory ?? $employee);
+      $civilStatusOptions = $employeeDirectory
+        ->map(fn ($emp) => trim((string) (data_get($emp, 'employee.civil_status') ?: ($emp->civil_status ?? ''))))
+        ->filter(fn ($value) => $value !== '' && strcasecmp($value, 'All') !== 0)
+        ->unique(fn ($value) => strtolower($value))
+        ->sortBy(fn ($value) => strtolower($value))
+        ->values();
       $employeeFilterState = array_merge([
         'search' => '',
         'department' => 'All',
@@ -2202,25 +2237,7 @@
         $headerStart = "hsl({$hue}, 78%, 58%)";
         $headerEndHue = ($hue + 36) % 360;
         $headerEnd = "hsl({$headerEndHue}, 78%, 46%)";
-        $classValue = trim((string) (data_get($emp, 'employee.classification') ?: data_get($emp, 'applicant.position.employment') ?: ($emp->classification ?? '')));
-        $employmentCode = match (strtolower($classValue)) {
-          'full-time', 'full time' => 'FT',
-          'part-time', 'part time' => 'PT',
-          default => (str_contains(strtolower($classValue), 'part') ? 'PT' : (str_contains(strtolower($classValue), 'full') || str_contains(strtolower($classValue), 'probationary') || str_contains(strtolower($classValue), 'permanent') ? 'FT' : '')),
-        };
-        $jobTypeValue = trim((string) (data_get($emp, 'applicant.position.job_type') ?: data_get($emp, 'employee.job_type') ?: ($emp->job_type ?? '')));
-        $normalizedJobType = strtolower($jobTypeValue);
-        $jobTypeCode = match (true) {
-          in_array(strtoupper($jobTypeValue), ['NT'], true),
-          str_contains($normalizedJobType, 'non-teaching'),
-          str_contains($normalizedJobType, 'non teaching') => 'NT',
-          in_array(strtoupper($jobTypeValue), ['T'], true),
-          str_contains($normalizedJobType, 'teaching'),
-          str_contains($normalizedJobType, 'teacher'),
-          str_contains($normalizedJobType, 'faculty') => 'T',
-          default => $jobTypeValue,
-        };
-        $classDisplay = collect([$employmentCode, $jobTypeCode])->filter(fn ($value) => trim((string) $value) !== '')->implode('/');
+        $classDisplay = \App\Support\EmployeeDirectoryClass::label($emp);
         $birthdayRaw = data_get($emp, 'employee.birthday') ?: ($emp->birthday ?? '');
         $birthdayDisplay = '';
         $ageToDate = '';
@@ -2245,15 +2262,21 @@
             ?: data_get($emp, 'employee.employement_date')
             ?: data_get($emp, 'employee.employment_date')
             ?: ($emp->date_hired ?? ''));
-        $isProbationaryEmployee = str_contains(strtolower($classValue), 'probationary');
-        if (!preg_match('/permanent|regular/i', $classValue) && !empty($employmentDateRaw)) {
+        $normalizedClassCode = strtoupper(preg_replace('/\s+/', '', (string) $classDisplay));
+        $isTeachingClass = in_array($normalizedClassCode, ['T/PT', 'T/FT', 'PT/T', 'FT/T'], true);
+        $isNonTeachingClass = in_array('NT', explode('/', $normalizedClassCode), true);
+        $isProbationaryEmployee = false;
+        if (($isTeachingClass || $isNonTeachingClass) && !empty($employmentDateRaw)) {
           try {
-            $probationStart = \Carbon\Carbon::parse($employmentDateRaw);
-            $isNonTeaching = in_array(trim(strtoupper($jobTypeValue)), ['NT', 'NON-TEACHING', 'NON TEACHING'], true);
-            $probationEnd = $isNonTeaching
-              ? $probationStart->copy()->addYear()
-              : $probationStart->copy()->addYears(3);
-            $isProbationaryEmployee = now()->lt($probationEnd);
+            $probationStart = \Carbon\Carbon::parse($employmentDateRaw)->startOfDay();
+            $probationEnd = $isNonTeachingClass
+              ? $probationStart->copy()->addMonthsNoOverflow(6)
+              : $probationStart->copy()->addYearsNoOverflow(3);
+            $highlightDate = \Carbon\Carbon::today();
+            $isProbationaryEmployee = $highlightDate->gte($probationStart)
+              && ($isNonTeachingClass
+                ? $highlightDate->lte($probationEnd)
+                : $highlightDate->lt($probationEnd));
           } catch (\Throwable $e) {
             $isProbationaryEmployee = false;
           }
@@ -2341,6 +2364,7 @@
 
         return [
           'no' => $index + 1,
+          'search_text' => \App\Support\EmployeeDirectorySearch::text($emp),
           'name' => $blankTableValue(trim(($emp->last_name ?? '').', '.trim(($emp->first_name ?? '').' '.($emp->middle_name ?? '')), ', ')),
           'employee_id' => $blankTableValue($employeeIdDisplay),
           'account_number' => $blankTableValue(trim((string) (data_get($emp, 'employee.account_number') ?: data_get($emp, 'employee.user_id') ?: ($emp->account_number ?? $emp->id ?? '')))),
@@ -2395,17 +2419,22 @@
         ->unique(fn($dept) => strtolower($dept))
         ->sort()
         ->values();
-      $departmentStaffingSummary = $employeeDirectory
-        ->groupBy(fn ($emp) => ($resolveDepartment($emp) !== '' ? $resolveDepartment($emp) : 'Unassigned'))
-        ->map(fn ($departmentEmployees, $department) => \App\Support\DepartmentStaffingSummary::forDepartment($departmentEmployees, $department))
+      $classOptions = $employeeDirectory
+        ->map(fn($emp) => \App\Support\EmployeeDirectoryClass::label($emp))
+        ->filter(fn($value) => $value !== '')
+        ->unique(fn($value) => strtolower($value))
+        ->sort()
+        ->values();
+      $departmentStaffingSummary = \App\Support\DepartmentStaffingSummary::forEmployees($employeeDirectory)
         ->sort(function ($a, $b) {
           $departmentA = strtolower(trim((string) ($a['department'] ?? '')));
           $departmentB = strtolower(trim((string) ($b['department'] ?? '')));
 
           $resolveDepartmentPriority = static function (array $row, string $department): int {
-            $isTeachingDepartment = (bool) ($row['is_teaching_department'] ?? false);
+            $hasInstructors = (int) ($row['instructors_ft'] ?? 0) > 0
+              || (int) ($row['instructors_pt'] ?? 0) > 0;
 
-            if (!$isTeachingDepartment) {
+            if (!$hasInstructors) {
               return 0;
             }
 
@@ -2440,6 +2469,7 @@
         'heads' => $departmentStaffingSummary->sum('heads'),
         'coordinator' => $departmentStaffingSummary->sum('coordinator'),
         'staff' => $departmentStaffingSummary->sum('staff'),
+        'unclassified' => $departmentStaffingSummary->sum('unclassified'),
         'instructors_ft' => $departmentStaffingSummary->sum('instructors_ft'),
         'instructors_pt' => $departmentStaffingSummary->sum('instructors_pt'),
         'total' => $departmentStaffingSummary->sum('total'),
@@ -2533,7 +2563,7 @@
     </div>
 
     <!-- ================= DASHBOARD CONTENT ================= -->
-<div id="admin-employee-page" class="min-w-0 p-4 md:p-8 space-y-6 pt-20">
+<div id="admin-employee-page" class="min-w-0 px-4 pb-4 pt-0 md:px-8 md:pb-8 space-y-6">
 
     <!-- TOP BAR -->
 <div class="employee-status-legend-bar flex flex-wrap items-center justify-between gap-4">
@@ -2630,6 +2660,11 @@
           </tfoot>
         </table>
       </div>
+      @if($departmentStaffingTotals['unclassified'] > 0)
+        <p class="border-t border-slate-200 px-5 py-3 text-sm text-slate-600">
+          {{ $departmentStaffingTotals['unclassified'] }} employees are unclassified under the current rank and instructor rules. They are included in the overall total, but not in the category counts.
+        </p>
+      @endif
     </div>
 
     <div
@@ -2833,7 +2868,7 @@
             class="employee-directory-card employee-page-reveal employee-card-motion relative flex min-h-[365px] min-w-0 w-full flex-col overflow-hidden rounded-xl bg-white shadow-md"
             style="--employee-reveal-delay: 0ms;"
             x-show="matchesDepartment(@js($resolveDepartment($emp))) &&
-                    matchesSearch(@js(trim(($emp->last_name ?? '').', '.trim(($emp->first_name ?? '').' '.($emp->middle_name ?? '')), ', '))) &&
+                    matchesSearch(@js(\App\Support\EmployeeDirectorySearch::text($emp))) &&
                     matchesStatus(@js($resolveDisplayAccountStatus($emp)), @js($missingCardCount > 0))"
         >
             @if($missingCardCount > 0)
@@ -2941,7 +2976,7 @@
                 loadEmployeeDirectoryResults(`${window.location.pathname}?${params.toString()}`);
               "
             >
-              @foreach ([5, 10, 15, 25, 50] as $pageSize)
+              @foreach ([10, 30, 50, 100] as $pageSize)
                 <option value="{{ $pageSize }}" @selected((int) ($employeeFilterState['per_page'] ?? 10) === $pageSize)>{{ $pageSize }}</option>
               @endforeach
               <option value="all" @selected(($employeeFilterState['per_page'] ?? 10) === 'all')>All</option>
@@ -3062,8 +3097,57 @@
               <th class="sticky left-14 top-0 z-30 border border-black bg-[#66f0cf] px-2 py-1 shadow-[inset_-1px_0_0_#000]">NAME</th>
               <th class="sticky top-0 z-10 border border-black bg-[#66f0cf] px-2 py-1">ID Number</th>
               <th class="sticky top-0 z-10 border border-black bg-[#66f0cf] px-2 py-1">Account #</th>
-              <th class="sticky top-0 z-10 border border-black bg-[#66f0cf] px-2 py-1">SEX</th>
-              <th class="sticky top-0 z-10 border border-black bg-[#66f0cf] px-2 py-1">CIVIL STATUS</th>
+              <th class="sticky top-0 z-10 border border-black bg-[#66f0cf] px-2 py-1">
+                <div class="relative min-w-[4rem] pr-4 leading-5">
+                  <span>SEX</span>
+                  <label
+                    class="absolute -right-1 top-1/2 flex h-[18px] w-[18px] -translate-y-1/2 items-center justify-center border border-[#a6a6a6] bg-gradient-to-b from-white to-[#e6e6e6] shadow-[inset_0_0_0_1px_white] focus-within:ring-2 focus-within:ring-emerald-700"
+                    :title="sexFilter === 'All' ? 'Filter by sex: All' : 'Filter by sex: ' + sexFilter"
+                  >
+                    <i
+                      class="pointer-events-none text-[9px]"
+                      :class="sexFilter === 'All' ? 'fa-solid fa-caret-down text-[#555]' : 'fa-solid fa-filter text-emerald-700'"
+                      aria-hidden="true"
+                    ></i>
+                    <select
+                      aria-label="Filter employees by sex"
+                      x-model="sexFilter"
+                      @change="applyEmployeeDirectoryFilters()"
+                      class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                    >
+                      <option value="All">All</option>
+                      <option value="FM">FM</option>
+                      <option value="M">M</option>
+                    </select>
+                  </label>
+                </div>
+              </th>
+              <th class="sticky top-0 z-10 border border-black bg-[#66f0cf] px-2 py-1">
+                <div class="relative min-w-[8rem] pr-4 leading-5">
+                  <span>CIVIL STATUS</span>
+                  <label
+                    class="absolute -right-1 top-1/2 flex h-[18px] w-[18px] -translate-y-1/2 items-center justify-center border border-[#a6a6a6] bg-gradient-to-b from-white to-[#e6e6e6] shadow-[inset_0_0_0_1px_white] focus-within:ring-2 focus-within:ring-emerald-700"
+                    :title="'Filter by civil status: ' + civilStatusFilter"
+                  >
+                    <i
+                      class="pointer-events-none text-[9px]"
+                      :class="civilStatusFilter === 'All' ? 'fa-solid fa-caret-down text-[#555]' : 'fa-solid fa-filter text-emerald-700'"
+                      aria-hidden="true"
+                    ></i>
+                    <select
+                      aria-label="Filter employees by civil status"
+                      x-model="civilStatusFilter"
+                      @change="applyEmployeeDirectoryFilters()"
+                      class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                    >
+                      <option value="All">All</option>
+                      @foreach ($civilStatusOptions as $civilStatusOption)
+                        <option value="{{ $civilStatusOption }}">{{ $civilStatusOption }}</option>
+                      @endforeach
+                    </select>
+                  </label>
+                </div>
+              </th>
               <th class="sticky top-0 z-10 border border-black bg-[#66f0cf] px-2 py-1">ADDRESS</th>
               <th class="sticky top-0 z-10 border border-black bg-[#66f0cf] px-2 py-1">CONTACT NO.</th>
               <th class="sticky top-0 z-10 border border-black bg-[#66f0cf] px-2 py-1">DATE OF BIRTH</th>
@@ -3071,8 +3155,58 @@
               <th class="sticky top-0 z-10 border border-black bg-[#66f0cf] px-2 py-1">EMPLOYMENT DATE</th>
               <th class="sticky top-0 z-10 border border-black bg-[#66f0cf] px-2 py-1">LENGTH OF SERVICE</th>
               <th class="sticky top-0 z-10 border border-black bg-[#66f0cf] px-2 py-1">POSITION</th>
-              <th class="sticky top-0 z-10 border border-black bg-[#66f0cf] px-2 py-1">DEPARTMENT</th>
-              <th class="sticky top-0 z-10 border border-black bg-[#66f0cf] px-2 py-1">CLASS</th>
+              <th class="sticky top-0 z-10 border border-black bg-[#66f0cf] px-2 py-1">
+                <div class="relative min-w-[8rem] pr-4 leading-5">
+                  <span>DEPARTMENT</span>
+                  <label
+                    class="absolute -right-1 top-1/2 flex h-[18px] w-[18px] -translate-y-1/2 items-center justify-center border border-[#a6a6a6] bg-gradient-to-b from-white to-[#e6e6e6] shadow-[inset_0_0_0_1px_white] focus-within:ring-2 focus-within:ring-emerald-700"
+                    :title="'Filter by department: ' + department"
+                  >
+                    <i
+                      class="pointer-events-none text-[9px]"
+                      :class="department === 'All' ? 'fa-solid fa-caret-down text-[#555]' : 'fa-solid fa-filter text-emerald-700'"
+                      aria-hidden="true"
+                    ></i>
+                    <select
+                      aria-label="Filter employees by department"
+                      x-model="department"
+                      @change="applyEmployeeDirectoryFilters()"
+                      class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                    >
+                      <option value="All">All</option>
+                      @foreach ($departmentOptions as $dept)
+                        <option value="{{ $dept }}">{{ $dept }}</option>
+                      @endforeach
+                    </select>
+                  </label>
+                </div>
+              </th>
+              <th class="sticky top-0 z-10 border border-black bg-[#66f0cf] px-2 py-1">
+                <div class="relative min-w-[6rem] pr-4 leading-5">
+                  <span>CLASS</span>
+                  <label
+                    class="absolute -right-1 top-1/2 flex h-[18px] w-[18px] -translate-y-1/2 items-center justify-center border border-[#a6a6a6] bg-gradient-to-b from-white to-[#e6e6e6] shadow-[inset_0_0_0_1px_white] focus-within:ring-2 focus-within:ring-emerald-700"
+                    :title="'Filter by class: ' + classFilter"
+                  >
+                    <i
+                      class="pointer-events-none text-[9px]"
+                      :class="classFilter === 'All' ? 'fa-solid fa-caret-down text-[#555]' : 'fa-solid fa-filter text-emerald-700'"
+                      aria-hidden="true"
+                    ></i>
+                    <select
+                      aria-label="Filter employees by class"
+                      x-model="classFilter"
+                      @change="applyEmployeeDirectoryFilters()"
+                      class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                    >
+                      <option value="All">All</option>
+                      @foreach ($classOptions as $classOption)
+                        <option value="{{ $classOption }}">{{ $classOption }}</option>
+                      @endforeach
+                    </select>
+                  </label>
+                </div>
+              </th>
               <th class="sticky top-0 z-10 border border-black bg-[#66f0cf] px-2 py-1">RANK</th>
               <th class="sticky top-0 z-10 border border-black bg-[#66f0cf] px-2 py-1">GRADE</th>
               <th class="sticky top-0 z-10 border border-black bg-[#26a9f3] px-2 py-1 text-white">SSS</th>
@@ -3151,7 +3285,7 @@
                 };
               @endphp
               <tr
-                x-show="matchesDepartment(@js($row['department'])) && matchesSearch(@js($row['name'])) && matchesStatus(@js($row['status']), @js((bool) ($row['has_missing_info'] ?? false)))"
+                x-show="matchesDepartment(@js($row['department'])) && matchesSearch(@js($row['search_text'])) && matchesStatus(@js($row['status']), @js((bool) ($row['has_missing_info'] ?? false)))"
                 class="{{ $rowHighlightClass }} text-[13px]"
               >
                 <td class="sticky left-0 z-10 border border-black {{ $rowHighlightClass }} px-2 py-1 text-center shadow-[inset_-1px_0_0_#000]">{{ $row['no'] }}</td>
@@ -3380,6 +3514,7 @@
       default => $jobTypeValue,
     };
     $classDisplay = collect([$employmentCode, $jobTypeCode])->filter(fn ($value) => trim((string) $value) !== '')->implode('/');
+    $classDisplay = data_get($emp, 'employee.class_code') ?: ($emp->class_code ?? null) ?: $classDisplay;
 
     $birthdayRaw = data_get($emp, 'employee.birthday') ?: ($emp->birthday ?? '');
     $birthdayDisplay = '';
@@ -3858,6 +3993,11 @@
       const revealItems = Array.from(document.querySelectorAll(selectors.join(',')))
         .filter((item) => {
           if (!item || item.classList.contains('employee-page-reveal')) return false;
+          // The large directory table cannot meet the reveal threshold inside its scroll container.
+          if (item.id === 'employee-directory-table-export') return false;
+          // Pagination can make this wrapper taller than the viewport, so it
+          // must stay visible while its individual cards animate independently.
+          if (item.hasAttribute('data-employee-directory-results')) return false;
           if (item.classList.contains('employee-status-legend-bar')) return false;
           if (item.classList.contains('employee-card-grid')) return false;
           if (item.classList.contains('employee-directory-card')) return false;
@@ -3877,8 +4017,21 @@
         row.classList.add('employee-table-row-motion');
       });
 
-      const cardGrid = document.querySelector('#admin-employee-page .employee-card-grid');
+
       const employeeCards = Array.from(document.querySelectorAll('#admin-employee-page .employee-directory-card'));
+      // Reveal each card independently; a full page of cards can exceed the viewport.
+      if ('IntersectionObserver' in window) {
+        const employeeCardObserver = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('employee-reveal-visible');
+            employeeCardObserver.unobserve(entry.target);
+          });
+        }, { threshold: 0, rootMargin: '0px 0px 80px 0px' });
+        employeeCards.forEach((card) => employeeCardObserver.observe(card));
+      } else {
+        employeeCards.forEach((card) => card.classList.add('employee-reveal-visible'));
+      }
       const animatedItems = Array.from(document.querySelectorAll('#admin-employee-page .employee-page-reveal:not(.employee-directory-card)'));
       if (!animatedItems.length) return;
 
@@ -3914,53 +4067,6 @@
 
       animatedItems.forEach((item) => observer.observe(item));
 
-      if (cardGrid && employeeCards.length) {
-        let cardTimers = [];
-
-        const clearCardTimers = () => {
-          cardTimers.forEach((timer) => window.clearTimeout(timer));
-          cardTimers = [];
-        };
-
-        const visibleEmployeeCards = () => employeeCards.filter((card) => {
-          const styles = window.getComputedStyle(card);
-          return styles.display !== 'none' && styles.visibility !== 'hidden';
-        });
-
-        const revealCardsInSequence = () => {
-          clearCardTimers();
-          visibleEmployeeCards().forEach((card, index) => {
-            card.classList.toggle('employee-reveal-from-top', direction === 'up');
-            card.classList.remove('employee-reveal-visible');
-            cardTimers.push(window.setTimeout(() => {
-              card.classList.add('employee-reveal-visible');
-            }, index * 140));
-          });
-        };
-
-        const hideCards = () => {
-          clearCardTimers();
-          employeeCards.forEach((card) => {
-            card.classList.remove('employee-reveal-visible');
-          });
-        };
-
-        const cardObserver = new IntersectionObserver((entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              revealCardsInSequence();
-              return;
-            }
-
-            hideCards();
-          });
-        }, {
-          threshold: 0.08,
-          rootMargin: '-7% 0px -8% 0px',
-        });
-
-        cardObserver.observe(cardGrid);
-      }
     };
 
     if (document.readyState === 'loading') {

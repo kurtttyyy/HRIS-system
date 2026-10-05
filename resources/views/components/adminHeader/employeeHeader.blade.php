@@ -3,7 +3,7 @@
 <style>
     @media (max-width: 767px) {
         .employee-directory-header {
-            padding: 4.5rem 0.75rem 0.75rem;
+            padding: 4.5rem 0.75rem 0.25rem;
         }
 
         .employee-directory-header-card {
@@ -122,7 +122,7 @@
     }
 </style>
 
-<header data-admin-scroll-header class="employee-directory-header relative z-40 px-4 py-4 md:px-8 md:py-5">
+<header data-admin-scroll-header class="employee-directory-header relative z-40 px-4 pt-4 pb-1 md:px-8 md:pt-5">
     <div data-admin-scroll-card class="employee-directory-header-card relative overflow-visible rounded-[2rem] border border-emerald-950/70 bg-[linear-gradient(135deg,_#020617_0%,_#020617_42%,_#111827_68%,_#064e3b_100%)] shadow-[0_24px_60px_rgba(3,19,29,0.34)] backdrop-blur-xl">
         <div class="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.14),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(110,231,183,0.14),_transparent_32%)]"></div>
@@ -154,7 +154,7 @@
                         </button>
                         <button
                             type="button"
-                            @click="showDepartmentSummary = false; viewMode = viewMode === 'table' ? 'cards' : 'table'"
+                            @click="toggleEmployeeView()"
                             class="rounded-full border border-white/10 bg-white/8 px-3 py-1.5 text-emerald-50 transition hover:border-emerald-300/40 hover:bg-white/15"
                             x-text="viewMode === 'table' ? 'View Cards' : 'View Table'"
                         ></button>
@@ -189,7 +189,7 @@
                                 x-model="searchInput"
                                 @input="beginEmployeeSearch()"
                                 @input.debounce.500ms="applyEmployeeDirectoryFilters()"
-                                placeholder="Search by employee name..."
+                                placeholder="Search by name or position..."
                                 class="w-full bg-transparent pl-3 pr-2 text-sm text-slate-700 outline-none placeholder:text-slate-400"
                             >
                         </label>

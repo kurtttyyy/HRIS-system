@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="{{ asset('css/reference-theme.css') }}?v={{ filemtime(public_path('css/reference-theme.css')) }}">
 <script>
     (() => {
         const savedTheme = localStorage.getItem('hris-color-theme');

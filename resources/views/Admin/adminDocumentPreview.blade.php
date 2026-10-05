@@ -1,3 +1,9 @@
+@php
+  $isWord = in_array($extension, ['doc', 'docx'], true);
+  if ($isWord) {
+      $viewUrl .= (str_contains($viewUrl, '?') ? '&' : '?').'preview=pdf';
+  }
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -191,9 +197,10 @@
     </header>
 
     <section class="preview-body">
-      @if ($isPdf)
-        <div id="pdfViewer" class="pdf-viewer" data-url="{{ $viewUrl }}">
-          <p id="pdfStatus" class="pdf-status">Loading PDF preview...</p>
+      @if ($isPdf || $isWord)
+        <div id="pdfViewer" class="pdf-viewer" data-url="{{ $viewUrl }}"
+          data-render-as="{{ $isWord ? 'image' : 'canvas' }}" data-file-name="{{ $fileName }}">
+          <p id="pdfStatus" class="pdf-status">{{ $isWord ? 'Preparing document page images...' : 'Loading PDF preview...' }}</p>
         </div>
       @elseif ($isImage)
         <div class="image-wrap">
@@ -201,7 +208,7 @@
         </div>
       @elseif ($isText)
         <iframe class="preview-frame" src="{{ $viewUrl }}" title="{{ $fileName }}"></iframe>
-      @elseif (in_array($extension, ['doc', 'docx'], true) && (filled($wordText) || !empty($wordImages)))
+      @elseif ($extension === 'doc' && (filled($wordText) || !empty($wordImages)))
         <article class="word-page">
           @if (filled($wordText))
             <pre>{{ $wordText }}</pre>
@@ -223,47 +230,9 @@
     </section>
   </main>
 
-  @if ($isPdf)
+  @if ($isPdf || $isWord)
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script>
-      (async function renderPdfPreview() {
-        const viewer = document.getElementById('pdfViewer');
-        const status = document.getElementById('pdfStatus');
-        const url = viewer?.dataset.url;
-
-        if (!viewer || !status || !url || !window.pdfjsLib) {
-          if (status) status.textContent = 'Unable to load the PDF preview engine.';
-          return;
-        }
-
-        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-        try {
-          const pdf = await window.pdfjsLib.getDocument({ url }).promise;
-          status.remove();
-
-          for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
-            const page = await pdf.getPage(pageNumber);
-            const baseViewport = page.getViewport({ scale: 1 });
-            const targetWidth = Math.min(viewer.clientWidth - 36, 980);
-            const scale = Math.max(0.8, targetWidth / baseViewport.width);
-            const viewport = page.getViewport({ scale });
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-
-            canvas.className = 'pdf-page';
-            canvas.width = Math.floor(viewport.width);
-            canvas.height = Math.floor(viewport.height);
-            viewer.appendChild(canvas);
-
-            await page.render({ canvasContext: context, viewport }).promise;
-          }
-        } catch (error) {
-          console.error('Unable to render PDF preview.', error);
-          status.textContent = 'Unable to render this PDF preview.';
-        }
-      })();
-    </script>
+    <script src="{{ asset('js/document-page-preview.js') }}"></script>
   @endif
 </body>
 </html>

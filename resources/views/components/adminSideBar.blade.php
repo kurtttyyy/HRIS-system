@@ -464,6 +464,14 @@
     </a>
     @endif
 
+    @if($canAdmin('employees'))
+    <a href="{{ route('admin.employeeEvaluation.customize', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}" data-admin-module="employees" data-admin-nav
+       class="flex items-center justify-center gap-0 rounded-lg px-4 py-2.5 font-medium transition group-hover:justify-start group-hover:gap-3 {{ request()->routeIs('admin.employeeEvaluation.*') ? 'bg-green-600 text-white' : 'text-white hover:bg-green-600/30' }}">
+      <i class="fa-solid fa-clipboard-check w-5 text-center"></i>
+      <span class="admin-sidebar-text inline-block max-w-0 overflow-hidden whitespace-nowrap transition-all duration-300 group-hover:max-w-xs">Evaluation Setup</span>
+    </a>
+    @endif
+
     <!-- Leave -->
     @if($canAdmin('leave'))
     <a href="{{ route('admin.adminLeaveManagement', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}"
