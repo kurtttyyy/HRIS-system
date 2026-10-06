@@ -65,6 +65,11 @@
       overflow-y: auto;
       padding-right: 0.25rem;
     }
+    #passingDocumentsList {
+      max-height: none;
+      overflow-y: visible;
+      padding-right: 0;
+    }
     .applicant-doc-list::-webkit-scrollbar {
       width: 6px;
     }
@@ -801,6 +806,20 @@
                 <p id="passingDocumentHint" class="mt-3 text-xs font-semibold text-slate-500">View or download every document to enable completion.</p>
               </div>
 
+              <form id="applicantDocumentNoticeForm" onsubmit="saveApplicantDocumentNotice(event)" class="mt-4 rounded-[1.1rem] border border-amber-200 bg-amber-50/70 p-4">
+                <p class="text-sm font-bold text-amber-900"><i class="fa-solid fa-file-circle-exclamation mr-2" aria-hidden="true"></i>Missing documents</p>
+                <p class="mt-1 text-xs text-slate-600">Publish a notice on this applicant's guest Application Status page.</p>
+                <label for="missingDocumentsInput" class="mt-3 block text-xs font-semibold text-slate-700">Documents needed (one per line)</label>
+                <textarea id="missingDocumentsInput" required maxlength="3000" rows="3" placeholder="e.g. Updated transcript of records" class="mt-1 w-full rounded-xl border border-amber-200 bg-white p-3 text-sm"></textarea>
+                <label for="documentNoticeInput" class="mt-3 block text-xs font-semibold text-slate-700">Instructions for the applicant</label>
+                <textarea id="documentNoticeInput" maxlength="4000" rows="2" placeholder="Tell the applicant where and how to submit the documents." class="mt-1 w-full rounded-xl border border-amber-200 bg-white p-3 text-sm"></textarea>
+                <div class="mt-3 flex flex-wrap gap-2">
+                  <button id="publishDocumentNoticeButton" type="submit" class="rounded-xl bg-amber-700 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50">Publish notice</button>
+                  <button id="resolveDocumentNoticeButton" type="button" onclick="saveApplicantDocumentNotice(null, true)" class="hidden rounded-xl border border-amber-300 bg-white px-4 py-2 text-xs font-semibold text-amber-900 disabled:opacity-50">Mark resolved</button>
+                </div>
+                <p id="documentNoticeFeedback" role="status" aria-live="polite" class="mt-2 text-xs text-slate-600"></p>
+              </form>
+
               <div id="hireApplicantPanel" class="mt-4 hidden rounded-[1.1rem] border border-sky-200 bg-white p-4 shadow-sm">
                 <div class="flex items-start gap-3">
                   <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-sky-100 text-sky-700">
@@ -840,6 +859,17 @@
               <span id="passingDocumentsCount" class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">0 files</span>
             </div>
             <div id="passingDocumentsList" class="applicant-doc-list mt-5 space-y-4"></div>
+            <div class="mt-5 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-emerald-50/60 p-4">
+              <div class="flex items-center gap-2 text-sm font-bold text-slate-800">
+                <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-emerald-600 shadow-sm"><i class="fa-solid fa-list-check" aria-hidden="true"></i></span>
+                Before you complete the review
+              </div>
+              <ol class="mt-4 space-y-3 text-xs text-slate-600">
+                <li class="flex gap-3"><span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 font-bold text-emerald-700">1</span><div><p class="font-semibold text-slate-800">Check the document contents</p><p class="mt-1 leading-5">Confirm the applicant’s name, readable pages, and the correct document type. Opening a file marks it reviewed; check its contents before approving.</p></div></li>
+                <li class="flex gap-3"><span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-100 font-bold text-amber-700">2</span><div><p class="font-semibold text-slate-800">Request anything missing or incorrect</p><p class="mt-1 leading-5">Use the missing documents form to list replacements and submission instructions. The applicant sees your notice on their Application Status page.</p></div></li>
+                <li class="flex gap-3"><span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-100 font-bold text-sky-700">3</span><div><p class="font-semibold text-slate-800">Resolve the notice, then complete</p><p class="mt-1 leading-5">After receiving and checking the requested documents, mark the notice resolved and finish the document review.</p></div></li>
+              </ol>
+            </div>
           </div>
         </div>
       </div>
@@ -1410,16 +1440,11 @@
       && ['initial interview', 'final interview', 'demo teaching'].includes(status)
       && !nextInterviewUnlocked
     ) {
-      window.setTimeout(() => {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Interview decision required',
-          text: 'The previous interview has ended, but this applicant is still in the interview stage. Choose Proceed or Reject before creating another schedule.',
-          confirmButtonText: 'Review Interview',
-          confirmButtonColor: '#d97706',
-          customClass: { popup: 'interview-conflict-popup' },
-        });
-      }, 180);
+      // The panel already explains that a decision is required. Keep its
+      // Proceed and Reject controls accessible instead of covering them.
+      const decisionActions = document.getElementById('interviewDecisionActions');
+      decisionActions?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      decisionActions?.querySelector('button:not(:disabled)')?.focus({ preventScroll: true });
     }
   }
 
@@ -1579,7 +1604,43 @@
     }
   }
 
+  function renderApplicantDocumentNotice() {
+    const missing = currentApplicantModalData?.missing_documents || '';
+    document.getElementById('missingDocumentsInput').value = missing;
+    document.getElementById('documentNoticeInput').value = currentApplicantModalData?.document_notice || '';
+    document.getElementById('resolveDocumentNoticeButton').classList.toggle('hidden', !missing.trim());
+    document.getElementById('applicantDocumentNoticeForm').classList.toggle('hidden', normalizeText(currentApplicantModalData?.status) !== 'passing document');
+    document.getElementById('documentNoticeFeedback').textContent = missing.trim() ? 'This notice is visible on the applicant’s status page.' : '';
+  }
+
+  async function saveApplicantDocumentNotice(event, resolve = false) {
+    event?.preventDefault();
+    const applicantId = currentApplicantId;
+    const feedback = document.getElementById('documentNoticeFeedback');
+    const buttons = document.querySelectorAll('#applicantDocumentNoticeForm button');
+    buttons.forEach(button => button.disabled = true);
+    feedback.textContent = resolve ? 'Resolving notice…' : 'Publishing notice…';
+    try {
+      const data = await postInterviewTimingAction(applicantId, `/system/applicant/${encodeURIComponent(applicantId)}/document-notice`, {
+        resolve,
+        missing_documents: document.getElementById('missingDocumentsInput').value.trim(),
+        document_notice: document.getElementById('documentNoticeInput').value.trim(),
+        tab_session: new URLSearchParams(window.location.search).get('tab_session') || '',
+      });
+      if (currentApplicantId !== applicantId) return;
+      Object.assign(currentApplicantModalData, data);
+      renderApplicantDocumentNotice();
+      updatePassingDocumentProgress();
+      feedback.textContent = resolve ? 'Notice resolved and removed from the applicant’s status page.' : 'Notice published. The applicant can see it on their Application Status page.';
+    } catch (error) {
+      if (currentApplicantId === applicantId) feedback.textContent = error.message;
+    } finally {
+      buttons.forEach(button => button.disabled = false);
+    }
+  }
+
   function showApplicantPassingDocumentPanel() {
+    renderApplicantDocumentNotice();
     document.getElementById('passingPanelInitials').innerText = getInitials(currentApplicantModalData?.name, '');
     document.getElementById('passingPanelName').innerText = currentApplicantModalData?.name || 'Applicant';
     document.getElementById('passingPanelPosition').innerText = currentApplicantModalData?.title || 'Position not specified';
@@ -1739,13 +1800,14 @@
     const reviewed = Array.from(currentApplicantDocumentKeys)
       .filter(key => downloadedApplicantDocuments.has(key))
       .length;
-    const isComplete = total > 0 && reviewed >= total;
+    const hasMissingDocuments = Boolean(currentApplicantModalData?.missing_documents?.trim());
+    const isComplete = total > 0 && reviewed >= total && !hasMissingDocuments;
     const percent = total ? Math.round((reviewed / total) * 100) : 0;
 
     if (progress) progress.textContent = `${reviewed}/${total} reviewed`;
     if (progressBar) progressBar.style.width = `${percent}%`;
     if (hint) {
-      hint.textContent = isComplete
+      hint.textContent = hasMissingDocuments ? 'Missing documents requested. Mark the notice resolved after receiving and checking them.' : isComplete
         ? 'All documents reviewed. You can mark this step complete.'
         : 'View or download every document to enable completion.';
       hint.className = `mt-3 text-xs font-semibold ${isComplete ? 'text-emerald-700' : 'text-slate-500'}`;
@@ -1763,6 +1825,7 @@
   }
 
   function markApplicantDocumentsComplete() {
+    if (currentApplicantModalData?.missing_documents?.trim()) return;
     const total = currentApplicantDocumentKeys.size;
     const reviewed = Array.from(currentApplicantDocumentKeys)
       .filter(key => downloadedApplicantDocuments.has(key))

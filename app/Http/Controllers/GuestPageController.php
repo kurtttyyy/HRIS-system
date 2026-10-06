@@ -53,6 +53,9 @@ class GuestPageController extends Controller
         return md5(json_encode(collect($applicants)->map(fn (Applicant $applicant) => [
             'id' => $applicant->id,
             'application_status' => $applicant->application_status,
+            'missing_documents' => $applicant->missing_documents,
+            'document_notice' => $applicant->document_notice,
+            'document_notice_at' => $applicant->document_notice_at?->toIso8601String(),
             'date_hired' => optional($applicant->date_hired)->toDateString(),
             'updated_at' => optional($applicant->updated_at)->toDateTimeString(),
             'documents' => collect($applicant->documents ?? [])->map(fn ($document) => [

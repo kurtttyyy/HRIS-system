@@ -118,6 +118,25 @@ class PermanencyEvaluationTest extends TestCase
         $this->assertSame($template->id, $review->fresh()->template->id);
     }
 
+    public function test_heads_can_submit_both_evaluation_forms_without_comments(): void
+    {
+        $head = $this->user(['department_head' => 'Approved']);
+        $template = $this->template();
+        $this->actingAs($head);
+        foreach (['employee.employeeEvaluation.submit', 'employee.permanencyEvaluation.submit'] as $route) {
+            foreach (['omitted', 'empty', 'whitespace'] as $variant) {
+                $employee = $this->candidate();
+                $payload = $this->payload($template->id);
+                unset($payload['comments']);
+                if ($variant !== 'omitted') $payload['comments'] = $variant === 'empty' ? '' : '   ';
+                $this->post(route($route, $employee), $payload)->assertRedirect()->assertSessionHasNoErrors();
+                $review = PermanencyEvaluation::where('employee_user_id', $employee->id)->firstOrFail();
+                $this->assertSame('', $review->comments);
+                $this->assertSame([3, 5], $review->ratings);
+            }
+        }
+    }
+
     public function test_submission_rejects_other_departments_non_heads_and_early_reviews(): void
     {
         $employee = $this->candidate(); $template = $this->template();
@@ -150,6 +169,29 @@ class PermanencyEvaluationTest extends TestCase
         $this->post(route('employee.permanencyEvaluation.submit', $employee), $this->payload($template->id))->assertRedirect();
         $this->get(route('employee.permanencyEvaluation'))->assertOk()->assertSee('Submitted')->assertSee('Consistent performance');
         $this->actingAs($this->user(['role' => 'Admin']))->get(route('admin.employeeEvaluation.customize'))->assertOk()->assertSee('Evaluation Setup')->assertSee('Consistent performance');
+    }
+
+    public function test_saved_team_evaluation_remains_visible_after_submission_day_and_template_changes(): void
+    {
+        $head = $this->user(['department_head' => 'Approved']);
+        $employee = $this->user();
+        $template = $this->template();
+        $this->actingAs($head)->post(route('employee.employeeEvaluation.submit', $employee), $this->payload($template->id))->assertRedirect();
+        $this->travelTo(now()->addDay());
+        PermanencyEvaluationTemplate::create([
+            'title' => 'New questions', 'notice_days' => 7, 'created_by' => 99,
+            'criteria' => [['label' => 'New criterion']],
+        ]);
+        $response = $this->get(route('employee.employeeEvaluation'));
+        $response->assertOk()->assertSee('Submitted Oct 3, 2026')->assertSee('Overall rating: 4/5')
+            ->assertSee('Recommend permanent appointment')->assertSee('Consistent performance and reliable attendance.')
+            ->assertSee('Quality: 3 - Satisfactory')->assertSee('Reliability: 5 - Excellent')
+            ->assertDontSee('Submit evaluation to HR')->assertDontSee('name="recommendation"', false);
+        $html = $response->getContent();
+        $this->assertMatchesRegularExpression('/value="3"[^>]*checked[^>]*disabled/s', $html);
+        $this->assertMatchesRegularExpression('/value="5"[^>]*checked[^>]*disabled/s', $html);
+        PermanencyEvaluation::firstOrFail()->update(['comments' => '']);
+        $this->get(route('employee.employeeEvaluation'))->assertOk()->assertSee('No comments provided.');
     }
 
     public function test_published_questions_appear_for_the_heads_team_and_can_be_submitted(): void

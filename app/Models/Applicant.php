@@ -47,6 +47,9 @@ class Applicant extends Model
         'open_position_id',
         'tracking_number',
         'application_status',
+        'missing_documents',
+        'document_notice',
+        'document_notice_at',
         'date_hired',
         'user_id',
         'work_position',
@@ -88,6 +91,7 @@ class Applicant extends Model
     }
 
     protected $casts = [
+        'document_notice_at' => 'datetime',
         'date_hired' => 'date',
         'date_of_birth' => 'date',
         'work_date_from' => 'date',

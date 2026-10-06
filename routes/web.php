@@ -152,6 +152,7 @@ Route::controller(AdministratorPageController::class)->group(function () {
     Route::get('system/loads', 'display_loads')->name('admin.adminLoads');
 
     Route::get('system/applicant', 'display_applicant')->name('admin.adminApplicant');
+    Route::get('system/applicant/history', 'display_applicant_history')->name('admin.adminApplicant.history');
     Route::get('system/applicant/snapshot', 'display_applicant_snapshot')->name('admin.adminApplicant.snapshot');
     Route::get('system/applicants/ID/{id}', 'display_applicant_ID');
     Route::get('system/interviewers/ID/{id}', 'display_interview_ID');
@@ -191,6 +192,7 @@ Route::controller(AdministratorStoreController::class)->group(function () {
     Route::post('system/employee/document', 'store_document')->name('admin.addDocument');
     Route::post('system/employee/insert/upload', 'store_employee_import_file')->name('admin.employeeImport.upload');
     Route::post('system/applicant/document/{document}/reviewed', 'mark_applicant_document_reviewed')->name('admin.applicantDocument.reviewed');
+    Route::post('system/applicant/{applicant}/document-notice', 'save_applicant_document_notice')->name('admin.adminApplicant.documentNotice');
     Route::post('system/payslip/upload', 'store_payslip_file')->name('admin.uploadPayslipFile');
     Route::post('system/loads/upload', 'store_loads_file')->name('admin.uploadLoadsFile');
     Route::post('system/employee/document/requirements', 'store_required_documents')->name('admin.saveRequiredDocuments');

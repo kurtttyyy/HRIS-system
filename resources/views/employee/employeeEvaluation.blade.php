@@ -34,16 +34,23 @@
                 @forelse ($evaluationEmployees as $employee)
                     @php
                         $retry = (int) old('employee_id') === $employee['id'];
-                        $review = $evaluationReviews->first(fn ($item) => (int) $item->employee_user_id === $employee['id'] && $item->due_date->isToday());
+                        $review = $evaluationReviews->first(fn ($item) => (int) $item->employee_user_id === (int) $employee['id']);
                     @endphp
                     <details class="rounded-3xl border border-slate-200 bg-white p-6" @if ($retry) open @endif>
                         <summary class="cursor-pointer">
                             <span class="text-lg font-bold">{{ $employee['name'] }}</span>
-                            <span class="ml-2 text-sm font-semibold text-emerald-700">{{ $review ? 'Submitted today' : 'View evaluation' }}</span>
+                            <span class="ml-2 text-sm font-semibold text-emerald-700">{{ $review ? ($review->created_at->isToday() ? 'Submitted today' : 'Submitted '.$review->created_at->format('M j, Y')) : 'Start evaluation' }}</span>
                             <span class="mt-2 block text-sm text-slate-500">{{ $employee['position'] }} · {{ $employee['employee_id'] }}</span>
                         </summary>
                         <div class="mt-5 space-y-5">
-                            @if ($evaluationTemplate)
+                            @if ($review)
+                                <h3 class="font-bold">Submitted evaluation</h3>
+                                @include('components.evaluationRatingTable', [
+                                    'ratingCriteria' => $review->template->criteria,
+                                    'ratingReview' => $review,
+                                ])
+                                @include('components.permanencyReviewDetails', ['showRatingBreakdown' => false])
+                            @elseif ($evaluationTemplate)
                                 <form method="POST" action="{{ route('employee.employeeEvaluation.submit', $employee['id']) }}" class="space-y-5">
                                     @csrf
                                     <input type="hidden" name="template_id" value="{{ $evaluationTemplate->id }}">
@@ -54,16 +61,12 @@
                                     ])
                                     @if (!$review)
                                         <label class="block font-semibold">Recommendation<select required name="recommendation" class="mt-2 w-full rounded-xl border border-slate-300 p-3"><option value="">Select a recommendation</option>@foreach (['recommend_permanent' => 'Recommend permanent appointment', 'extend_probation' => 'Recommend extending probation', 'not_recommended' => 'Do not recommend permanent appointment'] as $value => $label)<option value="{{ $value }}" @selected($retry && old('recommendation') === $value)>{{ $label }}</option>@endforeach</select></label>
-                                        <label class="block font-semibold">Comments<textarea required name="comments" maxlength="5000" rows="4" class="mt-2 w-full rounded-xl border border-slate-300 p-3">{{ $retry ? old('comments') : '' }}</textarea></label>
+                                        <label class="block font-semibold">Comments <span class="text-sm font-normal text-slate-500">(optional)</span><textarea name="comments" maxlength="5000" rows="4" placeholder="Add feedback if you wish." class="mt-2 w-full rounded-xl border border-slate-300 p-3">{{ $retry ? old('comments') : '' }}</textarea></label>
                                         <button type="submit" class="rounded-xl bg-emerald-700 px-5 py-3 font-semibold text-white hover:bg-emerald-800">Submit evaluation to HR</button>
                                     @endif
                                 </form>
                             @else
                                 <p class="text-sm text-slate-500">Questions will appear here after the admin publishes an evaluation form.</p>
-                            @endif
-                            @if ($review)
-                                <h3 class="font-bold">Submitted evaluation</h3>
-                                @include('components.permanencyReviewDetails')
                             @endif
                         </div>
                     </details>

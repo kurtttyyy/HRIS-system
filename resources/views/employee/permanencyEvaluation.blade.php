@@ -46,7 +46,7 @@
                                         'ratingReview' => null,
                                     ])
                                     <label class="block font-semibold">Recommendation<select required name="recommendation" class="mt-2 w-full rounded-xl border border-slate-300 p-3"><option value="">Select a recommendation</option>@foreach (['recommend_permanent' => 'Recommend permanent appointment', 'extend_probation' => 'Recommend extending probation', 'not_recommended' => 'Do not recommend permanent appointment'] as $value => $label)<option value="{{ $value }}" @selected($retry && old('recommendation') === $value)>{{ $label }}</option>@endforeach</select></label>
-                                    <label class="block font-semibold">Comments and supporting observations<textarea required name="comments" maxlength="5000" rows="4" class="mt-2 w-full rounded-xl border border-slate-300 p-3">{{ $retry ? old('comments') : '' }}</textarea></label>
+                                    <label class="block font-semibold">Comments and supporting observations <span class="text-sm font-normal text-slate-500">(optional)</span><textarea name="comments" maxlength="5000" rows="4" placeholder="Add feedback if you wish." class="mt-2 w-full rounded-xl border border-slate-300 p-3">{{ $retry ? old('comments') : '' }}</textarea></label>
                                     <p class="text-sm text-slate-500">Your submitted evaluation is final and will be available to HR for review.</p>
                                     <button type="submit" class="rounded-xl bg-emerald-700 px-5 py-3 font-semibold text-white hover:bg-emerald-800">Submit to HR</button>
                                 </form>

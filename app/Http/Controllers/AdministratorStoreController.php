@@ -40,6 +40,29 @@ use Illuminate\Support\Facades\Mail;
 
 class AdministratorStoreController extends Controller
 {
+    public function save_applicant_document_notice(Request $request, Applicant $applicant)
+    {
+        abort_unless(Auth::check() && in_array(strtolower(trim((string) Auth::user()->role)), ['admin', 'administrator'], true), 403);
+        $attrs = $request->validate([
+            'resolve' => 'sometimes|boolean',
+            'missing_documents' => 'required_unless:resolve,true|nullable|string|max:3000',
+            'document_notice' => 'nullable|string|max:4000',
+        ]);
+        $resolve = $request->boolean('resolve');
+        abort_unless($resolve || strtolower(trim((string) $applicant->application_status)) === 'passing document', 422, 'Document notices are available during the Passing Document stage.');
+        $applicant->update([
+            'missing_documents' => $resolve ? null : trim($attrs['missing_documents']),
+            'document_notice' => $resolve ? null : trim((string) ($attrs['document_notice'] ?? '')),
+            'document_notice_at' => $resolve ? null : now(),
+        ]);
+        return response()->json([
+            'ok' => true,
+            'missing_documents' => $applicant->missing_documents,
+            'document_notice' => $applicant->document_notice,
+            'document_notice_at' => $applicant->document_notice_at?->toIso8601String(),
+        ]);
+    }
+
     public function mark_applicant_document_reviewed(Request $request, ApplicantDocument $document)
     {
         if (!$document->reviewed_at) {
@@ -2724,6 +2747,10 @@ class AdministratorStoreController extends Controller
         ]);
 
         $review = Applicant::findOrFail($attrs['reviewId']);
+
+        if (in_array(strtolower(trim((string) $attrs['status'])), ['completed', 'hired'], true) && filled($review->missing_documents)) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['status' => 'Resolve the missing document notice before completing or hiring this applicant.']);
+        }
 
         if (strcasecmp(trim((string) $attrs['status']), 'Hired') === 0) {
             $this->reactivateResignedEmployeeAccountForApplicant($review);

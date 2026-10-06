@@ -80,6 +80,24 @@
                 </div>
             </div>
 
+            @if(filled($applicant->missing_documents))
+                <div class="alert alert-warning mt-3 rounded-4" role="status">
+                    <h6 class="fw-bold"><i class="bi bi-file-earmark-exclamation me-2" aria-hidden="true"></i>Action required: missing documents</h6>
+                    <p class="small mb-2">HR needs the following documents to continue your application:</p>
+                    <ul class="mb-2">
+                        @foreach(preg_split('/\r\n|\r|\n/', (string) $applicant->missing_documents) as $missingDocument)
+                            @if(trim($missingDocument) !== '') <li>{{ trim($missingDocument) }}</li> @endif
+                        @endforeach
+                    </ul>
+                    @if(filled($applicant->document_notice))
+                        <p class="mb-2" style="white-space: pre-wrap">{{ $applicant->document_notice }}</p>
+                    @endif
+                    @if($applicant->document_notice_at)
+                        <div class="small text-muted">Updated {{ $applicant->document_notice_at->format('M d, Y g:i A') }}</div>
+                    @endif
+                </div>
+            @endif
+
             @if($applicant->application_status === 'Rejected')
                 <div class="alert alert-danger mt-3">
                     <p>Thank you very much for your interest in the <strong>{{ optional($applicant->position)->title ?: 'selected' }}</strong> position and for the time you invested in the application process.</p>

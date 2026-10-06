@@ -23,13 +23,13 @@
             <div id="evaluation-template-region" data-evaluation-refresh>
             <form method="POST" action="{{ route('admin.employeeEvaluation.publish') }}" class="space-y-6 rounded-3xl border border-slate-200 bg-white p-6">
                 @csrf
-                <div class="flex flex-wrap items-center justify-between gap-3"><h2 class="text-xl font-bold">Evaluation form</h2><span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">{{ $template ? 'Published Â· '.$template->created_at->format('M j, Y') : 'Not published yet' }}</span></div>
+                <div class="flex flex-wrap items-center justify-between gap-3"><h2 class="text-xl font-bold">Evaluation form</h2><span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">{{ $template ? 'Published on '.$template->created_at->format('M j, Y') : 'Not published yet' }}</span></div>
                 <div class="grid gap-5 md:grid-cols-2">
                     <label class="block text-sm font-semibold">Form title<input name="title" required maxlength="150" value="{{ old('title', $template?->title ?? 'Employee Evaluation') }}" class="mt-2 w-full rounded-xl border border-slate-300 p-3"></label>
                     <label class="block text-sm font-semibold">Notice days for permanency reviews<input type="number" name="notice_days" min="0" max="90" required value="{{ old('notice_days', $template?->notice_days ?? 7) }}" class="mt-2 w-full rounded-xl border border-slate-300 p-3"><span class="mt-1 block text-xs font-normal text-slate-500">Applies to the permanency review schedule. Team evaluation questions are available immediately after publishing.</span></label>
                 </div>
                 <label class="block text-sm font-semibold">Instructions for department heads<textarea name="instructions" rows="3" maxlength="3000" class="mt-2 w-full rounded-xl border border-slate-300 p-3">{{ old('instructions', $template?->instructions) }}</textarea></label>
-                <div><h3 class="font-bold">Evaluation questions</h3><p class="mt-1 text-sm text-slate-500">Each question uses a 1â€“5 scale and contributes equally to the overall rating.</p></div>
+                <div><h3 class="font-bold">Evaluation questions</h3><p class="mt-1 text-sm text-slate-500">Each question uses a scale from 1 to 5 and contributes equally to the overall rating.</p></div>
                 <div id="criteria-list" class="space-y-3">
                     @foreach (old('criteria', $template?->criteria ?? [['label' => 'Quality of work', 'description' => 'Accuracy, completeness, and consistency.'], ['label' => 'Attendance and reliability', 'description' => 'Punctuality, attendance, and dependability.'], ['label' => 'Teamwork and conduct', 'description' => 'Collaboration, professionalism, and communication.']]) as $index => $criterion)
                         <div data-criterion class="grid gap-3 rounded-2xl border border-slate-200 p-4 md:grid-cols-[1fr_1fr_auto]">
@@ -46,11 +46,11 @@
             </div>
             <section id="evaluation-reviews-region" data-evaluation-refresh class="rounded-3xl border border-slate-200 bg-white p-6">
                 <h2 class="text-xl font-bold">Submitted evaluations</h2>
-                <p class="mt-1 text-sm text-slate-500">Review department headsâ€™ recommendations and feedback.</p>
+                <p class="mt-1 text-sm text-slate-500">Review recommendations and feedback from department heads.</p>
                 <div class="mt-5 space-y-3">
                     @forelse ($reviews as $review)
                         <details class="rounded-2xl border border-slate-200 p-4">
-                            <summary class="cursor-pointer font-semibold">{{ trim(($review->employeeUser?->first_name ?? '').' '.($review->employeeUser?->last_name ?? '')) ?: 'Employee #'.$review->employee_user_id }} Â· {{ $review->overall_rating }}/5</summary>
+                            <summary class="cursor-pointer font-semibold">{{ trim(($review->employeeUser?->first_name ?? '').' '.($review->employeeUser?->last_name ?? '')) ?: 'Employee #'.$review->employee_user_id }} <span class="ml-2 inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800">Rating: {{ $review->overall_rating }}/5</span></summary>
                             <p class="my-3 text-sm text-slate-500">Reviewed by {{ trim(($review->headUser?->first_name ?? '').' '.($review->headUser?->last_name ?? '')) ?: 'Head #'.$review->head_user_id }}</p>
                             @include('components.permanencyReviewDetails')
                         </details>

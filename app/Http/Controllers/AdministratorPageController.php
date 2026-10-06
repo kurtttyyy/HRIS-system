@@ -1414,7 +1414,9 @@ class AdministratorPageController extends Controller
             ->where(function ($query) {
                 $query->whereNull('application_status')
                     ->orWhereRaw("TRIM(application_status) = ''")
-                    ->orWhereRaw("LOWER(TRIM(application_status)) = ?", ['pending']);
+                    ->orWhereRaw("LOWER(TRIM(application_status)) IN (?, ?, ?, ?, ?, ?)", [
+                        'pending', 'under review', 'initial interview', 'final interview', 'demo teaching', 'passing document',
+                    ]);
             })
             ->count();
 
@@ -3300,6 +3302,62 @@ class AdministratorPageController extends Controller
         ]);
     }
 
+    public function display_applicant_history(Request $request)
+    {
+        $filters = $request->validate([
+            'search' => 'nullable|string|max:200',
+            'year' => 'nullable|integer|between:1900,9999',
+            'month' => 'nullable|integer|between:1,12',
+        ]);
+        $search = trim((string) ($filters['search'] ?? ''));
+        $year = isset($filters['year']) ? (int) $filters['year'] : null;
+        $month = isset($filters['month']) ? (int) $filters['month'] : null;
+        // Soft-deleted application records remain available in the rejection history.
+        $query = Applicant::withTrashed()
+            ->with([
+                'position' => fn ($position) => $position->withTrashed()->select('id', 'title'),
+                'degrees' => fn ($degrees) => $degrees->orderBy('sort_order')->orderBy('id'),
+            ])
+            ->whereRaw("LOWER(TRIM(COALESCE(application_status, ''))) = ?", ['rejected']);
+
+        $earliestDate = (clone $query)->min('created_at');
+        $latestDate = (clone $query)->max('created_at');
+        $firstYear = $earliestDate ? (int) substr($earliestDate, 0, 4) : (int) now()->format('Y');
+        $lastYear = max((int) now()->format('Y'), $latestDate ? (int) substr($latestDate, 0, 4) : $firstYear, $year ?? $firstYear);
+        $years = range($lastYear, min($firstYear, $year ?? $firstYear));
+
+        if ($year !== null) {
+            $query->whereYear('created_at', $year);
+        }
+        if ($month !== null) {
+            $query->whereMonth('created_at', $month);
+        }
+
+        if ($search !== '') {
+            $query->where(function ($query) use ($search) {
+                $term = '%'.$search.'%';
+                foreach (['first_name', 'middle_name', 'last_name', 'name_extension', 'phone', 'bachelor_degree', 'master_degree', 'doctoral_degree', 'field_study'] as $field) {
+                    $query->orWhere($field, 'like', $term);
+                }
+                $query->orWhere(function ($names) use ($search) {
+                    foreach (preg_split('/\s+/', $search) as $word) {
+                        $names->where(function ($parts) use ($word) {
+                            foreach (['first_name', 'middle_name', 'last_name', 'name_extension'] as $field) {
+                                $parts->orWhere($field, 'like', '%'.$word.'%');
+                            }
+                        });
+                    }
+                });
+                $query->orWhereHas('position', fn ($position) => $position->withTrashed()->where('title', 'like', $term))
+                    ->orWhereHas('degrees', fn ($degrees) => $degrees->where('degree_name', 'like', $term));
+            });
+        }
+
+        $applicants = $query->orderByDesc('updated_at')->orderByDesc('id')->paginate(20)->withQueryString();
+
+        return view('Admin.adminApplicantHistory', compact('applicants', 'search', 'year', 'month', 'years'));
+    }
+
     public function display_applicant_snapshot(Request $request)
     {
         $payload = $this->applicantPagePayload();
@@ -3459,6 +3517,9 @@ class AdministratorPageController extends Controller
             'title' => $app->position->title,
             'job_type' => $app->position->job_type,
             'status' => $app->application_status,
+            'missing_documents' => $app->missing_documents,
+            'document_notice' => $app->document_notice,
+            'document_notice_at' => $app->document_notice_at?->toIso8601String(),
             'date_hired' => optional($app->date_hired)->toDateString(),
             'location' => $app->address,
             'one' => $app->created_at->format('F d, Y'),

@@ -1,6 +1,7 @@
 @include('components.themeSystem')
 @php
   $isHiringRoute = request()->routeIs('admin.adminApplicant')
+    || request()->routeIs('admin.adminApplicant.history')
     || request()->routeIs('admin.adminPosition')
     || request()->routeIs('admin.adminInterview');
   $adminUser = auth()->user();
@@ -80,7 +81,9 @@
       ->where(function ($query) {
         $query->whereNull('application_status')
           ->orWhereRaw("TRIM(application_status) = ''")
-          ->orWhereRaw("LOWER(TRIM(application_status)) = ?", ['pending']);
+          ->orWhereRaw("LOWER(TRIM(application_status)) IN (?, ?, ?, ?, ?, ?)", [
+            'pending', 'under review', 'initial interview', 'final interview', 'demo teaching', 'passing document',
+          ]);
       })
       ->count();
   }
@@ -580,6 +583,13 @@
           <span data-admin-pending-applicant-count class="admin-sidebar-count-badge ml-auto min-w-[1.4rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white" {{ $adminPendingApplicantCount > 0 ? '' : 'hidden' }}>
             {{ $adminPendingApplicantCount > 99 ? '99+' : $adminPendingApplicantCount }}
           </span>
+        </a>
+
+        <a href="{{ route('admin.adminApplicant.history', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}"
+           data-admin-nav
+           class="flex items-center gap-0 group-hover:gap-2 px-4 py-2 rounded-md text-sm justify-center group-hover:justify-start {{ request()->routeIs('admin.adminApplicant.history') ? 'bg-green-600 text-white' : 'text-white hover:bg-green-600/30' }}">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          <span class="admin-sidebar-text whitespace-nowrap inline-block max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300">Applicant History</span>
         </a>
 
         <a href="{{ route('admin.adminPosition', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}"

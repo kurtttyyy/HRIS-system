@@ -86,7 +86,7 @@ class PermanencyEvaluationController extends Controller
                 'template_id' => ['required', Rule::in([$template->id])],
                 'ratings' => ['required', 'array', 'size:'.count($template->criteria)],
                 'recommendation' => ['required', Rule::in(['recommend_permanent', 'extend_probation', 'not_recommended'])],
-                'comments' => ['required', 'string', 'max:5000'],
+                'comments' => ['nullable', 'string', 'max:5000'],
             ];
             foreach ($template->criteria as $index => $criterion) $rules['ratings.'.$index] = ['required', 'integer', 'between:1,5'];
             $data = $request->validate($rules, ['template_id.in' => 'HR updated the form. Refresh this page and use the latest criteria.']);
@@ -98,7 +98,7 @@ class PermanencyEvaluationController extends Controller
                 'template_id' => $template->id, 'due_date' => $due,
                 'ratings' => array_map(fn ($index) => (int) $data['ratings'][$index], array_keys($template->criteria)),
                 'overall_rating' => round(array_sum($data['ratings']) / count($data['ratings']), 2),
-                'recommendation' => $data['recommendation'], 'comments' => $data['comments'],
+                'recommendation' => $data['recommendation'], 'comments' => trim((string) ($data['comments'] ?? '')),
             ]);
             return redirect()->route($teamReview ? 'employee.employeeEvaluation' : 'employee.permanencyEvaluation')->with('success', 'Evaluation submitted to HR for review.');
         });
