@@ -29,6 +29,12 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\RecordUserActivity::class,
         ]);
 
+        // Restore tab-specific login after session startup, before route auth checks.
+        $middleware->prependToPriorityList(
+            \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class,
+            \App\Http\TabSessionAuth::class,
+        );
+
         $middleware->validateCsrfTokens(except: [
             'logout',
         ]);

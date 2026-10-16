@@ -16,6 +16,7 @@ class ImportedEmployeeResignationTest extends TestCase
         parent::setUp();
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->softDeletes();
             $table->string('account_status');
             $table->text('temporary_pin')->nullable();
             $table->timestamps();

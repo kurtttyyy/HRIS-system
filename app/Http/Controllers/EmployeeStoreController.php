@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Applicant;
 use App\Models\ApplicantDocument;
 use App\Models\Conversation;
-use App\Models\LeaveApplication;
 use App\Models\Resignation;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -14,7 +13,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 
 class EmployeeStoreController extends Controller
 {
@@ -400,120 +398,6 @@ class EmployeeStoreController extends Controller
         }
 
         return $basePath.'/'.$folderKey;
-    }
-
-    public function leave_application_store(Request $request)
-    {
-        $attrs = $request->validate([
-            'office_department' => 'nullable|string|max:255',
-            'employee_name' => 'nullable|string|max:255',
-            'filing_date' => 'nullable|date',
-            'position' => 'nullable|string|max:255',
-            'salary' => 'nullable|string|max:255',
-            'leave_type' => 'required|string|max:50',
-            'number_of_working_days' => 'nullable|numeric|min:0',
-            'inclusive_dates' => 'nullable|string|max:255',
-            'as_of_label' => 'nullable|string|max:255',
-            'earned_date_label' => 'nullable|string|max:255',
-            'beginning_vacation' => 'nullable|numeric|min:0',
-            'beginning_sick' => 'nullable|numeric|min:0',
-            'beginning_total' => 'nullable|numeric|min:0',
-            'earned_vacation' => 'nullable|numeric|min:0',
-            'earned_sick' => 'nullable|numeric|min:0',
-            'earned_total' => 'nullable|numeric|min:0',
-            'applied_vacation' => 'nullable|numeric|min:0',
-            'applied_sick' => 'nullable|numeric|min:0',
-            'applied_total' => 'nullable|numeric|min:0',
-            'ending_vacation' => 'nullable|numeric|min:0',
-            'ending_sick' => 'nullable|numeric|min:0',
-            'ending_total' => 'nullable|numeric|min:0',
-            'days_with_pay' => 'nullable|numeric|min:0',
-            'days_without_pay' => 'nullable|numeric|min:0',
-            'commutation' => 'nullable|string|max:50',
-            'medical_receipt' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp,heic,heif|max:15360',
-        ]);
-
-        $leaveType = strtolower(trim((string) ($attrs['leave_type'] ?? '')));
-        $isSickLeave = str_contains($leaveType, 'sick') || (float) ($attrs['applied_sick'] ?? 0) > 0;
-
-        if ($isSickLeave && !$request->hasFile('medical_receipt')) {
-            throw ValidationException::withMessages([
-                'medical_receipt' => 'Please upload a medical receipt or certificate for Sick Leave.',
-            ]);
-        }
-
-        $authUser = Auth::user();
-        if (!$authUser) {
-            return response()->json(['message' => 'Unauthorized'], 401);
-        }
-
-        $authUser->loadMissing('employee');
-
-        $credits = app(\App\Support\EmployeeLeaveCredits::class)->forMonth($authUser, now()->startOfMonth());
-        $beginningVacation = $credits['has_approved'] ? $credits['vacation'] : 0.0;
-        $beginningSick = $credits['has_approved'] ? $credits['sick'] : 0.0;
-        $beginningTotal = round($beginningVacation + $beginningSick, 1);
-        $earnedVacation = $credits['has_approved'] ? 0.0 : $credits['vacation'];
-        $earnedSick = $credits['has_approved'] ? 0.0 : $credits['sick'];
-        $earnedTotal = round($earnedVacation + $earnedSick, 1);
-
-        $appliedVacation = round((float) ($attrs['applied_vacation'] ?? 0), 1);
-        $appliedSick = round((float) ($attrs['applied_sick'] ?? 0), 1);
-        $appliedTotal = round($appliedVacation + $appliedSick, 1);
-
-        $endingVacation = round(max(($beginningVacation + $earnedVacation) - $appliedVacation, 0), 1);
-        $endingSick = round(max(($beginningSick + $earnedSick) - $appliedSick, 0), 1);
-        $endingTotal = round($endingVacation + $endingSick, 1);
-
-        $medicalReceiptPath = null;
-        $medicalReceiptName = null;
-        $medicalReceiptMime = null;
-
-        if ($request->hasFile('medical_receipt')) {
-            $medicalReceipt = $request->file('medical_receipt');
-            $medicalReceiptPath = $medicalReceipt->store('leave-medical-receipts', 'public');
-            $medicalReceiptName = $medicalReceipt->getClientOriginalName();
-            $medicalReceiptMime = $medicalReceipt->getClientMimeType();
-        }
-
-        $record = LeaveApplication::create([
-            'user_id' => $authUser->id,
-            'employee_id' => (string) ($authUser->employee?->employee_id ?? ''),
-            'office_department' => $attrs['office_department'] ?? null,
-            'employee_name' => $attrs['employee_name'] ?? null,
-            'filing_date' => $attrs['filing_date'] ?? null,
-            'position' => $attrs['position'] ?? null,
-            'salary' => $attrs['salary'] ?? null,
-            'leave_type' => $attrs['leave_type'] ?? null,
-            'number_of_working_days' => round((float) ($attrs['number_of_working_days'] ?? 0), 1),
-            'inclusive_dates' => $attrs['inclusive_dates'] ?? null,
-            'as_of_label' => $attrs['as_of_label'] ?? null,
-            'earned_date_label' => $attrs['earned_date_label'] ?? null,
-            'beginning_vacation' => $beginningVacation,
-            'beginning_sick' => $beginningSick,
-            'beginning_total' => $beginningTotal,
-            'earned_vacation' => $earnedVacation,
-            'earned_sick' => $earnedSick,
-            'earned_total' => $earnedTotal,
-            'applied_vacation' => $appliedVacation,
-            'applied_sick' => $appliedSick,
-            'applied_total' => $appliedTotal,
-            'ending_vacation' => $endingVacation,
-            'ending_sick' => $endingSick,
-            'ending_total' => $endingTotal,
-            'days_with_pay' => round((float) ($attrs['days_with_pay'] ?? 0), 1),
-            'days_without_pay' => round((float) ($attrs['days_without_pay'] ?? 0), 1),
-            'commutation' => $attrs['commutation'] ?? null,
-            'medical_receipt_path' => $medicalReceiptPath,
-            'medical_receipt_name' => $medicalReceiptName,
-            'medical_receipt_mime' => $medicalReceiptMime,
-            'status' => 'Pending',
-        ]);
-
-        return response()->json([
-            'message' => 'Leave application saved.',
-            'id' => $record->id,
-        ]);
     }
 
     public function store_resignation(Request $request)

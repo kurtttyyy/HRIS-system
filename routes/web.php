@@ -11,7 +11,16 @@ use App\Http\Controllers\RegisterLoginController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PermanencyEvaluationController;
 
+Route::controller(\App\Http\Controllers\AccountController::class)->middleware('auth')->group(function () {
+    Route::get('system/accounts', 'index')->name('admin.accountManagement.index');
+    Route::post('system/accounts/{account}/verify', 'verify')->middleware('throttle:5,1')->name('admin.accountManagement.verify');
+    Route::patch('system/accounts/{account}', 'update')->name('admin.accountManagement.update');
+    Route::delete('system/accounts/{account}', 'destroy')->name('admin.accountManagement.destroy');
+    Route::post('system/accounts/{account}/restore', 'restore')->name('admin.accountManagement.restore');
+});
+
 Route::controller(PermanencyEvaluationController::class)->group(function () {
+    Route::get('system/employee-evaluation/submissions', 'reviews')->name('admin.employeeEvaluation.reviews');
     Route::get('system/employee-evaluation/customize', 'customize')->name('admin.employeeEvaluation.customize');
     Route::post('system/employee-evaluation/customize', 'saveTemplate')->name('admin.employeeEvaluation.publish');
     Route::get('employee/permanency-evaluation', 'index')->name('employee.permanencyEvaluation');
@@ -111,7 +120,6 @@ Route::controller(EmployeeStoreController::class)->group(function () {
     Route::post('employee/document/folder/{folderKey}/remove', 'remove_folder')->name('employee.document.folder.remove');
     Route::post('employee/document/{id}/move', 'move_document')->name('employee.document.move');
     Route::post('employee/document/{id}/remove', 'remove_document')->name('employee.remove_document');
-    Route::post('employee/leave/application', 'leave_application_store')->name('employee.leaveApplication.store');
     Route::post('employee/resignation/store', 'store_resignation')->name('employee.storeResignation');
     Route::post('employee/resignation/{resignation}/cancel', 'cancel_resignation')->name('employee.cancelResignation');
     Route::post('employee/communication/send', 'send_communication_message')->name('employee.communication.send');

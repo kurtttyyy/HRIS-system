@@ -199,6 +199,10 @@ class AdministratorStoreController extends Controller
     public function sync_hidden_official_holidays(Request $request)
     {
         $attrs = $request->validate([
+            'custom_events' => 'sometimes|array',
+            'recurring_events' => 'sometimes|array',
+            'recurring_exams' => 'sometimes|array',
+            'hidden_special_events' => 'sometimes|array',
             'hidden_official_holidays' => 'nullable|array',
             'custom_holidays' => 'nullable|array',
             'recurring_holidays' => 'nullable|array',
@@ -253,12 +257,15 @@ class AdministratorStoreController extends Controller
             'updated_at' => now()->toIso8601String(),
         ], JSON_PRETTY_PRINT));
 
-        Storage::disk('local')->put('calendar_holiday_config.json', json_encode([
+        $existingConfig = json_decode(Storage::disk('local')->exists('calendar_holiday_config.json')
+            ? Storage::disk('local')->get('calendar_holiday_config.json') : '{}', true) ?: [];
+        $eventConfig = array_intersect_key($attrs, array_flip(['custom_events', 'recurring_events', 'recurring_exams', 'hidden_special_events']));
+        Storage::disk('local')->put('calendar_holiday_config.json', json_encode(array_merge($existingConfig, $eventConfig, [
             'hidden_official_holidays' => $hiddenMap,
             'custom_holidays' => $normalizedCustomHolidays,
             'recurring_holidays' => $normalizedRecurringHolidays,
             'updated_at' => now()->toIso8601String(),
-        ], JSON_PRETTY_PRINT));
+        ]), JSON_PRETTY_PRINT));
 
         return response()->json([
             'success' => true,

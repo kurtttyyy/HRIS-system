@@ -37,6 +37,7 @@ class EnforceAdminPermissions
     private function permissionFor(string $routeName): ?string
     {
         return match (true) {
+            Str::startsWith($routeName, 'admin.accountManagement.') => 'manage_admins',
             $routeName === 'admin.accounts.store' => 'manage_admins',
             Str::is(['admin.adminHome', 'admin.adminNotifications', 'admin.adminNotifications.*'], $routeName) => 'dashboard',
             Str::is(['admin.adminEmployee*', 'admin.employee*', 'admin.PersonalDetail.*', 'admin.addDocument', 'admin.saveRequiredDocuments', 'admin.updateEmployee', 'admin.updateBio', 'admin.updateGeneralProfile', 'admin.markEmployeePermanent', 'admin.destroyEmployee'], $routeName) => 'employees',

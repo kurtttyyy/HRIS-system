@@ -296,6 +296,10 @@
                                         <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700"><i class="fa-solid fa-table-list"></i></span>
                                         <span><strong class="block text-sm">Whole employee table</strong><small class="mt-0.5 block text-xs text-slate-500">Download all visible employee fields.</small></span>
                                     </button>
+                                    <button type="button" @click="exportMenuOpen = false; window.exportAdminEmployeesExcel({ status: 'Active' })" class="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-emerald-50">
+                                        <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700"><i class="fa-solid fa-user-check"></i></span>
+                                        <span><strong class="block text-sm">Active employees only</strong><small class="mt-0.5 block text-xs text-slate-500">Download active employees across all pages.</small></span>
+                                    </button>
                                     <button type="button" @click="exportMenuOpen = false; window.exportAdminEmployeePinsExcel()" class="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-amber-50">
                                         <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-700"><i class="fa-solid fa-key"></i></span>
                                         <span><strong class="block text-sm">Temporary PIN list</strong><small class="mt-0.5 block text-xs text-slate-500">All NC employees and teachers.</small></span>

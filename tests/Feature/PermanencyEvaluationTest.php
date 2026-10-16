@@ -25,6 +25,7 @@ class PermanencyEvaluationTest extends TestCase
         $this->travelTo(now()->setDate(2026, 10, 3)->startOfDay());
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->softDeletes();
             foreach (['first_name', 'last_name', 'middle_name', 'role', 'status', 'department', 'department_head', 'position', 'email', 'password'] as $column) $table->string($column)->nullable();
             $table->json('admin_permissions')->nullable();
             $table->timestamps();
@@ -70,6 +71,32 @@ class PermanencyEvaluationTest extends TestCase
     private function payload(int $templateId): array
     {
         return ['template_id' => $templateId, 'ratings' => [1 => 5, 0 => 3], 'recommendation' => 'recommend_permanent', 'comments' => 'Consistent performance and reliable attendance.'];
+    }
+
+    public function test_submissions_are_separate_searchable_paginated_and_admin_only(): void
+    {
+        $template = $this->template();
+        $head = $this->user(['department_head' => 'Approved']);
+        for ($i = 0; $i < 17; $i++) {
+            $employee = $this->user(['first_name' => $i === 0 ? 'UniqueAlice' : 'Worker'.$i, 'last_name' => 'Reviewer']);
+            PermanencyEvaluation::create([
+                'employee_user_id' => $employee->id, 'head_user_id' => $head->id,
+                'template_id' => $template->id, 'due_date' => '2026-10-03',
+                'ratings' => [3, 5], 'overall_rating' => 4,
+                'recommendation' => $i === 0 ? 'extend_probation' : 'recommend_permanent', 'comments' => 'Review details',
+            ]);
+        }
+        $this->actingAs($head)->get(route('admin.employeeEvaluation.reviews'))->assertForbidden();
+        $this->actingAs($this->user(['role' => 'Admin', 'admin_permissions' => ['dashboard']]))
+            ->get(route('admin.employeeEvaluation.reviews'))->assertForbidden();
+        $this->actingAs($this->user(['role' => 'Admin', 'admin_permissions' => ['employees']]));
+        $this->get(route('admin.employeeEvaluation.customize'))->assertOk()->assertDontSee('Review details')->assertSee('17 submissions');
+        $this->get(route('admin.employeeEvaluation.reviews'))->assertOk()->assertViewHas('reviews', fn ($reviews) => $reviews->total() === 17 && $reviews->count() === 15);
+        $this->get(route('admin.employeeEvaluation.reviews', ['search' => 'UniqueAlice Reviewer', 'recommendation' => 'extend_probation']))
+            ->assertOk()->assertSee('UniqueAlice')->assertViewHas('reviews', fn ($reviews) => $reviews->total() === 1);
+        $this->get(route('admin.employeeEvaluation.reviews', ['search' => 'Nobody']))->assertOk()->assertSee('No evaluations found');
+        $this->get(route('admin.employeeEvaluation.reviews', ['recommendation' => 'recommend_permanent', 'page' => 2]))
+            ->assertOk()->assertViewHas('reviews', fn ($reviews) => $reviews->count() === 1 && str_contains($reviews->url(1), 'recommendation=recommend_permanent'));
     }
 
     public function test_due_dates_and_department_eligibility_use_the_existing_permanency_schedule(): void
@@ -168,7 +195,8 @@ class PermanencyEvaluationTest extends TestCase
         $this->get(route('employee.permanencyEvaluation'))->assertOk()->assertSee('Awaiting evaluation')->assertSee('ratings[0]', false);
         $this->post(route('employee.permanencyEvaluation.submit', $employee), $this->payload($template->id))->assertRedirect();
         $this->get(route('employee.permanencyEvaluation'))->assertOk()->assertSee('Submitted')->assertSee('Consistent performance');
-        $this->actingAs($this->user(['role' => 'Admin']))->get(route('admin.employeeEvaluation.customize'))->assertOk()->assertSee('Evaluation Setup')->assertSee('Consistent performance');
+        $this->actingAs($this->user(['role' => 'Admin']))->get(route('admin.employeeEvaluation.customize'))->assertOk()->assertSee('Evaluation Setup')->assertDontSee('Consistent performance');
+        $this->get(route('admin.employeeEvaluation.reviews'))->assertOk()->assertSee('Consistent performance');
     }
 
     public function test_saved_team_evaluation_remains_visible_after_submission_day_and_template_changes(): void

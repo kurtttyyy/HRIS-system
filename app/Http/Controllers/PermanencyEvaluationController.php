@@ -33,8 +33,34 @@ class PermanencyEvaluationController extends Controller
         $this->authorizeAdmin($request);
         return view('Admin.permanencyEvaluation', [
             'template' => PermanencyEvaluationTemplate::latest('id')->first(),
-            'reviews' => PermanencyEvaluation::with(['employeeUser', 'headUser', 'template'])->latest()->paginate(15),
+            'reviewCount' => PermanencyEvaluation::count(),
         ]);
+    }
+
+    public function reviews(Request $request)
+    {
+        $this->authorizeAdmin($request);
+        $filters = $request->validate([
+            'search' => ['nullable', 'string', 'max:150'],
+            'recommendation' => ['nullable', Rule::in(['recommend_permanent', 'extend_probation', 'not_recommended'])],
+        ]);
+        $search = trim($filters['search'] ?? '');
+        $recommendation = $filters['recommendation'] ?? '';
+        $reviews = PermanencyEvaluation::with(['employeeUser', 'headUser', 'template'])
+            ->when($search !== '', function ($query) use ($search) {
+                foreach (preg_split('/\s+/', $search) as $word) {
+                    $query->whereHas('employeeUser', function ($employee) use ($word) {
+                        $employee->where(function ($names) use ($word) {
+                            $names->where('first_name', 'like', '%'.$word.'%')
+                                ->orWhere('last_name', 'like', '%'.$word.'%')
+                                ->orWhere('middle_name', 'like', '%'.$word.'%');
+                        });
+                    });
+                }
+            })
+            ->when($recommendation !== '', fn ($query) => $query->where('recommendation', $recommendation))
+            ->latest()->orderByDesc('id')->paginate(15)->withQueryString();
+        return view('Admin.evaluationReviews', compact('reviews', 'search', 'recommendation'));
     }
 
     public function saveTemplate(Request $request)

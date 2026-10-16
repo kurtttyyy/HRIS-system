@@ -498,6 +498,11 @@
                             <i class="fa-regular fa-user text-slate-400"></i>
                             My Profile
                         </a>
+                        @if(auth()->user()?->hasAdminPermission('manage_admins'))
+                        <a href="{{ route('admin.accountManagement.index', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}" class="flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50">
+                            <i class="fa-solid fa-users-gear text-slate-400"></i> Accounts
+                        </a>
+                        @endif
                         <a href="{{ route('admin.adminHome', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}" class="flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50">
                             <i class="fa-solid fa-house text-slate-400"></i>
                             Dashboard

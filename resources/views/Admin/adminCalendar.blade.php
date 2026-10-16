@@ -737,6 +737,28 @@
   const HIDDEN_SPECIAL_EVENT_STORAGE_KEY = 'hidden_special_events_v1';
   const calendarHolidaySyncUrl = @json(route('admin.syncHiddenOfficialHolidays'));
   const csrfToken = @json(csrf_token());
+  const savedCalendarConfig = @json($calendarConfig ?? []);
+  if (Object.prototype.hasOwnProperty.call(savedCalendarConfig, 'custom_events')) {
+    localStorage.setItem(CUSTOM_EVENT_STORAGE_KEY, JSON.stringify(savedCalendarConfig.custom_events));
+  }
+  if (Object.prototype.hasOwnProperty.call(savedCalendarConfig, 'recurring_events')) {
+    localStorage.setItem(RECURRING_EVENT_STORAGE_KEY, JSON.stringify(savedCalendarConfig.recurring_events));
+  }
+  if (Object.prototype.hasOwnProperty.call(savedCalendarConfig, 'recurring_exams')) {
+    localStorage.setItem(RECURRING_EXAM_STORAGE_KEY, JSON.stringify(savedCalendarConfig.recurring_exams));
+  }
+  if (Object.prototype.hasOwnProperty.call(savedCalendarConfig, 'custom_holidays')) {
+    localStorage.setItem(CUSTOM_HOLIDAY_STORAGE_KEY, JSON.stringify(savedCalendarConfig.custom_holidays));
+  }
+  if (Object.prototype.hasOwnProperty.call(savedCalendarConfig, 'recurring_holidays')) {
+    localStorage.setItem(RECURRING_HOLIDAY_STORAGE_KEY, JSON.stringify(savedCalendarConfig.recurring_holidays));
+  }
+  if (Object.prototype.hasOwnProperty.call(savedCalendarConfig, 'hidden_official_holidays')) {
+    localStorage.setItem(HIDDEN_OFFICIAL_HOLIDAY_STORAGE_KEY, JSON.stringify(savedCalendarConfig.hidden_official_holidays));
+  }
+  if (Object.prototype.hasOwnProperty.call(savedCalendarConfig, 'hidden_special_events')) {
+    localStorage.setItem(HIDDEN_SPECIAL_EVENT_STORAGE_KEY, JSON.stringify(savedCalendarConfig.hidden_special_events));
+  }
   const holidayCache = {};
   const specialEventCache = {};
   let customEvents = loadCustomEvents();
@@ -766,6 +788,7 @@
 
   function saveCustomEvents() {
     localStorage.setItem(CUSTOM_EVENT_STORAGE_KEY, JSON.stringify(customEvents));
+    syncCalendarHolidaysWithServer();
   }
 
   function loadRecurringEvents() {
@@ -781,6 +804,7 @@
 
   function saveRecurringEvents() {
     localStorage.setItem(RECURRING_EVENT_STORAGE_KEY, JSON.stringify(recurringEvents));
+    syncCalendarHolidaysWithServer();
   }
 
   function loadRecurringExams() {
@@ -796,6 +820,7 @@
 
   function saveRecurringExams() {
     localStorage.setItem(RECURRING_EXAM_STORAGE_KEY, JSON.stringify(recurringExamDays));
+    syncCalendarHolidaysWithServer();
   }
 
   function loadCustomHolidays() {
@@ -859,6 +884,7 @@
 
   function saveHiddenSpecialEvents() {
     localStorage.setItem(HIDDEN_SPECIAL_EVENT_STORAGE_KEY, JSON.stringify(hiddenSpecialEvents));
+    syncCalendarHolidaysWithServer();
   }
 
   function syncCalendarHolidaysWithServer() {
@@ -873,6 +899,10 @@
       },
       body: JSON.stringify({
         hidden_official_holidays: hiddenOfficialHolidays,
+        custom_events: customEvents,
+        recurring_events: recurringEvents,
+        recurring_exams: recurringExamDays,
+        hidden_special_events: hiddenSpecialEvents,
         custom_holidays: customHolidays,
         recurring_holidays: recurringHolidays,
       }),

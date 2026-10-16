@@ -316,6 +316,68 @@
         </div>
       </section>
 
+      <section aria-label="Workforce demographics and shifts" class="grid grid-cols-1 gap-6 xl:grid-cols-[1.4fr_0.6fr]">
+        <div class="rounded-3xl border border-white bg-white p-6 shadow-sm">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">Workforce profile</p>
+              <h2 class="mt-1 text-xl font-black text-slate-950">Age &amp; gender distribution</h2>
+              <p id="demographic-scope" class="mt-2 text-sm text-slate-500">All employee records, including resigned employees. Ages as of {{ $ageAsOf->format('M j, Y') }}.</p>
+            </div>
+            <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">{{ number_format($totalEmployees) }} employees</span>
+          </div>
+          <div class="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
+            <table class="w-full min-w-[480px] text-sm tabular-nums" aria-describedby="demographic-scope">
+              <caption class="sr-only">Employee counts by age group and recorded gender</caption>
+              <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+                <tr>
+                  <th scope="col" class="px-4 py-4 text-left">Age group</th>
+                  <th scope="col" class="px-4 py-4 text-right text-sky-700">Male</th>
+                  <th scope="col" class="px-4 py-4 text-right text-rose-700">Female</th>
+                  <th scope="col" class="px-4 py-4 text-right">Unspecified</th>
+                  <th scope="col" class="px-4 py-4 text-right text-emerald-700">Total</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                @foreach ($ageGenderRows as $label => $row)
+                  <tr class="transition-colors hover:bg-slate-50">
+                    <th scope="row" class="px-4 py-3.5 text-left font-semibold text-slate-700">{{ $label }}{{ $label !== 'Not recorded' ? ' years' : '' }}</th>
+                    <td class="px-4 py-3.5 text-right">{{ number_format($row['male']) }}</td>
+                    <td class="px-4 py-3.5 text-right">{{ number_format($row['female']) }}</td>
+                    <td class="px-4 py-3.5 text-right text-slate-500">{{ number_format($row['unspecified']) }}</td>
+                    <td class="bg-emerald-50 px-4 py-3.5 text-right font-bold text-emerald-700">{{ number_format($row['total']) }}</td>
+                  </tr>
+                @endforeach
+              </tbody>
+              <tfoot class="border-t-2 border-slate-200 bg-slate-50 font-black text-slate-950">
+                <tr>
+                  <th scope="row" class="px-4 py-4 text-left">Total employees</th>
+                  @foreach (['male', 'female', 'unspecified', 'total'] as $key)
+                    <td class="px-4 py-4 text-right">{{ number_format($ageGenderTotals[$key]) }}</td>
+                  @endforeach
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          <p class="mt-3 text-xs leading-5 text-slate-500">Unspecified includes missing or other gender values. Missing or invalid birthdays appear under Not recorded.</p>
+        </div>
+        <div class="rounded-3xl border border-white bg-white p-6 shadow-sm">
+          <div class="flex items-center justify-between gap-3">
+            <span class="grid h-11 w-11 place-items-center rounded-xl bg-indigo-50 text-indigo-700"><i aria-hidden="true" class="fa-solid fa-clock"></i></span>
+            <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">Not configured</span>
+          </div>
+          <p class="mt-6 text-xs font-bold uppercase tracking-[0.2em] text-indigo-700">Shift coverage</p>
+          <h2 class="mt-1 text-xl font-black text-slate-950">Schedules &amp; workers</h2>
+          <p class="mt-2 text-sm leading-6 text-slate-500">A dedicated overview of work shifts and the number of workers assigned to each schedule.</p>
+          <dl class="mt-6 divide-y divide-slate-100 rounded-2xl border border-slate-200 px-4">
+            <div class="flex items-center justify-between gap-4 py-4"><dt class="text-sm font-semibold text-slate-600">Number of shifts</dt><dd class="text-sm font-bold text-slate-500">Unavailable</dd></div>
+            <div class="flex items-center justify-between gap-4 py-4"><dt class="text-sm font-semibold text-slate-600">Schedule</dt><dd class="text-sm font-bold text-slate-500">Not recorded</dd></div>
+            <div class="flex items-center justify-between gap-4 py-4"><dt class="text-sm font-semibold text-slate-600">Workers per shift</dt><dd class="text-sm font-bold text-slate-500">Unavailable</dd></div>
+          </dl>
+          <div class="mt-5 rounded-2xl bg-indigo-50 p-4 text-sm leading-6 text-indigo-700"><i aria-hidden="true" class="fa-solid fa-circle-info mr-1"></i>Worker shift assignments are not recorded in HRIS yet. Teaching load schedules are separate from worker shifts.</div>
+        </div>
+      </section>
+
       <section class="grid grid-cols-1 gap-6 xl:grid-cols-[1.25fr_0.75fr]">
         <div class="rounded-3xl border border-white bg-white p-6 shadow-sm">
           <div class="flex flex-wrap items-center justify-between gap-3">
@@ -403,6 +465,23 @@
               </div>
             @endforeach
           </div>
+          <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3" aria-label="Record volume summary">
+            <div class="rounded-2xl bg-orange-50 p-4">
+              <p class="text-xs font-bold uppercase tracking-wider text-orange-700">Combined records</p>
+              <p class="mt-2 text-2xl font-black text-slate-950">{{ number_format($recordVolume->sum()) }}</p>
+              <p class="mt-1 text-xs text-slate-500">Across the five categories above</p>
+            </div>
+            <div class="rounded-2xl bg-slate-50 p-4">
+              <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Largest category</p>
+              <p class="mt-2 text-lg font-black text-slate-950">{{ $recordVolume->sum() > 0 ? $recordVolume->sortDesc()->keys()->first() : 'No records' }}</p>
+              <p class="mt-1 text-xs text-slate-500">{{ number_format($recordVolume->max() ?? 0) }} records</p>
+            </div>
+            <div class="rounded-2xl bg-slate-50 p-4">
+              <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Reporting month</p>
+              <p class="mt-2 text-lg font-black text-slate-950">{{ \Carbon\Carbon::parse($selectedMonth . '-01')->format('M Y') }}</p>
+              <p class="mt-1 text-xs leading-5 text-slate-500">Leave and documents use this month. Other categories show all-time totals.</p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -460,7 +539,11 @@
         <div class="rounded-3xl border border-white bg-white p-6 shadow-sm">
           <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Record Inventory</p>
           <h2 class="mt-1 text-xl font-black text-slate-950">Other system totals</h2>
+          <p class="mt-2 text-xs text-slate-500">Account totals reflect recorded employee statuses. On leave is shown separately.</p>
           <div class="mt-6 grid grid-cols-2 gap-3">
+            <div class="rounded-2xl bg-emerald-50 p-4 text-emerald-700"><p class="text-2xl font-black">{{ number_format($accountStatusCounts->get('active', 0)) }}</p><p class="text-xs font-semibold opacity-80">Active Accounts</p></div>
+            <div class="rounded-2xl bg-red-50 p-4 text-red-700"><p class="text-2xl font-black">{{ number_format($accountStatusCounts->get('inactive', 0)) }}</p><p class="text-xs font-semibold opacity-80">Inactive Accounts</p></div>
+            <div class="rounded-2xl bg-amber-50 p-4 text-amber-700"><p class="text-2xl font-black">{{ number_format($accountStatusCounts->get('on leave', 0)) }}</p><p class="text-xs font-semibold opacity-80">On Leave Accounts</p></div>
             <div class="rounded-2xl bg-sky-50 p-4"><p class="text-2xl font-black">{{ number_format($genderCounts['male'] ?? 0) }}</p><p class="text-xs font-semibold text-slate-500">Male</p></div>
             <div class="rounded-2xl bg-rose-50 p-4"><p class="text-2xl font-black">{{ number_format($genderCounts['female'] ?? 0) }}</p><p class="text-xs font-semibold text-slate-500">Female</p></div>
             <div class="rounded-2xl bg-emerald-50 p-4"><p class="text-2xl font-black">{{ number_format($roleGroupCounts['heads'] ?? 0) }}</p><p class="text-xs font-semibold text-slate-500">Heads</p></div>

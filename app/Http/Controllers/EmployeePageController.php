@@ -62,6 +62,7 @@ class EmployeePageController extends Controller
                 'user' => $user,
                 'notifications' => (int) ($notificationStats['total'] ?? 0),
                 'accountAlerts' => $accountAlerts,
+                'calendarAnnouncements' => \App\Support\CalendarAnnouncements::upcoming(),
             ],
             $leaveMetrics,
             $attendanceMetrics,
@@ -531,17 +532,6 @@ class EmployeePageController extends Controller
             $user?->last_name
         );
 
-        $isTeaching = strcasecmp((string) ($user?->employee?->job_type ?? ''), 'Teaching') === 0;
-        $joinDate = null;
-        if ($isTeaching && !empty($user?->applicant?->date_hired)) {
-            $joinDate = Carbon::parse($user->applicant->date_hired);
-        } elseif (!empty($user?->employee?->employement_date)) {
-            $joinDate = Carbon::parse($user->employee->employement_date);
-        } elseif (!empty($user?->applicant?->date_hired)) {
-            $joinDate = Carbon::parse($user->applicant->date_hired);
-        }
-        $resetCycleMonths = $isTeaching ? 10 : 12;
-
         $defaultLeaveAllowances = [
             'Study Leave' => 5,
             'Emergency Leave' => 3,
@@ -551,14 +541,6 @@ class EmployeePageController extends Controller
             'Service Incentive Leave' => 5,
         ];
 
-        $beginningVacationBalance = 0.0;
-        $beginningSickBalance = 0.0;
-        $totalEarnedDays = $this->calculateMonthlyEarnedLeaveDays(
-            $joinDate,
-            $monthCursor,
-            $resetCycleMonths
-        );
-        $earnedRangeLabel = $this->buildEarnedRangeLabel($joinDate, $monthCursor, $resetCycleMonths);
         $monthStart = $monthCursor->copy()->startOfMonth();
         $monthEnd = $monthCursor->copy()->endOfMonth();
         $monthApplications = LeaveApplication::query()
@@ -659,13 +641,7 @@ class EmployeePageController extends Controller
             ->values();
 
         $credits = app(\App\Support\EmployeeLeaveCredits::class)->forMonth($user, $monthCursor);
-        $beginningVacationBalance = $credits['has_approved'] ? $credits['vacation'] : 0.0;
-        $beginningSickBalance = $credits['has_approved'] ? $credits['sick'] : 0.0;
         $equalHalfEarnedDays = $credits['limit'];
-        $formEarnedVacation = $credits['has_approved'] ? 0.0 : $credits['vacation'];
-        $formEarnedSick = $credits['has_approved'] ? 0.0 : $credits['sick'];
-        $formEarnedTotal = round($formEarnedVacation + $formEarnedSick, 1);
-
         $monthlyLeaveAllowances = collect($defaultLeaveAllowances)
             ->mapWithKeys(fn ($value, $leaveType) => [$leaveType => max(0, (int) $value)])
             ->all();
@@ -727,13 +703,6 @@ class EmployeePageController extends Controller
             'vacationCardAvailable',
             'sickCardAvailable',
             'totalDaysUsedCard',
-            'beginningVacationBalance',
-            'beginningSickBalance',
-            'earnedRangeLabel',
-            'totalEarnedDays',
-            'formEarnedVacation',
-            'formEarnedSick',
-            'formEarnedTotal',
             'leaveSnapshotToken'
         ));
     }
@@ -2199,35 +2168,6 @@ class EmployeePageController extends Controller
         $months = $accrualStartMonth->diffInMonths($accrualCutoff->copy()->startOfMonth()) + 1;
 
         return max(0, $months);
-    }
-
-    private function buildEarnedRangeLabel(?Carbon $joinDate, Carbon $monthCursor, int $resetCycleMonths): string
-    {
-        if (!$joinDate || $resetCycleMonths <= 0) {
-            return '-';
-        }
-
-        $completedMonths = $this->calculateCompletedMonthsUntilCutoff($joinDate, $monthCursor);
-        if ($completedMonths <= 0) {
-            return '-';
-        }
-
-        $accrualStartMonth = $joinDate->copy()->addYear()->startOfMonth();
-        $monthsInCurrentCycle = (($completedMonths - 1) % $resetCycleMonths) + 1;
-        $completedCycleMonths = $completedMonths - $monthsInCurrentCycle;
-
-        $rangeStart = $accrualStartMonth->copy()->addMonths($completedCycleMonths)->startOfMonth();
-        $rangeEnd = $rangeStart->copy()->addMonths($monthsInCurrentCycle - 1)->startOfMonth();
-
-        if ($rangeStart->year === $rangeEnd->year) {
-            if ($rangeStart->format('M') === $rangeEnd->format('M')) {
-                return $rangeStart->format('M').', '.$rangeStart->year;
-            }
-
-            return $rangeStart->format('M').'-'.$rangeEnd->format('M').', '.$rangeStart->year;
-        }
-
-        return $rangeStart->format('M Y').' - '.$rangeEnd->format('M Y');
     }
 
     private function buildEmployeeLeaveMetrics($user, string $selectedMonth): array

@@ -3285,6 +3285,7 @@
                 };
               @endphp
               <tr
+                data-employee-export-status="{{ $row['status'] }}"
                 x-show="matchesDepartment(@js($row['department'])) && matchesSearch(@js($row['search_text'])) && matchesStatus(@js($row['status']), @js((bool) ($row['has_missing_info'] ?? false)))"
                 class="{{ $rowHighlightClass }} text-[13px]"
               >
@@ -3782,6 +3783,18 @@
       cell.style.borderLeft = exportBorder;
     });
 
+    if (filters.status === 'Active') {
+      exportTable.querySelectorAll('tbody tr[data-employee-export-status]').forEach((row) => {
+        if (row.dataset.employeeExportStatus.trim().toLowerCase() !== 'active') row.remove();
+      });
+      const activeRows = exportTable.querySelectorAll('tbody tr[data-employee-export-status]');
+      if (!activeRows.length) {
+        window.alert('No active employees available to export.');
+        return;
+      }
+      activeRows.forEach((row, index) => { row.cells[0].textContent = index + 1; });
+    }
+
     const exportRowsCollection = Array.from(exportTable.rows || []);
     const columnCount = Math.max(...exportRowsCollection.map((row) => row.cells?.length || 0), 0);
     const minimumWidths = {
@@ -3875,7 +3888,7 @@
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `all-employees-${new Date().toISOString().slice(0, 10)}.xls`;
+    link.download = `${filters.status === 'Active' ? 'active-employees' : 'all-employees'}-${new Date().toISOString().slice(0, 10)}.xls`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

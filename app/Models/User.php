@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Schema;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, \Illuminate\Database\Eloquent\SoftDeletes;
 
     protected static function booted(): void
     {

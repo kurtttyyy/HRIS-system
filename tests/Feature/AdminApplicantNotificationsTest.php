@@ -14,6 +14,7 @@ class AdminApplicantNotificationsTest extends TestCase
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->softDeletes();
             $table->string('role');
             $table->string('status');
         });

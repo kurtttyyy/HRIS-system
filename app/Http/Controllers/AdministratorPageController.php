@@ -2758,6 +2758,15 @@ class AdministratorPageController extends Controller
             ->get();
 
         $totalEmployees = $reportEmployees->count();
+        $accountStatusCounts = $reportEmployees->countBy(function ($user) {
+            if (strcasecmp(trim((string) $user->status), 'Not Approved') === 0) {
+                return 'inactive';
+            }
+
+            return strtolower(trim((string) ($user->account_status ?: 'Active')));
+        });
+
+
         $departmentCounts = $reportEmployees
             ->groupBy(function ($user) {
                 $department = trim((string) ($user->department ?? ''));
@@ -2808,6 +2817,40 @@ class AdministratorPageController extends Controller
                 ->filter(fn ($user) => \App\Support\EmployeeReportClassification::gender($user) === 'female')
                 ->count(),
         ];
+        // Keep every employee in the summary, including incomplete demographic records.
+        $ageAsOf = now()->startOfDay();
+        $ageGenderRows = collect(['Below 15', '15–17', '18–24', '25–59', '60–65', '66+', 'Not recorded'])
+            ->mapWithKeys(fn ($label) => [$label => ['male' => 0, 'female' => 0, 'unspecified' => 0, 'total' => 0]]);
+        foreach ($reportEmployees as $user) {
+            $ageGroup = 'Not recorded';
+            $birthday = $user->employee?->getRawOriginal('birthday') ?: $user->applicant?->getRawOriginal('date_of_birth');
+            if ($birthday) {
+                try {
+                    $birthDate = Carbon::parse($birthday)->startOfDay();
+                    if ($birthDate->lte($ageAsOf)) {
+                        $age = (int) $birthDate->diffInYears($ageAsOf);
+                        $ageGroup = match (true) {
+                            $age < 15 => 'Below 15',
+                            $age < 18 => '15–17',
+                            $age < 25 => '18–24',
+                            $age < 60 => '25–59',
+                            $age < 66 => '60–65',
+                            default => '66+',
+                        };
+                    }
+                } catch (\Throwable $e) {
+                    // Invalid dates remain visible in the Not recorded row.
+                }
+            }
+            $gender = \App\Support\EmployeeReportClassification::gender($user) ?? 'unspecified';
+            $row = $ageGenderRows->get($ageGroup);
+            $row[$gender]++;
+            $row['total']++;
+            $ageGenderRows->put($ageGroup, $row);
+        }
+        $ageGenderTotals = collect(['male', 'female', 'unspecified', 'total'])
+            ->mapWithKeys(fn ($key) => [$key => $ageGenderRows->sum($key)]);
+
         $staffingSummary = \App\Support\DepartmentStaffingSummary::forEmployees($reportEmployees);
         $roleGroupCounts = [
             'heads' => $staffingSummary->sum('heads'),
@@ -2906,9 +2949,13 @@ class AdministratorPageController extends Controller
         return view('Admin.adminReports', compact(
             'selectedMonth',
             'totalEmployees',
+            'accountStatusCounts',
             'departmentCounts',
             'jobTypeCounts',
             'genderCounts',
+            'ageAsOf',
+            'ageGenderRows',
+            'ageGenderTotals',
             'roleGroupCounts',
             'joinYearCounts',
             'attendanceTotal',
@@ -3840,7 +3887,9 @@ class AdministratorPageController extends Controller
     }
 
     public function display_calendar(){
-        return view('Admin.adminCalendar');
+        $calendarConfig = Storage::disk('local')->exists('calendar_holiday_config.json')
+            ? json_decode(Storage::disk('local')->get('calendar_holiday_config.json'), true) : [];
+        return view('Admin.adminCalendar', ['calendarConfig' => $calendarConfig ?: []]);
     }
 
     public function display_position(){

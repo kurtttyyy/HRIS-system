@@ -394,49 +394,30 @@
                                 <h2 id="company-announcements-title" class="mt-1 text-xl font-black text-slate-900">Company Announcements</h2>
                             </div>
                         </div>
-                        <span class="shrink-0 rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">3 updates</span>
+                        <span class="shrink-0 rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">{{ $calendarAnnouncements->count() }} {{ $calendarAnnouncements->count() === 1 ? 'update' : 'updates' }}</span>
                     </div>
 
-                    <ul class="divide-y divide-slate-100 px-5 md:px-6">
-                        <li class="group flex items-center gap-4 py-4">
-                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-500">
-                                <i class="fa fa-calendar-times-o" aria-hidden="true"></i>
-                            </span>
-                            <div class="min-w-0 flex-1">
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <p class="font-bold text-slate-800">Independence Day Holiday</p>
-                                    <span class="rounded-full bg-rose-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-rose-600">Holiday</span>
+                    <p class="px-5 pt-4 text-xs text-slate-500 md:px-6">{{ now()->format('F Y') }} · From the admin calendar</p>
+                    <ul class="max-h-96 overflow-y-auto divide-y divide-slate-100 px-5 md:px-6">
+                        @forelse ($calendarAnnouncements as $announcement)
+                            <li class="flex items-center gap-4 py-4">
+                                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl {{ $announcement['type'] === 'Holiday' ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-600' }}">
+                                    <i class="fa fa-calendar-o" aria-hidden="true"></i>
+                                </span>
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <p class="break-words font-bold text-slate-800">{{ $announcement['title'] }}</p>
+                                        <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-600">{{ $announcement['type'] }}</span>
+                                        @if ($announcement['date'] === now()->toDateString())
+                                            <span class="rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold uppercase text-amber-700">Today</span>
+                                        @endif
+                                    </div>
+                                    <p class="mt-1 text-xs font-semibold text-slate-500">{{ \Carbon\Carbon::parse($announcement['date'])->format('l, F j, Y') }}</p>
                                 </div>
-                                <p class="mt-1 text-xs font-semibold text-slate-500">Friday, June 12, 2026</p>
-                                <p class="mt-1 text-xs text-slate-400">Company holiday advisory</p>
-                            </div>
-                        </li>
-                        <li class="group flex items-center gap-4 py-4">
-                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-                                <i class="fa fa-money" aria-hidden="true"></i>
-                            </span>
-                            <div class="min-w-0 flex-1">
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <p class="font-bold text-slate-800">Payroll Release</p>
-                                    <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-700">Payroll</span>
-                                </div>
-                                <p class="mt-1 text-xs font-semibold text-slate-500">Wednesday, July 15, 2026</p>
-                            </div>
-                        </li>
-                        <li class="group flex items-center gap-4 py-4">
-                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                                <i class="fa fa-file-text-o" aria-hidden="true"></i>
-                            </span>
-                            <div class="min-w-0 flex-1">
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <p class="font-bold text-slate-800">New Leave Policy</p>
-                                    <span class="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-blue-700">Policy</span>
-                                    <span class="rounded-full bg-amber-500 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">New</span>
-                                </div>
-                                <p class="mt-1 text-xs font-semibold text-slate-500">Posted Thursday, July 2, 2026</p>
-                                <p class="mt-1 text-xs text-slate-400">Please review the updated leave guidance</p>
-                            </div>
-                        </li>
+                            </li>
+                        @empty
+                            <li class="py-8 text-center text-sm text-slate-500">No calendar announcements this month.</li>
+                        @endforelse
                     </ul>
                 </div>
 
@@ -479,7 +460,7 @@
 
             <div class="employee-welcome-body px-6 py-6 md:px-8">
                 <p class="employee-welcome-intro mx-auto max-w-2xl text-sm leading-6 text-slate-600">
-                    Start with the <span class="font-bold text-emerald-800">Staff Guide</span> to understand how the HRIS works, how to check your records, submit documents, file leave, review payslips, and follow HR updates.
+                    Start with the <span class="font-bold text-emerald-800">Staff Guide</span> to understand how the HRIS works, how to check your records, submit documents, review leave records, review payslips, and follow HR updates.
                 </p>
 
                 <div class="employee-welcome-links mt-5 rounded-[1.5rem] border border-emerald-200 bg-emerald-50/80 p-3.5 shadow-inner shadow-emerald-900/5">

@@ -406,186 +406,6 @@
                 font-size: 0.62rem;
                 line-height: 1rem;
             }
-            #employee-leave-page .employee-leave-empty-state a {
-                margin-top: 0.65rem;
-                padding: 0.5rem 0.75rem;
-                border-radius: 0.6rem;
-                font-size: 0.62rem;
-            }
-            #employee-leave-page #employee-form-panel {
-                padding: 0.75rem !important;
-                border-radius: 1rem !important;
-                box-shadow: none;
-            }
-            #employee-leave-page #employee-form-panel > div:first-child {
-                margin-bottom: 0.75rem;
-                gap: 0.25rem;
-            }
-            #employee-leave-page #employee-form-panel > div:first-child p:first-child {
-                font-size: 0.55rem;
-                letter-spacing: 0.14em;
-            }
-            #employee-leave-page #employee-form-panel > div:first-child h3 {
-                margin-top: 0.15rem;
-                font-size: 1.1rem;
-            }
-            #employee-leave-page #employee-form-panel > div:first-child h3 + p,
-            #employee-leave-page #employee-form-panel > div:first-child > p:last-child {
-                display: none;
-            }
-            #employee-leave-page .employee-form-layout {
-                gap: 0.65rem;
-            }
-            #employee-leave-page .employee-form-selector {
-                padding: 0.5rem !important;
-                border-radius: 0.75rem !important;
-            }
-            #employee-leave-page .employee-form-selector h4 {
-                display: none;
-            }
-            #employee-leave-page .employee-form-selector > div {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 0.4rem;
-                margin-top: 0 !important;
-            }
-            #employee-leave-page .employee-form-selector a {
-                display: flex;
-                height: 3.25rem;
-                min-width: 0;
-                align-items: center;
-                justify-content: center;
-                padding: 0.55rem !important;
-                border-radius: 0.65rem !important;
-                text-align: center;
-                font-size: 0.62rem;
-                line-height: 0.9rem;
-                box-sizing: border-box;
-            }
-            #employee-leave-page .employee-form-selector a p:first-child {
-                display: -webkit-box;
-                overflow: hidden;
-                -webkit-box-orient: vertical;
-                -webkit-line-clamp: 2;
-            }
-            #employee-leave-page .employee-form-selector a p:last-child {
-                display: none;
-            }
-            #employee-leave-page .employee-form-document {
-                overflow: visible !important;
-                padding: 0.75rem !important;
-                border-radius: 0.75rem !important;
-                font-size: 0.72rem !important;
-            }
-            #employee-leave-page .employee-form-document-header {
-                display: grid;
-                grid-template-columns: 2.75rem minmax(0, 1fr);
-                align-items: center;
-                gap: 0.65rem;
-                margin-bottom: 0.75rem !important;
-                padding-bottom: 0.65rem;
-                border-bottom: 1px solid #e2e8f0;
-                text-align: left !important;
-            }
-            #employee-leave-page .employee-form-document-header img {
-                width: 2.75rem;
-                height: 2.75rem;
-                flex: 0 0 2.75rem;
-                margin: 0 !important;
-                object-fit: contain;
-                grid-row: 1 / span 2;
-            }
-            #employee-leave-page .employee-form-document-header h3 {
-                font-size: 0.72rem;
-                line-height: 1rem;
-            }
-            #employee-leave-page .employee-form-document-header h3 + h3 {
-                color: #047857;
-                font-size: 0.65rem;
-            }
-            #employee-leave-page #leave-application-form {
-                gap: 0.75rem;
-            }
-            #employee-leave-page #leave-application-print-area {
-                padding: 0 !important;
-                border: 0 !important;
-                font-size: 0.68rem !important;
-            }
-            #employee-leave-page #leave-application-print-area .print-row-two,
-            #employee-leave-page #leave-application-print-area .print-row-three {
-                gap: 0.55rem;
-            }
-            #employee-leave-page #leave-application-print-area label,
-            #employee-leave-page #leave-application-print-area p {
-                font-size: 0.65rem;
-            }
-            #employee-leave-page #leave-application-print-area input:not([type="radio"]):not([type="checkbox"]),
-            #employee-leave-page #leave-application-print-area select,
-            #employee-leave-page #leave-application-print-area textarea {
-                min-height: 2.35rem;
-                padding: 0.4rem 0.55rem !important;
-                border: 1px solid #cbd5e1 !important;
-                border-radius: 0.55rem !important;
-                background: #f8fafc;
-                font-size: 0.7rem !important;
-            }
-            #employee-leave-page #leave-application-print-area section {
-                margin-top: 0.75rem;
-                padding-top: 0.75rem;
-                border-color: #e2e8f0;
-            }
-            #employee-leave-page #leave-application-print-area section > h5 {
-                margin-bottom: 0.75rem;
-                text-align: left;
-                color: #475569;
-                font-size: 0.58rem;
-                letter-spacing: 0.14em;
-            }
-            #employee-leave-page #leave-application-print-area .print-details-two {
-                gap: 0.75rem;
-            }
-            #employee-leave-page #leave-application-print-area .leave-details-right {
-                padding-top: 0.75rem;
-                padding-left: 0 !important;
-                border-top: 1px solid #e2e8f0;
-                border-left: 0 !important;
-            }
-            #employee-leave-page #leave-application-print-area .action-details-section {
-                display: none;
-            }
-        }
-
-        @media print {
-            body * {
-                visibility: hidden !important;
-            }
-
-            #leave-details-modal,
-            #leave-details-modal * {
-                visibility: visible !important;
-            }
-
-            #leave-details-modal {
-                position: absolute !important;
-                inset: 0 !important;
-                display: block !important;
-                padding: 0 !important;
-                background: #fff !important;
-            }
-
-            #leave-details-modal-panel {
-                width: 100% !important;
-                max-width: none !important;
-                max-height: none !important;
-                overflow: visible !important;
-                border: 0 !important;
-                border-radius: 0 !important;
-                box-shadow: none !important;
-            }
-
-            [data-leave-no-print] {
-                display: none !important;
-            }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -610,25 +430,6 @@
     <main class="flex-1 ml-16 transition-all duration-300">
 <div id="employee-leave-page" class="p-4 md:p-8 space-y-8 pt-4">
     @php
-        $authUser = auth()->user();
-        $activeEmployeeForm = request()->query('form', 'leave');
-        if (!in_array($activeEmployeeForm, ['leave', 'official'], true)) {
-            $activeEmployeeForm = 'leave';
-        }
-        $employeeFormName = $employeeDisplayName
-            ?? trim(implode(' ', array_filter([
-                $authUser?->first_name ?? null,
-                $authUser?->middle_name ?? null,
-                $authUser?->last_name ?? null,
-            ])));
-        $employeeFormPosition = $authUser?->job_role
-            ?? $authUser?->employee?->position
-            ?? $authUser?->position
-            ?? data_get($authUser, 'applicant.position.title')
-            ?? '';
-        $employeeFormQueryBase = array_filter([
-            'month' => $selectedMonth ?? now()->format('Y-m'),
-        ], fn ($value) => !is_null($value) && $value !== '');
         $monthRecords = collect($monthRequestRecords ?? []);
         $approvedCount = $monthRecords->filter(fn ($record) => strcasecmp((string) ($record['status'] ?? ''), 'Approved') === 0)->count();
         $pendingCount = $monthRecords->filter(fn ($record) => strcasecmp((string) ($record['status'] ?? ''), 'Pending') === 0)->count();
@@ -661,7 +462,7 @@
                 <div>
                     <h3 class="text-3xl font-black tracking-tight md:text-4xl">Manage balances, track requests, and file the next form faster.</h3>
                     <p class="mt-3 max-w-2xl text-sm leading-6 text-emerald-50 md:text-base">
-                        Review your available credits for {{ $selectedMonthLabel }}, monitor request statuses, and switch between leave and official business forms in one place.
+                        Review your available credits for {{ $selectedMonthLabel }} and monitor recorded request statuses.
                     </p>
                 </div>
                 <div class="employee-leave-stats grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -731,7 +532,6 @@
                         value="{{ $selectedMonthValue }}"
                         class="w-full rounded-xl border border-white/15 bg-white/90 px-4 py-3 text-sm text-slate-900 focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-300"
                     />
-                    <input type="hidden" name="form" value="{{ $activeEmployeeForm }}">
                     <button type="submit" class="w-full rounded-xl bg-emerald-300 px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-emerald-200">
                         Apply Month Filter
                     </button>
@@ -923,10 +723,7 @@
                     <i class="fa fa-folder-open fa-2x"></i>
                 </div>
                 <h4 class="mt-5 text-xl font-bold text-slate-900">No leave records for {{ $selectedMonthLabel }}</h4>
-                <p class="mt-2 max-w-md text-sm leading-6 text-slate-500">Once you submit a leave or official business request, it will appear here with its current approval status.</p>
-                <a href="#employee-form-panel" class="mt-5 rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
-                    Open Request Form
-                </a>
+                <p class="mt-2 max-w-md text-sm leading-6 text-slate-500">Your recorded leave and official business requests appear here with their current approval status.</p>
             </div>
         @endforelse
             <div data-leave-filter-empty class="employee-leave-empty-state hidden flex-col items-center justify-center rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center">
@@ -961,7 +758,7 @@
 
                     <div class="flex shrink-0 items-center gap-3">
                         <span data-leave-detail="status" class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">Pending</span>
-                        <button type="button" data-leave-modal-close data-leave-no-print class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition hover:bg-white/20" aria-label="Close leave details">
+                        <button type="button" data-leave-modal-close class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition hover:bg-white/20" aria-label="Close leave details">
                             <i class="fa fa-times"></i>
                         </button>
                     </div>
@@ -1057,7 +854,7 @@
                                 <p data-leave-detail="attachment" class="mt-1 truncate text-sm font-bold text-blue-950">-</p>
                             </div>
                         </div>
-                        <a data-leave-attachment-link href="#" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700" data-leave-no-print>
+                        <a data-leave-attachment-link href="#" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700">
                             <i class="fa fa-eye"></i>
                             View file
                         </a>
@@ -1065,71 +862,16 @@
                 </section>
             </div>
 
-            <div class="sticky bottom-0 flex items-center justify-between gap-3 border-t border-slate-200 bg-white/95 px-5 py-4 backdrop-blur md:px-8" data-leave-no-print>
+            <div class="sticky bottom-0 flex items-center justify-between gap-3 border-t border-slate-200 bg-white/95 px-5 py-4 backdrop-blur md:px-8">
                 <p class="hidden text-xs text-slate-400 sm:block">A read-only copy of your submitted application.</p>
                 <div class="ml-auto flex items-center gap-3">
                     <button type="button" data-leave-modal-close class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
                         Close
                     </button>
-                    <button type="button" data-leave-print class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700">
-                        <i class="fa fa-print"></i>
-                        Print application
-                    </button>
                 </div>
             </div>
         </div>
     </div>
-
-    <section id="employee-form-panel" class="employee-leave-reveal rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm md:p-6" style="--employee-leave-delay: 300ms;">
-        <div class="mb-6 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-            <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">Request Forms</p>
-                <h3 class="mt-2 text-2xl font-black text-slate-900">Create a new request</h3>
-                <p class="mt-1 text-sm text-slate-500">Switch between leave application and official business forms without leaving the page.</p>
-            </div>
-            <p class="text-sm text-slate-500">Employee: {{ $employeeFormName !== '' ? $employeeFormName : 'Not available' }}{{ $employeeFormPosition !== '' ? ' • '.$employeeFormPosition : '' }}</p>
-        </div>
-
-        <div class="employee-form-layout flex flex-col gap-6 xl:flex-row">
-            <div class="w-full xl:w-[320px] xl:min-w-[320px]">
-                <div class="employee-form-selector employee-leave-card-motion rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5">
-                    <h4 class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Select Form</h4>
-                    <div class="mt-4 space-y-3 text-sm">
-                        <a
-                            href="{{ route('employee.employeeLeave', array_merge($employeeFormQueryBase, ['form' => 'leave'])) }}#employee-form-panel"
-                            class="block rounded-2xl border px-4 py-4 transition {{ $activeEmployeeForm === 'leave' ? 'border-blue-200 bg-blue-50 text-blue-700 shadow-sm' : 'border-slate-200 bg-white text-slate-700 hover:border-blue-200 hover:bg-blue-50' }}">
-                            <p class="font-semibold">Leave Application Form</p>
-                            <p class="mt-1 text-xs leading-5 {{ $activeEmployeeForm === 'leave' ? 'text-blue-600' : 'text-slate-500' }}">File vacation, sick, or other leave requests.</p>
-                        </a>
-                        <a
-                            href="{{ route('employee.employeeLeave', array_merge($employeeFormQueryBase, ['form' => 'official'])) }}#employee-form-panel"
-                            class="block rounded-2xl border px-4 py-4 transition {{ $activeEmployeeForm === 'official' ? 'border-violet-200 bg-violet-50 text-violet-700 shadow-sm' : 'border-slate-200 bg-white text-slate-700 hover:border-violet-200 hover:bg-violet-50' }}">
-                            <p class="font-semibold">Official Business / Time</p>
-                            <p class="mt-1 text-xs leading-5 {{ $activeEmployeeForm === 'official' ? 'text-violet-600' : 'text-slate-500' }}">Use this for approved external tasks and official time requests.</p>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="employee-form-document employee-leave-card-motion min-w-0 flex-1 overflow-x-auto rounded-[1.5rem] border border-slate-200 bg-white p-6 text-base md:p-8">
-                @if ($activeEmployeeForm === 'official')
-                    <div class="employee-form-document-header mb-6 text-center">
-                        <img src="{{ asset('images/logo.png') }}" alt="Logo" class="mx-auto mb-2 h-28 w-auto">
-                        <h3 class="text-xl font-bold text-gray-900">OFFICE OF THE HUMAN RESOURCE</h3>
-                        <h3 class="text-xl font-bold text-gray-900">APPLICATION FOR OFFICIAL BUSINESS / OFFICIAL TIME</h3>
-                    </div>
-                    @include('requestForm.applicationOBF')
-                @else
-                    <div class="employee-form-document-header mb-6 text-center">
-                        <img src="{{ asset('images/logo.png') }}" alt="Logo" class="mx-auto mb-2 h-28 w-auto">
-                        <h3 class="text-xl font-bold text-gray-900">OFFICE OF THE HUMAN RESOURCE</h3>
-                        <h3 class="text-xl font-bold text-gray-900">LEAVE APPLICATION FORM</h3>
-                    </div>
-                    @include('requestForm.leaveApplicationForm')
-                @endif
-            </div>
-        </div>
-    </section>
 
     </div>
 </div>
@@ -1362,11 +1104,6 @@
                 return;
             }
 
-            if (event.target.closest('[data-leave-print]')) {
-                window.print();
-                return;
-            }
-
             if (event.target.closest('[data-leave-modal-close]') || event.target === modal) {
                 closeModal();
             }
@@ -1404,9 +1141,6 @@
 
             const nextDocument = new DOMParser().parseFromString(await response.text(), 'text/html');
             if (!nextDocument.getElementById('employee-leave-page')) return false;
-            if (typeof syncLeaveFormCredits === 'function') {
-                syncLeaveFormCredits(nextDocument);
-            }
 
             document.querySelectorAll('[data-leave-live]').forEach((current) => {
                 const key = current.dataset.leaveLive;

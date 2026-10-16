@@ -51,6 +51,12 @@ class TabSessionAuth
             }
         }
 
+        // Recheck retained users so deleted accounts lose access in existing tabs too.
+        if (Auth::check() && !User::query()->whereKey(Auth::id())->exists()) {
+            Auth::logout();
+            return redirect()->route('login_display');
+        }
+
         return $next($request);
     }
 

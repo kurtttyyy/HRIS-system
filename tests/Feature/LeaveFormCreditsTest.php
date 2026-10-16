@@ -12,7 +12,7 @@ use Tests\TestCase;
 
 class LeaveFormCreditsTest extends TestCase
 {
-    public function test_form_keeps_credits_until_request_is_approved(): void
+    public function test_leave_balances_change_only_when_request_is_approved(): void
     {
         $this->travelTo(now()->setDate(2026, 9, 29));
         Schema::create('leave_applications', function (Blueprint $table) {
@@ -31,32 +31,27 @@ class LeaveFormCreditsTest extends TestCase
         $this->actingAs($user);
         $controller = app(EmployeePageController::class);
         $before = $controller->display_leave()->getData();
-        $this->assertGreaterThan(0, $before['formEarnedVacation']);
+        $this->assertGreaterThan(0, $before['vacationCardAvailable']);
         $application = LeaveApplication::create([
             'user_id' => 42, 'status' => 'Pending', 'filing_date' => '2026-09-29',
             'leave_type' => 'Annual Leave', 'number_of_working_days' => 3,
             'beginning_vacation' => 0, 'beginning_sick' => 0,
-            'earned_vacation' => $before['formEarnedVacation'],
-            'earned_sick' => $before['formEarnedSick'],
+            'earned_vacation' => $before['vacationCardAvailable'],
+            'earned_sick' => $before['sickCardAvailable'],
             'applied_vacation' => 3, 'applied_sick' => 0, 'applied_total' => 3,
-            'ending_vacation' => $before['formEarnedVacation'] - 3,
-            'ending_sick' => $before['formEarnedSick'],
+            'ending_vacation' => $before['vacationCardAvailable'] - 3,
+            'ending_sick' => $before['sickCardAvailable'],
         ]);
         foreach (['Pending', 'Rejected'] as $status) {
             $application->update(['status' => $status]);
             $data = $controller->display_leave()->getData();
-            $this->assertSame($before['formEarnedVacation'], $data['formEarnedVacation']);
-            $this->assertSame($before['formEarnedSick'], $data['formEarnedSick']);
             $this->assertSame($before['vacationCardAvailable'], $data['vacationCardAvailable']);
-            $this->assertSame(0.0, $data['beginningVacationBalance']);
+            $this->assertSame($before['sickCardAvailable'], $data['sickCardAvailable']);
         }
         $application->update(['status' => 'Approved']);
         $data = $controller->display_leave()->getData();
-        $this->assertSame(0.0, $data['formEarnedVacation']);
-        $this->assertSame(0.0, $data['formEarnedSick']);
-        $this->assertEquals($before['formEarnedVacation'] - 3, $data['beginningVacationBalance']);
-        $this->assertEquals($data['vacationCardAvailable'], $data['beginningVacationBalance']);
-        $this->assertEquals($data['sickCardAvailable'], $data['beginningSickBalance']);
+        $this->assertSame(2.0, $data['vacationCardAvailable']);
+        $this->assertSame(5.0, $data['sickCardAvailable']);
 
         // A second request may carry a stale balance from before the first approval.
         LeaveApplication::create([
@@ -67,15 +62,12 @@ class LeaveFormCreditsTest extends TestCase
         ]);
         $data = $controller->display_leave()->getData();
         $this->assertSame(0.0, $data['vacationCardAvailable']);
-        $this->assertSame(0.0, $data['beginningVacationBalance']);
         $this->assertSame(5.0, $data['annualUsed']);
         $this->assertSame(5.0, $data['sickCardAvailable']);
-        $this->assertSame(0.0, $data['formEarnedVacation']);
 
         $application->update(['status' => 'Rejected']);
         $data = $controller->display_leave()->getData();
         $this->assertSame(3.0, $data['vacationCardAvailable']);
-        $this->assertSame(3.0, $data['beginningVacationBalance']);
 
         $this->travelTo(now()->setDate(2026, 10, 15));
         $credits = app(\App\Support\EmployeeLeaveCredits::class)->forMonth($user, now()->startOfMonth());
