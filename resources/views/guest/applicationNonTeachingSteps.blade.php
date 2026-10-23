@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $isTeachingPosition = in_array(strtolower(trim((string) $openPosition->job_type)), ['teaching', 't'], true);
+@endphp
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 <style>
     .apply-shell {
@@ -1519,6 +1522,21 @@
         </label>
     </div>
 
+    @if ($isTeachingPosition)
+        @foreach ([9 => ['research_publication', 'Research Publication'], 10 => ['training_certification', 'Training Certification']] as $documentIndex => [$documentId, $documentLabel])
+            <div class="mb-4">
+                <label class="form-label fw-semibold" for="{{ $documentId }}">{{ $documentLabel }} (if available)</label>
+                <label class="upload-area">
+                    <i class="bi bi-file-earmark-arrow-up upload-icon"></i>
+                    <div class="upload-main-text">Click to upload your {{ strtolower($documentLabel) }}</div>
+                    <div class="upload-sub-text">PDF, DOC, DOCX (up to 5MB each)</div>
+                    <input type="file" id="{{ $documentId }}" data-document-index="{{ $documentIndex }}" accept=".pdf,.doc,.docx" multiple>
+                    <input type="hidden" name="documents[{{ $documentIndex }}][type]" value="{{ $documentLabel }}">
+                </label>
+            </div>
+        @endforeach
+    @endif
+
     <!-- Membership/Affiliation -->
     <div class="mb-4">
         <label class="form-label fw-semibold">Membership/affiliation (If Applicable)</label>
@@ -1751,6 +1769,16 @@
                             <span class="review-label">Membership</span>
                             <span id="membership" class="review-value"></span>
                         </div>
+                        @if ($isTeachingPosition)
+                            <div class="review-item">
+                                <span class="review-label">Research Publication</span>
+                                <span id="review-research-publication" class="review-value"></span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Training Certification</span>
+                                <span id="review-training-certification" class="review-value"></span>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -3200,6 +3228,8 @@ document.addEventListener('DOMContentLoaded', () => {
         renderFileNames('prc', boardRatingInput);
         renderFileNames('passing', certificateEligibilityInput);
         renderFileNames('membership', membershipInput);
+        renderFileNames('review-research-publication', document.getElementById('research_publication'));
+        renderFileNames('review-training-certification', document.getElementById('training_certification'));
 
 
         transitionForms(documentsForm, reviewForm, 'forward');

@@ -296,7 +296,6 @@
                   <div>
                     <label class="field-label">Employment Type</label>
                     <select class="input" name="employment" data-required-label="Employment Type">
-                      <option value="">Employment Type</option>
                       <option value="Full-Time" @selected(old('employment') === 'Full-Time')>Full-Time</option>
                       <option value="Part-Time" @selected(old('employment') === 'Part-Time')>Part-Time</option>
                     </select>
@@ -304,7 +303,6 @@
                   <div>
                     <label class="field-label">Work Mode</label>
                     <select class="input" name="mode" data-required-label="Work Mode">
-                      <option value="">Work Mode</option>
                       <option value="Remote" @selected(old('mode') === 'Remote')>Remote</option>
                       <option value="Onsite" @selected(old('mode') === 'Onsite')>Onsite</option>
                       <option value="Hybrid" @selected(old('mode') === 'Hybrid')>Hybrid</option>
@@ -359,7 +357,6 @@
                   <div>
                     <label class="field-label">Experience Level</label>
                     <select class="input" name="level" data-required-label="Experience Level">
-                      <option value="">Experience Level</option>
                       <option value="Junior" @selected(old('level') === 'Junior')>Junior</option>
                       <option value="Mid" @selected(old('level') === 'Mid')>Mid</option>
                       <option value="Senior" @selected(old('level') === 'Senior')>Senior</option>
@@ -369,7 +366,6 @@
                   <div>
                     <label class="field-label">Job Type</label>
                     <select class="input" name="job_type" data-required-label="Job Type">
-                      <option value="">Job Type</option>
                       <option value="Teaching" @selected(old('job_type') === 'Teaching')>Teaching</option>
                       <option value="Non-Teaching" @selected(old('job_type') === 'Non-Teaching')>Non-Teaching</option>
                     </select>

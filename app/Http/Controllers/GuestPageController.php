@@ -305,6 +305,18 @@ class GuestPageController extends Controller
 
     private function buildChatbotReply(string $message): array
     {
+        if (preg_match('/\b(account|register|registration|signup|sign\s*up|login|log\s*in|signin|sign\s*in)\b/i', $message)) {
+            return [
+                'reply' => 'Already have an account? Select Login below and enter your email address and password. To create an account, select Create Account, fill in your name and email address, enter and confirm your password, then click Create Account. You can then log in with your credentials. To apply for a vacancy, open Job Vacancies and select View Details & Apply.',
+                'used_ai' => false,
+                'links' => [
+                    ['label' => 'Login', 'url' => route('login_display')],
+                    ['label' => 'Create Account', 'url' => route('register')],
+                ],
+                'suggestions' => ['How to apply', 'Show available jobs', 'Application requirements'],
+            ];
+        }
+
         $aiReply = $this->askOpenAi($message);
         if ($aiReply) {
             return [

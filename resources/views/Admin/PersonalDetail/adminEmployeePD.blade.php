@@ -446,16 +446,6 @@
     </div>
 
 
-    <div class="flex gap-3">
-      <svg class="w-5 h-5 text-gray-400 mt-1" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M7 7h10v10H7z" />
-      </svg>
-      <div>
-        <span class="block uppercase text-gray-400 font-semibold">Account Number</span>
-        <span class="inline-flex items-center gap-2"><span :class="isMissingDisplayValue(selectedEmployee?.employee?.employee_id) ? 'text-rose-600' : 'text-slate-700'" x-text="displayValueOrNoInfo(selectedEmployee?.employee?.employee_id)"></span><span x-show="isMissingDisplayValue(selectedEmployee?.employee?.employee_id)" class="missing-info-exclamation" aria-hidden="true">!</span></span>
-      </div>
-    </div>
 
   </div>
 

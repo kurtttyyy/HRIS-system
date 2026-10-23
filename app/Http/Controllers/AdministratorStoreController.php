@@ -2120,6 +2120,10 @@ class AdministratorStoreController extends Controller
             ->pluck('job_type', 'id');
 
         foreach ($employees as $employee) {
+            // A saved employee type takes precedence over the original vacancy.
+            if ($this->normalizeEmployeeJobType($employee->job_type) !== null) {
+                continue;
+            }
             $openPositionId = optional($latestApplicantsByUser->get($employee->user_id))->open_position_id;
             if (!$openPositionId) {
                 continue;
@@ -3520,7 +3524,7 @@ class AdministratorStoreController extends Controller
             'position' => 'nullable|string|max:255',
             'department' => 'nullable|string|max:255',
             'classification' => 'nullable|string|max:255',
-            'job_type' => 'nullable|string|max:50',
+            'job_type' => 'nullable|in:Teaching,Non-Teaching',
             'address_line' => 'nullable|string|max:255',
             'barangay' => 'nullable|string|max:255',
             'municipality' => 'nullable|string|max:255',
@@ -3594,10 +3598,10 @@ class AdministratorStoreController extends Controller
         ];
 
         if (Schema::hasColumn('employees', 'job_type')) {
-            $employeePayload['job_type'] = $this->resolveJobTypeFromOpenPositionForUser($attrs['user_id'])
-                ?? (array_key_exists('job_type', $attrs)
-                    ? $this->normalizeEmployeeJobType($attrs['job_type'])
-                    : null);
+            $employeePayload['job_type'] = array_key_exists('job_type', $attrs)
+                ? $this->normalizeEmployeeJobType($attrs['job_type'])
+                : ($existingEmployee?->job_type
+                    ?? $this->resolveJobTypeFromOpenPositionForUser($attrs['user_id']));
         }
 
         Employee::updateOrCreate(

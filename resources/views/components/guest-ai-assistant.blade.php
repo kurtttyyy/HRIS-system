@@ -210,7 +210,7 @@
         width: min(24rem, calc(100vw - 1.5rem));
         max-height: min(34rem, calc(100vh - 8.5rem));
         display: grid;
-        grid-template-rows: auto 1fr auto;
+        grid-template-rows: auto minmax(0, 1fr) auto auto;
         border-radius: 1.15rem;
         overflow: hidden;
         background: #f8fafc;
@@ -283,6 +283,11 @@
     .nc-bubble { max-width: 88%; border-radius: 0.9rem; padding: 0.65rem 0.75rem; margin-bottom: 0.65rem; line-height: 1.45; font-size: 0.89rem; word-break: break-word; }
     .nc-bubble.user { margin-left: auto; background: #157347; color: #fff; }
     .nc-bubble.bot { background: #fff; color: #0f172a; border: 1px solid #dbe2ea; }
+    .nc-chatbot-links { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.65rem; }
+    .nc-chatbot-links a { color: #0f5132; font-weight: 700; text-decoration: underline; }
+    .nc-chatbot-form { display: flex; gap: 0.5rem; padding: 0.65rem; background: #f1f5f9; }
+    .nc-chatbot-input { flex: 1; min-width: 0; border: 1px solid #cbd5e1; border-radius: 0.5rem; padding: 0.55rem; font-size: 0.85rem; }
+    .nc-chatbot-send { border: 0; border-radius: 0.5rem; background: #157347; color: #fff; padding: 0.5rem 0.75rem; }
     .nc-chatbot-chips { display: flex; flex-wrap: wrap; gap: 0.45rem; padding: 0.65rem 0.85rem 0.4rem; background: #f1f5f9; border-top: 1px solid #e2e8f0; }
     .nc-chatbot-chip { border: 1px solid #cbd5e1; background: #fff; border-radius: 999px; font-size: 0.73rem; font-weight: 600; padding: 0.42rem 0.6rem; color: #334155; }
 
@@ -409,7 +414,12 @@
             <button class="nc-chatbot-chip" type="button" data-msg="Explain this website">Website guide</button>
             <button class="nc-chatbot-chip" type="button" data-msg="Show available jobs">Show available jobs</button>
             <button class="nc-chatbot-chip" type="button" data-msg="How to apply">How to apply</button>
+            <button class="nc-chatbot-chip" type="button" data-msg="Where can I login or create an account?">Account help</button>
         </div>
+        <form class="nc-chatbot-form" id="ncChatForm">
+            <input class="nc-chatbot-input" id="ncChatInput" aria-label="Message the career assistant" placeholder="Ask a question…" maxlength="500" required>
+            <button class="nc-chatbot-send" type="submit">Send</button>
+        </form>
     </section>
 </div>
 
@@ -433,10 +443,25 @@
         let rollReturnTimeout = null;
         let dizzyReturnTimeout = null;
 
-        function addBubble(role, text) {
+        function addBubble(role, text, links = []) {
             const el = document.createElement('div');
             el.className = 'nc-bubble ' + role;
             el.textContent = text;
+            if (role === 'bot' && Array.isArray(links) && links.length) {
+                const actions = document.createElement('div');
+                actions.className = 'nc-chatbot-links';
+                links.forEach((link) => {
+                    try {
+                        const url = new URL(link.url, window.location.href);
+                        if (url.origin !== window.location.origin || !['http:', 'https:'].includes(url.protocol)) return;
+                        const anchor = document.createElement('a');
+                        anchor.href = url.href;
+                        anchor.textContent = link.label;
+                        actions.appendChild(anchor);
+                    } catch (_) {}
+                });
+                el.appendChild(actions);
+            }
             messagesEl.appendChild(el);
             messagesEl.scrollTop = messagesEl.scrollHeight;
         }
@@ -511,7 +536,7 @@
                     body: JSON.stringify({ message })
                 });
                 const data = await res.json();
-                addBubble('bot', data.reply || 'I can help with this page.');
+                addBubble('bot', data.reply || 'I can help with this page.', data.links);
                 setQuickChips(data.suggestions || []);
             } catch (_) {
                 addBubble('bot', 'I could not connect right now. Please try again.');
@@ -566,6 +591,12 @@
 
         launcher.addEventListener('click', () => panel.hidden ? openPanel() : closePanel());
         closeBtn.addEventListener('click', closePanel);
+        document.getElementById('ncChatForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+            const input = document.getElementById('ncChatInput');
+            sendMessage(input.value);
+            input.value = '';
+        });
         chipsEl.addEventListener('click', (e) => {
             const btn = e.target.closest('.nc-chatbot-chip');
             if (btn) sendMessage(btn.dataset.msg || btn.textContent || '');

@@ -2376,15 +2376,43 @@
         function saveHistory() {
             const bubbles = Array.from(messagesEl.querySelectorAll('.nc-bubble')).map((bubble) => ({
                 role: bubble.classList.contains('user') ? 'user' : 'bot',
-                text: bubble.textContent || '',
+                text: bubble.dataset.message || bubble.textContent || '',
+                links: JSON.parse(bubble.dataset.links || '[]'),
             }));
             localStorage.setItem(historyKey, JSON.stringify(bubbles.slice(-30)));
         }
 
-        function appendMessage(role, text, shouldSave = true) {
+        function appendMessage(role, text, shouldSave = true, links = []) {
             const bubble = document.createElement('div');
             bubble.className = 'nc-bubble ' + role;
+            bubble.dataset.message = text;
             bubble.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
+            if (role === 'bot') {
+                if (!Array.isArray(links)) links = [];
+                if (!links.length && text.includes('Select Login below')) {
+                    links = [
+                        { label: 'Login', url: @json(route('login_display')) },
+                        { label: 'Create Account', url: @json(route('register')) },
+                    ];
+                }
+                const actions = document.createElement('div');
+                actions.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin-top:12px';
+                const validLinks = [];
+                links.forEach((link) => {
+                    try {
+                        const url = new URL(link.url, window.location.href);
+                        if (url.origin !== window.location.origin || !['http:', 'https:'].includes(url.protocol)) return;
+                        const anchor = document.createElement('a');
+                        anchor.href = url.href;
+                        anchor.textContent = link.label;
+                        anchor.style.cssText = 'color:#157347;font-weight:600;text-decoration:underline;text-underline-offset:3px';
+                        actions.appendChild(anchor);
+                        validLinks.push({ label: link.label, url: url.href });
+                    } catch (_) {}
+                });
+                bubble.dataset.links = JSON.stringify(validLinks);
+                if (actions.children.length) bubble.appendChild(actions);
+            }
             messagesEl.appendChild(bubble);
             messagesEl.scrollTop = messagesEl.scrollHeight;
             if (shouldSave) saveHistory();
@@ -2531,7 +2559,7 @@
                 }
                 parsed.forEach((item) => {
                     if (!item || !item.role || !item.text) return;
-                    appendMessage(item.role === 'user' ? 'user' : 'bot', String(item.text), false);
+                    appendMessage(item.role === 'user' ? 'user' : 'bot', String(item.text), false, item.links);
                 });
                 saveHistory();
             } catch (error) {
@@ -2564,7 +2592,7 @@
 
                 const data = await response.json();
                 setTyping(false);
-                appendMessage('bot', data.reply || 'I can help with jobs, requirements, and policies.');
+                appendMessage('bot', data.reply || 'I can help with jobs, requirements, and policies.', true, data.links);
                 setQuickChips(data.suggestions || []);
             } catch (error) {
                 setTyping(false);

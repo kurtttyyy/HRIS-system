@@ -460,6 +460,7 @@
           this.openProfile = false;
         },
         openEditProfile:false,
+        generalProfileDraft: { employee: {}, government: {}, addressParts: {} },
         modalTarget: '',
         tab:'overview',
         viewMode:new URLSearchParams(window.location.search).get('view') === 'table' ? 'table' : 'cards',
@@ -1801,15 +1802,20 @@
         },
         prepareGeneralProfileEdit() {
           if (!this.selectedEmployee) return;
-          if (!this.selectedEmployee.employee) this.selectedEmployee.employee = {};
+          this.generalProfileDraft = JSON.parse(JSON.stringify(this.selectedEmployee));
+          if (!this.generalProfileDraft.employee) this.generalProfileDraft.employee = {};
+          if (!this.generalProfileDraft.government) this.generalProfileDraft.government = {};
+          this.generalProfileDraft.addressParts = this.addressFormParts();
+          const employeeType = this.employmentClassificationLabel();
+          this.generalProfileDraft.employee.job_type = employeeType === 'Not set' ? '' : employeeType;
 
-          this.selectedEmployee.employee.position =
+          this.generalProfileDraft.employee.position =
             this.selectedEmployee?.job_role
             || this.selectedEmployee?.position
             || this.selectedEmployee?.employee?.position
             || this.selectedEmployee?.applicant?.position?.title
             || '';
-          this.selectedEmployee.employee.department =
+          this.generalProfileDraft.employee.department =
             this.selectedEmployee?.department
             || this.selectedEmployee?.employee?.department
             || this.selectedEmployee?.applicant?.position?.department
@@ -1817,6 +1823,11 @@
 
           this.openEditProfile = true;
           this.modalTarget = 'general';
+        },
+        cancelGeneralProfileEdit() {
+          this.openEditProfile = false;
+          this.modalTarget = '';
+          this.generalProfileDraft = { employee: {}, government: {}, addressParts: {} };
         },
         addressFormParts() {
           const raw = (this.selectedEmployee?.employee?.address ?? '').toString().trim();
