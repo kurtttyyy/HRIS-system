@@ -223,7 +223,7 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="min-h-0 flex-1 space-y-2 overflow-y-auto p-2">
+    <nav class="min-h-0 flex-1 space-y-2 overflow-x-hidden overflow-y-auto p-2">
         <!-- Main -->
         <div class="hidden px-4 pt-2 text-[10px] font-bold uppercase tracking-[0.22em] text-gray-500 opacity-0 transition-opacity duration-300 group-hover:block group-hover:opacity-100 employee-sidebar-label">
             Main

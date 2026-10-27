@@ -1068,7 +1068,6 @@
             'elementary' => 'Elementary',
             'secondary' => 'Secondary',
             'vocational_trade' => 'Vocational / Trade Course',
-            'college' => 'College',
         ];
     @endphp
 
@@ -2412,13 +2411,14 @@ document.addEventListener('DOMContentLoaded', function () {
             ['elementary', 'elementary'],
             ['secondary', 'secondary'],
             ['vocational_trade', 'vocational_trade'],
-            ['college', 'college'],
         ].forEach(([fieldPrefix, inputPrefix]) => {
             fillFieldFromPds(`${inputPrefix}_school_name`, pdsEducationValue(fields[`${fieldPrefix}_school_name`]));
             fillSelectFromPds(`${inputPrefix}_year_graduated`, pdsEducationValue(fields[`${fieldPrefix}_year_graduated`]));
         });
 
         fillFieldFromPds('bachelor_degree_0', pdsEducationValue(fields.college_degree));
+        fillFieldFromPds('bachelor_school_name_0', pdsEducationValue(fields.college_school_name));
+        fillSelectFromPds('bachelor_year_finished_0', pdsEducationValue(fields.college_year_graduated));
 
         fillFieldFromPds('master_degree_0', fields.graduate_studies_degree);
         fillFieldFromPds('master_school_name_0', fields.graduate_studies_school_name);
@@ -3059,7 +3059,6 @@ document.addEventListener('DOMContentLoaded', () => {
             elementary: 'Elementary',
             secondary: 'Secondary',
             vocational_trade: 'Vocational / Trade Course',
-            college: 'College',
         };
         const basicEducationLines = Object.entries(basicEducationLabels).map(([key, label]) => {
             const school = document.getElementById(`${key}_school_name`)?.value || 'N/A';
