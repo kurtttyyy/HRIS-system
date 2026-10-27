@@ -78,6 +78,11 @@ class Applicant extends Model
         return $this->hasMany(ApplicantDocument::class, 'applicant_id', 'id');
     }
 
+    public function interviews()
+    {
+        return $this->hasMany(Interviewer::class, 'applicant_id')->orderByDesc('id');
+    }
+
     public function degrees()
     {
         return $this->hasMany(ApplicantDegree::class, 'applicant_id', 'id');

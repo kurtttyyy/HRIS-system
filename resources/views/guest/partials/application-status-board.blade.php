@@ -80,6 +80,8 @@
                 </div>
             </div>
 
+            @include('guest.partials.interview-schedule', ['applicant' => $applicant])
+
             @if(filled($applicant->missing_documents))
                 <div class="alert alert-warning mt-3 rounded-4" role="status">
                     <h6 class="fw-bold"><i class="bi bi-file-earmark-exclamation me-2" aria-hidden="true"></i>Action required: missing documents</h6>

@@ -3042,7 +3042,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Step 3 → Step 4 (Review)
-    btnToReview.addEventListener('click', () => {
+    btnToReview.addEventListener('click', async () => {
+        await window.waitForDocumentDraftUploads?.();
         // Populate review fields
         document.getElementById('review-first-name').textContent = document.getElementById('first_name').value;
         document.getElementById('review-middle-name').textContent = document.getElementById('middle_name').value || 'N/A';
@@ -3195,6 +3196,8 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         const renderFileNames = (targetId, input) => {
             const target = document.getElementById(targetId);
+            // Teaching-only review fields are absent for non-teaching positions.
+            if (!target) return;
             const names = selectedFileNames(input);
             target.textContent = '';
 

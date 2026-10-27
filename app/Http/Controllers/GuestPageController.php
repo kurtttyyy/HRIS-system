@@ -18,6 +18,7 @@ class GuestPageController extends Controller
 
         if ($lookup !== '') {
             $applicants = Applicant::with([
+                'interviews',
                 'position',
                 'degrees' => function ($query) {
                     $query->orderBy('degree_level')->orderBy('sort_order');
@@ -53,6 +54,7 @@ class GuestPageController extends Controller
         return md5(json_encode(collect($applicants)->map(fn (Applicant $applicant) => [
             'id' => $applicant->id,
             'application_status' => $applicant->application_status,
+            'interviews' => $applicant->interviews->map(fn ($interview) => $interview->only(['id', 'interview_type', 'date', 'time', 'duration', 'ended_at'])),
             'missing_documents' => $applicant->missing_documents,
             'document_notice' => $applicant->document_notice,
             'document_notice_at' => $applicant->document_notice_at?->toIso8601String(),

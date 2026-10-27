@@ -3162,6 +3162,7 @@ POWERSHELL;
     private function applicationStatusQuery(string $lookup)
     {
         return Applicant::with([
+            'interviews',
             'position',
             'degrees' => function ($query) {
                 $query->orderBy('degree_level')->orderBy('sort_order');
@@ -3190,6 +3191,7 @@ POWERSHELL;
         return md5(json_encode(collect($applicants)->map(fn (Applicant $applicant) => [
             'id' => $applicant->id,
             'application_status' => $applicant->application_status,
+            'interviews' => $applicant->interviews->map(fn ($interview) => $interview->only(['id', 'interview_type', 'date', 'time', 'duration', 'ended_at'])),
             'date_hired' => optional($applicant->date_hired)->toDateString(),
             'updated_at' => optional($applicant->updated_at)->toDateTimeString(),
             'documents' => collect($applicant->documents ?? [])->map(fn ($document) => [

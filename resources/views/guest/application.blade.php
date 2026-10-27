@@ -568,6 +568,43 @@
             align-items: stretch;
         }
     }
+    .interview-invitation {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        padding: 1.4rem;
+        border: 1px solid #a7dfcc;
+        border-radius: 20px;
+        background: linear-gradient(120deg, #ecfdf5, #f7fffc);
+        color: #164e3e;
+    }
+    .interview-invitation-date {
+        display: flex;
+        flex: 0 0 76px;
+        flex-direction: column;
+        align-items: center;
+        padding: .65rem;
+        background: white;
+        border: 1px solid #cbeadd;
+        border-radius: 15px;
+        box-shadow: 0 6px 18px #065f4609;
+    }
+    .interview-invitation-date span { font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+    .interview-invitation-date strong { font-size: 2rem; line-height: 1.3; color: #047857; }
+    .interview-invitation-content { flex: 1; min-width: 0; }
+    .interview-invitation-kicker { font-size: .67rem; font-weight: 800; letter-spacing: .1em; color: #047857; }
+    .interview-invitation h3 { margin: .35rem 0 .65rem; font-size: 1.2rem; font-weight: 800; color: #163d32; }
+    .interview-invitation-details { display: flex; flex-wrap: wrap; gap: .5rem 1.4rem; font-size: .9rem; font-weight: 700; }
+    .interview-invitation-details i { margin-right: .3rem; color: #059669; }
+    .interview-invitation-details small { font-weight: 500; }
+    .interview-invitation p { margin: .7rem 0 0; font-size: .8rem; color: #527469; line-height: 1.6; }
+    .interview-invitation-badge { align-self: flex-start; display: inline-flex; gap: .4rem; align-items: center; border-radius: 99px; padding: .4rem .7rem; background: #d1fae5; color: #047857; font-size: .72rem; font-weight: 800; }
+    @media (max-width: 767.98px) {
+        .interview-invitation { flex-wrap: wrap; align-items: flex-start; gap: .9rem; padding: 1rem; }
+        .interview-invitation-content { flex-basis: calc(100% - 100px); }
+        .interview-invitation-details { flex-direction: column; }
+        .interview-invitation-badge { margin-left: 90px; }
+    }
 </style>
 
 @include('layouts.header')  {{-- UNIVERSAL HEADER --}}
@@ -666,6 +703,8 @@
                         </button>
                     </div>
                 </div>
+
+                @include('guest.partials.interview-schedule', ['applicant' => $applicant])
 
                 {{-- Rejection Message --}}
                 @if($applicant->application_status === 'Rejected')
