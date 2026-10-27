@@ -33,6 +33,9 @@ RUN apt-get update \
         libonig-dev \
         libsqlite3-dev \
         libzip-dev \
+        libreoffice-writer \
+        fonts-liberation \
+        fonts-dejavu-core \
         unzip \
     && docker-php-ext-install \
         mbstring \

@@ -106,4 +106,20 @@ class WordDocumentPreviewTest extends TestCase
             $this->assertStringNotContainsString('id="docxViewer"', $html);
         }
     }
+
+    public function test_linux_converter_uses_an_isolated_profile_and_safe_arguments(): void
+    {
+        $converter = new class extends WordDocumentPreview {
+            public function process(): \Symfony\Component\Process\Process
+            {
+                return $this->libreOfficeProcess('/tmp/preview job/document.docx', '/tmp/preview job');
+            }
+        };
+        $process = $converter->process();
+        $command = str_replace('"^%"', '%', $process->getCommandLine());
+        $this->assertStringContainsString('file:///tmp/preview%20job/profile', $command);
+        $this->assertStringContainsString('--headless', $process->getCommandLine());
+        $this->assertStringContainsString('/tmp/preview job/document.docx', $process->getCommandLine());
+        $this->assertSame(90.0, $process->getTimeout());
+    }
 }

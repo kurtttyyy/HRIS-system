@@ -82,10 +82,51 @@ class WordDocumentPreview
     protected function convert(string $source, string $target): void
     {
         if (PHP_OS_FAMILY !== 'Windows') {
-            throw new RuntimeException('Word previews require Microsoft Word on the Windows application host.');
+            $this->convertWithLibreOffice($source, $target);
+            return;
         }
         $process = $this->conversionProcess($source, $target);
         $process->mustRun();
+    }
+
+    private function convertWithLibreOffice(string $source, string $target): void
+    {
+        // Each export needs its own profile: shared profiles can silently skip concurrent jobs.
+        $workspace = $target.'.work';
+        if (!mkdir($workspace, 0700, true)) {
+            throw new RuntimeException('Cannot create Word conversion workspace.');
+        }
+        try {
+            $input = $workspace.'/document.'.strtolower(pathinfo($source, PATHINFO_EXTENSION));
+            if (!copy($source, $input)) {
+                throw new RuntimeException('Cannot prepare Word document for conversion.');
+            }
+            $process = $this->libreOfficeProcess($input, $workspace);
+            $process->mustRun();
+            if (!$this->isPdf($workspace.'/document.pdf') || !rename($workspace.'/document.pdf', $target)) {
+                throw new RuntimeException('LibreOffice did not produce a valid PDF preview.');
+            }
+        } finally {
+            $files = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($workspace, \FilesystemIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::CHILD_FIRST,
+            );
+            foreach ($files as $file) {
+                $file->isDir() ? rmdir($file->getPathname()) : unlink($file->getPathname());
+            }
+            rmdir($workspace);
+        }
+    }
+
+    protected function libreOfficeProcess(string $source, string $workspace): Process
+    {
+        $profile = 'file://'.str_replace('%2F', '/', rawurlencode($workspace.'/profile'));
+        $process = new Process([
+            'libreoffice', '-env:UserInstallation='.$profile,
+            '--headless', '--convert-to', 'pdf', '--outdir', $workspace, $source,
+        ], base_path(), getenv());
+        $process->setTimeout(90);
+        return $process;
     }
 
     protected function conversionProcess(string $source, string $target): Process

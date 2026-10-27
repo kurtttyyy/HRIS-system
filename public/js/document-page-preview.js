@@ -47,7 +47,7 @@
     console.error('Unable to render document preview.', error);
     status.hidden = false;
     status.textContent = asImage
-      ? 'Unable to prepare document page images. Microsoft Word must be available to the application server. Please try again or open the original file.'
+      ? 'Unable to prepare the document preview. Please try again or open the original file.'
       : 'Unable to render this PDF preview. Please try again.';
   }
 })();
