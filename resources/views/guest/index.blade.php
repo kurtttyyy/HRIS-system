@@ -135,6 +135,13 @@
                             <small class="d-block text-success fw-bold text-uppercase">Tracking Number</small>
                             <span class="fw-bold text-success">{{ session('application_tracking_number') }}</span>
                         </div>
+                        <div class="d-flex align-items-center gap-3 mt-3 text-start rounded-3 p-3" style="background: #ecfdf5; border: 1px solid #a7dfcc;">
+                            <img class="tracking-writing-animation" src="{{ asset('images/writing-code.gif') }}" width="72" height="72" alt="" aria-hidden="true" style="flex-shrink: 0; border-radius: 12px;">
+                            <div>
+                                <div class="fw-bold text-success">Write down this code to see your application status.</div>
+                                <p class="small mb-0 mt-1">Keep your tracking number somewhere safe. Enter it in <strong>Application Status</strong> to check your progress.</p>
+                            </div>
+                        </div>
                     @endif
                 </div>
             </div>
@@ -1710,6 +1717,9 @@
         .section-heading h2 {
             font-size: 1.65rem;
         }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .tracking-writing-animation { display: none; }
     }
 </style>
 
