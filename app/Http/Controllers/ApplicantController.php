@@ -562,6 +562,7 @@ class ApplicantController extends Controller
         $rehireUser = $this->findLatestResignedEmployeeByEmail($normalizedEmail);
 
         $existingApplication = Applicant::whereRaw('LOWER(TRIM(email)) = ?', [$normalizedEmail])
+            ->blocksReapplication()
             ->where('open_position_id', $attrs['position'])
             ->when($rehireUser, function ($query) use ($rehireUser) {
                 $latestResignationDate = $this->latestApprovedResignationDateForUser((int) $rehireUser->id);

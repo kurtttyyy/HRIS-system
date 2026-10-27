@@ -513,6 +513,11 @@
               const userId = Number.parseInt((employee?.id ?? '').toString(), 10);
               if (!Number.isFinite(userId) || userId <= 0) return;
 
+              if (employee.is_resigned && this.employeeById[userId]) {
+                window.location.reload();
+                return;
+              }
+
               const status = (employee.account_status || 'Active').toString().trim();
               const normalized = this.normalize(status);
               const badge = document.querySelector(`[data-employee-account-status='${userId}']`);

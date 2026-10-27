@@ -5,13 +5,12 @@
     <title>Evaluation Setup | Northeastern College</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>main { margin-left: 4rem; transition: margin-left .3s ease; } aside:hover ~ main { margin-left: 18rem; }</style>
     @include('components.evaluationPageMotion')
 </head>
 <body class="bg-slate-100 text-slate-900">
 <div class="flex min-h-screen">
     @include('components.adminSideBar')
-    <main class="min-w-0 flex-1 p-4 pt-20 md:p-8 md:pt-20 lg:pt-8">
+    <main data-admin-sidebar-layout class="min-w-0 flex-1 p-4 pt-20 md:p-8 md:pt-20 lg:pt-8">
         <div class="evaluation-page-shell mx-auto max-w-6xl space-y-6">
             <header class="rounded-3xl bg-emerald-900 p-6 text-white md:p-8">
                 <p class="text-xs font-bold uppercase tracking-widest text-emerald-100">Employee development</p>

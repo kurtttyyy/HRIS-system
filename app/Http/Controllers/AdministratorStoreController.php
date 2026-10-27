@@ -2855,7 +2855,11 @@ class AdministratorStoreController extends Controller
                 ->with('updated_applicant_status', $this->resolveApplicantStatusFromInterviewType($newInterviewType));
         }
 
-        $conflictingInterview = $this->findActiveInterviewSchedule($newApplicantId, (int) $interview->id);
+        $conflictingInterview = Interviewer::query()
+            ->where('applicant_id', $newApplicantId)
+            ->where('id', '!=', $interview->id)
+            ->get()
+            ->first(fn (Interviewer $schedule) => !$this->interviewIsFinished($schedule));
         if ($conflictingInterview) {
             return redirect()
                 ->back()
@@ -4704,8 +4708,9 @@ class AdministratorStoreController extends Controller
 
     public function destroy_interview($id){
         $delete = Interviewer::where('applicant_id', $id)
-            ->latest()
-            ->first();
+            ->latest('id')
+            ->get()
+            ->first(fn (Interviewer $interview) => !$this->interviewIsFinished($interview));
 
         if (!$delete) {
             return redirect()->back()->with('error', 'No scheduled interview found for this applicant.');
@@ -4715,7 +4720,7 @@ class AdministratorStoreController extends Controller
 
         Applicant::where('id', $id)
             ->whereIn('application_status', ['Initial Interview', 'Final Interview', 'Demo Teaching'])
-            ->update(['application_status' => 'Under Review']);
+            ->update(['application_status' => $this->resolveApplicantStatusFromInterviewType($delete->interview_type)]);
 
         return redirect()->back()->with('success','Interview schedule cancelled successfully.');
     }

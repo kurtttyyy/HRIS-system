@@ -1151,6 +1151,8 @@ class AdministratorPageController extends Controller
             })
             ->get();
 
+        $employee = $employee->reject(fn (User $user) => \App\Support\EmployeeArchive::isResigned($user))->values();
+
         if ($profileOnlyUserId > 0) {
             $employee = $employee->where('id', $profileOnlyUserId)->values();
             abort_if($employee->isEmpty(), 404);
@@ -1383,12 +1385,14 @@ class AdministratorPageController extends Controller
     public function employee_account_statuses()
     {
         $employees = User::query()
+            ->with(['resignations', 'applicant'])
             ->select(['id', 'account_status', 'status', 'updated_at'])
             ->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee'])
             ->orderBy('id')
             ->get()
             ->map(fn (User $user) => [
                 'id' => (int) $user->id,
+                'is_resigned' => \App\Support\EmployeeArchive::isResigned($user),
                 'account_status' => trim((string) ($user->account_status ?: 'Active')),
                 'approval_status' => trim((string) ($user->status ?? '')),
                 'updated_at' => optional($user->updated_at)->toISOString(),
@@ -1424,6 +1428,8 @@ class AdministratorPageController extends Controller
             'employee_count' => Employee::query()->count(),
             'pending_applicant_count' => $pendingApplicants,
             'pending_leave_count' => $pendingLeaves,
+            'pending_resignation_count' => Resignation::query()
+                ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['pending'])->count(),
         ])->header('Cache-Control', 'no-store, no-cache, must-revalidate');
     }
 
@@ -2330,7 +2336,10 @@ class AdministratorPageController extends Controller
     public function display_leave(Request $request){
         $selectedMonth = trim((string) $request->query('month', now()->format('Y-m')));
         try {
-            $monthCursor = Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
+            $monthCursor = Carbon::createFromFormat('!Y-m', $selectedMonth)->startOfMonth();
+            if ($monthCursor->format('Y-m') !== $selectedMonth) {
+                throw new \InvalidArgumentException('Invalid reporting month.');
+            }
         } catch (\Throwable $e) {
             $monthCursor = now()->startOfMonth();
             $selectedMonth = $monthCursor->format('Y-m');
@@ -2595,6 +2604,29 @@ class AdministratorPageController extends Controller
         return view('Admin.adminPaySlipView', compact('records', 'selectedRecord', 'uploadId'));
     }
 
+    public function display_resigned_archive(Request $request)
+    {
+        $filters = $request->validate([
+            'search' => 'nullable|string|max:150',
+            'status' => 'nullable|in:Approved,Completed',
+        ]);
+        $query = Resignation::query()->whereRaw("LOWER(TRIM(status)) IN (?, ?)", ['approved', 'completed']);
+        $total = (clone $query)->count();
+        if (!empty($filters['status'])) {
+            $query->whereRaw('LOWER(TRIM(status)) = ?', [strtolower($filters['status'])]);
+        }
+        $search = trim($filters['search'] ?? '');
+        if ($search !== '') {
+            $query->where(function ($query) use ($search) {
+                foreach (['employee_name', 'employee_id', 'department', 'position'] as $column) {
+                    $query->orWhere($column, 'like', '%'.$search.'%');
+                }
+            });
+        }
+        $records = $query->orderByDesc('effective_date')->orderByDesc('id')->paginate(15)->withQueryString();
+        return view('Admin.adminResignedArchive', compact('records', 'total', 'search', 'filters'));
+    }
+
     public function display_resignations(Request $request){
         $selectedStatus = trim((string) $request->query('status', 'All'));
         $search = trim((string) $request->query('search', ''));
@@ -2755,7 +2787,9 @@ class AdministratorPageController extends Controller
         $reportEmployees = User::query()
             ->with(['employee', 'applicant.position'])
             ->whereRaw("LOWER(TRIM(COALESCE(role, ''))) = ?", ['employee'])
-            ->get();
+            ->get()
+            ->filter(fn ($user) => \App\Support\ReportPeriod::employeeJoinedIn($user, $monthStart, $monthEnd))
+            ->values();
 
         $totalEmployees = $reportEmployees->count();
         $accountStatusCounts = $reportEmployees->countBy(function ($user) {
@@ -2818,7 +2852,7 @@ class AdministratorPageController extends Controller
                 ->count(),
         ];
         // Keep every employee in the summary, including incomplete demographic records.
-        $ageAsOf = now()->startOfDay();
+        $ageAsOf = $monthEnd->copy()->startOfDay();
         $ageGenderRows = collect(['Below 15', '15–17', '18–24', '25–59', '60–65', '66+', 'Not recorded'])
             ->mapWithKeys(fn ($label) => [$label => ['male' => 0, 'female' => 0, 'unspecified' => 0, 'total' => 0]]);
         foreach ($reportEmployees as $user) {
@@ -2886,7 +2920,7 @@ class AdministratorPageController extends Controller
             ->filter()
             ->countBy()
             ->sortKeys();
-        $joinYearRange = collect(range(now()->year - 11, now()->year));
+        $joinYearRange = collect(range($monthCursor->year - 11, $monthCursor->year));
         $joinYearCounts = $joinYearRange
             ->mapWithKeys(fn ($year) => [(string) $year => (int) ($joinYearCounts->get((string) $year, 0))]);
 
@@ -2916,22 +2950,24 @@ class AdministratorPageController extends Controller
             ->take(6);
 
         $resignationStatusCounts = Resignation::query()
+            ->whereRaw('COALESCE(submitted_at, created_at) >= ? AND COALESCE(submitted_at, created_at) <= ?', [$monthStart, $monthEnd])
             ->get()
             ->groupBy(fn ($row) => trim((string) ($row->status ?? 'Pending')) ?: 'Pending')
             ->map(fn ($rows) => $rows->count())
             ->sortDesc();
 
-        $documentCount = ApplicantDocument::query()->count();
+        $documentCount = ApplicantDocument::query()->whereBetween('created_at', [$monthStart, $monthEnd])->count();
         $monthlyDocumentCount = ApplicantDocument::query()->whereBetween('created_at', [$monthStart, $monthEnd])->count();
-        $payslipUploadCount = PayslipUpload::query()->count();
+        $payslipUploadCount = PayslipUpload::query()->whereBetween('created_at', [$monthStart, $monthEnd])->count();
         $processedPayslipCount = PayslipUpload::query()
+            ->whereBetween('created_at', [$monthStart, $monthEnd])
             ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) IN (?, ?)", ['processed', 'scanned'])
             ->count();
-        $payslipRecordCount = PayslipRecord::query()->count();
-        $employeesWithPayslips = app(\App\Support\PayslipCoverage::class)->countEmployees($reportEmployees);
-        $openPositionCount = OpenPosition::query()->count();
-        $conversationCount = Conversation::query()->count();
-        $resignationCount = Resignation::query()->count();
+        $payslipRecordCount = PayslipRecord::query()->whereBetween('created_at', [$monthStart, $monthEnd])->count();
+        $employeesWithPayslips = app(\App\Support\PayslipCoverage::class)->countEmployees($reportEmployees, $monthStart, $monthEnd);
+        $openPositionCount = OpenPosition::query()->whereBetween('created_at', [$monthStart, $monthEnd])->count();
+        $conversationCount = Conversation::query()->whereBetween('created_at', [$monthStart, $monthEnd])->count();
+        $resignationCount = $resignationStatusCounts->sum();
 
         $recordVolume = collect([
             'Employees' => $totalEmployees,
@@ -2942,6 +2978,7 @@ class AdministratorPageController extends Controller
         ]);
 
         $recentActivities = ActivityLog::query()
+            ->whereBetween('created_at', [$monthStart, $monthEnd])
             ->orderByDesc('created_at')
             ->limit(6)
             ->get(['action', 'description', 'user_name', 'created_at']);
@@ -3544,13 +3581,13 @@ class AdministratorPageController extends Controller
         $normalizedApplicantStatus = strtolower(trim((string) ($app->application_status ?? '')));
 
         if ($isTeachingApplicant) {
-            if ($normalizedApplicantStatus === 'initial interview' && $completedInitialInterview && !$completedDemoTeaching) {
+            if (in_array($normalizedApplicantStatus, ['initial interview', 'under review'], true) && $completedInitialInterview && !$completedDemoTeaching) {
                 $interviewProceedTarget = 'Demo Teaching';
             } elseif ($normalizedApplicantStatus === 'demo teaching' && $completedInitialInterview && $completedDemoTeaching) {
                 $interviewProceedTarget = 'Passing Document';
             }
         } else {
-            if ($normalizedApplicantStatus === 'initial interview' && $completedInitialInterview && !$completedFinalInterview) {
+            if (in_array($normalizedApplicantStatus, ['initial interview', 'under review'], true) && $completedInitialInterview && !$completedFinalInterview) {
                 $interviewProceedTarget = 'Final Interview';
             } elseif ($normalizedApplicantStatus === 'final interview' && $completedInitialInterview && $completedFinalInterview) {
                 $interviewProceedTarget = 'Passing Document';
@@ -3637,6 +3674,9 @@ class AdministratorPageController extends Controller
                         'time' => $interview->time,
                         'duration' => $interview->duration,
                         'interviewers' => $interview->interviewers,
+                        'email_link' => $interview->email_link,
+                        'url' => $interview->url,
+                        'notes' => $interview->notes,
                         'starts_at' => $start->toIso8601String(),
                         'ends_at' => $end->toIso8601String(),
                         'ended_at' => optional($interview->ended_at)->toIso8601String(),

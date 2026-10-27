@@ -149,6 +149,7 @@ Route::controller(AdministratorPageController::class)->group(function () {
     Route::get('system/payslip', 'display_payslip')->name('admin.adminPayslip');
     Route::get('system/payslip/view', 'display_payslip_view')->name('admin.adminPaySlipView');
     Route::get('system/resignations', 'display_resignations')->name('admin.adminResignations');
+    Route::get('system/resignations/archive', 'display_resigned_archive')->name('admin.resignations.archive');
     Route::get('system/resignations/snapshot', 'resignations_snapshot')->name('admin.resignations.snapshot');
     Route::get('system/resignations/{resignation}/attachment/preview', 'preview_resignation_attachment')->name('admin.resignationAttachment.preview');
     Route::get('system/resignations/{resignation}/attachment/view', 'view_resignation_attachment')->name('admin.resignationAttachment.view');

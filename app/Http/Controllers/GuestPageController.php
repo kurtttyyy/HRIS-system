@@ -218,26 +218,15 @@ class GuestPageController extends Controller
         $appliedPositionIds = $this->getBlockedPositionIds($applicantEmail);
 
         if ($applicantEmail) {
-            $latestApplication = Applicant::where('email', $applicantEmail)
+            $latestApplication = Applicant::whereRaw('LOWER(TRIM(email)) = ?', [Str::lower(trim($applicantEmail))])
+                ->blocksReapplication()
                 ->where('open_position_id', $job->id)
                 ->latest('id')
                 ->first();
 
             if ($latestApplication) {
-                $status = Str::lower(trim((string) $latestApplication->application_status));
-
-                if ($status === 'rejected') {
-                    $baseDate = $latestApplication->updated_at ?? $latestApplication->created_at;
-                    $nextEligibleDate = $baseDate->copy()->addMonths(3);
-
-                    if (now()->lt($nextEligibleDate)) {
-                        return redirect()->route('guest.index')
-                            ->with('popup_error', 'Your last application was rejected. You can apply again on '.$nextEligibleDate->format('F j, Y').'.');
-                    }
-                } else {
-                    return redirect()->route('guest.index')
-                        ->with('popup_error', 'You already applied for that position.');
-                }
+                return redirect()->route('guest.index')
+                    ->with('popup_error', 'You already applied for that position.');
             }
         }
 
@@ -288,20 +277,11 @@ class GuestPageController extends Controller
             return collect();
         }
 
-        return Applicant::where('email', $applicantEmail)
+        return Applicant::whereRaw('LOWER(TRIM(email)) = ?', [Str::lower(trim($applicantEmail))])
+            ->blocksReapplication()
             ->orderByDesc('id')
             ->get()
             ->unique('open_position_id')
-            ->filter(function ($application) {
-                $status = Str::lower(trim((string) $application->application_status));
-
-                if ($status !== 'rejected') {
-                    return true;
-                }
-
-                $baseDate = $application->updated_at ?? $application->created_at;
-                return $baseDate->gt(now()->subMonths(3));
-            })
             ->pluck('open_position_id');
     }
 
@@ -419,7 +399,7 @@ class GuestPageController extends Controller
 
         if (Str::contains($text, ['track', 'tracking number', 'application status', 'screening', 'shortlist', 'rejected', 'accepted'])) {
             return "Use the Application Status button and enter the tracking number issued after you submitted. The same number is also sent to your application email. ".
-                "The status page shows your submitted role and recruitment updates. If you were rejected, this site allows another application for that position after the three-month waiting period.";
+                "The status page shows your submitted role and recruitment updates. If your application was rejected, you can apply again immediately for an open position using the same email address.";
         }
 
         if (Str::contains($text, ['apply', 'application', 'how to apply'])) {

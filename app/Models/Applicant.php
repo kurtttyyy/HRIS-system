@@ -68,6 +68,11 @@ class Applicant extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function scopeBlocksReapplication($query)
+    {
+        return $query->whereRaw("LOWER(TRIM(COALESCE(application_status, ''))) <> ?", ['rejected']);
+    }
+
     public function position()
     {
         return $this->belongsTo(OpenPosition::class, 'open_position_id', 'id');

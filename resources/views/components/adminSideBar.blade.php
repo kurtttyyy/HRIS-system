@@ -58,8 +58,10 @@
       })
       ->count();
   }
+  $adminPendingResignationCount = \Illuminate\Support\Facades\Schema::hasTable('resignations')
+    ? \App\Models\Resignation::query()->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = ?", ['pending'])->count()
+    : 0;
   if ($adminSidebarNotificationCount <= 0 && !isset($adminNotificationStats)) {
-    $adminPendingResignationCount = 0;
     $adminHiringNotificationCount = 0;
 
     if (\Illuminate\Support\Facades\Schema::hasTable('applicants')) {
@@ -377,6 +379,19 @@
   }
 
   @media (min-width: 1025px) {
+    .admin-sidebar ~ main[data-admin-sidebar-layout] {
+      margin-left: 4rem;
+      width: calc(100% - 4rem);
+      min-width: 0;
+      transition: margin-left 300ms ease, width 300ms ease;
+    }
+
+    .admin-sidebar:hover ~ main[data-admin-sidebar-layout],
+    .admin-sidebar.is-open ~ main[data-admin-sidebar-layout] {
+      margin-left: 18rem;
+      width: calc(100% - 18rem);
+    }
+
     [data-admin-sidebar-toggle],
     [data-admin-sidebar-overlay] {
       display: none !important;
@@ -464,14 +479,6 @@
       <span data-admin-employee-count class="admin-sidebar-count-badge ml-auto min-w-[1.4rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white" {{ $adminSidebarEmployeeCount > 0 ? '' : 'hidden' }}>
         {{ $adminSidebarEmployeeCount > 99 ? '99+' : $adminSidebarEmployeeCount }}
       </span>
-    </a>
-    @endif
-
-    @if($canAdmin('employees'))
-    <a href="{{ route('admin.employeeEvaluation.customize', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}" data-admin-module="employees" data-admin-nav
-       class="flex items-center justify-center gap-0 rounded-lg px-4 py-2.5 font-medium transition group-hover:justify-start group-hover:gap-3 {{ request()->routeIs('admin.employeeEvaluation.*') ? 'bg-green-600 text-white' : 'text-white hover:bg-green-600/30' }}">
-      <i class="fa-solid fa-clipboard-check w-5 text-center"></i>
-      <span class="admin-sidebar-text inline-block max-w-0 overflow-hidden whitespace-nowrap transition-all duration-300 group-hover:max-w-xs">Evaluation Setup</span>
     </a>
     @endif
 
@@ -629,19 +636,31 @@
     @endif
 
     <!-- See More -->
-    @if($canAdmin('loads') || $canAdmin('matrix') || $canAdmin('resignations'))
-    <details class="space-y-1 more-menu">
+    @if($canAdmin('employees') || $canAdmin('loads') || $canAdmin('matrix') || $canAdmin('resignations'))
+    <details class="space-y-1 more-menu" {{ request()->routeIs('admin.employeeEvaluation.*') ? 'open' : '' }}>
       <summary
         class="w-full flex items-center justify-center group-hover:justify-between px-4 py-2.5 rounded-lg font-medium transition text-white hover:bg-green-600/30 cursor-pointer"
       >
         <span class="flex items-center gap-0 group-hover:gap-3 justify-center group-hover:justify-start">
-          <i class="fa-solid fa-ellipsis"></i>
+          <span class="relative inline-flex items-center justify-center">
+            <i class="fa-solid fa-ellipsis"></i>
+            @if($canAdmin('resignations'))
+            <span data-admin-pending-resignation-dot class="admin-sidebar-alert-dot" title="Pending resignation forms" {{ $adminPendingResignationCount > 0 ? '' : 'hidden' }}>!</span>
+            @endif
+          </span>
           <span class="admin-sidebar-text whitespace-nowrap inline-block max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300">More</span>
         </span>
         <i class="fa-solid fa-chevron-down hidden group-hover:inline-block transition-all duration-200 more-chevron"></i>
       </summary>
 
       <div class="ml-0 group-hover:ml-8 space-y-1">
+        @if($canAdmin('employees'))
+        <a href="{{ route('admin.employeeEvaluation.customize', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}" data-admin-module="employees" data-admin-nav
+           class="flex items-center gap-0 group-hover:gap-2 px-4 py-2 rounded-md text-sm justify-center group-hover:justify-start {{ request()->routeIs('admin.employeeEvaluation.*') ? 'bg-green-600 text-white' : 'text-white hover:bg-green-600/30' }}">
+          <i class="fa-solid fa-clipboard-check"></i>
+          <span class="admin-sidebar-text inline-block max-w-0 overflow-hidden whitespace-nowrap transition-all duration-300 group-hover:max-w-xs">Evaluation Setup</span>
+        </a>
+        @endif
         @if($canAdmin('loads'))
         <a href="{{ route('admin.adminLoads', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}"
            data-admin-module="loads"
@@ -709,8 +728,18 @@
            {{ request()->routeIs('admin.adminResignations')
                 ? 'bg-green-600 text-white'
                 : 'text-white hover:bg-green-600/30' }}">
-          <i class="fa-solid fa-user-minus"></i>
+          <span class="relative inline-flex items-center justify-center">
+            <i class="fa-solid fa-user-minus"></i>
+            <span data-admin-pending-resignation-dot class="admin-sidebar-alert-dot" title="Pending resignation forms" {{ $adminPendingResignationCount > 0 ? '' : 'hidden' }}>!</span>
+          </span>
           <span class="admin-sidebar-text whitespace-nowrap inline-block max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300">Resignations</span>
+          <span data-admin-pending-resignation-count aria-label="Pending resignation forms" class="admin-sidebar-count-badge ml-auto min-w-[1.4rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white" {{ $adminPendingResignationCount > 0 ? '' : 'hidden' }}>{{ $adminPendingResignationCount > 99 ? '99+' : $adminPendingResignationCount }}</span>
+        </a>
+        <a href="{{ route('admin.resignations.archive', $tabSession !== '' ? ['tab_session' => $tabSession] : []) }}"
+           data-admin-module="resignations" data-admin-nav
+           class="flex items-center gap-0 group-hover:gap-2 px-4 py-2 rounded-md text-sm justify-center group-hover:justify-start {{ request()->routeIs('admin.resignations.archive') ? 'bg-green-600 text-white' : 'text-white hover:bg-green-600/30' }}">
+          <i class="fa-solid fa-box-archive"></i>
+          <span class="admin-sidebar-text whitespace-nowrap inline-block max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300">Resigned Archive</span>
         </a>
         @endif
 
@@ -1076,6 +1105,10 @@
 
     const updateAdminSidebarSummary = (summary) => {
       window.updateAdminPendingLeaveCount(summary?.pending_leave_count);
+      const resignationCount = updateSidebarCount('[data-admin-pending-resignation-count]', summary?.pending_resignation_count);
+      document.querySelectorAll('[data-admin-pending-resignation-dot]').forEach((dot) => {
+        dot.hidden = resignationCount === 0;
+      });
 
       const employeeCount = updateSidebarCount(
         '[data-admin-employee-count]',

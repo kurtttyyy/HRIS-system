@@ -57,6 +57,7 @@
     body.applicant-modal-open {
       overflow: hidden;
     }
+    .swal2-container { z-index: 100000 !important; }
     body.applicant-modal-open [data-admin-sidebar-toggle] {
       display: none !important;
     }
@@ -704,6 +705,8 @@
           <form class="rounded-[1.35rem] border border-slate-200 bg-white p-5 shadow-sm" action="{{ route('admin.storeNewInterview') }}" method="POST" id="applicantInterviewPanelForm">
             @csrf
             <input type="hidden" id="panel_applicants_id" name="applicants_id">
+            <input type="hidden" name="interviewId" id="panel_interview_id">
+            <input type="hidden" name="applicantId" id="panel_edit_applicant_id">
             <input type="hidden" id="panel_next_interview_confirmed" name="next_interview_confirmed" value="0">
 
             <div class="mb-5 flex items-start gap-3 border-b border-slate-100 pb-4">
@@ -1391,6 +1394,7 @@
         <p class="mt-3 text-xs font-semibold text-slate-500">Please reschedule, finish, or cancel the existing interview before creating another one.</p>
       `,
       confirmButtonText: 'View Existing Schedule',
+      showCloseButton: true,
       confirmButtonColor: '#d97706',
       customClass: {
         popup: 'interview-conflict-popup',
@@ -1654,6 +1658,24 @@
 
   function focusInterviewForm() {
     const form = document.getElementById('applicantInterviewPanelForm');
+    const interview = activeApplicantInterviewSchedule();
+    if (form && interview) {
+      form.action = @json(route('admin.storeUpdatedInterview'));
+      document.getElementById('panel_interview_id').value = interview.id;
+      document.getElementById('panel_edit_applicant_id').value = currentApplicantId;
+      for (const name of ['interview_type', 'date', 'time', 'duration', 'interviewers', 'email_link', 'url', 'notes']) {
+        const field = form.elements.namedItem(name);
+        if (!field) continue;
+        if (name === 'interview_type') {
+          Array.from(field.options).forEach(option => { option.disabled = option.value !== interview.interview_type; });
+        }
+        field.disabled = false;
+        field.value = interview[name] || '';
+      }
+      const save = document.getElementById('saveInterviewButton');
+      save.disabled = false;
+      save.textContent = 'Save Changes';
+    }
     form?.classList.remove('hidden');
     form?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     form?.querySelector('input[name="date"]')?.focus({ preventScroll: true });
@@ -2148,7 +2170,11 @@
       return;
     }
 
-    document.getElementById('applicantInterviewPanelForm')?.classList.add('hidden');
+    // Finished interview history must not hide the unlocked next-stage form.
+    const scheduleSelect = document.getElementById('panel_interview_type');
+    const canCreateSchedule = !activeApplicantInterviewSchedule()
+      && Boolean(scheduleSelect?.value) && !scheduleSelect.disabled;
+    document.getElementById('applicantInterviewPanelForm')?.classList.toggle('hidden', !canCreateSchedule);
 
     list.innerHTML = interviews.map((item, index) => {
       const timeParts = getInterviewTimeParts(item.time);
@@ -2452,6 +2478,11 @@
   }
 
   function openApplicantModal(applicantId, openInterviewPanel = false, openPassingDocumentPanel = false) {
+    const interviewForm = document.getElementById('applicantInterviewPanelForm');
+    interviewForm.reset();
+    interviewForm.action = @json(route('admin.storeNewInterview'));
+    document.getElementById('panel_interview_id').value = '';
+    document.getElementById('panel_edit_applicant_id').value = '';
     currentApplicantId = applicantId;
     currentApplicantModalData = null;
     autoUnderReviewSubmitted = false;
@@ -2592,7 +2623,8 @@
     }
 
     const activeInterview = activeApplicantInterviewSchedule();
-    if (!activeInterview) {
+    const editingId = document.getElementById('panel_interview_id').value;
+    if (!activeInterview || String(activeInterview.id) === editingId) {
       const saveButton = document.getElementById('saveInterviewButton');
       if (saveButton) {
         saveButton.disabled = true;

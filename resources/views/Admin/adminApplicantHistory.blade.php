@@ -19,7 +19,7 @@
 </head>
 <body class="bg-slate-100 text-slate-900">
   @include('components.adminSideBar')
-  <main class="min-h-screen p-4 pt-20 md:p-8 md:pt-8 lg:ml-16">
+  <main data-admin-sidebar-layout class="min-h-screen min-w-0 p-4 pt-20 md:p-8 md:pt-8">
     <header class="history-hero rounded-[2rem] p-6 text-white shadow-lg md:p-8">
       <p class="flex items-center gap-2 text-xs font-semibold uppercase tracking-[.22em] text-emerald-200"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Hiring / History</p>
       <div class="mt-3 flex flex-wrap items-start justify-between gap-4">
