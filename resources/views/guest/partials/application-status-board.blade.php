@@ -81,6 +81,7 @@
             </div>
 
             @include('guest.partials.interview-schedule', ['applicant' => $applicant])
+            @include('guest.partials.reporting-date', ['applicant' => $applicant])
 
             @if(filled($applicant->missing_documents))
                 <div class="alert alert-warning mt-3 rounded-4" role="status">

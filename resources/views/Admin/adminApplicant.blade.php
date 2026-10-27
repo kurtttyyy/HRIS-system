@@ -1280,7 +1280,7 @@
               <button type="button" onclick="openApplicantInterviewFromTable(${app.id})" class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white transition hover:border-indigo-200 hover:text-indigo-600" title="Schedule interview">
                 <i class="fa-regular fa-calendar"></i>
               </button>
-              <button type="button" class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white transition hover:border-rose-200 hover:text-rose-500" title="Remove action">
+              <button type="button" onclick="rejectApplicantFromTable(${app.id})" class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white transition hover:border-rose-200 hover:text-rose-500" title="Reject applicant" aria-label="Reject applicant">
                 <i class="fa-solid fa-xmark"></i>
               </button>
             </div>
@@ -1924,7 +1924,8 @@
   }
 
   function updateApplicantStatusFromModal(status, options = {}) {
-    if (!currentApplicantId) {
+    const applicantId = options.applicantId || currentApplicantId;
+    if (!applicantId) {
       return;
     }
 
@@ -1947,10 +1948,21 @@
         return;
       }
 
-      document.getElementById('statusId').value = currentApplicantId;
+      document.getElementById('statusId').value = applicantId;
       document.getElementById('statusAutoValue').value = status;
       document.getElementById('statusDateHired').value = options.date_hired || '';
       document.getElementById('updateStatus').submit();
+    });
+  }
+
+  function rejectApplicantFromTable(applicantId) {
+    updateApplicantStatusFromModal('Rejected', {
+      applicantId,
+      title: 'Reject applicant?',
+      text: 'This will immediately mark this application as Rejected and notify the applicant.',
+      icon: 'warning',
+      confirmButtonColor: '#e11d48',
+      confirmButtonText: 'Reject Applicant'
     });
   }
 

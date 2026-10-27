@@ -705,6 +705,7 @@
                 </div>
 
                 @include('guest.partials.interview-schedule', ['applicant' => $applicant])
+                @include('guest.partials.reporting-date', ['applicant' => $applicant])
 
                 {{-- Rejection Message --}}
                 @if($applicant->application_status === 'Rejected')
